@@ -1,0 +1,189 @@
+{
+ "cik": "0001048286",
+ "entityType": "operating",
+ "sic": "7011",
+ "sicDescription": "Hotels & Motels",
+ "ownerOrg": "05 Real Estate & Construction",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "MARRIOTT INTERNATIONAL INC /MD/",
+ "tickers": [
+  "MAR"
+ ],
+ "exchanges": [
+  "Nasdaq"
+ ],
+ "ein": "522055918",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "7750 WISCONSIN AVENUE",
+   "street2": null,
+   "city": "BETHESDA",
+   "stateOrCountry": "MD",
+   "zipCode": "20814",
+   "stateOrCountryDescription": "MD",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "7750 WISCONSIN AVENUE",
+   "street2": null,
+   "city": "BETHESDA",
+   "stateOrCountry": "MD",
+   "zipCode": "20814",
+   "stateOrCountryDescription": "MD",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "3013803000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "MARRIOTT INTERNATIONAL INC /MD/",
+   "from": "1998-04-09T00:00:00.000Z",
+   "to": "2026-10-01T00:00:00.000Z"
+  },
+  {
+   "name": "NEW MARRIOTT MI INC",
+   "from": "1998-03-16T00:00:00.000Z",
+   "to": "1998-03-20T00:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001225208-26-008069",
+    "0001225208-26-008068",
+    "0001225208-26-008000",
+    "0001225208-26-007999",
+    "0001225208-26-007997"
+   ],
+   "filingDate": [
+    "2026-10-01",
+    "2026-10-01",
+    "2026-09-29",
+    "2026-09-29",
+    "2026-09-29"
+   ],
+   "reportDate": [
+    "2026-09-30",
+    "2026-09-30",
+    "2026-09-25",
+    "2026-09-25",
+    "2026-09-25"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-01T23:39:45.000Z",
+    "2026-10-01T23:39:43.000Z",
+    "2026-09-29T23:45:54.000Z",
+    "2026-09-29T23:44:55.000Z",
+    "2026-09-29T23:44:51.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "form": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4"
+   ],
+   "size": [
+    4671,
+    5258,
+    20341,
+    17225,
+    7593
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "primaryDocument": [
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml"
+   ],
+   "primaryDocDescription": [
+    "",
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  "files": [
+   {
+    "name": "CIK0001048286-submissions-001.json",
+    "filingCount": 2000,
+    "filingFrom": "2005-03-23",
+    "filingTo": "2018-02-19"
+   }
+  ]
+ }
+}

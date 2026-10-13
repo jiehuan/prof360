@@ -1,0 +1,184 @@
+{
+ "cik": "0000078003",
+ "entityType": "operating",
+ "sic": "2834",
+ "sicDescription": "Pharmaceutical Preparations",
+ "ownerOrg": "03 Life Sciences",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "PFIZER INC",
+ "tickers": [
+  "PFE"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "135315170",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "66 HUDSON BOULEVARD EAST",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10001-2192",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "66 HUDSON BOULEVARD EAST",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10001-2192",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "2127332323",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "PFIZER INC",
+   "from": "1994-03-18T00:00:00.000Z",
+   "to": "2026-10-01T00:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001225208-26-008044",
+    "0001225208-26-007989",
+    "0001225208-26-007988",
+    "0001225208-26-007987",
+    "0001225208-26-007986"
+   ],
+   "filingDate": [
+    "2026-10-01",
+    "2026-09-29",
+    "2026-09-29",
+    "2026-09-29",
+    "2026-09-29"
+   ],
+   "reportDate": [
+    "2026-09-30",
+    "2026-09-25",
+    "2026-09-25",
+    "2026-09-25",
+    "2026-09-25"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-01T18:04:33.000Z",
+    "2026-09-29T18:26:28.000Z",
+    "2026-09-29T18:26:26.000Z",
+    "2026-09-29T18:25:28.000Z",
+    "2026-09-29T18:25:26.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "form": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4"
+   ],
+   "size": [
+    5638,
+    5490,
+    5444,
+    5433,
+    5461
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "primaryDocument": [
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml"
+   ],
+   "primaryDocDescription": [
+    "",
+    "",
+    "",
+    "",
+    ""
+   ]
+  },
+  "files": [
+   {
+    "name": "CIK0000078003-submissions-001.json",
+    "filingCount": 2002,
+    "filingFrom": "2013-07-16",
+    "filingTo": "2021-02-16"
+   }
+  ]
+ }
+}

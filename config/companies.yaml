@@ -1,0 +1,37 @@
+# MVP company list: one company per SIC code (see docs/decisions.md D-007).
+# `cik` is pinned and authoritative. Tickers get reassigned, so they are only checked against
+# SEC's ticker list and a mismatch is logged, never followed.
+companies:
+  - ticker: MAR
+    cik: 1048286
+    display_name: Marriott International
+  - ticker: LUV
+    cik: 92380
+    display_name: Southwest Airlines
+  - ticker: F
+    cik: 37996
+    display_name: Ford Motor Company
+  - ticker: PFE
+    cik: 78003
+    display_name: Pfizer
+  - ticker: JPM
+    cik: 19617
+    display_name: JPMorgan Chase
+  - ticker: M
+    cik: 794367
+    display_name: Macy's
+  - ticker: LUMN
+    cik: 18926
+    display_name: Lumen Technologies
+  - ticker: SKYD
+    cik: 2041610
+    display_name: Skydance Corp
+    former_tickers: [PARA, PSKY]
+    predecessor_ciks: [813828]  # Paramount Global; stopped filing after the Aug 2025 merger
+    notes: >-
+      Front end shows this company as PARA. Since 2025 SEC's ticker list maps PARA to an
+      unrelated company (Banzai International, CIK 1826011). The successor registrant was named
+      Paramount Skydance Corp (PSKY) and was renamed Skydance Corp (SKYD) on 2026-10-06.
+  - ticker: ENPH
+    cik: 1463101
+    display_name: Enphase Energy

@@ -1,0 +1,43 @@
+# SIC code -> industry group. Every group gets one metric set (from Phase 2), so all companies
+# with the same SIC share the same metrics.
+# Lookup order: exact `sic`, then `sic_ranges` (first match), then `default_group`.
+# `is_financial` controls whether FI-only modules (NIM, CET1, NPL, loan portfolio) get data.
+
+default_group: UNCLASSIFIED
+
+groups:
+  UNCLASSIFIED:   {label: Unclassified, is_financial: false}
+  HOTELS:         {label: Hotels & Lodging, is_financial: false}
+  AIRLINES:       {label: Airlines, is_financial: false}
+  AUTOMOTIVE:     {label: Automotive Manufacturing, is_financial: false}
+  PHARMA:         {label: Pharmaceuticals, is_financial: false}
+  BANKS:          {label: Banks, is_financial: true}
+  CREDIT:         {label: Non-depository Credit, is_financial: true}
+  BROKER_DEALERS: {label: Securities & Brokerage, is_financial: true}
+  # Bank-style FI modules (CET1, NIM, loan book) don't fit insurers. Insurers get their own
+  # metric set once one is onboarded. See docs/decisions.md D-008.
+  INSURANCE:      {label: Insurance, is_financial: false}
+  RETAIL:         {label: Retail, is_financial: false}
+  TELECOM:        {label: Telecommunications, is_financial: false}
+  MEDIA:          {label: Media & Broadcasting, is_financial: false}
+  SEMICONDUCTORS: {label: Semiconductors & Related Devices, is_financial: false}
+
+# Exact SIC codes (MVP companies).
+sic:
+  7011: HOTELS          # MAR
+  4512: AIRLINES        # LUV
+  3711: AUTOMOTIVE      # F
+  2834: PHARMA          # PFE
+  6021: BANKS           # JPM
+  5311: RETAIL          # M
+  4813: TELECOM         # LUMN
+  4833: MEDIA           # SKYD
+  3674: SEMICONDUCTORS  # ENPH
+  6712: BANKS           # bank holding companies (6700 block, otherwise not FI)
+
+# Fallbacks for SIC codes not listed above.
+sic_ranges:
+  - {from: 6000, to: 6099, group: BANKS}
+  - {from: 6100, to: 6199, group: CREDIT}
+  - {from: 6200, to: 6299, group: BROKER_DEALERS}
+  - {from: 6300, to: 6411, group: INSURANCE}

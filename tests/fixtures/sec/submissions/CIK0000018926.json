@@ -1,0 +1,194 @@
+{
+ "cik": "0000018926",
+ "entityType": "operating",
+ "sic": "4813",
+ "sicDescription": "Telephone Communications (No Radiotelephone)",
+ "ownerOrg": "06 Technology",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Lumen Technologies, Inc.",
+ "tickers": [
+  "LUMN"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "720651161",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "LA",
+ "stateOfIncorporationDescription": "LA",
+ "addresses": {
+  "mailing": {
+   "street1": "100 CENTURYLINK DR",
+   "street2": "P O BOX 4065",
+   "city": "MONROE",
+   "stateOrCountry": "LA",
+   "zipCode": "71203",
+   "stateOrCountryDescription": "LA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "P O BOX 4065",
+   "street2": "100 CENTURYLINK DR",
+   "city": "MONROE",
+   "stateOrCountry": "LA",
+   "zipCode": "71203",
+   "stateOrCountryDescription": "LA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "3183889000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "CENTURYLINK, INC",
+   "from": "2010-11-09T05:00:00.000Z",
+   "to": "2021-01-20T05:00:00.000Z"
+  },
+  {
+   "name": "CENTURYTEL INC",
+   "from": "1999-07-09T04:00:00.000Z",
+   "to": "2010-11-08T05:00:00.000Z"
+  },
+  {
+   "name": "CENTURY TELEPHONE ENTERPRISES INC",
+   "from": "1994-01-28T05:00:00.000Z",
+   "to": "1999-05-14T04:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001354457-26-000948",
+    "0000947871-26-000920",
+    "0000947871-26-000919",
+    "0000947871-26-000891",
+    "0002087595-26-000002"
+   ],
+   "filingDate": [
+    "2026-10-05",
+    "2026-10-05",
+    "2026-10-05",
+    "2026-09-25",
+    "2026-09-24"
+   ],
+   "reportDate": [
+    "",
+    "",
+    "",
+    "2026-09-25",
+    "2026-09-23"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-06T00:51:37.000Z",
+    "2026-10-06T00:07:39.000Z",
+    "2026-10-06T00:01:29.000Z",
+    "2026-09-25T16:39:06.000Z",
+    "2026-09-25T00:31:49.000Z"
+   ],
+   "act": [
+    "34",
+    "34",
+    "34",
+    "34",
+    ""
+   ],
+   "form": [
+    "CERT",
+    "25",
+    "8-A12B",
+    "8-K",
+    "4"
+   ],
+   "fileNumber": [
+    "001-07784",
+    "001-07784",
+    "001-07784",
+    "001-07784",
+    ""
+   ],
+   "filmNumber": [
+    "261441080",
+    "261440413",
+    "261440257",
+    "261406346",
+    ""
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "3.01,7.01,9.01",
+    ""
+   ],
+   "core_type": [
+    "CERT",
+    "25",
+    "8-A12B",
+    "XBRL",
+    "4"
+   ],
+   "size": [
+    183925,
+    28064,
+    35445,
+    278833,
+    369544
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    1,
+    0
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    1,
+    0
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "primaryDocument": [
+    "8A_CERT_LUMN_0000018926.pdf",
+    "ss6901616_25.htm",
+    "ss6901563_8a12b.htm",
+    "ss6865668_8k.htm",
+    "xslF345X06/wk-form4_1790281902.xml"
+   ],
+   "primaryDocDescription": [
+    "",
+    "FORM 25",
+    "FORM 8-A",
+    "CURRENT REPORT",
+    "FORM 4"
+   ]
+  },
+  "files": [
+   {
+    "name": "CIK0000018926-submissions-001.json",
+    "filingCount": 1655,
+    "filingFrom": "1994-01-06",
+    "filingTo": "2015-09-08"
+   }
+  ]
+ }
+}

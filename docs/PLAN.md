@@ -1,0 +1,504 @@
+# Underwriting Intelligence — 数据管线开发计划（SEC + Alpha Vantage → Azure SQL）
+
+> 本文档供 Claude Code 执行使用。请按 Phase 顺序推进，每个 Phase 完成后对照"验收标准"自检，再进入下一阶段。
+> 遇到本文档未覆盖的决策，先在 `docs/decisions.md` 记录选项和理由，再继续。
+
+---
+
+## 0. 背景与目标
+
+**现状**：React 前端 + FastAPI BFF 已基本完成，目前读取 Azure SQL（部分为 mock 数据）。
+**本项目**：开发 Python 数据管线，从 SEC EDGAR 和 Alpha Vantage 获取数据 → 解析/提取 → 计算指标 → LLM 生成洞察 → 写入 Azure SQL，供 BFF 读取。
+
+**业务范围（来自 BRD《Professional 360 MVP》）**
+- 业务线：D&O，Americas；仅美国上市公司；仅英文
+- 数据源：SEC EDGAR（10-K / 10-Q / 8-K）、Alpha Vantage（新闻情绪、财报电话会议纪要）
+- 不做：私营公司、其他 LoB/地区、sell-side 报告、聊天机器人、loss run 历史数据处理
+- 原则：**不自动化核保决策**，只提供可解释、可溯源的信息
+
+**核心质量要求**
+1. **可溯源**：每条洞察、每个数值都能追溯到具体文件（accession number / URL / 章节）
+2. **行业适配**：金融机构（FI）与非金融（Commercial）展示不同指标集，不能混用
+3. **幂等可重跑**：同一输入重跑结果一致，不产生重复行
+4. **增量更新**：只处理新文件 / 新新闻，避免重复调用 API 和 LLM
+
+---
+
+## 1. 前端数据需求清单（管线的输出契约）
+
+以下按页面模块列出，管线必须产出对应数据。
+
+| 前端模块 | 所需数据 | 主要来源 | 生成方式 |
+|---|---|---|---|
+| Dashboard 卡片 / 公司头部 | 名称、ticker、SIC 代码与描述、总部城市/州、logo、最后更新时间 | SEC submissions | 规则 |
+| Dashboard 计数 | Risk Flags 数、Follow-Up Questions 数 | 由下游表汇总 | 规则（视图或 BFF 计算）|
+| Key Insights Summary | 类型（Warning/Negative/Positive/Info）、标题、摘要、核保相关性、支撑证据、来源、关联指标/风险/问题 | 指标 + 文件文本 + 新闻 | LLM（基于结构化输入）|
+| Financial Metrics | Total Revenue、Revenue Growth、Adjusted EBITDA，及公司特有指标（如 Marriott 的 Gross/Net Fee Revenue）| XBRL | 规则 + 配置 |
+| Liquidity Metrics | Cash & Equivalents、Current Assets、Current Liabilities、Current Ratio、Working Capital | XBRL | 规则 |
+| Leverage Metrics | Total Debt、Long-term Debt、Debt-to-Equity、Interest Expense、Interest Coverage | XBRL | 规则 |
+| Operational Metrics | 行业特定：RevPAR/入住率（酒店）、ARR/流失率（SaaS）、产能利用率（制造）| 10-K/10-Q MD&A 文本 | LLM 抽取 + 校验 |
+| Performance Trends（仅 FI）| NIM、CET1、NPL Ratio、Fee Income Growth | XBRL + 文本 | 规则优先，LLM 兜底 |
+| Loan Portfolio Composition（仅 FI）| 分部、余额、占比、质量评级 | 10-K/10-Q 附注 | LLM 抽取 |
+| Strategic & Risk Insights | 大类（Governance & Leadership / Risk & Legal / Event Signals / Behavioral Insights）、子类、标题、描述、核保相关性 | 8-K item、10-K 章节、电话会议纪要 | 规则 + LLM |
+| Recent Activities | 标题、日期、摘要、情绪、核保相关性、来源链接 | Alpha Vantage NEWS_SENTIMENT | API + LLM 摘要 |
+| Suggested Follow-Up Questions | 类别（Financial/Operational/Market/Strategy/Governance）、问题、依据、系统建议优先级 | 上述全部 | LLM |
+| QoQ / YoY / 5Ys 切换 | 季度值（至少 2 年）、年度值（至少 5 年）| XBRL | 规则 |
+
+**不由管线负责（BFF 自有状态）**：Favorites、Recently Viewed、用户对问题的 flag 操作、Save Preferences。
+
+> ⚠️ 已知问题：当前 Marriott 页面展示了 NIM、CET1、Loan Portfolio 等银行指标，且 Key Insight 来源为银行类文件（IFRS 9、CRE Stress Test）——这是 mock 数据。管线必须按 `industry_group` 控制哪些模块有数据，BFF/前端在无数据时隐藏该模块。
+
+---
+
+## 2. 架构
+
+```
+                ┌──────────────┐     ┌────────────────┐
+  SEC EDGAR ───►│              │     │  ADLS (raw)    │  原始 JSON/HTML，按日期+CIK 分区
+  Alpha Vantage►│  1. Extract  ├────►│  可重放        │
+                └──────┬───────┘     └────────────────┘
+                       ▼
+                ┌──────────────┐
+                │ 2. Normalize │  XBRL facts → 标准化季度/年度事实；文件 → 章节文本
+                └──────┬───────┘
+                       ▼
+                ┌──────────────┐
+                │ 3. Compute   │  指标注册表 → metric_value（纯规则，无 LLM）
+                └──────┬───────┘
+                       ▼
+                ┌──────────────┐
+                │ 4. Signals   │  8-K item 规则、审计师/高管变更、going concern 关键词
+                └──────┬───────┘
+                       ▼
+                ┌──────────────┐
+                │ 5. Enrich    │  LLM：洞察、风险解读、追问问题、文本指标抽取
+                └──────┬───────┘     （输入哈希不变则跳过）
+                       ▼
+                ┌──────────────┐
+                │ 6. Load      │  staging 表 + MERGE upsert → Azure SQL
+                └──────────────┘
+```
+
+**设计原则**
+- 每层输出都可落地（raw → ADLS；中间结果 → staging 表或 parquet），任一层可单独重跑
+- 数值只来自 Compute 层；LLM **不得**自行产生数字，只能引用 Compute 层已有的数值
+- 外部调用（HTTP、LLM、DB）全部通过 `clients/` 封装，便于测试时替换
+
+**运行形态**：OpenShift CronJob（与现有 `professional-cronjob` 一致），Harness CI/CD 部署。单次运行 = 一个 `pipeline_run`，按公司拆成 `pipeline_task`，复用 job table 模式支持断点续跑。
+
+---
+
+## 3. 技术选型
+
+| 关注点 | 选择 | 备注 |
+|---|---|---|
+| Python | 3.11+ | |
+| HTTP | `httpx` + `tenacity`（重试/退避）| 自写 token bucket 限速 |
+| SEC 解析 | 优先评估 `edgartools`；不合适则自写 | 需确认 Artifactory 镜像可用 |
+| HTML → 章节 | `beautifulsoup4` / `lxml` + 正则定位 Item | 见 §5.3 |
+| 数据处理 | `pandas` 或 `polars` | 二选一，统一使用 |
+| 数据校验 | `pydantic` v2 | 所有 LLM 输出必须过 schema |
+| DB | `SQLAlchemy 2.x` + `pyodbc`（ODBC Driver 18）| `fast_executemany=True` |
+| DB 认证 | Service Principal / Managed Identity | 不使用 SQL 密码 |
+| LLM | 抽象 `LLMClient` 接口，实现：Secure GPT 网关 / Claude API | 由配置切换 |
+| 配置 | `pydantic-settings` + 环境变量 + YAML | 密钥来自 OpenShift Secret |
+| CLI | `typer` | |
+| 测试 | `pytest` + 录制的响应 fixtures | 测试不访问外网 |
+| Lint | `ruff` + `mypy` | |
+
+---
+
+## 4. 目录结构
+
+```
+uw-pipeline/
+├── pyproject.toml
+├── CLAUDE.md                     # 项目约定（见 §11）
+├── docs/
+│   ├── PLAN.md                   # 本文件
+│   ├── decisions.md              # 决策记录
+│   └── schema-contract.md        # Phase 0 产出：与 BFF 的表结构契约
+├── config/
+│   ├── companies.yaml            # 公司清单（MVP 阶段）
+│   ├── concept_map.yaml          # 指标 → XBRL tag 候选列表
+│   ├── metrics.yaml              # 指标定义注册表
+│   └── company_overrides/        # 公司特有指标（如 MAR.yaml）
+├── src/uw_pipeline/
+│   ├── settings.py
+│   ├── clients/
+│   │   ├── sec.py                # EDGAR：限速、UA、缓存
+│   │   ├── alphavantage.py
+│   │   ├── llm.py                # LLMClient 抽象 + 实现
+│   │   ├── storage.py            # ADLS 读写
+│   │   └── db.py
+│   ├── extract/                  # 拉取 + 落 raw
+│   ├── normalize/
+│   │   ├── xbrl_facts.py         # companyfacts → 长表
+│   │   ├── periods.py            # 季度推导（含 Q4 = FY − 9M）
+│   │   └── sections.py           # 10-K/10-Q 章节切分
+│   ├── compute/
+│   │   ├── registry.py           # 读取 metrics.yaml
+│   │   └── metrics.py
+│   ├── signals/
+│   │   ├── eight_k.py            # 8-K item → 事件
+│   │   └── governance.py         # 审计师、高管变更
+│   ├── enrich/
+│   │   ├── schemas.py            # pydantic 输出 schema
+│   │   ├── prompts/              # 带版本号的 prompt 模板
+│   │   ├── insights.py
+│   │   ├── questions.py
+│   │   ├── text_metrics.py       # 运营指标 / FI 指标文本抽取
+│   │   └── grounding.py          # 数字与引用校验
+│   ├── load/
+│   │   └── upsert.py             # staging + MERGE
+│   ├── jobs/
+│   │   ├── orchestrator.py       # run / task 状态机
+│   │   └── run_company.py
+│   └── cli.py
+├── sql/                          # 若 schema 由本仓库维护（见 Phase 0 决定）
+└── tests/
+    ├── fixtures/sec/  fixtures/av/  fixtures/llm/
+    └── ...
+```
+
+---
+
+## 5. 数据源细节
+
+### 5.1 SEC EDGAR
+
+**强制要求**
+- 每个请求带 `User-Agent: "<公司名> <联系邮箱>"`，否则会被封
+- 全局限速 ≤ 10 req/s（实现时取 8 留余量）
+- CIK 一律补零到 10 位
+
+**端点**
+| 用途 | URL |
+|---|---|
+| ticker ↔ CIK | `https://www.sec.gov/files/company_tickers.json` |
+| 公司信息 + 文件列表 | `https://data.sec.gov/submissions/CIK##########.json` |
+| 全部 XBRL 事实 | `https://data.sec.gov/api/xbrl/companyfacts/CIK##########.json` |
+| 单个概念 | `https://data.sec.gov/api/xbrl/companyconcept/CIK##########/us-gaap/{Tag}.json` |
+| 文件原文 | `https://www.sec.gov/Archives/edgar/data/{cik}/{accession_no_dashes}/{primary_doc}` |
+
+**submissions JSON 可直接得到**：`sicDescription`、`sic`、`addresses.business`（总部）、`fiscalYearEnd`、`filings.recent`（form、filingDate、accessionNumber、primaryDocument、**items**）。注意 `filings.recent` 只含最近约 1000 条，更早的在 `filings.files` 分页。
+
+### 5.2 XBRL → 标准化财务数据（最容易出错的部分）
+
+**companyfacts 结构**：`facts.{taxonomy}.{Tag}.units.{unit}[]`，每条含 `start`、`end`、`val`、`fy`、`fp`、`form`、`filed`、`accn`、`frame`（可选）。
+
+**必须处理的坑**
+1. **同一期间多个值**：后续文件会重述前期数据。规则：同一 (tag, start, end) 取 `filed` 最新的值；同时保留历史以便审计
+2. **期间长度**：10-Q 损益表同时有 3 个月值和 YTD 值。用 `end - start` 天数区分（季度约 80–100 天，年度约 350–380 天）
+3. **Q4 无直接值**：Q4 = FY − (Q1+Q2+Q3) 或 FY − 9M YTD。标记 `derivation = DERIVED`
+4. **现金流表只有 YTD**：季度值需差分，同样标记 `DERIVED`
+5. **资产负债表是时点值**（无 `start`），直接取季末
+6. **`frame` 字段**（如 `CY2025Q1`、`CY2025Q1I`）是 SEC 去重后的日历期间，可作为对齐辅助，但不是每条都有
+7. **财年 ≠ 自然年**：存储 `fiscal_year`、`fiscal_quarter` 和 `period_end` 三者，前端按财年展示
+8. **Tag 不统一**：同一指标不同公司用不同 tag，用 `concept_map.yaml` 定义有序候选列表，取第一个有数据的；记录实际使用的 tag
+9. **扩展 tag**：公司特有指标（如 Marriott 费用收入）在公司自有 taxonomy 下，需在 `company_overrides/` 中配置
+
+**concept_map.yaml 示例**
+```yaml
+revenue:
+  - us-gaap:Revenues
+  - us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
+  - us-gaap:SalesRevenueNet
+net_income:          [us-gaap:NetIncomeLoss]
+operating_income:    [us-gaap:OperatingIncomeLoss]
+d_and_a:
+  - us-gaap:DepreciationDepletionAndAmortization
+  - us-gaap:DepreciationAndAmortization
+  - us-gaap:DepreciationAmortizationAndAccretionNet
+cash:
+  - us-gaap:CashAndCashEquivalentsAtCarryingValue
+  - us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents
+current_assets:      [us-gaap:AssetsCurrent]
+current_liabilities: [us-gaap:LiabilitiesCurrent]
+long_term_debt_noncurrent: [us-gaap:LongTermDebtNoncurrent]
+long_term_debt_current:    [us-gaap:LongTermDebtCurrent]
+short_term_borrowings:     [us-gaap:ShortTermBorrowings, us-gaap:CommercialPaper]
+equity:
+  - us-gaap:StockholdersEquity
+  - us-gaap:StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest
+interest_expense:
+  - us-gaap:InterestExpense
+  - us-gaap:InterestExpenseNonoperating
+  - us-gaap:InterestExpenseDebt
+operating_cash_flow: [us-gaap:NetCashProvidedByUsedInOperatingActivities]
+capex:               [us-gaap:PaymentsToAcquirePropertyPlantAndEquipment]
+buybacks:            [us-gaap:PaymentsForRepurchaseOfCommonStock]
+dividends_paid:      [us-gaap:PaymentsOfDividends, us-gaap:PaymentsOfDividendsCommonStock]
+auditor_name:        [dei:AuditorName]   # 2021 年后 10-K 封面
+```
+> 上表为起点，Phase 2 需用实际公司数据验证每个 tag 的覆盖率，并输出覆盖率报告。
+
+### 5.3 文件文本 → 章节
+
+**10-K 需要的章节**：Item 1A（Risk Factors）、Item 3（Legal Proceedings）、Item 7（MD&A）、Item 9A（Controls）、财务报表附注中的 Commitments & Contingencies、审计报告（审计师任期 "served as auditor since"、going concern 段落）。
+**10-Q**：Part I Item 2（MD&A）、Part II Item 1（Legal）、Item 1A（Risk Factors 更新）。
+
+**实现要求**
+- 先尝试 `edgartools` 的章节解析；不稳定时用 HTML 文本 + Item 标题正则，跳过目录页（第一次出现通常是目录）
+- 存储：`filing_section`（accession、section_code、text、char_count、hash）
+- 文本过长时按段落分块，每块保留 `section_code` 和偏移量，用于 LLM 引用定位
+
+### 5.4 8-K 事件信号（纯规则，无 LLM）
+
+submissions JSON 的 `items` 字段直接给出 8-K item 编号：
+
+| Item | 含义 | 前端分类 | 默认严重度 |
+|---|---|---|---|
+| 1.01 | 签订重大协议 | Event Signals – Material Agreement | Info |
+| 1.03 | 破产或接管 | Event Signals – Bankruptcy | **Critical** |
+| 2.01 | 完成收购/处置 | Event Signals – M&A | Info |
+| 2.04 | 触发加速偿债义务 | Event Signals – Debt | Warning |
+| 2.06 | 重大减值 | Event Signals – Impairment | Warning |
+| 3.01 | 退市通知 | Event Signals – Listing | Warning |
+| 4.01 | 更换审计师 | Governance – Auditor Change | Warning |
+| 4.02 | 财报不可依赖（重述）| Event Signals – Restatement | **Critical** |
+| 5.02 | 董事/高管离任或任命 | Governance – Leadership Change | 视职位而定 |
+
+5.02 需读取 8-K 正文判断是否涉及 CEO/CFO（可用关键词规则，LLM 仅做摘要）。
+
+### 5.5 Alpha Vantage
+
+| 用途 | function | 关键参数 |
+|---|---|---|
+| 新闻 + 情绪 | `NEWS_SENTIMENT` | `tickers`、`time_from`（YYYYMMDDTHHMM）、`limit`（≤1000）、`sort` |
+| 电话会议纪要 | `EARNINGS_CALL_TRANSCRIPT` | `symbol`、`quarter`（如 `2026Q1`）|
+| 公司概况（备用）| `OVERVIEW` | `symbol` |
+| 财报（交叉校验）| `INCOME_STATEMENT` / `BALANCE_SHEET` / `CASH_FLOW` | `symbol` |
+
+**要点**
+- 确认订阅档位对应的限速，在 `settings` 中配置；免费档每日额度极低，不适合生产
+- 新闻按 `ticker_sentiment[].relevance_score` 过滤（阈值可配置，初始 0.3），避免一篇泛泛提到多家公司的文章被归到每家公司
+- 去重：URL 归一化后哈希
+- AV 的情绪分数直接存储；核保相关性摘要由 LLM 生成
+- AV 财报数据仅用于和 XBRL 交叉校验，差异超过阈值写入 DQ 报告，**不作为展示主数据源**
+
+---
+
+## 6. 指标计算规则
+
+所有指标在 `config/metrics.yaml` 中注册：`code`、`display_name`、`description`、`section`、`unit`、`applies_to`（ALL / FI / NON_FI / 行业代码）、`formula`、`inputs`。
+
+| 指标 | 公式 | 特殊情况 |
+|---|---|---|
+| Revenue Growth (QoQ/YoY) | (本期 − 比较期) / \|比较期\| | 比较期为 0 或缺失 → NULL |
+| EBITDA（计算值）| Operating Income + D&A | 标注 "computed"；**Adjusted EBITDA 是非 GAAP，不在 XBRL 中**，见下 |
+| Current Ratio | Current Assets / Current Liabilities | |
+| Working Capital | Current Assets − Current Liabilities | 允许负数 |
+| Total Debt | LTD 非流动 + LTD 流动 + 短期借款 | 记录实际组成部分 |
+| Debt-to-Equity | Total Debt / Equity | **Equity ≤ 0 时返回 N/M 并生成风险信号**（Marriott 即为负权益）|
+| Interest Coverage | EBIT / Interest Expense | 利息为 0 → NULL |
+| Free Cash Flow | OCF − Capex | 季度值需差分 |
+| Buyback 强度 | Buybacks / Net Income | 配合负权益生成治理类信号 |
+
+**Adjusted EBITDA**：两种方案，Phase 2 实现方案 A，Phase 5 视需要实现方案 B，前端标签需区分。
+- A：展示计算 EBITDA，标签为 "EBITDA (computed)"
+- B：从 8-K EX-99.1（财报新闻稿）用 LLM 抽取公司公布的 Adjusted EBITDA，`derivation = LLM_EXTRACTED`，必须附原文片段
+
+**FI 指标**：Tier 1 / CET1 / LCR / NIM / NPL 部分有 us-gaap tag 但覆盖不稳定。流程：先尝试 XBRL → 无则从 MD&A 文本用 LLM 抽取 → 抽取值必须附原文片段，且数值必须在原文中出现（字符串匹配校验）。
+
+**行业分组**：用 SIC 代码判定 `industry_group`。FI = SIC 6000–6299（银行、信贷、券商）及 6700 段中适用的控股公司，具体清单写入配置并在 Phase 1 确认。保险（63xx）是否归入 FI 待业务确认。
+
+---
+
+## 7. LLM 增强层
+
+### 7.1 通用规则
+- 输入为**结构化包**：已计算的指标表（含期间与来源）、信号列表、相关章节片段、新闻摘要。不把整本 10-K 塞给模型
+- 输出必须是 JSON，经 pydantic 校验；失败则带错误信息重试一次，再失败则记录并跳过
+- 每条输出必须包含 `evidence[]`：`{doc_id, section_code, snippet}`，snippet 必须能在源文本中找到（模糊匹配阈值可配置）
+- **数字校验**（`grounding.py`）：抽取输出文本中的所有数字，必须能在输入指标表或引用片段中找到（允许单位换算和四舍五入）。不通过则丢弃该条并记日志
+- 记录 `model`、`prompt_version`、`input_hash`、token 用量
+- `input_hash` 未变化则跳过 LLM 调用，直接沿用上次结果
+
+### 7.2 任务清单
+
+| 任务 | 输入 | 输出 schema 要点 |
+|---|---|---|
+| Key Insights | 指标 + 信号 + 新闻 + 风险因素摘要 | 6–10 条；`type`、`title`（≤8 词）、`summary`、`uw_relevance`、`supporting_evidence`、`related_metric_codes[]`、`evidence[]` |
+| Strategic & Risk Insights | 8-K 事件、治理信号、Item 1A/3、电话会议纪要 | `category`、`subcategory`、`title`、`description`、`uw_relevance`、`evidence[]`；允许 "no signal" 结论 |
+| Behavioral Insights | 最近 2–4 期电话会议纪要 | 语气/情绪变化、战略重心转移、新出现的风险表述、措辞变化（如 "restructuring"、"challenging macro"）|
+| Follow-Up Questions | 上述所有洞察 | 10–15 条；`category`、`question`、`rationale`、`system_priority`（high = 默认标记）、`related_insight_ids[]`；需体现行业特征（SaaS→流失率/安全；酒店→入住率；FI→资本充足率）|
+| Recent Activities 摘要 | AV 新闻 | `summary`、`uw_relevance`、`sentiment` |
+| 文本指标抽取 | MD&A 片段 | `metric_code`、`value`、`unit`、`period`、`snippet` |
+
+### 7.3 Prompt 管理
+- 存放于 `enrich/prompts/{task}_v{N}.md`，变更即升版本号
+- 每个任务至少准备 3 家公司的 golden 输出（Marriott、JPMorgan、Enphase 覆盖酒店/FI/科技），用于回归对比
+
+---
+
+## 8. 数据库设计（草案，Phase 0 需与 BFF 对齐）
+
+> 如果 BFF 已有表结构，**以 BFF 为准**，本节仅作差距分析参考。Schema 迁移只能有一个负责方（BFF 仓库或本仓库），Phase 0 确定。
+
+**参考维度**
+- `company`：company_id、cik、ticker、name、sic_code、sic_description、industry_group、hq_city、hq_state、fiscal_year_end、logo_url、is_active、last_refreshed_at
+- `metric_definition`：对应 metrics.yaml
+
+**事实与来源**
+- `source_document`：doc_id、company_id、source_type（SEC_FILING / NEWS / TRANSCRIPT）、form_type、accession_no、filed_at、period_end、url、title、content_hash、raw_path、fetched_at
+- `filing_section`：section_id、doc_id、section_code、text、hash
+- `xbrl_fact`（staging / 审计）：company_id、taxonomy、tag、unit、val、start_date、end_date、fy、fp、form、accession_no、filed_at、frame
+- `metric_value`：company_id、metric_code、period_type（Q / FY）、fiscal_year、fiscal_quarter、period_end、value、unit、derivation（REPORTED / DERIVED / COMPUTED / LLM_EXTRACTED）、source_tag、source_doc_id、run_id
+  - 唯一键：(company_id, metric_code, period_type, fiscal_year, fiscal_quarter)
+
+**洞察类**
+- `insight`：insight_id、company_id、kind（KEY / STRATEGIC_RISK）、category、subcategory、severity、title、summary、uw_relevance、supporting_evidence、event_date、is_current、model、prompt_version、input_hash、run_id、created_at
+- `insight_evidence`：insight_id、doc_id、section_code、snippet
+- `insight_metric`：insight_id、metric_code
+- `activity`：activity_id、company_id、title、published_at、source_name、url、url_hash、av_sentiment_score、av_sentiment_label、av_relevance_score、summary、uw_relevance
+- `followup_question`：question_id、company_id、category、question、rationale、system_priority、is_current、run_id
+- `followup_question_insight`：question_id、insight_id
+- `loan_portfolio_segment`（仅 FI）：company_id、period_end、segment、outstanding、pct_of_book、quality、source_doc_id
+
+**运行管理**
+- `pipeline_run`：run_id、trigger、started_at、finished_at、status、stats_json
+- `pipeline_task`：task_id、run_id、company_id、stage、status、attempts、error、updated_at
+
+**版本策略**：洞察类表用 `is_current` 软切换——新结果写入后在同一事务内把旧结果置为 `is_current = 0`，BFF 只读 current，保留历史以便审计和对比。
+
+**写入方式**：批量写 staging 表 → `MERGE` 到目标表，单公司单阶段一个事务。
+
+---
+
+## 9. 编排与运行
+
+**CLI**
+```
+uw-pipeline run --all                    # 全量公司，增量模式
+uw-pipeline run --ticker MAR --stage compute
+uw-pipeline run --ticker MAR --force     # 忽略缓存与 input_hash
+uw-pipeline backfill --ticker MAR --years 5
+uw-pipeline dq-report --run-id <id>
+```
+
+**调度建议（OpenShift CronJob）**
+| 任务 | 频率 | 内容 |
+|---|---|---|
+| filings-sync | 每日 | 检查 submissions 新 accession → extract/normalize/compute/signals |
+| news-sync | 每日（或每 6 小时）| AV 新闻增量 |
+| enrich | filings/news 有变化后 | 只对变化公司跑 LLM |
+| transcripts | 每周 | 财报季可提高频率 |
+
+**增量判断**：`source_document` 中已存在的 accession_no / url_hash 跳过；companyfacts 用 content_hash 判断是否变化。
+
+**部署**：Dockerfile（基础镜像来自 Artifactory）、Harness pipeline、OpenShift Secret 存放 SEC UA 邮箱、AV key、LLM key、DB 凭据。
+
+---
+
+## 10. 分阶段计划
+
+### Phase 0 — 契约对齐（先做，不写管线代码）
+- [ ] 阅读 BFF 仓库：SQLAlchemy 模型 / SQL 查询 / Pydantic DTO / mock 数据文件
+- [ ] 产出 `docs/schema-contract.md`：BFF 实际读取的每张表、每个字段，对照 §1 和 §8 列出差距
+- [ ] 确认 schema 迁移归属（BFF 仓库 or 本仓库）
+- [ ] 列出前端各模块在"无数据"时的预期行为
+
+**验收**：schema-contract.md 经人工确认；差距项都有处理方案。
+
+### Phase 1 — 骨架 + SEC 客户端 + 公司主数据
+- [x] 项目骨架、settings、CLI、ruff/mypy/pytest 配置、CLAUDE.md
+- [x] `clients/sec.py`：UA、限速、重试、本地/ADLS 缓存
+- [x] `companies.yaml`：初始清单 = 前端已出现的公司（MAR、LUV、F、PFE、JPM、M、LUMN、PARA、ENPH）
+- [x] ticker → CIK → submissions → 写入 `company`；判定 `industry_group`
+- [x] raw 数据落 ADLS（暂落本地 `data/raw/`，见 decisions D-003）
+
+**验收**：`uw-pipeline run --all --stage company` 后 `company` 表 9 行，字段完整；单测不访问外网。
+
+### Phase 2 — XBRL 财务指标
+- [ ] companyfacts → `xbrl_fact` 长表
+- [ ] `periods.py`：期间长度分类、重述去重、Q4 推导、现金流差分
+- [ ] `concept_map.yaml` + 覆盖率报告（每家公司每个指标用了哪个 tag / 缺失）
+- [ ] `metrics.yaml` + compute：Financial / Liquidity / Leverage 全部指标，至少 5 个财年 + 8 个季度
+- [ ] Marriott 公司特有指标（费用收入）的 override 配置
+- [ ] 写入 `metric_value`
+
+**验收**：
+- Golden test：Marriott 最近一个 10-Q 中 Total Debt、Cash、Revenue 与文件原值一致（Total Debt ≈ $16.5B、Cash ≈ $0.5B，以实际文件为准）
+- Q4 推导值与 10-K 全年值 − 前三季度之和一致
+- Marriott D/E 输出 N/M（负权益）
+- 覆盖率报告中每家公司核心指标缺失项都有说明
+
+### Phase 3 — 文件文本 + 规则信号
+- [ ] 10-K / 10-Q 主文档下载与章节切分 → `filing_section`
+- [ ] 8-K item 规则 → 事件信号（§5.4）
+- [ ] 治理信号：审计师（dei:AuditorName + 审计报告任期）、4.01 审计师变更、5.02 CEO/CFO 变更
+- [ ] 关键词信号：going concern、material weakness、restatement
+
+**验收**：9 家公司最近一份 10-K 的 Item 1A / 3 / 7 切分成功率 ≥ 90%，失败的有日志；最近 2 年 8-K 事件全部入库。
+
+### Phase 4 — Alpha Vantage
+- [ ] `clients/alphavantage.py`：按订阅档限速、重试、缓存
+- [ ] 新闻增量拉取、相关性过滤、去重 → `activity`（摘要字段留空，Phase 5 填）
+- [ ] 电话会议纪要拉取（最近 4 个季度）→ `source_document`（TRANSCRIPT）
+- [ ] AV 财报与 XBRL 交叉校验 → DQ 报告
+
+**验收**：重复运行不产生重复 activity；每家公司至少有近 30 天新闻（若 AV 有）。
+
+### Phase 5 — LLM 增强
+- [ ] `LLMClient` 抽象 + Secure GPT / Claude 实现
+- [ ] `schemas.py`、prompts v1、`grounding.py`（引用 + 数字校验）
+- [ ] Key Insights、Strategic & Risk Insights、Behavioral Insights、Follow-Up Questions、Activity 摘要
+- [ ] 文本指标抽取：酒店 RevPAR/入住率；FI：CET1/NIM/NPL/贷款组合
+- [ ] input_hash 缓存，`is_current` 版本切换
+
+**验收**：
+- 3 家 golden 公司输出全部通过 schema 校验和 grounding 校验
+- 随机抽查 20 条洞察，引用片段 100% 可在原文找到
+- 非 FI 公司不产生 FI 模块数据
+- 第二次运行（输入不变）LLM 调用次数为 0
+
+### Phase 6 — 编排、部署
+- [ ] `pipeline_run` / `pipeline_task` 状态机，失败重试与断点续跑
+- [ ] Dockerfile、Harness pipeline、OpenShift CronJob 清单
+- [ ] 结构化日志（JSON），运行统计写入 `stats_json`
+
+**验收**：dev 环境 CronJob 连续 3 天成功运行；手动杀掉 pod 后重跑能从未完成的 task 继续。
+
+### Phase 7 — 数据质量与上线准备
+- [ ] DQ 规则：指标缺失率、季度值跳变异常（如环比 > 500%）、XBRL vs AV 差异、LLM 校验失败率
+- [ ] BFF 联调：所有模块读真实数据，移除 mock
+- [ ] 运维文档：如何新增公司、新增指标、升级 prompt
+
+**验收**：前端 9 家公司页面全部显示真实数据，无 mock 残留。
+
+---
+
+## 11. 给 Claude Code 的工作约定（写入 CLAUDE.md）
+
+- 每个 Phase 开始前先列出要改动的文件和计划，等待确认后再动手
+- 单测不得访问外网；新增外部调用必须同时加 fixture
+- 新的 XBRL tag 映射、指标公式、行业分组规则一律写进 `config/`，不硬编码
+- LLM 输出永远不能直接写库，必须经过 schema + grounding 校验
+- 数据库写入必须幂等；禁止 `DELETE` 全表后重插
+- 不修改 BFF 仓库，发现契约问题记录到 `docs/schema-contract.md`
+- 密钥只从环境变量读取，不写入代码、日志或 fixture
+- 每完成一个 checklist 项，更新本文件对应的勾选框
+
+---
+
+## 12. 待确认问题
+
+1. BFF 当前表结构与本文 §8 的差异有多大？schema 迁移由哪个仓库负责？
+暂时不用管
+2. Alpha Vantage 订阅档位与限速？
+现在用 free key（存于本地 `.env` 的 `ALPHAVANTAGE_API_KEY`）。之后是75call/min
+3. LLM 使用 Secure GPT 网关还是直接调用 Claude API？模型与 token 预算？
+之后用SecureGPT，现在先用Claude API
+4. 保险公司（SIC 63xx）是否按 FI 处理？
+每个SIC在yaml里分开计划，可以同一个SIC用同一批metrics
+5. Adjusted EBITDA 展示计算值即可，还是必须用公司公布值？
+计算值可以
+6. MVP 公司清单最终规模？（影响限速、LLM 成本、调度时长）
+10个公司/SIC
+7. 原始数据保留期限及 ADLS 路径规范？
+先在本地存一下，公司的ADLS现在没有access
+8. 运行在 OpenShift CronJob 还是 Databricks job？（本计划默认 OpenShift）
+CronJob，这里不用管
+9. Logo 来源（第三方服务、手动上传、还是 BFF 已有）？
+已有

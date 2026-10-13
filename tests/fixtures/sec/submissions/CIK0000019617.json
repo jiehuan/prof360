@@ -1,0 +1,215 @@
+{
+ "cik": "0000019617",
+ "entityType": "operating",
+ "sic": "6021",
+ "sicDescription": "National Commercial Banks",
+ "ownerOrg": "02 Finance",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "JPMORGAN CHASE & CO",
+ "tickers": [
+  "JPM",
+  "JPM-PC",
+  "AMJB",
+  "JPM-PD",
+  "JPM-PJ",
+  "JPM-PK",
+  "JPM-PL",
+  "JPM-PM",
+  "VYLD"
+ ],
+ "exchanges": [
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE"
+ ],
+ "ein": "132624428",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "270 PARK AVENUE",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10017",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "270 PARK AVENUE",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10017",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "2122706000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "JPMORGAN CHASE & CO",
+   "from": "2009-02-02T05:00:00.000Z",
+   "to": "2026-10-09T04:00:00.000Z"
+  },
+  {
+   "name": "J P MORGAN CHASE & CO",
+   "from": "2001-02-08T05:00:00.000Z",
+   "to": "2011-10-06T04:00:00.000Z"
+  },
+  {
+   "name": "CHASE MANHATTAN CORP /DE/",
+   "from": "1996-10-17T04:00:00.000Z",
+   "to": "2000-11-21T05:00:00.000Z"
+  },
+  {
+   "name": "CHEMICAL BANKING CORP",
+   "from": "1994-02-02T05:00:00.000Z",
+   "to": "1996-03-28T05:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001213900-26-108581",
+    "0001918704-26-031175",
+    "0001213900-26-108546",
+    "0001918704-26-031173",
+    "0001918704-26-031172"
+   ],
+   "filingDate": [
+    "2026-10-09",
+    "2026-10-09",
+    "2026-10-09",
+    "2026-10-09",
+    "2026-10-09"
+   ],
+   "reportDate": [
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "acceptanceDateTime": [
+    "2026-10-10T01:22:48.000Z",
+    "2026-10-10T01:02:49.000Z",
+    "2026-10-10T00:53:19.000Z",
+    "2026-10-10T00:44:01.000Z",
+    "2026-10-10T00:26:39.000Z"
+   ],
+   "act": [
+    "33",
+    "33",
+    "33",
+    "33",
+    "33"
+   ],
+   "form": [
+    "424B2",
+    "424B2",
+    "424B2",
+    "424B2",
+    "424B2"
+   ],
+   "fileNumber": [
+    "333-293684",
+    "333-293684",
+    "333-293684",
+    "333-293684",
+    "333-293684"
+   ],
+   "filmNumber": [
+    "261453750",
+    "261453578",
+    "261453489",
+    "261453406",
+    "261453192"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "424B2",
+    "424B2",
+    "424B2",
+    "424B2",
+    "424B2"
+   ],
+   "size": [
+    3205222,
+    577767,
+    1772998,
+    607981,
+    660936
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "primaryDocument": [
+    "ea0308299-01_424b2.htm",
+    "form424b2.htm",
+    "ea0308298-01_424b2.htm",
+    "form424b2.htm",
+    "form424b2.htm"
+   ],
+   "primaryDocDescription": [
+    "PRELIMINARY PRICING SUPPLEMENT",
+    "PRELIMINARY PRICING SUPPLEMENT",
+    "PRELIMINARY PRICING SUPPLEMENT",
+    "PRELIMINARY PRICING SUPPLEMENT",
+    "PRELIMINARY PRICING SUPPLEMENT"
+   ]
+  },
+  "files": [
+   {
+    "name": "CIK0000019617-submissions-001.json",
+    "filingCount": 2029,
+    "filingFrom": "2025-09-08",
+    "filingTo": "2025-10-08"
+   }
+  ]
+ }
+}

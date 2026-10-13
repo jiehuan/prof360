@@ -1,0 +1,184 @@
+{
+ "cik": "0000037996",
+ "entityType": "operating",
+ "sic": "3711",
+ "sicDescription": "Motor Vehicles & Passenger Car Bodies",
+ "ownerOrg": "04 Manufacturing",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "FORD MOTOR CO",
+ "tickers": [
+  "F",
+  "F-PB",
+  "F-PC",
+  "F-PD"
+ ],
+ "exchanges": [
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE"
+ ],
+ "ein": "380549190",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "ONE AMERICAN RD",
+   "street2": null,
+   "city": "DEARBORN",
+   "stateOrCountry": "MI",
+   "zipCode": "48126",
+   "stateOrCountryDescription": "MI",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "ONE AMERICAN ROAD",
+   "street2": null,
+   "city": "DEARBORN",
+   "stateOrCountry": "MI",
+   "zipCode": "48126",
+   "stateOrCountryDescription": "MI",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "3133223000",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000037996-26-000184",
+    "0000037996-26-000182",
+    "0000037996-26-000180",
+    "0000037996-26-000178",
+    "0000037996-26-000177"
+   ],
+   "filingDate": [
+    "2026-10-02",
+    "2026-09-24",
+    "2026-09-17",
+    "2026-09-03",
+    "2026-09-03"
+   ],
+   "reportDate": [
+    "2026-10-02",
+    "2026-09-22",
+    "2026-09-15",
+    "2026-09-01",
+    "2026-09-01"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-02T13:16:49.000Z",
+    "2026-09-24T20:09:52.000Z",
+    "2026-09-17T20:35:26.000Z",
+    "2026-09-03T20:36:21.000Z",
+    "2026-09-03T20:35:36.000Z"
+   ],
+   "act": [
+    "34",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "form": [
+    "8-K",
+    "4",
+    "4",
+    "4",
+    "4"
+   ],
+   "fileNumber": [
+    "001-03950",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "filmNumber": [
+    "261433660",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "items": [
+    "7.01,8.01,9.01",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "XBRL",
+    "4",
+    "4",
+    "4",
+    "4"
+   ],
+   "size": [
+    2430009,
+    12179,
+    12223,
+    8066,
+    8068
+   ],
+   "isXBRL": [
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "isInlineXBRL": [
+    1,
+    0,
+    0,
+    0,
+    0
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "primaryDocument": [
+    "f-20261002.htm",
+    "xslF345X06/wk-form4_1790280589.xml",
+    "xslF345X06/wk-form4_1789677323.xml",
+    "xslF345X06/wk-form4_1788467778.xml",
+    "xslF345X06/wk-form4_1788467734.xml"
+   ],
+   "primaryDocDescription": [
+    "8-K",
+    "FORM 4",
+    "FORM 4",
+    "FORM 4",
+    "FORM 4"
+   ]
+  },
+  "files": [
+   {
+    "name": "CIK0000037996-submissions-001.json",
+    "filingCount": 2001,
+    "filingFrom": "2008-02-12",
+    "filingTo": "2019-05-23"
+   }
+  ]
+ }
+}

@@ -1,0 +1,182 @@
+{
+ "cik": "0002041610",
+ "entityType": "operating",
+ "sic": "4833",
+ "sicDescription": "Television Broadcasting Stations",
+ "ownerOrg": "06 Technology",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Skydance Corp",
+ "tickers": [
+  "SKYD"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "993917985",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "1515 BROADWAY",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10036",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "1515 BROADWAY",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10036",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "212-258-6000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "Paramount Skydance Corp",
+   "from": "2025-08-07T04:00:00.000Z",
+   "to": "2026-10-06T04:00:00.000Z"
+  },
+  {
+   "name": "New Pluto Global, Inc.",
+   "from": "2024-11-04T05:00:00.000Z",
+   "to": "2025-08-01T04:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000876661-26-000820",
+    "0001104659-26-114888",
+    "0001193125-26-418171",
+    "0001193125-26-418162",
+    "0001225208-26-008340"
+   ],
+   "filingDate": [
+    "2026-10-09",
+    "2026-10-09",
+    "2026-10-08",
+    "2026-10-08",
+    "2026-10-08"
+   ],
+   "reportDate": [
+    "",
+    "",
+    "2026-10-06",
+    "2026-10-06",
+    "2026-10-06"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-09T17:45:13.000Z",
+    "2026-10-09T17:28:13.000Z",
+    "2026-10-09T02:46:10.000Z",
+    "2026-10-09T02:37:34.000Z",
+    "2026-10-09T01:30:35.000Z"
+   ],
+   "act": [
+    "34",
+    "34",
+    "",
+    "",
+    ""
+   ],
+   "form": [
+    "CERT",
+    "8-A12B",
+    "4",
+    "3",
+    "4"
+   ],
+   "fileNumber": [
+    "001-42791",
+    "001-42791",
+    "",
+    "",
+    ""
+   ],
+   "filmNumber": [
+    "261451404",
+    "261451333",
+    "",
+    "",
+    ""
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "CERT",
+    "8-A12B",
+    "4",
+    "3",
+    "4"
+   ],
+   "size": [
+    146401,
+    503713,
+    7310,
+    23913,
+    5749
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "primaryDocument": [
+    "SKYDWS100926.pdf",
+    "tm2626659d10_8a12b.htm",
+    "xslF345X06/ownership.xml",
+    "xslF345X06/ownership.xml",
+    "xslF345X06/doc4.xml"
+   ],
+   "primaryDocDescription": [
+    "NYSE CERTIFICATION",
+    "8-A12B",
+    "4",
+    "3",
+    ""
+   ]
+  },
+  "files": []
+ }
+}
