@@ -10,6 +10,7 @@ from typing import Annotated
 import typer
 from sqlalchemy import select
 
+from uw_pipeline.clients.alphavantage import AlphaVantageClient
 from uw_pipeline.clients.db import ensure_schema, make_engine
 from uw_pipeline.clients.llm import ClaudeClient
 from uw_pipeline.clients.ratelimit import TokenBucket
@@ -21,7 +22,9 @@ from uw_pipeline.config import CompanyConfig, load_companies, load_industry_conf
 from uw_pipeline.enrich.llm import LLMConfig, load_llm_config
 from uw_pipeline.jobs.run_company import TaskResult, run_company_stage
 from uw_pipeline.jobs.run_documents import run_documents_stage
+from uw_pipeline.jobs.run_news import load_news_config, run_news_stage
 from uw_pipeline.jobs.run_signals import run_signals_stage
+from uw_pipeline.jobs.run_transcripts import run_transcripts_stage
 from uw_pipeline.jobs.run_xbrl import company_row, run_compute_stage, run_facts_stage
 from uw_pipeline.schema import metric_value
 from uw_pipeline.settings import Settings
@@ -36,11 +39,17 @@ class Stage(StrEnum):
     facts = "facts"
     compute = "compute"
     documents = "documents"
+    transcripts = "transcripts"
+    news = "news"
     signals = "signals"
 
 
 # Stages in execution order; later phases append here.
-STAGE_ORDER = [Stage.company, Stage.facts, Stage.compute, Stage.documents, Stage.signals]
+STAGE_ORDER = [
+    Stage.company, Stage.facts, Stage.compute, Stage.documents,
+    Stage.transcripts, Stage.news, Stage.signals,
+]  # fmt: skip
+AV_STAGES = {Stage.transcripts, Stage.news}
 
 
 def _select_companies(
@@ -59,6 +68,17 @@ def _select_companies(
     if unknown:
         raise typer.BadParameter(f"not in companies.yaml: {', '.join(sorted(unknown))}")
     return list({by_ticker[t].ticker: by_ticker[t] for t in sorted(wanted)}.values())
+
+
+def _alphavantage(settings: Settings, storage: LocalStorage) -> AlphaVantageClient | None:
+    if settings.alphavantage_api_key is None:
+        return None
+    return AlphaVantageClient(
+        settings.alphavantage_api_key.get_secret_value(),
+        storage,
+        rate_limiter=TokenBucket(rate=settings.alphavantage_calls_per_minute / 60),
+        daily_quota=settings.alphavantage_daily_quota or None,
+    )
 
 
 def _llm(settings: Settings) -> tuple[ClaudeClient, LLMConfig] | None:
@@ -127,6 +147,24 @@ def run(
                     text_lookback_days=settings.text_lookback_days,
                     event_lookback_days=settings.event_lookback_days, force=force,
                 )  # fmt: skip
+            elif s in AV_STAGES:
+                av = _alphavantage(settings, storage)
+                if av is None:
+                    results += [
+                        TaskResult(
+                            c.ticker, s.value, ok=False, detail="ALPHAVANTAGE_API_KEY not set"
+                        )
+                        for c in selected
+                    ]
+                elif s is Stage.transcripts:
+                    with av:
+                        results += run_transcripts_stage(selected, av, engine)
+                else:
+                    with av:
+                        news_cfg = load_news_config(settings.config_dir)
+                        results += run_news_stage(
+                            selected, av, engine, news_cfg, llm=_llm(settings)
+                        )
             elif s is Stage.signals:
                 results += run_signals_stage(
                     selected, sec, signal_rules, engine, llm=_llm(settings)

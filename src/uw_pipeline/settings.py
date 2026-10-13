@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///data/uw.db"
 
     alphavantage_api_key: SecretStr | None = None
+    # Free plan: 25 calls/day. Premium (75 calls/min): set the rate to 75 and the quota to 0.
+    alphavantage_calls_per_minute: float = Field(default=5, gt=0)
+    alphavantage_daily_quota: int = Field(default=25, ge=0)  # 0 = unlimited
     anthropic_api_key: SecretStr | None = None
     # Needed for user-level API keys that aren't scoped to a workspace.
     anthropic_workspace_id: str | None = None

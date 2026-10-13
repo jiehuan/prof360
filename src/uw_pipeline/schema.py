@@ -225,3 +225,54 @@ signal_vote = Table(
     Column("updated_at", DateTime(timezone=True), nullable=False),
     UniqueConstraint("doc_id", "topic", name="uq_signal_vote"),
 )
+
+# De-duplicated news: one row per event/story (decisions D-029). `summary` and `uw_relevance`
+# are written by the LLM enrichment (Phase 5).
+activity = Table(
+    "activity",
+    metadata,
+    Column("activity_id", Integer, primary_key=True, autoincrement=True),
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False, index=True),
+    Column("title", String(1000), nullable=False),
+    Column("published_at", DateTime, nullable=False),
+    Column("source_name", String(200), nullable=False),
+    Column("url", String(2000), nullable=False),
+    Column("url_hash", String(64), nullable=False),
+    Column("av_summary", Text),
+    Column("av_sentiment_score", Float),
+    Column("av_sentiment_label", String(40)),
+    Column("av_relevance_score", Float),
+    Column("source_count", Integer, nullable=False),  # articles grouped into this activity
+    Column("summary", Text),
+    Column("uw_relevance", Text),
+    Column("first_seen_at", DateTime(timezone=True), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint("company_id", "url_hash", name="uq_activity_canonical"),
+)
+
+# Every relevant article fetched, linked to the activity it was grouped into.
+news_item = Table(
+    "news_item",
+    metadata,
+    Column("news_id", Integer, primary_key=True, autoincrement=True),
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False, index=True),
+    Column("activity_id", Integer, ForeignKey("activity.activity_id"), nullable=False),
+    Column("url_hash", String(64), nullable=False),
+    Column("url", String(2000), nullable=False),
+    Column("title", String(1000), nullable=False),
+    Column("summary", Text),
+    Column("source", String(200)),
+    Column("source_domain", String(200)),
+    Column("authors", String(500)),
+    Column("published_at", DateTime, nullable=False),
+    Column("relevance", Float, nullable=False),
+    Column("ticker_sentiment_score", Float),
+    Column("ticker_sentiment_label", String(40)),
+    Column("overall_sentiment_score", Float),
+    Column("overall_sentiment_label", String(40)),
+    # FIRST (the activity's canonical article) | NEAR_DUP (syndicated copy) | LLM_EVENT
+    Column("dedup_method", String(12), nullable=False),
+    Column("raw_path", String(500), nullable=False),
+    Column("fetched_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint("company_id", "url_hash", name="uq_news_item_url"),
+)

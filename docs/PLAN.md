@@ -434,10 +434,10 @@ uw-pipeline dq-report --run-id <id>
 **验收**：9 家公司最近一份 10-K 的 Item 1A / 3 / 7 切分成功率 ≥ 90%，失败的有日志；最近 2 年 8-K 事件全部入库。
 
 ### Phase 4 — Alpha Vantage
-- [ ] `clients/alphavantage.py`：按订阅档限速、重试、缓存
-- [ ] 新闻增量拉取、相关性过滤、去重 → `activity`（摘要字段留空，Phase 5 填）
-- [ ] 电话会议纪要拉取（最近 4 个季度）→ `source_document`（TRANSCRIPT）
-- [ ] AV 财报与 XBRL 交叉校验 → DQ 报告
+- [x] `clients/alphavantage.py`：按订阅档限速、重试、缓存（含每日额度计数、错误消息中 key 脱敏）
+- [x] 新闻增量拉取、相关性过滤、去重 → `activity`（摘要字段留空，Phase 5 填）：三层去重见 decisions D-029；NEWS_SENTIMENT 需付费 key，真实数据验收待定
+- [x] 电话会议纪要拉取（最近 4 个季度）→ `source_document`（TRANSCRIPT）（D-030）
+- [ ] ~~AV 财报与 XBRL 交叉校验 → DQ 报告~~ 暂不做（用户决定，D-031）
 
 **验收**：重复运行不产生重复 activity；每家公司至少有近 30 天新闻（若 AV 有）。
 

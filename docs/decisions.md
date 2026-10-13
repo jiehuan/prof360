@@ -260,3 +260,44 @@ robust，或者都做然后 vote"; extractor Claude Sonnet 5.5, ties decided by 
   - Cost: about $0.41 in total. A rerun on unchanged inputs made 0 calls.
 - Prompts: `signals_v1` (extractor), `tiebreak_v2` (adds the succession definition). A changed
   prompt gets a new version, which also invalidates its cache entries.
+
+## Phase 4 (2026-10-13)
+
+**D-029 News de-duplication in three tiers** (user: "news 应该有很多重复的，需要 dedup").
+1. Same article URL after normalisation: tracking parameters (`utm_*`, `ncid`, …), scheme,
+   `www.`/`m.`, AMP suffix and trailing slash removed.
+2. Syndicated copies: within 72 h, word 3-gram Jaccard of the normalised title ≥ 0.8 (a trailing
+   " - Reuters" style source tag is removed first), or title ≥ 0.5 and summary ≥ 0.8.
+3. Same event, different articles: Claude Sonnet 5.5 groups headlines (id, date, source,
+   headline only) into specific events. Ids it invents are ignored, members must be within the
+   window, and results are cached in `llm_call`. Without an LLM, tiers 1–2 still run.
+
+Each group becomes one `activity`, whose canonical article is the earliest new one (then the
+most relevant). Every article is kept in `news_item` with its `dedup_method` (FIRST / NEAR_DUP
+/ LLM_EVENT), so the UI can show "also reported by N". New articles attach to an existing
+activity; two existing activities are never merged, which keeps IDs stable across runs.
+Articles with AV ticker relevance < 0.3 are dropped. All thresholds are in `config/news.yaml`.
+- **NEWS_SENTIMENT needs a premium Alpha Vantage plan.** The free key gets a "premium endpoint"
+  message. The stage is built and tested against a synthetic feed in AV's documented format
+  (`tests/test_news.py`, marked synthetic). The live acceptance check (each company has the
+  last 30 days of news) is pending a premium key.
+
+**D-030 Earnings call transcripts.**
+- Latest 4 fiscal quarters per company, labelled with the company's own fiscal quarters from
+  `metric_value`. AV uses the same convention: Macy's "2026Q2" is its quarter ended 2026-08-01,
+  "Second Quarter 2026".
+- Stored as `source_document` (source_type TRANSCRIPT, accession `AV-<ticker>-<quarter>`, URL
+  without the API key) plus one `filing_section` "TRANSCRIPT" with one line per speaker turn,
+  plus chunks.
+- Raw responses are cached without a date (published transcripts don't change). An empty
+  (unpublished) transcript is not cached and is asked for again after 7 days.
+- Free plan: about 25 calls/day. The client keeps its own daily counter, and the stage stops
+  cleanly when the quota is used and resumes on the next run. The first run stored MAR, LUV, F,
+  PFE and M (20 transcripts); JPM, LUMN, SKYD and ENPH follow on the next run.
+- Alpha Vantage echoes the API key in its rate-limit message. Messages are masked before they
+  are logged or returned, and rate-limit messages are classified before "premium" ones (they
+  mention premium plans too).
+
+**D-031 No Alpha Vantage financial statements for now** (user decision). The XBRL-vs-AV
+cross-check in PLAN Phase 4 is deferred. A first look showed MAR 2026 Q2 AV figures (revenue
+7,071M, operating income 1,229M, interest 221M, D&A 222M) match our XBRL values.
