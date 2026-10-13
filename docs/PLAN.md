@@ -456,9 +456,9 @@ uw-pipeline dq-report --run-id <id>
 - 第二次运行（输入不变）LLM 调用次数为 0
 
 ### Phase 6 — 编排、部署
-- [ ] `pipeline_run` / `pipeline_task` 状态机，失败重试与断点续跑
-- [ ] Dockerfile、Harness pipeline、OpenShift CronJob 清单
-- [ ] 结构化日志（JSON），运行统计写入 `stats_json`
+- [x] `pipeline_run` / `pipeline_task` 状态机，失败重试与断点续跑（D-034；kill -9 后重启续跑已测试）
+- [x] Dockerfile、Harness pipeline、OpenShift CronJob 清单（镜像源、namespace、Harness 细节为占位符）
+- [x] 结构化日志（JSON），运行统计写入 `stats_json`
 
 **验收**：dev 环境 CronJob 连续 3 天成功运行；手动杀掉 pod 后重跑能从未完成的 task 继续。
 

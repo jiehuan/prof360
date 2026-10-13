@@ -404,3 +404,67 @@ company-level synthesis, and only bank capital/liquidity metrics get a two-model
     Vantage key arrives.
   - Behavioral insights for JPM, LUMN, SKYD and ENPH wait for their transcripts (quota).
   - Secure GPT is still to be added as an `LLMClient` implementation.
+
+## Phase 6 (2026-10-13)
+
+User: image registry, namespace and Harness details are placeholders for now; dev runs on SQLite;
+schedule as proposed.
+
+**D-034 Orchestration and deployment.**
+- **Run/task state machine** (`jobs/orchestrator.py`):
+  - One `pipeline_run` per job run, and one `pipeline_task` per (company, stage), executed
+    stage by stage.
+  - Stage prerequisites are declared in `DEPENDS`, e.g. insights ← signals, textmetrics. A
+    company whose prerequisite failed has its later stages SKIPPED; other companies continue.
+    A transcripts failure (quota) does not block insights.
+  - A failed task is retried immediately up to `max_attempts` (2), unless the failure is
+    permanent (quota, premium endpoint, missing key).
+  - The heartbeat is updated on every task transition.
+  - Starting a job whose last run is RUNNING with a fresh heartbeat (< 30 min) exits with
+    code 2 (the run lock). With a stale heartbeat, i.e. the process died, the start resumes
+    that run: interrupted and skipped tasks go back to PENDING, finished tasks are kept, and
+    `starts` is incremented.
+  - Tested with a real `kill -9` of a subprocess mid-run and a restart: every task completes
+    once, and finished tasks do not run again.
+- **Jobs** (`config/jobs.yaml`) on OpenShift CronJobs with `timeZone: America/New_York`:
+  - `nightly` at 23:30 ET. SEC accepts filings until 22:00 ET, so the evening's 10-Q or
+    earnings release is on the dashboard the next morning (with D-013 and D-022).
+  - `morning` catch-up at 05:30 ET.
+  - `news` every 6 h, suspended until a premium AV key exists.
+
+  `concurrencyPolicy: Forbid`. `backoffLimit: 2`: a retried pod resumes the same run.
+- **Logs:** `LOG_FORMAT=json` gives one JSON object per line with `run_id`, `job`, `ticker`
+  and `stage` (contextvars). Local logs stay as text.
+- **Run statistics** (`stats_json`): task counts per status, SEC requests, Alpha Vantage calls,
+  and LLM calls/tokens per model with a cost estimate (prices in `llm.yaml`). Shown by
+  `uw-pipeline runs`.
+- **Image:** a multi-stage Dockerfile. The base image is a build arg (Artifactory
+  placeholder). It installs the Microsoft ODBC Driver 18 for Azure SQL (repo URL is a build arg
+  for an Artifactory mirror), runs as a non-root, group-0-writable user for OpenShift, and
+  bakes `config/` into the image so config is versioned with code. The default command is
+  `run --job nightly`.
+  - Not built locally, because no Docker daemon was available. The wheel was built and
+    installed in a clean venv, `uw-pipeline` ran, and all 13 prompt files are packaged.
+- **Manifests** (`deploy/openshift/`): PVC (raw data and dev SQLite), secret example (keys
+  only), and the 3 CronJobs. `deploy/harness/pipeline.yaml` is a skeleton: lint, types and
+  tests; build and push; apply the manifests. Placeholders are marked `PLACEHOLDER_*`.
+- **Not verifiable here:** "dev CronJob succeeds 3 days in a row" needs the team's cluster.
+  SQLite allows one writer, so jobs must not overlap until Azure SQL; news stays suspended.
+- **SEC refresh for scheduled jobs** (bug found in the first live nightly run):
+  - The raw cache is keyed by UTC date, and nightly (23:30 ET = 03:30 UTC) and morning (09:30
+    UTC) share a UTC date. Morning would therefore have reused nightly's metadata and missed
+    filings made in between.
+  - Fix: jobs with `refresh_sec: true` (nightly, morning) always re-fetch submissions,
+    companyfacts and tickers. Each fetch lands under a timestamped key, so every version stays
+    replayable. Manual runs keep the same-day cache, and filing documents stay cached
+    (immutable).
+- **Live verification, 2026-10-13:** run 1 (`nightly`) and run 2 (`morning`). Both finished
+  68/72 tasks; the 4 transcripts tasks failed on the AV daily quota, which is permanent for
+  the day, so they were not retried. Run 2 sent 59 SEC requests and picked up the filings
+  made that day:
+  - JPM's Q3 2026 earnings release (8-K 2.02). Text metrics wrote PRELIMINARY Q3 revenue
+    $50.17B (reported basis) and net income $15.31B, plus CET1 13.9% (dual-checked).
+  - SKYD's 8-K (1.01/2.03, new notes and credit facilities).
+
+  Only those two companies' insights were regenerated (8 LLM calls, about $1.31), and every
+  other company was "unchanged". This is the overnight-update path from D-022, end to end.

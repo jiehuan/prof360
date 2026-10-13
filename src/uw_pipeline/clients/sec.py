@@ -75,6 +75,8 @@ class SecClient:
         max_attempts: int = 5,
         wait: wait_base | None = None,
         today: Callable[[], date] = _utc_today,
+        refresh: bool = False,
+        clock: Callable[[], datetime] = lambda: datetime.now(UTC),
     ) -> None:
         self._headers = {"User-Agent": user_agent, "Accept-Encoding": "gzip, deflate"}
         self._storage = storage
@@ -83,6 +85,11 @@ class SecClient:
         self._max_attempts = max_attempts
         self._wait = wait or wait_exponential_jitter(initial=1, max=30)
         self._today = today
+        # Scheduled runs refresh metadata (submissions, companyfacts, tickers) every time, so a
+        # morning catch-up sees filings made after the overnight run on the same UTC day.
+        self._refresh = refresh
+        self._clock = clock
+        self.requests = 0  # HTTP requests sent (for run statistics)
 
     def close(self) -> None:
         self._http.close()
@@ -97,6 +104,7 @@ class SecClient:
 
     def _get_once(self, url: str) -> bytes:
         self._limiter.acquire()
+        self.requests += 1
         response = self._http.get(url, headers=self._headers)
         if response.status_code in RETRYABLE_STATUS:
             log.warning("SEC %s returned %s; will retry", url, response.status_code)
@@ -124,8 +132,13 @@ class SecClient:
         return data, from_cache
 
     def _fetch_json(self, url: str, key_prefix: str, *, force: bool) -> RawDocument:
-        key = f"{key_prefix}/{self._today().isoformat()}.json"
-        data, from_cache = self._fetch(url, key, force=force)
+        if self._refresh:
+            # Timestamped key: every refresh is kept, so a run can be replayed exactly.
+            key = f"{key_prefix}/{self._clock():%Y-%m-%dT%H%M%SZ}.json"
+            data, from_cache = self._fetch(url, key, force=True)
+        else:
+            key = f"{key_prefix}/{self._today().isoformat()}.json"
+            data, from_cache = self._fetch(url, key, force=force)
         return RawDocument(
             url=url,
             raw_path=key,

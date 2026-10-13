@@ -367,3 +367,38 @@ followup_question_insight = Table(
     Column("question_id", Integer, ForeignKey("followup_question.question_id"), primary_key=True),
     Column("insight_id", Integer, ForeignKey("insight.insight_id"), primary_key=True),
 )
+
+# Orchestration (Phase 6, decisions D-034). One row per run; one task per (company, stage).
+pipeline_run = Table(
+    "pipeline_run",
+    metadata,
+    Column("run_id", Integer, primary_key=True, autoincrement=True),
+    Column("job", String(40), nullable=False),  # nightly | morning | news | manual
+    Column("trigger", String(20), nullable=False),  # cron | manual
+    Column("status", String(12), nullable=False),  # RUNNING | SUCCEEDED | PARTIAL | FAILED
+    Column("stages", String(500), nullable=False),  # JSON list
+    Column("tickers", String(2000), nullable=False),  # JSON list
+    Column("starts", Integer, nullable=False),  # 1 + number of resumes
+    Column("started_at", DateTime(timezone=True), nullable=False),
+    Column("heartbeat_at", DateTime(timezone=True), nullable=False),
+    Column("finished_at", DateTime(timezone=True)),
+    Column("stats_json", Text),
+)
+
+pipeline_task = Table(
+    "pipeline_task",
+    metadata,
+    Column("task_id", Integer, primary_key=True, autoincrement=True),
+    Column("run_id", Integer, ForeignKey("pipeline_run.run_id"), nullable=False, index=True),
+    Column("ticker", String(16), nullable=False),
+    Column("stage", String(20), nullable=False),
+    Column("ordinal", Integer, nullable=False),  # execution order within the run
+    # PENDING | RUNNING | SUCCEEDED | FAILED | SKIPPED
+    Column("status", String(10), nullable=False),
+    Column("attempts", Integer, nullable=False),
+    Column("detail", String(2000)),
+    Column("started_at", DateTime(timezone=True)),
+    Column("finished_at", DateTime(timezone=True)),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint("run_id", "ticker", "stage", name="uq_pipeline_task"),
+)

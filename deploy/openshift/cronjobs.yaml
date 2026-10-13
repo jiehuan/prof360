@@ -1,0 +1,131 @@
+# 23:30 ET: SEC accepts filings until 22:00 ET, so the evening's filings make the next morning.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: uw-nightly
+  namespace: PLACEHOLDER_NAMESPACE
+  labels: {app: uw-pipeline, job: uw-nightly}
+spec:
+  schedule: "30 23 * * *"
+  timeZone: America/New_York
+  concurrencyPolicy: Forbid          # the pipeline's own run lock is the second line of defence
+  startingDeadlineSeconds: 3600
+  suspend: false
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 2                # a retried pod resumes the same run (unfinished tasks only)
+      activeDeadlineSeconds: 14400
+      ttlSecondsAfterFinished: 604800
+      template:
+        metadata:
+          labels: {app: uw-pipeline, job: uw-nightly}
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: uw-pipeline
+              image: PLACEHOLDER_IMAGE:latest
+              args: ["run", "--job", "nightly"]
+              envFrom:
+                - secretRef: {name: uw-pipeline-secrets}
+              env:
+                - {name: LOG_FORMAT, value: json}
+                - {name: ALPHAVANTAGE_CALLS_PER_MINUTE, value: "5"}   # premium: 75
+                - {name: ALPHAVANTAGE_DAILY_QUOTA, value: "25"}       # premium: 0 (unlimited)
+              resources:
+                requests: {cpu: 250m, memory: 512Mi}
+                limits: {cpu: "1", memory: 2Gi}
+              volumeMounts:
+                - {name: data, mountPath: /data}
+          volumes:
+            - name: data
+              persistentVolumeClaim: {claimName: uw-pipeline-data}
+---
+# 05:30 ET catch-up: late-indexed filings and tasks that failed overnight.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: uw-morning
+  namespace: PLACEHOLDER_NAMESPACE
+  labels: {app: uw-pipeline, job: uw-morning}
+spec:
+  schedule: "30 5 * * *"
+  timeZone: America/New_York
+  concurrencyPolicy: Forbid          # the pipeline's own run lock is the second line of defence
+  startingDeadlineSeconds: 3600
+  suspend: false
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 2                # a retried pod resumes the same run (unfinished tasks only)
+      activeDeadlineSeconds: 14400
+      ttlSecondsAfterFinished: 604800
+      template:
+        metadata:
+          labels: {app: uw-pipeline, job: uw-morning}
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: uw-pipeline
+              image: PLACEHOLDER_IMAGE:latest
+              args: ["run", "--job", "morning"]
+              envFrom:
+                - secretRef: {name: uw-pipeline-secrets}
+              env:
+                - {name: LOG_FORMAT, value: json}
+                - {name: ALPHAVANTAGE_CALLS_PER_MINUTE, value: "5"}   # premium: 75
+                - {name: ALPHAVANTAGE_DAILY_QUOTA, value: "25"}       # premium: 0 (unlimited)
+              resources:
+                requests: {cpu: 250m, memory: 512Mi}
+                limits: {cpu: "1", memory: 2Gi}
+              volumeMounts:
+                - {name: data, mountPath: /data}
+          volumes:
+            - name: data
+              persistentVolumeClaim: {claimName: uw-pipeline-data}
+---
+# Every 6 hours. Suspended until a premium Alpha Vantage key is configured (NEWS_SENTIMENT is premium).
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: uw-news
+  namespace: PLACEHOLDER_NAMESPACE
+  labels: {app: uw-pipeline, job: uw-news}
+spec:
+  schedule: "0 */6 * * *"
+  timeZone: America/New_York
+  concurrencyPolicy: Forbid          # the pipeline's own run lock is the second line of defence
+  startingDeadlineSeconds: 3600
+  suspend: true
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 2                # a retried pod resumes the same run (unfinished tasks only)
+      activeDeadlineSeconds: 3600
+      ttlSecondsAfterFinished: 604800
+      template:
+        metadata:
+          labels: {app: uw-pipeline, job: uw-news}
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: uw-pipeline
+              image: PLACEHOLDER_IMAGE:latest
+              args: ["run", "--job", "news"]
+              envFrom:
+                - secretRef: {name: uw-pipeline-secrets}
+              env:
+                - {name: LOG_FORMAT, value: json}
+                - {name: ALPHAVANTAGE_CALLS_PER_MINUTE, value: "5"}   # premium: 75
+                - {name: ALPHAVANTAGE_DAILY_QUOTA, value: "25"}       # premium: 0 (unlimited)
+              resources:
+                requests: {cpu: 250m, memory: 512Mi}
+                limits: {cpu: "1", memory: 2Gi}
+              volumeMounts:
+                - {name: data, mountPath: /data}
+          volumes:
+            - name: data
+              persistentVolumeClaim: {claimName: uw-pipeline-data}

@@ -1,0 +1,22 @@
+# Scheduled jobs (Phase 6, decisions D-034). Each job runs these stages for all active companies,
+# in this order. Stage dependencies (jobs/orchestrator.py) skip a company's later stages when
+# a stage they need failed.
+
+jobs:
+  # 23:30 ET: SEC accepts filings until 22:00 ET, so the evening's filings are included.
+  nightly:
+    stages: [company, facts, compute, documents, transcripts, textmetrics, signals, insights]
+    refresh_sec: true   # nightly and morning share a UTC date; never reuse the earlier fetch
+  # 05:30 ET catch-up: late filings and anything that failed overnight.
+  morning:
+    stages: [company, facts, compute, documents, transcripts, textmetrics, signals, insights]
+    refresh_sec: true
+  # Every 6 hours, once a premium Alpha Vantage key is configured (NEWS_SENTIMENT is premium).
+  news:
+    stages: [news]
+
+# A RUNNING run whose heartbeat is older than this is treated as dead (e.g. the pod was killed)
+# and the next start of the same job resumes it.
+stale_after_minutes: 30
+# Attempts per task across the whole run, including resumes.
+max_attempts: 2

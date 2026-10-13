@@ -36,6 +36,7 @@ class LLMConfig(BaseModel):
     tiebreak_prompt_version: str
     max_input_chars: int
     topics: dict[str, list[str]]
+    pricing: dict[str, tuple[float, float]] = {}
 
     def prompt(self) -> str:
         return (PROMPTS_DIR / f"{self.prompt_version}.md").read_text(encoding="utf-8")

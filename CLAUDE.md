@@ -11,6 +11,8 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 .venv/bin/uw-pipeline run --all     # company -> facts -> compute -> documents -> transcripts
                                      #   -> news -> textmetrics -> signals -> insights
 .venv/bin/uw-pipeline audit-insights # re-verify insight evidence (Phase 5 acceptance)
+.venv/bin/uw-pipeline run --job nightly   # scheduled job (config/jobs.yaml); resumes a dead run
+.venv/bin/uw-pipeline runs           # recent runs and failed/skipped tasks
 .venv/bin/uw-pipeline run --ticker MAR --stage compute
 .venv/bin/uw-pipeline run --ticker MAR --force       # ignore same-day raw cache / input hash
 .venv/bin/uw-pipeline coverage-report                # data/reports/coverage-<date>.md
@@ -43,6 +45,8 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
   version. Calls go through `enrich/llm.cached_call` (cached by input hash). Outputs are
   schema-validated and evidence must be grounded in the source text. Tests use
   `tests/fake_llm.py`, never the real API. `LLM_ENABLED=false` runs rules only.
+- Every run is tracked in pipeline_run/pipeline_task. A new stage needs an entry in
+  `jobs/orchestrator.DEPENDS`, `jobs/stages.StageRunner._stage` and `config/jobs.yaml`.
 - Grounding rules changed? Bump `GROUNDING_VERSION` in `jobs/run_insights.py`. Prompt changed?
   New prompt version, then `scripts/export_golden.py` and review `git diff tests/golden`.
 - Alpha Vantage: never log or store the API key (messages are masked in `clients/alphavantage.py`).

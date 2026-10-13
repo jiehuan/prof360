@@ -2,38 +2,27 @@
 
 from __future__ import annotations
 
+import json
 import logging
-from datetime import UTC, datetime
+import os
+from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import Annotated
 
 import typer
 from sqlalchemy import select
 
-from uw_pipeline.clients.alphavantage import AlphaVantageClient
 from uw_pipeline.clients.db import ensure_schema, make_engine
-from uw_pipeline.clients.llm import ClaudeClient
-from uw_pipeline.clients.ratelimit import TokenBucket
-from uw_pipeline.clients.sec import SecClient
-from uw_pipeline.clients.storage import LocalStorage
 from uw_pipeline.compute.coverage import company_coverage, load_notes, render_markdown
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig, load_companies, load_industry_config
 from uw_pipeline.enrich.audit import audit
-from uw_pipeline.enrich.llm import LLMConfig, load_llm_config
-from uw_pipeline.enrich.package import load_insights_config
-from uw_pipeline.enrich.text_metrics import load_text_config
-from uw_pipeline.jobs.run_company import TaskResult, run_company_stage
-from uw_pipeline.jobs.run_documents import run_documents_stage
-from uw_pipeline.jobs.run_insights import run_insights_stage
-from uw_pipeline.jobs.run_news import load_news_config, run_news_stage
-from uw_pipeline.jobs.run_signals import run_signals_stage
-from uw_pipeline.jobs.run_text_metrics import run_text_metrics_stage
-from uw_pipeline.jobs.run_transcripts import run_transcripts_stage
-from uw_pipeline.jobs.run_xbrl import company_row, run_compute_stage, run_facts_stage
-from uw_pipeline.schema import metric_value
+from uw_pipeline.jobs.orchestrator import Orchestrator, RunInProgressError, load_jobs_config
+from uw_pipeline.jobs.run_xbrl import company_row
+from uw_pipeline.jobs.stages import StageRunner
+from uw_pipeline.logs import log_context, setup_logging
+from uw_pipeline.schema import metric_value, pipeline_run, pipeline_task
 from uw_pipeline.settings import Settings
-from uw_pipeline.signals.rules import load_signal_rules
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 log = logging.getLogger("uw_pipeline")
@@ -51,12 +40,11 @@ class Stage(StrEnum):
     insights = "insights"
 
 
-# Stages in execution order; later phases append here.
+# Default order for manual runs (scheduled jobs list their stages in config/jobs.yaml).
 STAGE_ORDER = [
     Stage.company, Stage.facts, Stage.compute, Stage.documents,
     Stage.transcripts, Stage.news, Stage.textmetrics, Stage.signals, Stage.insights,
 ]  # fmt: skip
-AV_STAGES = {Stage.transcripts, Stage.news}
 
 
 def _select_companies(
@@ -77,122 +65,112 @@ def _select_companies(
     return list({by_ticker[t].ticker: by_ticker[t] for t in sorted(wanted)}.values())
 
 
-def _alphavantage(settings: Settings, storage: LocalStorage) -> AlphaVantageClient | None:
-    if settings.alphavantage_api_key is None:
-        return None
-    return AlphaVantageClient(
-        settings.alphavantage_api_key.get_secret_value(),
-        storage,
-        rate_limiter=TokenBucket(rate=settings.alphavantage_calls_per_minute / 60),
-        daily_quota=settings.alphavantage_daily_quota or None,
-    )
-
-
-def _llm(settings: Settings) -> tuple[ClaudeClient, LLMConfig] | None:
-    if not settings.llm_enabled:
-        return None
-    if settings.anthropic_api_key is None:
-        log.warning("ANTHROPIC_API_KEY not set; signals use rules only")
-        return None
-    client = ClaudeClient(
-        settings.anthropic_api_key.get_secret_value(),
-        workspace_id=settings.anthropic_workspace_id,
-    )
-    return client, load_llm_config(settings.config_dir)
-
-
 @app.callback()
 def main(verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False) -> None:
-    logging.basicConfig(
-        level=logging.DEBUG if verbose else logging.INFO,
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    )
-    logging.getLogger("httpx").setLevel(logging.WARNING)
+    setup_logging(json_format=os.environ.get("LOG_FORMAT", "").lower() == "json", verbose=verbose)
 
 
 @app.command()
 def run(
     all_: Annotated[bool, typer.Option("--all", help="All active companies")] = False,
     ticker: Annotated[list[str] | None, typer.Option("--ticker", help="Repeatable")] = None,
-    stage: Annotated[Stage | None, typer.Option(help="Run one stage (default: all)")] = None,
+    stage: Annotated[
+        list[Stage] | None, typer.Option(help="Stage(s) to run, repeatable (default: all)")
+    ] = None,
+    job: Annotated[
+        str | None, typer.Option(help="Scheduled job from config/jobs.yaml (e.g. nightly)")
+    ] = None,
     force: Annotated[bool, typer.Option(help="Ignore same-day raw cache")] = False,
+    resume: Annotated[
+        bool, typer.Option(help="Resume this job's interrupted run (default for --job)")
+    ] = True,
 ) -> None:
-    """Run pipeline stages for the selected companies."""
+    """Run pipeline stages as a tracked run (pipeline_run / pipeline_task)."""
     settings = Settings()
+    jobs_cfg = load_jobs_config(settings.config_dir)
+    if job is not None:
+        if job not in jobs_cfg.jobs:
+            raise typer.BadParameter(f"unknown job {job!r}; see config/jobs.yaml")
+        if stage:
+            raise typer.BadParameter("--job and --stage are mutually exclusive")
+        stages = jobs_cfg.jobs[job].stages
+        all_ = all_ or not ticker
+    else:
+        stages = [s.value for s in (stage or STAGE_ORDER)]
     selected = _select_companies(load_companies(settings.config_dir), all_, ticker or [])
-    industry = load_industry_config(settings.config_dir)
-    registry = load_registry(settings.config_dir)
-    registry.check_groups(industry.groups.values())
-    signal_rules = load_signal_rules(settings.config_dir)
     engine = make_engine(settings.database_url)
     if engine.dialect.name == "sqlite":
         ensure_schema(engine)
 
-    storage = LocalStorage(settings.raw_dir)
-    limiter = TokenBucket(rate=settings.sec_rate_limit_per_sec)
-    results: list[TaskResult] = []
-    with SecClient(
-        settings.sec_user_agent,
-        storage,
-        rate_limiter=limiter,
-        timeout=settings.http_timeout_sec,
-        max_attempts=settings.sec_max_attempts,
-    ) as sec:
-        for s in [stage] if stage else STAGE_ORDER:
-            if s is Stage.company:
-                results += run_company_stage(selected, sec, industry, engine, force=force)
-            elif s is Stage.facts:
-                results += run_facts_stage(
-                    selected, sec, registry, industry, engine,
-                    history_years=settings.xbrl_history_years, force=force,
-                )  # fmt: skip
-            elif s is Stage.compute:
-                results += run_compute_stage(selected, registry, industry, engine)
-            elif s is Stage.documents:
-                results += run_documents_stage(
-                    selected, sec, registry, signal_rules, engine,
-                    text_lookback_days=settings.text_lookback_days,
-                    event_lookback_days=settings.event_lookback_days, force=force,
-                )  # fmt: skip
-            elif s in AV_STAGES:
-                av = _alphavantage(settings, storage)
-                if av is None:
-                    results += [
-                        TaskResult(
-                            c.ticker, s.value, ok=False, detail="ALPHAVANTAGE_API_KEY not set"
-                        )
-                        for c in selected
-                    ]
-                elif s is Stage.transcripts:
-                    with av:
-                        results += run_transcripts_stage(selected, av, engine)
-                else:
-                    with av:
-                        news_cfg = load_news_config(settings.config_dir)
-                        results += run_news_stage(
-                            selected, av, engine, news_cfg, llm=_llm(settings)
-                        )
-            elif s is Stage.textmetrics:
-                results += run_text_metrics_stage(
-                    selected, registry, industry, load_text_config(settings.config_dir),
-                    _llm(settings), storage, engine,
-                )  # fmt: skip
-            elif s is Stage.insights:
-                results += run_insights_stage(
-                    selected, registry, industry, _llm(settings),
-                    load_insights_config(settings.config_dir), engine,
-                )  # fmt: skip
-            elif s is Stage.signals:
-                results += run_signals_stage(
-                    selected, sec, signal_rules, engine, llm=_llm(settings)
-                )
-
-    failed = [r for r in results if not r.ok]
-    typer.echo(f"{len(results) - len(failed)}/{len(results)} tasks succeeded")
-    for r in failed:
-        typer.echo(f"  FAILED {r.ticker} [{r.stage}]: {r.detail}", err=True)
-    if failed:
+    orch = Orchestrator(
+        engine,
+        stale_after=timedelta(minutes=jobs_cfg.stale_after_minutes),
+        max_attempts=jobs_cfg.max_attempts,
+    )
+    try:
+        run_id, resumed = orch.start(
+            job or "manual", stages, [c.ticker for c in selected],
+            trigger="cron" if job else "manual", resume=resume and job is not None,
+        )  # fmt: skip
+    except RunInProgressError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=2) from exc
+    started = datetime.now(UTC)
+    with log_context(run_id=run_id, job=job or "manual"):
+        log.info("run %d %s: %s for %s", run_id, "resumed" if resumed else "started",
+                 stages, [c.ticker for c in selected])  # fmt: skip
+        refresh = jobs_cfg.jobs[job].refresh_sec if job else False
+        with StageRunner(settings, engine, force=force, refresh_sec=refresh) as runner:
+            outcome = orch.execute(run_id, runner)
+            orch.add_stats(run_id, {"usage_last_start": runner.usage(started)})
+    counts = ", ".join(f"{k.lower()}={v}" for k, v in sorted(outcome.counts.items()))
+    typer.echo(f"run {run_id} {outcome.status}: {counts}")
+    with engine.connect() as conn:
+        failed = conn.execute(
+            select(pipeline_task.c.ticker, pipeline_task.c.stage, pipeline_task.c.status,
+                   pipeline_task.c.detail)
+            .where(pipeline_task.c.run_id == run_id,
+                   pipeline_task.c.status.in_(("FAILED", "SKIPPED")))
+            .order_by(pipeline_task.c.ordinal)
+        ).all()  # fmt: skip
+    for t, st, status, detail in failed:
+        typer.echo(f"  {status} {t} [{st}]: {detail}", err=True)
+    if outcome.status != "SUCCEEDED":
         raise typer.Exit(code=1)
+
+
+@app.command()
+def runs(limit: Annotated[int, typer.Option(help="Runs to show")] = 10) -> None:
+    """Recent runs, and the tasks that did not succeed in the latest one."""
+    settings = Settings()
+    engine = make_engine(settings.database_url)
+    if engine.dialect.name == "sqlite":
+        ensure_schema(engine)
+    with engine.connect() as conn:
+        rows = (
+            conn.execute(select(pipeline_run).order_by(pipeline_run.c.run_id.desc()).limit(limit))
+            .mappings()
+            .all()
+        )
+        for r in rows:
+            stats = json.loads(r["stats_json"] or "{}")
+            cost = stats.get("usage_last_start", {}).get("llm_cost_usd_estimate", 0)
+            ended = f"{r['finished_at']:%H:%M}" if r["finished_at"] else "running"
+            typer.echo(
+                f"{r['run_id']:>5} {r['job']:<8} {r['status']:<9} starts={r['starts']} "
+                f"{r['started_at']:%Y-%m-%d %H:%M} -> {ended} "
+                f"tasks={stats.get('tasks', {})} llm=${cost}"
+            )
+        if rows:
+            bad = conn.execute(
+                select(pipeline_task.c.ticker, pipeline_task.c.stage, pipeline_task.c.status,
+                       pipeline_task.c.attempts, pipeline_task.c.detail)
+                .where(pipeline_task.c.run_id == rows[0]["run_id"],
+                       pipeline_task.c.status != "SUCCEEDED")
+                .order_by(pipeline_task.c.ordinal)
+            ).all()  # fmt: skip
+            for t, st, status, attempts, detail in bad:
+                typer.echo(f"  {status:<9} {t:<5} {st:<12} attempts={attempts} {detail or ''}")
 
 
 @app.command("coverage-report")

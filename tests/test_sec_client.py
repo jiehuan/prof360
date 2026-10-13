@@ -82,3 +82,24 @@ def test_does_not_retry_404(make_sec_client) -> None:
         with pytest.raises(httpx.HTTPStatusError):
             make_sec_client().submissions(1048286)
         assert route.call_count == 1
+
+
+def test_refresh_mode_fetches_every_time_with_timestamped_keys(sec_routes, tmp_path) -> None:
+    from datetime import UTC, datetime
+
+    from uw_pipeline.clients.ratelimit import TokenBucket
+    from uw_pipeline.clients.sec import SecClient
+    from uw_pipeline.clients.storage import LocalStorage
+
+    times = iter(
+        [datetime(2026, 10, 14, 3, 30, tzinfo=UTC), datetime(2026, 10, 14, 9, 30, tzinfo=UTC)]
+    )
+    client = SecClient("T t@example.com", LocalStorage(tmp_path), refresh=True,
+                       rate_limiter=TokenBucket(rate=1000), clock=lambda: next(times))  # fmt: skip
+    a = client.submissions(1048286)
+    b = client.submissions(1048286)
+    assert (a.from_cache, b.from_cache) == (False, False)
+    assert a.raw_path.endswith("2026-10-14T033000Z.json") and b.raw_path.endswith(
+        "2026-10-14T093000Z.json"
+    )
+    assert sum(1 for c in sec_routes.calls if str(c.request.url) == MAR_URL) == 2

@@ -24,3 +24,8 @@ topics:
   "10K-AUDIT": ["going_concern"]
   "10K-9A": ["material_weakness", "controls_not_effective"]
   "10Q-I-4": ["material_weakness", "controls_not_effective"]
+
+# USD per million tokens (input, output), for run statistics only.
+pricing:
+  claude-opus-5-5: [4.0, 20.0]
+  claude-sonnet-5-5: [2.0, 10.0]
