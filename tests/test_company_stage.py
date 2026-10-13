@@ -67,7 +67,7 @@ def test_run_all_company_stage(sec_routes: respx.MockRouter, cli_env) -> None:
 
 
 def test_run_by_former_ticker(sec_routes: respx.MockRouter, cli_env) -> None:
-    result = CliRunner().invoke(app, ["run", "--ticker", "PARA"])
+    result = CliRunner().invoke(app, ["run", "--ticker", "PARA", "--stage", "company"])
     assert result.exit_code == 0, result.output
     assert [(r["ticker"], r["cik"]) for r in _rows(cli_env)] == [("SKYD", "0002041610")]
 

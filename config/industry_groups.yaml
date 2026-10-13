@@ -1,26 +1,66 @@
-# SIC code -> industry group. Every group gets one metric set (from Phase 2), so all companies
-# with the same SIC share the same metrics.
+# SIC code -> industry group -> metric list. All companies with the same SIC share the same
+# metrics. The lists are curated here (see metrics.yaml header), not generated at run time.
 # Lookup order: exact `sic`, then `sic_ranges` (first match), then `default_group`.
 # `is_financial` controls whether FI-only modules (NIM, CET1, NPL, loan portfolio) get data.
+# `metric_sets` refer to metrics.yaml; `metrics` adds individual metric codes.
 
 default_group: UNCLASSIFIED
 
 groups:
-  UNCLASSIFIED:   {label: Unclassified, is_financial: false}
-  HOTELS:         {label: Hotels & Lodging, is_financial: false}
-  AIRLINES:       {label: Airlines, is_financial: false}
-  AUTOMOTIVE:     {label: Automotive Manufacturing, is_financial: false}
-  PHARMA:         {label: Pharmaceuticals, is_financial: false}
-  BANKS:          {label: Banks, is_financial: true}
-  CREDIT:         {label: Non-depository Credit, is_financial: true}
-  BROKER_DEALERS: {label: Securities & Brokerage, is_financial: true}
-  # Bank-style FI modules (CET1, NIM, loan book) don't fit insurers. Insurers get their own
-  # metric set once one is onboarded. See docs/decisions.md D-008.
-  INSURANCE:      {label: Insurance, is_financial: false}
-  RETAIL:         {label: Retail, is_financial: false}
-  TELECOM:        {label: Telecommunications, is_financial: false}
-  MEDIA:          {label: Media & Broadcasting, is_financial: false}
-  SEMICONDUCTORS: {label: Semiconductors & Related Devices, is_financial: false}
+  UNCLASSIFIED:
+    label: Unclassified
+    is_financial: false
+    metric_sets: []
+  HOTELS:
+    label: Hotels & Lodging
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+  AIRLINES:
+    label: Airlines
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+  AUTOMOTIVE:
+    label: Automotive Manufacturing
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+  PHARMA:
+    label: Pharmaceuticals
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+  BANKS:
+    label: Banks
+    is_financial: true
+    metric_sets: [BANK_CORE]
+  # Groups with no metric set get one when their first company is onboarded.
+  CREDIT:
+    label: Non-depository Credit
+    is_financial: true
+    metric_sets: []
+  BROKER_DEALERS:
+    label: Securities & Brokerage
+    is_financial: true
+    metric_sets: []
+  # Bank-style FI modules (CET1, NIM, loan book) don't fit insurers. See decisions D-008.
+  INSURANCE:
+    label: Insurance
+    is_financial: false
+    metric_sets: []
+  RETAIL:
+    label: Retail
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+  TELECOM:
+    label: Telecommunications
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+  MEDIA:
+    label: Media & Broadcasting
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+  SEMICONDUCTORS:
+    label: Semiconductors & Related Devices
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
 
 # Exact SIC codes (MVP companies).
 sic:

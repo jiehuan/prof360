@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     sec_rate_limit_per_sec: float = Field(default=8.0, gt=0, le=10)
     sec_max_attempts: int = Field(default=5, ge=1)
     http_timeout_sec: float = 30.0
+    # How far back to read filing XBRL instances for instance-only concepts (company overrides).
+    xbrl_history_years: int = Field(default=6, ge=1)
 
     data_dir: Path = Path("data")
     config_dir: Path = Path("config")

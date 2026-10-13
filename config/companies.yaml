@@ -28,6 +28,9 @@ companies:
     display_name: Skydance Corp
     former_tickers: [PARA, PSKY]
     predecessor_ciks: [813828]  # Paramount Global; stopped filing after the Aug 2025 merger
+    # Successor periods start 2025-08-08. Earlier values in this registrant's filings are
+    # predecessor (Paramount Global) figures and are excluded (decisions D-012).
+    history_start: 2025-08-08
     notes: >-
       Front end shows this company as PARA. Since 2025 SEC's ticker list maps PARA to an
       unrelated company (Banzai International, CIK 1826011). The successor registrant was named

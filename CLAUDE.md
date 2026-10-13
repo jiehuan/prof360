@@ -8,8 +8,10 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 
 ```bash
 .venv/bin/pip install -e ".[dev]"             # Python 3.14 venv (project supports >=3.11)
-.venv/bin/uw-pipeline run --all --stage company
-.venv/bin/uw-pipeline run --ticker MAR --force
+.venv/bin/uw-pipeline run --all                      # stages: company -> facts -> compute
+.venv/bin/uw-pipeline run --ticker MAR --stage compute
+.venv/bin/uw-pipeline run --ticker MAR --force       # ignore same-day raw cache / input hash
+.venv/bin/uw-pipeline coverage-report                # data/reports/coverage-<date>.md
 .venv/bin/pytest -q
 .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy
 .venv/bin/python scripts/refresh_sec_fixtures.py   # rebuild SEC fixtures from data/raw
@@ -31,3 +33,7 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
 - After finishing a checklist item, tick its box in `docs/PLAN.md`.
 - All external calls (HTTP, LLM, DB) go through `src/uw_pipeline/clients/` so tests can swap them.
 - Companies are identified by pinned CIK in `config/companies.yaml`; tickers are display-only.
+- Metric lists per industry group are curated in `config/metrics.yaml` (metric_sets) and
+  `config/industry_groups.yaml`; never generate them at run time.
+- Every metric gap shown by `coverage-report` needs a note in `config/coverage_notes.yaml`.
+- Golden values come from the filing itself (XBRL instance / document), not from estimates.

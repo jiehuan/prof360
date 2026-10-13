@@ -1,0 +1,201 @@
+# Metric catalog. Computed by rules only (no LLM).
+#
+# Which metrics a company gets is decided here and in industry_groups.yaml, curated once
+# (domain knowledge, optionally LLM-assisted, then human-reviewed). It is never generated at
+# run time. Each industry group lists the `metric_sets` it uses (plus extra metric codes), and
+# company_overrides/ can add company-specific metrics. Helper metrics a listed metric depends
+# on (e.g. ebit) are computed automatically.
+#
+# kind: formula (default) -> `formula` is one expression or an ordered list of alternatives.
+#         The first alternative that evaluates wins. Names are concepts (concept_map.yaml)
+#         or earlier metric codes. Supported operators: + - * / and parentheses.
+#       growth -> (current - comparison) / |comparison| of `base`, compared with the prior
+#         quarter (`prior_quarter`) or the same period a year earlier (`prior_year`).
+# optional: names treated as 0 when missing, as long as one non-optional input is present.
+# nm_when: condition that makes the value "not meaningful" (stored as N/M, no number).
+# units: USD, ratio (x), fraction (0.05 = 5%).
+# display: false hides helper metrics from the front end (they are still stored for audit).
+
+metric_sets:
+  COMMERCIAL_CORE:
+    - revenue
+    - revenue_growth_qoq
+    - revenue_growth_yoy
+    - net_income
+    - operating_income
+    - ebitda_computed
+    - cash
+    - current_assets
+    - current_liabilities
+    - current_ratio
+    - working_capital
+    - total_debt
+    - long_term_debt
+    - equity
+    - debt_to_equity
+    - interest_expense
+    - interest_coverage
+    - operating_cash_flow
+    - capex
+    - free_cash_flow
+    - buybacks
+    - buyback_intensity
+  # Bank-specific metrics (NIM, CET1, NPL, loan book) are text-extracted in Phase 5. Only the
+  # XBRL metrics that make sense for a bank are here.
+  BANK_CORE:
+    - revenue
+    - revenue_growth_qoq
+    - revenue_growth_yoy
+    - net_income
+    - equity
+    - buybacks
+    - buyback_intensity
+
+metrics:
+  # -- Financial -------------------------------------------------------------------------
+  - code: revenue
+    display_name: Total Revenue
+    section: financial
+    unit: USD
+    formula: revenue
+  - code: revenue_growth_qoq
+    display_name: Revenue Growth (QoQ)
+    section: financial
+    unit: fraction
+    kind: growth
+    base: revenue
+    compare: prior_quarter
+    period_types: [Q]
+  - code: revenue_growth_yoy
+    display_name: Revenue Growth (YoY)
+    section: financial
+    unit: fraction
+    kind: growth
+    base: revenue
+    compare: prior_year
+  - code: net_income
+    display_name: Net Income
+    section: financial
+    unit: USD
+    formula: net_income
+  - code: operating_income
+    display_name: Operating Income
+    section: financial
+    unit: USD
+    formula: operating_income
+  - code: ebitda_computed
+    display_name: EBITDA (computed)
+    description: Operating income + D&A. Not the company's non-GAAP Adjusted EBITDA.
+    section: financial
+    unit: USD
+    formula: operating_income + d_and_a
+  - code: ebit
+    display_name: EBIT
+    description: Operating income; falls back to pre-tax income + interest expense.
+    section: financial
+    unit: USD
+    display: false
+    formula:
+      - operating_income
+      - pretax_income + interest_expense
+
+  # -- Liquidity -------------------------------------------------------------------------
+  - code: cash
+    display_name: Cash & Equivalents
+    section: liquidity
+    unit: USD
+    formula: cash
+  - code: current_assets
+    display_name: Current Assets
+    section: liquidity
+    unit: USD
+    formula: current_assets
+  - code: current_liabilities
+    display_name: Current Liabilities
+    section: liquidity
+    unit: USD
+    formula: current_liabilities
+  - code: current_ratio
+    display_name: Current Ratio
+    section: liquidity
+    unit: ratio
+    formula: current_assets / current_liabilities
+  - code: working_capital
+    display_name: Working Capital
+    section: liquidity
+    unit: USD
+    formula: current_assets - current_liabilities
+
+  # -- Leverage --------------------------------------------------------------------------
+  - code: total_debt
+    display_name: Total Debt
+    description: >-
+      Reported total debt. Otherwise a same-family current + non-current pair (families are
+      never mixed), plus short-term borrowings / commercial paper.
+    section: leverage
+    unit: USD
+    formula:
+      - debt_total_reported
+      - ltdcl_noncurrent + ltdcl_current + short_term_borrowings
+      - ltd_noncurrent + ltd_current + short_term_borrowings
+      # Non-current only, used when the family has no current sibling. Understates debt.
+      - ltdcl_noncurrent + short_term_borrowings
+      - ltd_noncurrent + short_term_borrowings
+    optional: [short_term_borrowings]
+  - code: long_term_debt
+    display_name: Long-term Debt
+    section: leverage
+    unit: USD
+    formula:
+      - ltdcl_noncurrent
+      - ltd_noncurrent
+  - code: equity
+    display_name: Stockholders' Equity
+    section: leverage
+    unit: USD
+    formula: equity
+  - code: debt_to_equity
+    display_name: Debt-to-Equity
+    section: leverage
+    unit: ratio
+    formula: total_debt / equity
+    nm_when: equity <= 0
+  - code: interest_expense
+    display_name: Interest Expense
+    section: leverage
+    unit: USD
+    formula: interest_expense
+  - code: interest_coverage
+    display_name: Interest Coverage
+    section: leverage
+    unit: ratio
+    formula: ebit / interest_expense
+    nm_when: ebit <= 0
+
+  # -- Cash flow -------------------------------------------------------------------------
+  - code: operating_cash_flow
+    display_name: Operating Cash Flow
+    section: cash_flow
+    unit: USD
+    formula: operating_cash_flow
+  - code: capex
+    display_name: Capital Expenditures
+    section: cash_flow
+    unit: USD
+    formula: capex
+  - code: free_cash_flow
+    display_name: Free Cash Flow
+    section: cash_flow
+    unit: USD
+    formula: operating_cash_flow - capex
+  - code: buybacks
+    display_name: Share Repurchases
+    section: cash_flow
+    unit: USD
+    formula: buybacks
+  - code: buyback_intensity
+    display_name: Buybacks / Net Income
+    section: cash_flow
+    unit: ratio
+    formula: buybacks / net_income
+    nm_when: net_income <= 0

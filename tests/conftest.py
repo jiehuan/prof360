@@ -12,7 +12,7 @@ import respx
 from tenacity import wait_none
 
 from uw_pipeline.clients.ratelimit import TokenBucket
-from uw_pipeline.clients.sec import COMPANY_TICKERS_URL, SEC_DATA, SecClient
+from uw_pipeline.clients.sec import COMPANY_TICKERS_URL, SEC_DATA, SecClient, archive_folder_url
 from uw_pipeline.clients.storage import LocalStorage
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -44,6 +44,15 @@ def sec_routes() -> Iterator[respx.MockRouter]:
         )
         for path in (SEC_FIXTURES / "submissions").glob("CIK*.json"):
             router.get(f"{SEC_DATA}/submissions/{path.name}").mock(
+                return_value=httpx.Response(200, content=path.read_bytes())
+            )
+        for path in (SEC_FIXTURES / "companyfacts").glob("CIK*.json"):
+            router.get(f"{SEC_DATA}/api/xbrl/companyfacts/{path.name}").mock(
+                return_value=httpx.Response(200, content=path.read_bytes())
+            )
+        for path in (SEC_FIXTURES / "filings").glob("CIK*/*/*"):
+            cik, accn = path.parent.parent.name.removeprefix("CIK"), path.parent.name
+            router.get(f"{archive_folder_url(cik, accn)}/{path.name}").mock(
                 return_value=httpx.Response(200, content=path.read_bytes())
             )
         yield router

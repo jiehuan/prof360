@@ -411,12 +411,12 @@ uw-pipeline dq-report --run-id <id>
 **验收**：`uw-pipeline run --all --stage company` 后 `company` 表 9 行，字段完整；单测不访问外网。
 
 ### Phase 2 — XBRL 财务指标
-- [ ] companyfacts → `xbrl_fact` 长表
-- [ ] `periods.py`：期间长度分类、重述去重、Q4 推导、现金流差分
-- [ ] `concept_map.yaml` + 覆盖率报告（每家公司每个指标用了哪个 tag / 缺失）
-- [ ] `metrics.yaml` + compute：Financial / Liquidity / Leverage 全部指标，至少 5 个财年 + 8 个季度
-- [ ] Marriott 公司特有指标（费用收入）的 override 配置
-- [ ] 写入 `metric_value`
+- [x] companyfacts → `xbrl_fact` 长表（companyfacts 缺失的近期文件改读 XBRL instance，见 decisions D-013）
+- [x] `periods.py`：期间长度分类、重述去重、Q4 推导、现金流差分
+- [x] `concept_map.yaml` + 覆盖率报告（每家公司每个指标用了哪个 tag / 缺失）：`uw-pipeline coverage-report`，说明见 `config/coverage_notes.yaml`
+- [x] `metrics.yaml` + compute：Financial / Liquidity / Leverage 全部指标，至少 5 个财年 + 8 个季度
+- [x] Marriott 公司特有指标（费用收入）的 override 配置
+- [x] 写入 `metric_value`
 
 **验收**：
 - Golden test：Marriott 最近一个 10-Q 中 Total Debt、Cash、Revenue 与文件原值一致（Total Debt ≈ $16.5B、Cash ≈ $0.5B，以实际文件为准）
@@ -445,6 +445,7 @@ uw-pipeline dq-report --run-id <id>
 - [ ] `schemas.py`、prompts v1、`grounding.py`（引用 + 数字校验）
 - [ ] Key Insights、Strategic & Risk Insights、Behavioral Insights、Follow-Up Questions、Activity 摘要
 - [ ] 文本指标抽取：酒店 RevPAR/入住率；FI：CET1/NIM/NPL/贷款组合
+- [ ] 财报 8-K（Item 2.02）EX-99.1 抽取核心财务数字 → `derivation = PRELIMINARY`，对应期间 10-Q/10-K 入库后自动被替换（隔夜更新，见 decisions D-022）
 - [ ] input_hash 缓存，`is_current` 版本切换
 
 **验收**：

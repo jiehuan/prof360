@@ -60,7 +60,7 @@ class RawDocument:
     raw_path: str  # storage key, relative to the raw root
     content_hash: str
     from_cache: bool
-    payload: Any
+    payload: Any  # parsed JSON, or raw bytes for archive documents
 
 
 class SecClient:
@@ -114,14 +114,18 @@ class SecClient:
         result: bytes = retrying(self._get_once, url)
         return result
 
-    def _fetch_json(self, url: str, key_prefix: str, *, force: bool) -> RawDocument:
-        key = f"{key_prefix}/{self._today().isoformat()}.json"
+    def _fetch(self, url: str, key: str, *, force: bool) -> tuple[bytes, bool]:
         from_cache = not force and self._storage.exists(key)
         if from_cache:
             data = self._storage.read_bytes(key)
         else:
             data = self.get_bytes(url)
             self._storage.write_bytes(key, data)
+        return data, from_cache
+
+    def _fetch_json(self, url: str, key_prefix: str, *, force: bool) -> RawDocument:
+        key = f"{key_prefix}/{self._today().isoformat()}.json"
+        data, from_cache = self._fetch(url, key, force=force)
         return RawDocument(
             url=url,
             raw_path=key,
@@ -141,3 +145,39 @@ class SecClient:
         padded = pad_cik(cik)
         url = f"{SEC_DATA}/submissions/CIK{padded}.json"
         return self._fetch_json(url, f"sec/submissions/CIK{padded}", force=force)
+
+    def submissions_page(self, cik: int | str, name: str, *, force: bool = False) -> RawDocument:
+        """Older filings beyond `filings.recent`, e.g. CIK0000019617-submissions-001.json."""
+        url = f"{SEC_DATA}/submissions/{name}"
+        stem = name.removesuffix(".json")
+        return self._fetch_json(url, f"sec/submissions/CIK{pad_cik(cik)}/pages/{stem}", force=force)
+
+    def companyfacts(self, cik: int | str, *, force: bool = False) -> RawDocument:
+        padded = pad_cik(cik)
+        url = f"{SEC_DATA}/api/xbrl/companyfacts/CIK{padded}.json"
+        return self._fetch_json(url, f"sec/companyfacts/CIK{padded}", force=force)
+
+    # Archive documents are immutable once filed, so they are cached by accession, not by date.
+
+    def filing_index(self, cik: int | str, accession_no: str) -> list[str]:
+        """File names in a filing folder."""
+        url = f"{archive_folder_url(cik, accession_no)}/index.json"
+        key = f"sec/filings/CIK{pad_cik(cik)}/{accession_no}/index.json"
+        data, _ = self._fetch(url, key, force=False)
+        return [item["name"] for item in json.loads(data)["directory"]["item"]]
+
+    def filing_document(self, cik: int | str, accession_no: str, name: str) -> RawDocument:
+        url = f"{archive_folder_url(cik, accession_no)}/{name}"
+        key = f"sec/filings/CIK{pad_cik(cik)}/{accession_no}/{name}"
+        data, from_cache = self._fetch(url, key, force=False)
+        return RawDocument(
+            url=url,
+            raw_path=key,
+            content_hash=hashlib.sha256(data).hexdigest(),
+            from_cache=from_cache,
+            payload=data,
+        )
+
+
+def archive_folder_url(cik: int | str, accession_no: str) -> str:
+    return f"{SEC_WWW}/Archives/edgar/data/{int(pad_cik(cik))}/{accession_no.replace('-', '')}"

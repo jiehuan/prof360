@@ -26,6 +26,7 @@ dev = [
     "ruff>=0.5",
     "mypy>=1.10",
     "types-PyYAML",
+    "pandas-stubs",
 ]
 
 [project.scripts]
@@ -45,6 +46,9 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test_xbrl_facts.py" = ["E501"]  # inline XBRL instance sample
 
 [tool.mypy]
 python_version = "3.11"

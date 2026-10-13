@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +27,9 @@ class CompanyConfig(BaseModel):
     former_tickers: list[str] = Field(default_factory=list)
     # Earlier registrants whose filings hold this company's history (used from Phase 2).
     predecessor_ciks: list[int] = Field(default_factory=list)
+    # Ignore facts for periods starting before this date (e.g. predecessor figures that a
+    # successor registrant reports in its own filings).
+    history_start: date | None = None
     notes: str | None = None
 
     @field_validator("ticker")
@@ -60,6 +64,9 @@ class IndustryGroup(BaseModel):
     label: str
     # Drives which front-end modules get data (FI-only: NIM, CET1, loan portfolio, ...).
     is_financial: bool
+    # Curated metric list for this group: named sets from metrics.yaml plus extra codes.
+    metric_sets: list[str] = Field(default_factory=list)
+    metrics: list[str] = Field(default_factory=list)
 
 
 class SicRange(BaseModel):

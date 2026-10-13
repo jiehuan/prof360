@@ -1,0 +1,1432 @@
+<?xml version='1.0' encoding='utf-8'?>
+<xbrl xmlns="http://www.xbrl.org/2003/instance" xmlns:mar="http://www.marriott.com/20260630" xmlns:us-gaap="http://fasb.org/us-gaap/2026" xmlns:xbrldi="http://xbrl.org/2006/xbrldi" xml:lang="en-US">
+    <context id="c-1">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-3">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FranchiseMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-4">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FranchiseMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-5">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FranchiseMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-6">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FranchiseMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-7">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ManagementServiceBaseMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-8">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ManagementServiceBaseMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-9">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ManagementServiceBaseMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-10">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ManagementServiceBaseMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-11">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ManagementServiceIncentiveMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-12">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ManagementServiceIncentiveMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-13">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ManagementServiceIncentiveMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-14">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ManagementServiceIncentiveMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-15">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-16">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-17">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-18">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-19">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-20">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-21">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-22">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-23">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-24">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-25">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-26">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-27">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-28">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-29">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-177">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-178">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-179">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-180">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-181">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-182">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-183">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-184">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-185">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-186">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-187">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-188">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-189">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-190">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-191">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-192">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-193">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-194">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-195">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-196">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-197">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-198">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-199">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-200">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-201">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-202">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-203">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-204">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-205">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-206">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-207">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-208">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-209">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-210">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-211">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-212">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-213">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-214">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-215">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-216">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-217">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-218">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-219">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-220">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-221">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-222">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-223">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-224">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-225">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-226">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-227">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-228">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:FeeServiceMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-229">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-230">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-231">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-232">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:OwnedLeasedandOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-233">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-234">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-235">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-236">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mar:ReimbursementsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-237">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:USAndCanadaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-238">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:EMEASegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-239">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:GreaterChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-240">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mar:APECMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-241">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-242">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-243">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-244">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-245">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:CorporateNonSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-04-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-246">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:CorporateNonSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-247">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:CorporateNonSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-248">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001048286</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:CorporateNonSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <unit id="usd">
+        <measure>iso4217:USD</measure>
+    </unit>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-3" decimals="-6" id="f-30" unitRef="usd">1023000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-4" decimals="-6" id="f-31" unitRef="usd">860000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-5" decimals="-6" id="f-32" unitRef="usd">1895000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-6" decimals="-6" id="f-33" unitRef="usd">1606000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-7" decimals="-6" id="f-34" unitRef="usd">343000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-8" decimals="-6" id="f-35" unitRef="usd">340000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-9" decimals="-6" id="f-36" unitRef="usd">682000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-10" decimals="-6" id="f-37" unitRef="usd">665000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-11" decimals="-6" id="f-38" unitRef="usd">212000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-12" decimals="-6" id="f-39" unitRef="usd">200000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-13" decimals="-6" id="f-40" unitRef="usd">434000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-14" decimals="-6" id="f-41" unitRef="usd">404000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-15" decimals="-6" id="f-42" unitRef="usd">1578000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-16" decimals="-6" id="f-43" unitRef="usd">1400000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-17" decimals="-6" id="f-44" unitRef="usd">3011000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-18" decimals="-6" id="f-45" unitRef="usd">2675000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <us-gaap:Revenues contextRef="c-15" decimals="-6" id="f-50" unitRef="usd">1547000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-16" decimals="-6" id="f-51" unitRef="usd">1371000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-17" decimals="-6" id="f-52" unitRef="usd">2945000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-18" decimals="-6" id="f-53" unitRef="usd">2618000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-19" decimals="-6" id="f-54" unitRef="usd">466000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-20" decimals="-6" id="f-55" unitRef="usd">441000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-21" decimals="-6" id="f-56" unitRef="usd">878000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-22" decimals="-6" id="f-57" unitRef="usd">802000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-23" decimals="-6" id="f-58" unitRef="usd">5058000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-24" decimals="-6" id="f-59" unitRef="usd">4932000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-25" decimals="-6" id="f-60" unitRef="usd">9902000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-26" decimals="-6" id="f-61" unitRef="usd">9587000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-27" decimals="-6" id="f-62" unitRef="usd">7071000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-28" decimals="-6" id="f-63" unitRef="usd">6744000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-1" decimals="-6" id="f-64" unitRef="usd">13725000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-29" decimals="-6" id="f-65" unitRef="usd">13007000000</us-gaap:Revenues>
+    <mar:DepreciationAmortizationAndOther contextRef="c-1" decimals="-6" id="f-224" unitRef="usd">384000000</mar:DepreciationAmortizationAndOther>
+    <mar:DepreciationAmortizationAndOther contextRef="c-29" decimals="-6" id="f-225" unitRef="usd">279000000</mar:DepreciationAmortizationAndOther>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-177" decimals="-6" id="f-623" unitRef="usd">906000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-178" decimals="-6" id="f-624" unitRef="usd">159000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-179" decimals="-6" id="f-625" unitRef="usd">68000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-180" decimals="-6" id="f-626" unitRef="usd">86000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <us-gaap:Revenues contextRef="c-177" decimals="-6" id="f-631" unitRef="usd">883000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-178" decimals="-6" id="f-632" unitRef="usd">154000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-179" decimals="-6" id="f-633" unitRef="usd">68000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-180" decimals="-6" id="f-634" unitRef="usd">85000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-181" decimals="-6" id="f-635" unitRef="usd">148000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-182" decimals="-6" id="f-636" unitRef="usd">158000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-183" decimals="-6" id="f-637" unitRef="usd">12000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-184" decimals="-6" id="f-638" unitRef="usd">47000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-185" decimals="-6" id="f-639" unitRef="usd">4232000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-186" decimals="-6" id="f-640" unitRef="usd">298000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-187" decimals="-6" id="f-641" unitRef="usd">84000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-188" decimals="-6" id="f-642" unitRef="usd">141000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-189" decimals="-6" id="f-643" unitRef="usd">5263000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-190" decimals="-6" id="f-644" unitRef="usd">610000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-191" decimals="-6" id="f-645" unitRef="usd">164000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-192" decimals="-6" id="f-646" unitRef="usd">273000000</us-gaap:Revenues>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-193" decimals="-6" id="f-671" unitRef="usd">800000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-194" decimals="-6" id="f-672" unitRef="usd">168000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-195" decimals="-6" id="f-673" unitRef="usd">64000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-196" decimals="-6" id="f-674" unitRef="usd">83000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <us-gaap:Revenues contextRef="c-193" decimals="-6" id="f-679" unitRef="usd">779000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-194" decimals="-6" id="f-680" unitRef="usd">164000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-195" decimals="-6" id="f-681" unitRef="usd">64000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-196" decimals="-6" id="f-682" unitRef="usd">81000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-197" decimals="-6" id="f-683" unitRef="usd">140000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-198" decimals="-6" id="f-684" unitRef="usd">164000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-199" decimals="-6" id="f-685" unitRef="usd">10000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-200" decimals="-6" id="f-686" unitRef="usd">43000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-201" decimals="-6" id="f-687" unitRef="usd">4043000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-202" decimals="-6" id="f-688" unitRef="usd">327000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-203" decimals="-6" id="f-689" unitRef="usd">78000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-204" decimals="-6" id="f-690" unitRef="usd">132000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-205" decimals="-6" id="f-691" unitRef="usd">4962000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-206" decimals="-6" id="f-692" unitRef="usd">655000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-207" decimals="-6" id="f-693" unitRef="usd">152000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-208" decimals="-6" id="f-694" unitRef="usd">256000000</us-gaap:Revenues>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-209" decimals="-6" id="f-719" unitRef="usd">1679000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-210" decimals="-6" id="f-720" unitRef="usd">291000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-211" decimals="-6" id="f-721" unitRef="usd">137000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-212" decimals="-6" id="f-722" unitRef="usd">190000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <us-gaap:Revenues contextRef="c-209" decimals="-6" id="f-727" unitRef="usd">1635000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-210" decimals="-6" id="f-728" unitRef="usd">281000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-211" decimals="-6" id="f-729" unitRef="usd">136000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-212" decimals="-6" id="f-730" unitRef="usd">187000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-213" decimals="-6" id="f-731" unitRef="usd">288000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-214" decimals="-6" id="f-732" unitRef="usd">274000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-215" decimals="-6" id="f-733" unitRef="usd">20000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-216" decimals="-6" id="f-734" unitRef="usd">86000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-217" decimals="-6" id="f-735" unitRef="usd">8295000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-218" decimals="-6" id="f-736" unitRef="usd">562000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-219" decimals="-6" id="f-737" unitRef="usd">160000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-220" decimals="-6" id="f-738" unitRef="usd">287000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-221" decimals="-6" id="f-739" unitRef="usd">10218000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-222" decimals="-6" id="f-740" unitRef="usd">1117000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-223" decimals="-6" id="f-741" unitRef="usd">316000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-224" decimals="-6" id="f-742" unitRef="usd">560000000</us-gaap:Revenues>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-225" decimals="-6" id="f-767" unitRef="usd">1509000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-226" decimals="-6" id="f-768" unitRef="usd">286000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-227" decimals="-6" id="f-769" unitRef="usd">124000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <mar:RevenuesGrossOfCapitalizedContractCostAmortization contextRef="c-228" decimals="-6" id="f-770" unitRef="usd">181000000</mar:RevenuesGrossOfCapitalizedContractCostAmortization>
+    <us-gaap:Revenues contextRef="c-225" decimals="-6" id="f-775" unitRef="usd">1468000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-226" decimals="-6" id="f-776" unitRef="usd">278000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-227" decimals="-6" id="f-777" unitRef="usd">124000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-228" decimals="-6" id="f-778" unitRef="usd">178000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-229" decimals="-6" id="f-779" unitRef="usd">260000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-230" decimals="-6" id="f-780" unitRef="usd">278000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-231" decimals="-6" id="f-781" unitRef="usd">17000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-232" decimals="-6" id="f-782" unitRef="usd">78000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-233" decimals="-6" id="f-783" unitRef="usd">7932000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-234" decimals="-6" id="f-784" unitRef="usd">613000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-235" decimals="-6" id="f-785" unitRef="usd">147000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-236" decimals="-6" id="f-786" unitRef="usd">263000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-237" decimals="-6" id="f-787" unitRef="usd">9660000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-238" decimals="-6" id="f-788" unitRef="usd">1169000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-239" decimals="-6" id="f-789" unitRef="usd">288000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-240" decimals="-6" id="f-790" unitRef="usd">519000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-241" decimals="-6" id="f-816" unitRef="usd">6310000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-242" decimals="-6" id="f-817" unitRef="usd">6025000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-243" decimals="-6" id="f-818" unitRef="usd">12211000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-244" decimals="-6" id="f-819" unitRef="usd">11636000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-245" decimals="-6" id="f-820" unitRef="usd">761000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-246" decimals="-6" id="f-821" unitRef="usd">719000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-247" decimals="-6" id="f-822" unitRef="usd">1514000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-248" decimals="-6" id="f-823" unitRef="usd">1371000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-27" decimals="-6" id="f-824" unitRef="usd">7071000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-28" decimals="-6" id="f-825" unitRef="usd">6744000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-1" decimals="-6" id="f-826" unitRef="usd">13725000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-29" decimals="-6" id="f-827" unitRef="usd">13007000000</us-gaap:Revenues>
+    </xbrl>

@@ -1,0 +1,31 @@
+# Marriott-specific concepts and metrics. Fee revenues are dimensional facts
+# (srt:ProductOrServiceAxis = mar:FeeServiceMember), read from each filing's XBRL instance.
+concepts:
+  gross_fee_revenue:
+    tags:
+      - tag: mar:RevenuesGrossOfCapitalizedContractCostAmortization
+        dims: {srt:ProductOrServiceAxis: mar:FeeServiceMember}
+      # Spelled with a lower-case "of" in filings before 2023.
+      - tag: mar:RevenuesGrossofCapitalizedContractCostAmortization
+        dims: {srt:ProductOrServiceAxis: mar:FeeServiceMember}
+  net_fee_revenue:
+    tags:
+      - tag: us-gaap:Revenues
+        dims: {srt:ProductOrServiceAxis: mar:FeeServiceMember}
+  # Marriott reports "Depreciation, amortization, and other" under its own tag since 2015.
+  d_and_a:
+    tags:
+      - us-gaap:DepreciationDepletionAndAmortization
+      - mar:DepreciationAmortizationAndOther
+
+metrics:
+  - code: gross_fee_revenue
+    display_name: Gross Fee Revenues
+    section: financial
+    unit: USD
+    formula: gross_fee_revenue
+  - code: net_fee_revenue
+    display_name: Net Fee Revenues
+    section: financial
+    unit: USD
+    formula: net_fee_revenue
