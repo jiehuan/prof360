@@ -119,8 +119,9 @@ def test_dq_stage_end_to_end_and_rerun_replaces(tmp_path) -> None:
         assert res[0].ok
     with engine.connect() as c:
         rules = sorted(r.rule_id for r in c.execute(select(dq_finding.c.rule_id)))
+    # detail_coverage: cash has data but the metricdetail stage has not run
     assert set(rules) == {"missing_metric", "negative_value", "release_vs_xbrl", "llm_drop_rate",
-                          "stale_filings", "review_queue"}  # fmt: skip
+                          "stale_filings", "review_queue", "detail_coverage"}  # fmt: skip
     assert (
         rules.count("llm_drop_rate") == 1 and rules.count("release_vs_xbrl") == 1
     )  # rerun replaced

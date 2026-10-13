@@ -11,14 +11,19 @@ from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig, load_industry_config
 from uw_pipeline.enrich.llm import load_llm_config
 from uw_pipeline.enrich.package import fmt_value, load_insights_config
+from uw_pipeline.enrich.sources import load_source_labels
 from uw_pipeline.jobs.run_insights import run_insights_stage
 from uw_pipeline.schema import (
     company,
     filing_section,
     followup_question,
     followup_question_insight,
+    followup_question_metric,
+    followup_question_source,
     insight,
     insight_evidence,
+    insight_link,
+    insight_metric,
     metadata,
     metric_value,
     signal,
@@ -102,9 +107,13 @@ def answer(model, user):
     if "## Insights from earlier steps" in user:  # follow-up questions
         return {"questions": [
             {"category": "Financial", "question": "How will you refinance the $16.9B of debt?",
-             "rationale": "Refinancing risk.", "system_priority": "high", "related_insight_ids": ["K1", "R1"]},
-            {"category": "Financial", "question": "Why did revenue fall 37%?",
-             "rationale": "Made-up number.", "system_priority": "low", "related_insight_ids": []},
+             "summary": "Total debt is $16.9B and equity is negative.",
+             "following_risk": "Refinancing risk", "uw_relevance": "Refinancing risk.",
+             "system_priority": "high", "related_insight_ids": ["K1", "R1"],
+             "related_metric_ids": ["M3", "M99"]},
+            {"category": "Financial", "question": "Why did revenue fall 37%?", "summary": "x",
+             "following_risk": "x", "uw_relevance": "Made-up number.", "system_priority": "low",
+             "related_insight_ids": [], "related_metric_ids": []},
         ]}  # fmt: skip
     raise AssertionError(f"unexpected prompt: {user[:200]}")
 
@@ -121,7 +130,7 @@ def _run(engine, llm):
     res = run_insights_stage(
         [CompanyConfig(ticker="MAR", cik=1048286)], load_registry(CONFIG_DIR),
         load_industry_config(CONFIG_DIR), (llm, load_llm_config(CONFIG_DIR)),
-        load_insights_config(CONFIG_DIR), engine, now=lambda: NOW,
+        load_insights_config(CONFIG_DIR), load_source_labels(CONFIG_DIR), engine, now=lambda: NOW,
     )  # fmt: skip
     assert res[0].ok, res
     return res[0].detail
@@ -151,7 +160,49 @@ def test_grounded_insights_stored_with_lineage(env) -> None:
     beh_id = rows[("BEHAVIORAL", "Macro caution enters CEO remarks")].insight_id
     assert sorted(e["doc_id"] for e in ev if e["insight_id"] == beh_id) == [2, 3]
     assert [x["question"] for x in q] == ["How will you refinance the $16.9B of debt?"]
+    assert q[0]["following_risk"] == "Refinancing risk" and q[0]["summary"]
     assert links == 2
+
+
+def test_sources_links_and_evidence_text(env) -> None:
+    _run(env, FakeLLM(answer))
+    with env.connect() as c:
+        rows = {r.title: r for r in c.execute(select(insight))}
+        key = rows["Negative equity amid $16.9B debt"]
+        risk = rows["Negative equity with heavy debt"]
+        beh = rows["Macro caution enters CEO remarks"]
+        ev = c.execute(select(insight_evidence).where(
+            insight_evidence.c.insight_id == key.insight_id)).mappings().all()  # fmt: skip
+        link = c.execute(select(insight_link)).all()
+        metrics = c.execute(select(insight_metric.c.metric_code).where(
+            insight_metric.c.insight_id == key.insight_id)).scalars().all()  # fmt: skip
+        qid = c.execute(select(followup_question.c.question_id)).scalar_one()
+        qm = c.execute(select(followup_question_metric.c.metric_code)).scalars().all()
+        qs = c.execute(select(followup_question_source).order_by(
+            followup_question_source.c.ordinal)).mappings().all()  # fmt: skip
+    # K1 cited R1: the link is kept, and the evidence resolves to the 10-K with a readable title.
+    assert link == [(key.insight_id, risk.insight_id)]
+    doc_ev = next(e for e in ev if e["source_kind"] == "DOCUMENT")
+    assert doc_ev["source_title"] == "MARRIOTT 10-K filed 2026-02-10 · Item 1A. Risk Factors"
+    assert doc_ev["source_url"] == "u" and doc_ev["source_date"] == "2026-02-10"
+    metric_ev = next(e for e in ev if e["source_kind"] == "METRIC")
+    assert metric_ev["source_title"].startswith("Total Debt FY2026 Q2")
+    assert "\u201cWe have significant indebtedness\u201d" in key.supporting_evidence_text
+    # The metric list includes the cited metric row; unknown codes are dropped.
+    assert metrics == ["total_debt"]
+    assert key.updated_at == "2026-02-10"
+    # Transcripts have no public link; their date is unknown, so updated_at stays empty.
+    assert beh.updated_at is None
+    # Question: metric ids map to codes (M99 does not exist); sources come from K1/R1 evidence
+    # and the filing behind total_debt.
+    assert qm == ["total_debt"]
+    assert [(s["question_id"], s["source_kind"]) for s in qs] == [
+        (qid, "DOCUMENT"),
+        (qid, "METRIC"),
+    ]
+    assert qs[0]["title"] == doc_ev["source_title"]
+    # A value whose filing is not registered still links to the EDGAR filing index.
+    assert qs[1]["url"] == "https://www.sec.gov/Archives/edgar/data/1048286/a/a-index.html"
 
 
 def test_rerun_with_same_inputs_makes_no_calls(env) -> None:

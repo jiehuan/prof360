@@ -469,6 +469,59 @@ uw-pipeline dq-report --run-id <id>
 
 **验收**：前端 9 家公司页面全部显示真实数据，无 mock 残留。
 
+### Phase 8 — 前端详情弹窗数据（2026-10-13 新增）
+
+**背景**：前端有五种详情弹窗，都由卡片上的灯泡按钮打开，目前显示的全是 mock 数据（例如 Marriott 的 Total Revenue 弹窗里写的是 RetailCo 的 FCCR）。本阶段让管线为每个弹窗、每个 tab 产出真实、可溯源的数据。
+
+**核心设计**：把指标、洞察（Key / Strategic & Risk / Behavioral）、追问问题三类对象之间的关联全部补齐，并做到双向可查。五种弹窗共用这套关联，以及同一套"来源标题和链接"。
+
+| 弹窗 | 左侧内容 | 右侧 tab |
+|---|---|---|
+| 指标（各指标卡片、Performance Trends 图表） | Formula / Evidence Methodology、Data Sources、Underwriting Relevance | Related Key Insight / Risks / Followup Questions |
+| Loan Portfolio Composition（仅 FI） | Methodology、Data Sources、Raw Data Points | — |
+| Strategic & Risk / Behavioral 洞察 | Category、Risk Type、Updated At、Summary、UW Relevance、Supporting Evidence、Sources | Related Key Insight / Metrics / Followup Questions |
+| Key Insight | 同上 | Related Risks / Metrics / Followup Questions |
+| Follow-Up Question | Category、Question、Summary、Following Risk、UW Relevance、Sources | Related Key Insight / Metrics / Risks |
+
+**生成方式的原则**：能用规则生成的一律用规则（Methodology、Data Sources、Supporting Evidence、Sources、Raw Data Points），保证可追溯、零 LLM 费用。只有需要判断的内容才调用 LLM（指标的核保相关性、关联选择、追问问题的补充字段），并照常走 schema 校验和数字校验。
+
+#### 8.1 基础：来源标题与洞察关联（不调用 LLM）
+- [x] `config/source_labels.yaml`：章节代码对应的可读名称，例如 8K-5.02 是 "Item 5.02 – Departure of Directors or Officers"，10K-1A 是 "Risk Factors"，TRANSCRIPT 是 "Earnings Call"。标题格式为"公司名 + 表单 + 提交日期 + 章节"，并附 SEC / AV 链接
+- [x] `insight_link` 表：记录 Key Insight 引用了哪些 R/B 洞察，生成时写入；现有数据从缓存的 LLM 输出里重新解析
+- [x] `insight` 表增加 `updated_at`（优先用 `event_date`，否则用所引用文件里最新的提交日期）和 `supporting_evidence_text`（规则生成：出处加原文片段）
+
+#### 8.2 FI 数据补齐（Performance Trends、Loan Portfolio）
+- [x] Fee Income Growth：新增 `noninterest_income`（XBRL 标准 tag `NoninterestIncome`）和 `fee_income_growth_yoy`，加入银行组的指标清单
+- [x] NIM / CET1 / NPL 补齐约 5 年历史：仅对 FI 公司，额外回溯最近 5 份 10-K 的 MD&A 来抽取，仍要求双模型一致；年数写在配置里
+- [x] 贷款组合改为按贷款类别抽取（约 6–8 行），每行包括所属大板块、余额、占比、不良贷款和不良率，另加上一年末的数据作对比
+- [x] `loan_portfolio_detail`：Methodology、Data Sources、Raw Data Points（原文表格行加上从数据算出的要点），全部规则生成
+
+#### 8.3 追问问题升级（prompt `followups_v2`）
+- [x] 输出增加 `summary`（背景事实）、`following_risk`（问题针对的风险领域）、`uw_relevance`、`related_metric_codes`；数字照常校验
+- [x] Sources：规则生成，汇总所关联洞察的证据文件和相关指标的数据来源
+- [x] `followup_question_metric` 表
+
+#### 8.4 指标详情（新增 `metricdetail` 阶段，排在 insights 之后）
+- [x] Methodology（规则模板）：公式或概念、实际用到的 XBRL tag、各期取值方式（直接报告 / 推导 / 公式计算 / 文本抽取 / 初步数字）、N/M 条件、最新值；文本类指标附口径定义和原文片段
+- [x] `metric_source`（规则）：最近一个季度和最近一个财年的值分别来自哪份文件，包括报表类型、提交日期和链接
+- [x] LLM（每家公司一次 Opus 调用）：为每个有数据的指标写 `uw_relevance`，并选出相关的 K / R / B / Q 编号；编号必须真实存在，数字必须通过校验
+- [x] `metric_insight` 表（带 `is_current`）；指标与洞察、问题的关联并入 `insight_metric` 和 `followup_question_metric`
+
+#### 8.5 契约、质量与验收工具
+- [x] `docs/schema-contract.md`：逐个弹窗、逐个 tab 写明读哪张表、用什么条件；Performance Trends 和 Loan Portfolio 只在 `is_financial = 1` 时显示
+- [x] 新增 DQ 规则：有数据的展示指标必须有 methodology 和来源；每条洞察和问题至少有一个来源；关联必须指向当前版本的对象
+- [x] `audit-insights` 扩展到指标详情和追问问题的引用检查；更新 golden 输出
+
+**费用估算**：8.4 每家公司每次重新生成约 $0.3–0.5，只在指标或洞察变化时发生；8.2 的历史回溯一次性约 $2–3（JPM）；8.3 的追问问题重新生成约 $1.6；其余不调用 LLM。
+
+**验收**：
+- 9 家公司中，所有有数据的展示指标 100% 有 Methodology 和 Data Sources，≥ 90% 有 Underwriting Relevance
+- 每条当前版本的洞察和追问问题都有至少一个可点击的来源；Supporting Evidence 的片段 100% 能在原文找到
+- 关联双向一致：从 A 能查到 B，从 B 也能查到 A，并且都指向当前版本
+- JPM 的 NIM / CET1 / NPL 覆盖至少 5 个财年；贷款组合有类别级的行和不良率
+- 非 FI 公司没有 Performance Trends 和 Loan Portfolio 的数据
+- 输入不变时重跑，LLM 调用为 0
+
 ---
 
 ## 11. 给 Claude Code 的工作约定（写入 CLAUDE.md）

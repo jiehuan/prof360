@@ -42,3 +42,15 @@ stale_filings:       # no new 10-K/10-Q for this long
 review_queue:        # signals the rule/LLM vote could not settle
   severity: Info
   statuses: [DISPUTED, OVERRULED]
+
+# Detail modals (Phase 8, decisions D-036) -----------------------------------------------------
+
+detail_coverage:     # every displayed metric with data has methodology, sources and relevance
+  severity: Warning
+  min_relevance: 0.9 # share of those metrics that must have a current Underwriting Relevance
+
+source_coverage:     # every current insight and follow-up question shows at least one source
+  severity: Warning
+
+link_integrity:      # links between current objects point to current objects; FI data only for FI
+  severity: Error

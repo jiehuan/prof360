@@ -8,6 +8,9 @@
 - 8-Ks with items in `fetch_body_items` are downloaded and split by item.
 - The EX-99.1 earnings release of every Item 2.02 8-K within `text_lookback_days` is downloaded
   for the Phase 5 preliminary-results extraction (decisions D-022).
+- For industry groups with `mdna_history_years`, older 10-Ks in that window are downloaded too,
+  keeping only their MD&A, for text-metric history (Phase 8, decisions D-036). With no other
+  sections stored they add no signal votes and no insight excerpts.
 """
 
 from __future__ import annotations
@@ -44,6 +47,7 @@ log = logging.getLogger(__name__)
 TEXT_FORMS = ("10-K", "10-Q")
 EVENT_FORMS = ("10-K", "10-K/A", "10-Q", "10-Q/A", "8-K", "8-K/A")
 # Sections that must be found; a miss is logged (PLAN Phase 3 acceptance).
+HISTORY_SECTIONS = ("10K-7",)
 REQUIRED_SECTIONS = {"10-K": ("10K-1A", "10K-3", "10K-7"), "10-Q": ("10Q-I-2",)}
 
 
@@ -153,6 +157,7 @@ def process_company(
     event_lookback_days: int,
     force: bool,
     now: datetime,
+    history_years: int = 0,
 ) -> dict[str, int]:
     row = company_row(conn, cfg)
     cik, company_id = row["cik"], row["company_id"]
@@ -217,7 +222,54 @@ def process_company(
             _, data = _download(conn, sec, cik, f.accn, name, force=force, now=now)
             if data is not None:
                 stats["downloaded"] += 1
+    if history_years:
+        stats["history_10k"] = _mdna_history(
+            conn, sec, cfg, company_id, cik, subs, today - timedelta(days=366 * history_years),
+            since_text, section_rules, force=force, now=now,
+        )  # fmt: skip
     return stats
+
+
+def _mdna_history(
+    conn: Connection,
+    sec: SecClient,
+    cfg: CompanyConfig,
+    company_id: int,
+    cik: str,
+    subs: dict[str, Any],
+    since: date,
+    since_text: str,
+    section_rules: dict[str, tuple[str, str]],
+    *,
+    force: bool,
+    now: datetime,
+) -> int:
+    """MD&A of the 10-Ks filed between `since` and the normal text window."""
+    older = [
+        f for f in filings_since(sec, cik, subs, since, ("10-K",), force=force)
+        if f.filed < since_text
+        and (cfg.history_start is None or f.filed >= cfg.history_start.isoformat())
+    ]  # fmt: skip
+    insert_missing(
+        conn,
+        source_document,
+        [_doc_row(company_id, cik, f, f.primary_doc, "PRIMARY") for f in older],
+        key_cols=["accession_no", "doc_name"],
+    )
+    done = 0
+    for f in older:
+        doc_id, data = _download(conn, sec, cik, f.accn, f.primary_doc, force=force, now=now)
+        if data is None:
+            continue
+        text = html_to_text(data)
+        sections = apply_rules(text, split_items(text, f.form), section_rules)
+        mdna = [s for s in sections if s.code in HISTORY_SECTIONS]
+        if not mdna:
+            log.warning("%s 10-K %s: MD&A not found", cfg.ticker, f.accn)
+            continue
+        _store_sections(conn, doc_id, mdna)
+        done += 1
+    return done
 
 
 def run_documents_stage(
@@ -230,6 +282,7 @@ def run_documents_stage(
     text_lookback_days: int = 400,
     event_lookback_days: int = 730,
     force: bool = False,
+    history_years: dict[str, int] | None = None,  # industry group -> mdna_history_years
     today: Callable[[], date] = lambda: datetime.now(UTC).date(),
     now: Callable[[], datetime] = lambda: datetime.now(UTC),
 ) -> list[TaskResult]:
@@ -237,10 +290,12 @@ def run_documents_stage(
     for cfg in companies:
         try:
             with engine.begin() as conn:
+                group = company_row(conn, cfg)["industry_group"]
                 stats = process_company(
                     cfg, sec, registry, rules, conn,
                     today=today(), text_lookback_days=text_lookback_days,
                     event_lookback_days=event_lookback_days, force=force, now=now(),
+                    history_years=(history_years or {}).get(group, 0),
                 )  # fmt: skip
             log.info("%s: documents %s", cfg.ticker, stats)
             detail = ", ".join(f"{k}={v}" for k, v in stats.items())

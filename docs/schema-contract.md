@@ -36,13 +36,62 @@
 | Financial / Liquidity / Leverage / Cash Flow 指标 | `metric_value` 关联 `metric_definition`（`is_display = 1`），按 `section` 分组 | value, value_status, unit, derivation, period_* | 单个指标无值时显示 "—"；原因见覆盖率报告 |
 | QoQ / YoY / 5Ys 切换 | `metric_value` 中 `period_type` 取 Q（最近 8 个季度）或 FY（最近 5 年）；增长率是 `revenue_growth_qoq` / `revenue_growth_yoy` | — | — |
 | Operational Metrics（酒店：RevPAR、入住率、ADR） | `metric_value` 中 `metric_code IN ('revpar','occupancy','adr')`；同表还有 Marriott 的 `gross_fee_revenue` 和 `net_fee_revenue` | evidence | 隐藏 |
-| Performance Trends（仅 FI） | `metric_value` 中 `metric_code IN ('cet1_ratio','tier1_ratio','lcr','nim','npl_ratio')` | evidence | **非 FI 公司隐藏整个模块**（`company.is_financial = 0`，这些行也不会存在） |
-| Loan Portfolio（仅 FI） | `loan_portfolio_segment` | segment, outstanding, pct_of_book, nonaccrual, period_end | 同上 |
+| Performance Trends（仅 FI） | `metric_value` 中 `metric_code IN ('cet1_ratio','tier1_ratio','lcr','nim','npl_ratio','fee_income_growth_yoy')`；NIM / CET1 / NPL 有约 5 个财年 | evidence | **非 FI 公司隐藏整个模块**（`company.is_financial = 0`，这些行也不会存在） |
+| Loan Portfolio（仅 FI） | `loan_portfolio_segment`（贷款类别级，含当前期和上一年末），详情见下文弹窗部分 | parent_segment, segment, outstanding, pct_of_book, nonaccrual, nonaccrual_ratio, period_end | 同上 |
 | Strategic & Risk Insights | `insight` 中 `kind IN ('STRATEGIC_RISK','BEHAVIORAL') AND is_current = 1`；按 category 分组：Governance & Leadership / Risk & Legal / Event Signals / Behavioral Insights | title, summary, uw_relevance, event_date | `subcategory = 'No signal'` 的行表示"已审查，无重要信号"，可以显示为灰色说明 |
 | 规则信号（明细或标记） | `signal` | category, subcategory, severity, title, description, event_date, snippet, review_status (RULE_ONLY/UNANIMOUS/MAJORITY/OVERRULED/DISPUTED) | — |
 | Recent Activities | `activity`，近 30 天，按 `published_at` 倒序；"另有 N 家报道"用 `source_count`，明细在 `news_item` | title, published_at, source_name, url, summary, uw_relevance, av_sentiment_label, llm_sentiment | 隐藏。**需要付费 Alpha Vantage key**，目前没有数据 |
-| Suggested Follow-Up Questions | `followup_question` 中 `is_current = 1`，按 `ordinal` 排序；关联洞察见 `followup_question_insight` | category, question, rationale, system_priority | 隐藏 |
+| Suggested Follow-Up Questions | `followup_question` 中 `is_current = 1`，按 `ordinal` 排序；关联见下文弹窗部分 | category, question, summary, following_risk, uw_relevance, system_priority | 隐藏 |
 | 用户状态（Favorites、Recently Viewed、问题 flag） | **BFF 自有**，管线不写 | — | — |
+
+## 详情弹窗（Phase 8，decisions D-036）
+
+所有弹窗中的"来源"都是同一格式：`title`（"公司名 表单 filed 日期 · 章节"）+ `url`（可点击；电话会议记录没有公开链接，`url` 为 NULL，只显示标题）。所有关联都是双向的：同一张关联表从两边都能查。
+
+### 指标弹窗（各指标卡片、Performance Trends 图表）
+
+| 位置 | 表 / 条件 | 字段 |
+|---|---|---|
+| Formula / Evidence Methodology | `metric_detail` 中 `company_id, metric_code` | methodology（多行文本，按 `\n` 分行）、latest_period、latest_value_text |
+| Data Sources | `metric_source` 中 `company_id, metric_code`（最多两行：最新季度 Q、最新财年 FY） | title, url, form_type, filed_at, derivation |
+| Underwriting Relevance | `metric_insight` 中 `company_id, metric_code, is_current = 1` | uw_relevance |
+| Related Key Insight | `insight_metric` 关联 `insight`（`kind = 'KEY' AND is_current = 1`） | 同 Key Insights |
+| Related Risks | `insight_metric` 关联 `insight`（`kind IN ('STRATEGIC_RISK','BEHAVIORAL') AND is_current = 1`） | — |
+| Related Followup Questions | `followup_question_metric` 关联 `followup_question`（`is_current = 1`） | — |
+
+无 `metric_insight` 行时隐藏 Underwriting Relevance；`insight_metric.link_source` 只用于审计，前端不区分。
+
+### Loan Portfolio Composition 弹窗（仅 `is_financial = 1`）
+
+| 位置 | 表 | 字段 |
+|---|---|---|
+| 图表 / 表格 | `loan_portfolio_segment`，`period_end = loan_portfolio_detail.period_end` 为当前期，`prior_period_end` 为对比期 | parent_segment, segment, outstanding, pct_of_book, nonaccrual, nonaccrual_ratio |
+| Methodology | `loan_portfolio_detail` | methodology |
+| Data Sources | `loan_portfolio_detail.data_sources_json` | `[{title, url, date}]` |
+| Raw Data Points | `loan_portfolio_detail.raw_data_points_json` | `[{label, text, evidence}]`；第一条是合计 |
+
+### Strategic & Risk / Behavioral / Key Insight 弹窗
+
+| 位置 | 表 / 条件 | 字段 |
+|---|---|---|
+| 左侧 | `insight` | category, subcategory（Risk Type）, insight_type, updated_at, title, summary, uw_relevance |
+| Supporting Evidence | `insight.supporting_evidence_text`（规则生成，每行"来源：“原文”"）；Key Insight 另有模型写的 `supporting_evidence` | — |
+| Sources | `insight_evidence` 中该 `insight_id`，按 `(source_title, source_url)` 去重 | source_title, source_url, source_date, snippet |
+| Related Key Insight（R/B 弹窗） | `insight_link` 中 `linked_insight_id = 本条`，关联 `insight`（`is_current = 1`） | — |
+| Related Risks（Key 弹窗） | `insight_link` 中 `insight_id = 本条` | — |
+| Related Metrics | `insight_metric` 关联 `metric_detail`（只显示有数据的展示指标） | metric_code |
+| Related Followup Questions | `followup_question_insight` 关联 `followup_question`（`is_current = 1`） | — |
+
+### Follow-Up Question 弹窗
+
+| 位置 | 表 / 条件 | 字段 |
+|---|---|---|
+| 左侧 | `followup_question` | category, question, summary, following_risk, uw_relevance, system_priority |
+| Sources | `followup_question_source`，按 `ordinal` | source_kind, title, url, source_date |
+| Related Key Insight / Risks | `followup_question_insight` 关联 `insight`，按 `kind` 分到两个 tab | — |
+| Related Metrics | `followup_question_metric` | metric_code |
+
+`rationale` 保留以兼容旧版本，v2 起等于 `uw_relevance`。
 
 ### 显示建议
 - `review_status` 为 OVERRULED 或 DISPUTED 的信号，以及标题带 "(disputed)" 或 "overruled" 的条目，建议标注"待复核"（D-028）。

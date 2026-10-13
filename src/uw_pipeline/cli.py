@@ -38,13 +38,15 @@ class Stage(StrEnum):
     textmetrics = "textmetrics"
     signals = "signals"
     insights = "insights"
+    metricdetail = "metricdetail"
     dq = "dq"
 
 
 # Default order for manual runs (scheduled jobs list their stages in config/jobs.yaml).
 STAGE_ORDER = [
     Stage.company, Stage.facts, Stage.compute, Stage.documents,
-    Stage.transcripts, Stage.news, Stage.textmetrics, Stage.signals, Stage.insights, Stage.dq,
+    Stage.transcripts, Stage.news, Stage.textmetrics, Stage.signals, Stage.insights,
+    Stage.metricdetail, Stage.dq,
 ]  # fmt: skip
 
 
@@ -215,7 +217,7 @@ def coverage_report(
 
 @app.command("audit-insights")
 def audit_insights(sample: Annotated[int, typer.Option(help="Insights to sample")] = 20) -> None:
-    """Re-check stored insight evidence against the sources (Phase 5 acceptance)."""
+    """Re-check stored evidence against the sources and the detail-modal data (Phases 5, 8)."""
     settings = Settings()
     with make_engine(settings.database_url).connect() as conn:
         rep = audit(conn, sample=sample)
@@ -223,10 +225,14 @@ def audit_insights(sample: Annotated[int, typer.Option(help="Insights to sample"
     typer.echo(f"sampled insights:            {rep.sampled_insights}")
     typer.echo(f"evidence snippets found:     {rep.snippets_found}/{rep.snippets} ({pct:.0f}%)")
     typer.echo(f"insights without evidence:   {rep.insights_without_evidence}")
+    typer.echo(f"evidence without a source title: {rep.evidence_without_title}")
+    typer.echo(f"questions without sources:   {rep.questions_without_sources}/{rep.questions}")
+    typer.echo(f"loan rows found in filing:   {rep.loan_rows_found}/{rep.loan_rows}")
+    typer.echo(f"metric details / relevance:  {rep.metric_details} / {rep.metric_relevance}")
     typer.echo(f"FI rows for non-FI companies: {rep.fi_rows_for_non_fi}")
     for f in rep.failures:
         typer.echo(f"  NOT FOUND {f}", err=True)
-    if rep.failures or rep.insights_without_evidence or rep.fi_rows_for_non_fi:
+    if rep.failed:
         raise typer.Exit(code=1)
 
 

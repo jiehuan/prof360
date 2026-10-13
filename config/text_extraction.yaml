@@ -21,12 +21,17 @@ preliminary:
   operating_income: >-
     Operating income (GAAP, as reported) for the fiscal quarter the release announces.
 
-# Loan book by segment (BANKS only).
+# Loan book by loan class (BANKS only; Phase 8, decisions D-036). Both models must agree.
 loan_portfolio:
+  prompt_version: loan_book_v2
   groups: [BANKS]
-  keywords: [loans, retained loans, loan portfolio]
+  keywords: [loans retained, retained loans, residential real estate, nonaccrual loans,
+             credit portfolio, loan portfolio]
   definition: >-
-    Total retained loans by top-level segment (for example Consumer, Credit Card, Wholesale /
-    Commercial) at period end, as shown in the filing's loan portfolio table, with nonaccrual
-    loans per segment when the same table shows them. Use the firm's own top-level segments;
-    do not break down further.
+    Retained loans (held for investment, excluding loans held-for-sale and loans at fair value)
+    by loan class at the latest period end and at the prior fiscal year-end shown in the same
+    table, with nonaccrual (nonperforming) loans per class when the same table shows them. Use
+    the finest classes for which the table gives a balance (for example Residential real
+    estate, Auto and other, Credit card), and the segment's own retained-loan line where a
+    segment is not broken down (for example Wholesale). Do not include subtotals or totals of
+    classes already listed.

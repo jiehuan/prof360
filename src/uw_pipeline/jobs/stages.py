@@ -18,11 +18,13 @@ from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig, load_companies, load_industry_config
 from uw_pipeline.enrich.llm import LLMConfig, load_llm_config
 from uw_pipeline.enrich.package import load_insights_config
+from uw_pipeline.enrich.sources import load_source_labels
 from uw_pipeline.enrich.text_metrics import load_text_config
 from uw_pipeline.jobs.run_company import TaskResult, run_company_stage
 from uw_pipeline.jobs.run_documents import run_documents_stage
 from uw_pipeline.jobs.run_dq import run_dq_stage
 from uw_pipeline.jobs.run_insights import run_insights_stage
+from uw_pipeline.jobs.run_metric_detail import run_metric_detail_stage
 from uw_pipeline.jobs.run_news import load_news_config, run_news_stage
 from uw_pipeline.jobs.run_signals import run_signals_stage
 from uw_pipeline.jobs.run_text_metrics import run_text_metrics_stage
@@ -119,12 +121,20 @@ class StageRunner:
                 c, self.sec, reg, self.signal_rules, e,
                 text_lookback_days=s.text_lookback_days,
                 event_lookback_days=s.event_lookback_days, force=f,
+                history_years={k: g.mdna_history_years for k, g in ind.groups.items()},
             )  # fmt: skip
         if stage in ("transcripts", "news"):
             return lambda c: self._av_stage(stage, c)
         if stage == "textmetrics":
             return lambda c: run_text_metrics_stage(
-                c, reg, ind, load_text_config(s.config_dir), self.llm, self.storage, e
+                c,
+                reg,
+                ind,
+                load_text_config(s.config_dir),
+                self.llm,
+                self.storage,
+                e,
+                labels=load_source_labels(s.config_dir),
             )
         if stage == "signals":
             return lambda c: run_signals_stage(c, self.sec, self.signal_rules, e, llm=self.llm)
@@ -134,7 +144,23 @@ class StageRunner:
             )
         if stage == "insights":
             return lambda c: run_insights_stage(
-                c, reg, ind, self.llm, load_insights_config(s.config_dir), e
+                c,
+                reg,
+                ind,
+                self.llm,
+                load_insights_config(s.config_dir),
+                load_source_labels(s.config_dir),
+                e,
+            )
+        if stage == "metricdetail":
+            return lambda c: run_metric_detail_stage(
+                c,
+                reg,
+                ind,
+                self.llm,
+                load_insights_config(s.config_dir),
+                load_source_labels(s.config_dir),
+                e,
             )
         raise ValueError(f"unknown stage {stage}")
 

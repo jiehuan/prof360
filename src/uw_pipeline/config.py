@@ -67,6 +67,9 @@ class IndustryGroup(BaseModel):
     # Curated metric list for this group: named sets from metrics.yaml plus extra codes.
     metric_sets: list[str] = Field(default_factory=list)
     metrics: list[str] = Field(default_factory=list)
+    # Years of older 10-Ks whose MD&A is kept for text-metric history (Phase 8, e.g. 5 years of
+    # NIM / CET1 / NPL for banks). 0 = only the documents in the normal text window.
+    mdna_history_years: int = 0
 
 
 class SicRange(BaseModel):

@@ -29,6 +29,8 @@ concepts:
       - us-gaap:ProfitLoss
   operating_income:
     tags: [us-gaap:OperatingIncomeLoss]
+  noninterest_income:
+    tags: [us-gaap:NoninterestIncome]
   pretax_income:
     tags:
       - us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest

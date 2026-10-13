@@ -17,6 +17,7 @@ from sqlalchemy import Connection, desc, select
 
 from uw_pipeline.compute.registry import MetricDef
 from uw_pipeline.enrich.llm import ModelSpec
+from uw_pipeline.enrich.sources import SourceRef
 from uw_pipeline.schema import (
     activity,
     filing_section,
@@ -55,6 +56,9 @@ class Source:
     signal_id: int | None = None
     activity_id: int | None = None
     values: tuple[float, ...] = ()  # numeric values (metric rows) for number grounding
+    accession_no: str | None = None  # metric rows: the filing the value comes from
+    insight_id: int | None = None  # K/R/B items
+    ref: SourceRef | None = None  # title and link when already known (stored evidence)
 
 
 @dataclass
@@ -168,6 +172,7 @@ def build_package(
                 text=f"{m.display_name} | {label} | {shown} | {r['derivation']}",
                 metric_code=m.code,
                 values=(r["value"],) if r["value"] is not None else (),
+                accession_no=r["source_accn"] or None,
             )
         )  # fmt: skip
 

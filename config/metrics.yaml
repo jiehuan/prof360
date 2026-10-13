@@ -60,6 +60,8 @@ metric_sets:
     - revenue_growth_qoq
     - revenue_growth_yoy
     - net_income
+    - noninterest_income
+    - fee_income_growth_yoy
     - equity
     - buybacks
     - buyback_intensity
@@ -212,6 +214,22 @@ metrics:
     unit: ratio
     formula: buybacks / net_income
     nm_when: net_income <= 0
+
+  # -- Bank fee income (Performance Trends, Phase 8) --------------------------------------
+  # Fee income = total noninterest income as reported (us-gaap:NoninterestIncome): banks' fees,
+  # commissions, markets and other non-interest revenue. Decision D-036.
+  - code: noninterest_income
+    display_name: Noninterest (Fee) Income
+    section: financial
+    unit: USD
+    formula: noninterest_income
+  - code: fee_income_growth_yoy
+    display_name: Fee Income Growth (YoY)
+    section: fi_performance
+    unit: fraction
+    kind: growth
+    base: noninterest_income
+    compare: prior_year
 
   # -- Text-extracted operating metrics (kind: text) ---------------------------------------
   - code: revpar

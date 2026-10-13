@@ -117,7 +117,8 @@ class TextValues(BaseModel):
 class LoanSegment(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    segment: str
+    segment: str = Field(description="Loan class as named in the table, e.g. Auto and other")
+    parent_segment: str = Field(description="The firm's top-level segment it belongs to")
     outstanding: str = Field(description="Number exactly as written")
     nonaccrual: str | None = Field(description="Number exactly as written, if shown")
     scale: Scale
@@ -222,16 +223,39 @@ class KeyInsights(BaseModel):
 
 
 class FollowUpQuestion(BaseModel):
+    """followups_v2 (Phase 8): the fields of the Follow-Up Question modal."""
+
     model_config = ConfigDict(extra="forbid")
 
     category: Literal["Financial", "Operational", "Market", "Strategy", "Governance"]
     question: str
-    rationale: str
+    summary: str = Field(description="The background facts behind the question, 1-2 sentences")
+    following_risk: str = Field(description="The risk area it probes, at most 5 words")
+    uw_relevance: str = Field(description="Why the answer matters for D&O risk, one sentence")
     system_priority: Literal["high", "medium", "low"]
     related_insight_ids: list[str] = Field(description="Ids of insights it follows from, e.g. K2")
+    related_metric_ids: list[str] = Field(description="Ids of metric rows it concerns, e.g. M4")
 
 
 class FollowUpQuestions(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     questions: list[FollowUpQuestion]
+
+
+# -- Phase 8: metric detail ---------------------------------------------------------------------
+
+
+class MetricRelevance(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    metric_code: str = Field(description="Code from the metric list, e.g. debt_to_equity")
+    uw_relevance: str = Field(description="One or two sentences on the D&O angle")
+    related_insight_ids: list[str] = Field(description="K/R/B ids about this metric")
+    related_question_ids: list[str] = Field(description="Q ids about this metric")
+
+
+class MetricRelevances(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    metrics: list[MetricRelevance]

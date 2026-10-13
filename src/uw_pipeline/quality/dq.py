@@ -1,5 +1,5 @@
-"""Data-quality rules (Phase 7, decisions D-035). Each rule reads the database and returns
-findings for one company; the `dq` stage stores them per run."""
+"""Data-quality rules (Phase 7, decisions D-035; detail-modal rules Phase 8, D-036). Each rule
+reads the database and returns findings for one company; the `dq` stage stores them per run."""
 
 from __future__ import annotations
 
@@ -11,12 +11,25 @@ from typing import Any
 
 import yaml
 from pydantic import BaseModel
-from sqlalchemy import Connection, desc, func, select
+from sqlalchemy import Connection, desc, func, or_, select
 
 from uw_pipeline.compute.coverage import company_coverage
 from uw_pipeline.compute.registry import MetricDef
 from uw_pipeline.schema import (
+    company,
+    followup_question,
+    followup_question_insight,
+    followup_question_metric,
+    followup_question_source,
+    insight,
+    insight_evidence,
+    insight_link,
+    insight_metric,
     llm_task_stat,
+    loan_portfolio_segment,
+    metric_detail,
+    metric_insight,
+    metric_source,
     metric_value,
     release_check,
     signal,
@@ -65,6 +78,10 @@ class ReviewQueue(_Rule):
     statuses: list[str]
 
 
+class DetailCoverage(_Rule):
+    min_relevance: float
+
+
 class DqConfig(BaseModel):
     missing_metric: _Rule
     quarter_jump: QuarterJump
@@ -74,6 +91,9 @@ class DqConfig(BaseModel):
     llm_drop_rate: LlmDropRate
     stale_filings: StaleFilings
     review_queue: ReviewQueue
+    detail_coverage: DetailCoverage
+    source_coverage: _Rule
+    link_integrity: _Rule
 
 
 def load_dq_config(config_dir: Path) -> DqConfig:
@@ -307,6 +327,112 @@ def review_queue(conn: Connection, company_id: int, cfg: ReviewQueue) -> list[Fi
     ]
 
 
+# -- detail modals (Phase 8) -------------------------------------------------------------------
+
+
+def _set(conn: Connection, stmt: Any) -> set[Any]:
+    return set(conn.execute(stmt).scalars())
+
+
+def detail_coverage(
+    conn: Connection, company_id: int, shown: Sequence[str], cfg: DetailCoverage
+) -> list[Finding]:
+    """`shown`: codes of displayed metrics that have at least one value."""
+    detail = _set(conn, select(metric_detail.c.metric_code).where(
+        metric_detail.c.company_id == company_id))  # fmt: skip
+    sources = _set(conn, select(metric_source.c.metric_code).where(
+        metric_source.c.company_id == company_id))  # fmt: skip
+    mi = metric_insight.c
+    relevance = _set(conn, select(mi.metric_code).where(mi.company_id == company_id,
+                                                        mi.is_current.is_(True)))  # fmt: skip
+    out = [
+        Finding("detail_coverage", cfg.severity,
+                f"{code}: no methodology or data sources (run the metricdetail stage)", code)
+        for code in shown
+        if code not in detail or code not in sources
+    ]  # fmt: skip
+    if shown:
+        share = len(relevance & set(shown)) / len(shown)
+        if share < cfg.min_relevance:
+            missing = ", ".join(sorted(set(shown) - relevance)[:12])
+            msg = (f"Underwriting Relevance for {share:.0%} of displayed metrics "
+                   f"(target {cfg.min_relevance:.0%}); missing: {missing}")  # fmt: skip
+            out.append(Finding("detail_coverage", cfg.severity, msg))
+    return out
+
+
+def source_coverage(conn: Connection, company_id: int, cfg: _Rule) -> list[Finding]:
+    ev = insight_evidence.c
+    rows = conn.execute(
+        select(insight.c.kind, insight.c.title, func.count(ev.source_title),
+               func.count(ev.source_url))
+        .outerjoin(insight_evidence, ev.insight_id == insight.c.insight_id)
+        .where(insight.c.company_id == company_id, insight.c.is_current.is_(True),
+               or_(insight.c.subcategory.is_(None), insight.c.subcategory != "No signal"))
+        .group_by(insight.c.insight_id, insight.c.kind, insight.c.title)
+    ).all()  # fmt: skip
+    out = []
+    for kind, title, titled, linked in rows:
+        if not titled:
+            out.append(Finding("source_coverage", cfg.severity,
+                               f"{kind} insight '{title}' has no source"))  # fmt: skip
+        elif not linked:  # e.g. transcript-only: the source is named but has no public link
+            out.append(Finding("source_coverage", "Info",
+                               f"{kind} insight '{title}' has no source link"))  # fmt: skip
+    fq, fs = followup_question.c, followup_question_source.c
+    qs = conn.execute(
+        select(fq.question, func.count(fs.source_row_id))
+        .outerjoin(followup_question_source, fs.question_id == fq.question_id)
+        .where(fq.company_id == company_id, fq.is_current.is_(True))
+        .group_by(fq.question_id, fq.question)
+    ).all()  # fmt: skip
+    out += [Finding("source_coverage", cfg.severity, f"question '{q[:80]}' has no source")
+            for q, n in qs if not n]  # fmt: skip
+    return out
+
+
+def link_integrity(conn: Connection, company_id: int, cfg: _Rule) -> list[Finding]:
+    """Links from current objects reach current objects and displayed metrics; FI-only data
+    exists only for financial institutions."""
+    out = []
+    current = _set(conn, select(insight.c.insight_id).where(
+        insight.c.company_id == company_id, insight.c.is_current.is_(True)))  # fmt: skip
+    fq = followup_question.c
+    questions = _set(conn, select(fq.question_id).where(fq.company_id == company_id,
+                                                        fq.is_current.is_(True)))  # fmt: skip
+    il, qi = insight_link.c, followup_question_insight.c
+    pairs = [("insight", a, b) for a, b in conn.execute(
+        select(il.insight_id, il.linked_insight_id).where(il.insight_id.in_(current)))]  # fmt: skip
+    pairs += [("question", a, b) for a, b in conn.execute(
+        select(qi.question_id, qi.insight_id).where(qi.question_id.in_(questions)))]  # fmt: skip
+    out += [Finding("link_integrity", cfg.severity,
+                    f"current {what} {a} links to retired insight {b}")
+            for what, a, b in pairs if b not in current]  # fmt: skip
+    detailed = _set(conn, select(metric_detail.c.metric_code).where(
+        metric_detail.c.company_id == company_id))  # fmt: skip
+    if detailed:
+        linked = _set(conn, select(insight_metric.c.metric_code).where(
+            insight_metric.c.insight_id.in_(current)))  # fmt: skip
+        linked |= _set(conn, select(followup_question_metric.c.metric_code).where(
+            followup_question_metric.c.question_id.in_(questions)))  # fmt: skip
+        out += [Finding("link_integrity", "Warning",
+                        f"{code} is linked from an insight or question but is not a displayed "
+                        "metric with data", code)
+                for code in sorted(linked - detailed)]  # fmt: skip
+    is_fi = conn.execute(
+        select(company.c.is_financial).where(company.c.company_id == company_id)
+    ).scalar()
+    if not is_fi:
+        loans = conn.execute(
+            select(func.count()).select_from(loan_portfolio_segment)
+            .where(loan_portfolio_segment.c.company_id == company_id)
+        ).scalar_one()  # fmt: skip
+        if loans:
+            out.append(Finding("link_integrity", cfg.severity,
+                               f"non-FI company has {loans} loan portfolio rows"))  # fmt: skip
+    return out
+
+
 def run_rules(
     conn: Connection,
     company_id: int,
@@ -319,6 +445,8 @@ def run_rules(
     stamp = now()
     values = _values(conn, company_id)
     by_code = {m.code: m for m in metrics}
+    with_data = {v["metric_code"] for v in values}
+    shown = [m.code for m in metrics if m.display and m.code in with_data]
     return [
         *missing_metric(ticker, metrics, values, notes, cfg.missing_metric),
         *quarter_jump(values, by_code, cfg.quarter_jump),
@@ -328,4 +456,7 @@ def run_rules(
         *llm_drop_rate(conn, company_id, cfg.llm_drop_rate, stamp),
         *stale_filings(conn, company_id, cfg.stale_filings, stamp),
         *review_queue(conn, company_id, cfg.review_queue),
+        *detail_coverage(conn, company_id, shown, cfg.detail_coverage),
+        *source_coverage(conn, company_id, cfg.source_coverage),
+        *link_integrity(conn, company_id, cfg.link_integrity),
     ]

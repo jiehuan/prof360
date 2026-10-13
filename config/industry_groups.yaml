@@ -31,6 +31,7 @@ groups:
     label: Banks
     is_financial: true
     metric_sets: [BANK_CORE, BANK_REGULATORY]
+    mdna_history_years: 5   # Performance Trends: 5 years of NIM / CET1 / NPL (Phase 8)
   # Groups with no metric set get one when their first company is onboarded.
   CREDIT:
     label: Non-depository Credit

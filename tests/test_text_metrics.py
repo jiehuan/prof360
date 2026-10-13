@@ -178,3 +178,100 @@ def test_stage_writes_preliminary_and_crosschecks(tmp_path) -> None:
         ("revenue", 2026, 3): (7.3e9, "PRELIMINARY"),
         ("revpar", 2026, 3): (140.12, "LLM_EXTRACTED"),
     }
+
+
+LOAN_TABLE = (
+    "Consumer credit portfolio\n(in millions) Jun 30, 2026 Dec 31, 2025 Jun 30, 2026 Dec 31, 2025\n"
+    "Residential real estate(a)\n$ 300,664 $ 303,531 $ 3,615 $ 3,632\n"
+    "Auto and other(b)(c)\n66,464 65,210 228 243\n"
+    "Credit card\nLoans retained(f)\n249,876 247,797 NA NA\n"
+    "Wholesale credit portfolio\nLoans retained $ 846,804 $ 792,367 $ 4,191 $ 4,398"
+)
+
+
+def _loan(seg, parent, out, na, end, evidence):
+    return {"segment": seg, "parent_segment": parent, "outstanding": out, "nonaccrual": na,
+            "scale": "millions", "period_end": end, "evidence": evidence}  # fmt: skip
+
+
+def test_loan_book_by_class_with_prior_year_end(tmp_path) -> None:
+    from uw_pipeline.enrich.sources import load_source_labels
+    from uw_pipeline.schema import (
+        filing_section,
+        loan_portfolio_detail,
+        loan_portfolio_segment,
+        section_chunk,
+    )
+
+    engine = create_engine("sqlite://")
+    metadata.create_all(engine)
+    with engine.begin() as c:
+        c.execute(insert(company).values(
+            company_id=1, cik="0000019617", ticker="JPM", name="JPMorgan", legal_name="JPM CHASE",
+            industry_group="BANKS", is_financial=True, is_active=True, fiscal_year_end="1231",
+            source_url="u", source_hash="h", raw_path="p", last_refreshed_at=NOW))  # fmt: skip
+        c.execute(insert(source_document).values(
+            doc_id=7, company_id=1, source_type="SEC_FILING", form_type="10-Q", doc_role="PRIMARY",
+            accession_no="acc-q", doc_name="q.htm", filed_at="2026-08-06", url="https://sec/q.htm",
+            content_hash="h"))  # fmt: skip
+        c.execute(insert(filing_section).values(
+            section_id=1, doc_id=7, section_code="10Q-I-2", start_offset=0,
+            char_count=len(LOAN_TABLE), text=LOAN_TABLE, text_hash="h"))  # fmt: skip
+        c.execute(insert(section_chunk).values(
+            section_id=1, chunk_index=0, start_offset=0, end_offset=len(LOAN_TABLE),
+            text=LOAN_TABLE))  # fmt: skip
+
+    rre = "Residential real estate(a)\n$ 300,664 $ 303,531 $ 3,615 $ 3,632"
+    auto = "66,464 65,210 228 243"
+    card = "249,876 247,797 NA NA"
+    whs = "Loans retained $ 846,804 $ 792,367 $ 4,191 $ 4,398"
+
+    def answer(model, user):
+        if "Metrics to extract" in user:
+            return {"values": []}
+        rows = [
+            _loan("Residential real estate", "Consumer, excluding credit card", "300,664", "3,615", "2026-06-30", rre),
+            _loan("Residential real estate", "Consumer, excluding credit card", "303,531", "3,632", "2025-12-31", rre),
+            _loan("Auto and other", "Consumer, excluding credit card", "66,464", "228", "2026-06-30", auto),
+            _loan("Credit card", "Credit card", "249,876", None, "2026-06-30", card),
+            _loan("Wholesale", "Wholesale", "846,804", "4,191", "2026-06-30", whs),
+            _loan("Wholesale", "Wholesale", "792,367", "4,398", "2025-12-31", whs),
+        ]  # fmt: skip
+        if "opus" in model:  # disagrees on auto (misread) -> that row is dropped
+            rows[2] = _loan("Auto & other", "Consumer", "65,210", "243", "2026-06-30", auto)
+            rows[0]["segment"] = "Residential Real Estate (a)"  # same class, other spelling
+        return {"segments": rows}
+
+    res = run_text_metrics_stage(
+        [CompanyConfig(ticker="JPM", cik=19617)], REG, IND, load_text_config(CONFIG_DIR),
+        (FakeLLM(answer), load_llm_config(CONFIG_DIR)), LocalStorage(tmp_path), engine,
+        labels=load_source_labels(CONFIG_DIR), now=lambda: NOW,
+    )  # fmt: skip
+    assert res[0].ok, res
+    with engine.connect() as c:
+        rows = {(r.period_end, r.segment): r for r in c.execute(select(loan_portfolio_segment))}
+        detail = c.execute(select(loan_portfolio_detail)).mappings().one()
+    assert set(rows) == {
+        ("2026-06-30", "Residential real estate"), ("2026-06-30", "Credit card"),
+        ("2026-06-30", "Wholesale"), ("2025-12-31", "Residential real estate"),
+        ("2025-12-31", "Wholesale"),
+    }  # fmt: skip
+    rre_now = rows[("2026-06-30", "Residential real estate")]
+    assert rre_now.parent_segment == "Consumer, excluding credit card"
+    assert rre_now.nonaccrual_ratio == pytest.approx(3615 / 300664)
+    assert rows[("2026-06-30", "Credit card")].nonaccrual_ratio is None
+    total = 300664 + 249876 + 846804
+    assert rows[("2026-06-30", "Wholesale")].pct_of_book == pytest.approx(846804 / total)
+    assert detail["period_end"] == "2026-06-30" and detail["prior_period_end"] == "2025-12-31"
+    assert "two models" in detail["methodology"]
+    import json
+
+    sources = json.loads(detail["data_sources_json"])
+    assert sources == [{"title": "JPM CHASE 10-Q filed 2026-08-06 · Part I, Item 2. MD&A",
+                        "url": "https://sec/q.htm",
+                        "date": "2026-08-06"}]  # fmt: skip
+    points = json.loads(detail["raw_data_points_json"])
+    assert [p["label"] for p in points] == ["Total", "Wholesale", "Residential real estate",
+                                            "Credit card"]  # fmt: skip
+    assert "+6.9% vs 2025-12-31" in points[1]["text"]  # 846,804 vs 792,367
+    assert points[1]["evidence"] == whs

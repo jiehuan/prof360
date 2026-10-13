@@ -1,0 +1,89 @@
+# Readable names for section codes (Phase 8, decisions D-036). Used to build source titles shown
+# in the front-end detail modals, e.g.
+#   "Marriott International, Inc. 10-Q filed 2026-07-30 · Item 2. MD&A"
+# A code missing here is shown as the code itself.
+
+sections:
+  # 10-K
+  10K-1: "Item 1. Business"
+  10K-1A: "Item 1A. Risk Factors"
+  10K-1B: "Item 1B. Unresolved Staff Comments"
+  10K-1C: "Item 1C. Cybersecurity"
+  10K-2: "Item 2. Properties"
+  10K-3: "Item 3. Legal Proceedings"
+  10K-4: "Item 4. Mine Safety Disclosures"
+  10K-4A: "Executive Officers of the Registrant"
+  10K-5: "Item 5. Market for Common Equity"
+  10K-6: "Item 6. [Reserved]"
+  10K-7: "Item 7. MD&A"
+  10K-7A: "Item 7A. Market Risk"
+  10K-8: "Item 8. Financial Statements"
+  10K-9: "Item 9. Changes in and Disagreements with Accountants"
+  10K-9A: "Item 9A. Controls and Procedures"
+  10K-9B: "Item 9B. Other Information"
+  10K-9C: "Item 9C. Foreign Jurisdictions that Prevent Inspections"
+  10K-10: "Item 10. Directors, Executive Officers and Corporate Governance"
+  10K-11: "Item 11. Executive Compensation"
+  10K-12: "Item 12. Security Ownership"
+  10K-13: "Item 13. Relationships and Director Independence"
+  10K-14: "Item 14. Principal Accountant Fees and Services"
+  10K-15: "Item 15. Exhibits"
+  10K-16: "Item 16. Form 10-K Summary"
+  10K-AUDIT: "Report of Independent Registered Public Accounting Firm"
+  # 10-Q
+  10Q-I-1: "Part I, Item 1. Financial Statements"
+  10Q-I-2: "Part I, Item 2. MD&A"
+  10Q-I-3: "Part I, Item 3. Market Risk"
+  10Q-I-4: "Part I, Item 4. Controls and Procedures"
+  10Q-II-1: "Part II, Item 1. Legal Proceedings"
+  10Q-II-1A: "Part II, Item 1A. Risk Factors"
+  10Q-II-2: "Part II, Item 2. Unregistered Sales and Repurchases of Equity"
+  10Q-II-3: "Part II, Item 3. Defaults upon Senior Securities"
+  10Q-II-4: "Part II, Item 4. Mine Safety Disclosures"
+  10Q-II-5: "Part II, Item 5. Other Information"
+  10Q-II-6: "Part II, Item 6. Exhibits"
+  # 8-K
+  8K-1.01: "Item 1.01 Entry into a Material Definitive Agreement"
+  8K-1.02: "Item 1.02 Termination of a Material Definitive Agreement"
+  8K-1.05: "Item 1.05 Material Cybersecurity Incidents"
+  8K-2.01: "Item 2.01 Completion of Acquisition or Disposition"
+  8K-2.02: "Item 2.02 Results of Operations"
+  8K-2.03: "Item 2.03 Creation of a Direct Financial Obligation"
+  8K-2.04: "Item 2.04 Triggering Events Accelerating an Obligation"
+  8K-2.05: "Item 2.05 Exit or Disposal Activities"
+  8K-2.06: "Item 2.06 Material Impairments"
+  8K-3.01: "Item 3.01 Notice of Delisting"
+  8K-3.02: "Item 3.02 Unregistered Sales of Equity Securities"
+  8K-4.01: "Item 4.01 Change in Certifying Accountant"
+  8K-4.02: "Item 4.02 Non-Reliance on Previously Issued Financial Statements"
+  8K-5.02: "Item 5.02 Departure or Appointment of Directors or Officers"
+  8K-5.03: "Item 5.03 Amendments to Articles or Bylaws"
+  8K-5.07: "Item 5.07 Shareholder Vote"
+  8K-7.01: "Item 7.01 Regulation FD Disclosure"
+  8K-8.01: "Item 8.01 Other Events"
+  # Other sources
+  TRANSCRIPT: "Earnings Call Transcript"
+
+# Document roles other than the primary document.
+roles:
+  EX-99.1: "Earnings Release (Exhibit 99.1)"
+
+# How a value was obtained (metric_value.derivation), used in the metric methodology text.
+derivations:
+  REPORTED: "Reported in XBRL"
+  DERIVED: "Derived from XBRL (e.g. Q4 = full year − nine months)"
+  COMPUTED: "Computed from reported XBRL values"
+  LLM_EXTRACTED: "Extracted from filing text"
+  PRELIMINARY: "Preliminary, from the earnings release (10-Q/10-K not yet filed)"
+
+# XBRL concepts (concept_map.yaml) that are not metrics themselves, as written in formulas.
+concepts:
+  d_and_a: "Depreciation & Amortization"
+  debt_total_reported: "Total Debt as reported"
+  ltd_current: "Current Portion of Long-Term Debt"
+  ltd_noncurrent: "Long-Term Debt (noncurrent)"
+  ltdcl_current: "Current Long-Term Debt and Finance Leases"
+  ltdcl_noncurrent: "Long-Term Debt and Finance Leases (noncurrent)"
+  short_term_borrowings: "Short-Term Borrowings"
+  pretax_income: "Pre-tax Income"
+  dividends_paid: "Dividends Paid"

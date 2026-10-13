@@ -8,18 +8,21 @@ Per company, in order:
   5. follow-up questions, using 2-4                         (Claude Opus 5.5)
 Each set is grounded (enrich/insights.py), then stored as a new current version unless its
 input is unchanged, in which case nothing is written (and the LLM call came from the cache).
+Sources, links between objects and the Supporting Evidence text are built by rules
+(Phase 8, decisions D-036).
 """
 
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import Connection, Engine, and_, insert, select, update
+from sqlalchemy import Connection, Engine, and_, desc, insert, select, update
 
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.compute.registry import Registry
@@ -35,23 +38,28 @@ from uw_pipeline.enrich.schemas import (
     KeyInsights,
     StrategicInsights,
 )
+from uw_pipeline.enrich.sources import SourceLabels, SourceRef, SourceResolver
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.schema import (
     activity,
     followup_question,
     followup_question_insight,
+    followup_question_metric,
+    followup_question_source,
     insight,
     insight_evidence,
+    insight_link,
     insight_metric,
     llm_task_stat,
+    metric_value,
 )
 
 log = logging.getLogger(__name__)
 
 # Part of every stored set's input hash: bump when grounding rules change so that unchanged
 # inputs are re-grounded (the LLM output itself still comes from the cache).
-GROUNDING_VERSION = "3"
+GROUNDING_VERSION = "4"
 
 
 @dataclass
@@ -142,13 +150,31 @@ def _retire(conn: Connection, company_id: int, kind: str) -> None:
         )
 
 
-def _evidence_rows(insight_id: int, cited: Sequence[Cited], resolved: dict[str, list[Cited]]):  # type: ignore[no-untyped-def]
+def source_ref(resolver: SourceResolver, s: Source) -> SourceRef | None:
+    if s.ref is not None:
+        return s.ref
+    if s.kind == "METRIC":
+        return resolver.metric(s.label, s.accession_no)
+    if s.kind == "SIGNAL" and s.signal_id is not None:
+        return resolver.signal(s.signal_id)
+    if s.kind == "NEWS" and s.activity_id is not None:
+        return resolver.news(s.activity_id)
+    if s.doc_id is not None:
+        return resolver.document(s.doc_id, s.section_code)
+    return None
+
+
+def _evidence_rows(  # type: ignore[no-untyped-def]
+    insight_id: int, cited: Sequence[Cited], resolved: dict[str, list[Cited]],
+    resolver: SourceResolver,
+):  # fmt: skip
     """Rows for insight_evidence; citations of earlier insights resolve to their own sources."""
     rows: list[dict[str, Any]] = []
     for c in cited:
         chain = resolved.get(c.source.id, [c]) if c.source.kind == "INSIGHT" else [c]
         for cc in chain:
             s = cc.source
+            ref = source_ref(resolver, s)
             rows.append(
                 {
                     "insight_id": insight_id,
@@ -161,9 +187,22 @@ def _evidence_rows(insight_id: int, cited: Sequence[Cited], resolved: dict[str, 
                     "signal_id": s.signal_id,
                     "activity_id": s.activity_id,
                     "snippet": cc.quote[:1000],
+                    "source_title": ref.title[:500] if ref else None,
+                    "source_url": ref.url if ref else None,
+                    "source_date": ref.date if ref else None,
                 }
             )
     return rows
+
+
+def evidence_text(rows: Sequence[dict[str, Any]]) -> str:
+    """Supporting Evidence, by rules: one line per distinct (source, quote)."""
+    lines: list[str] = []
+    for r in rows:
+        line = f"{r['source_title'] or 'Source'}: \u201c{r['snippet']}\u201d"
+        if line not in lines:
+            lines.append(line)
+    return "\n".join(lines)
 
 
 def _store_insights(
@@ -177,10 +216,14 @@ def _store_insights(
     input_hash: str,
     now: datetime,
     resolved: dict[str, list[Cited]],
+    resolver: SourceResolver,
 ) -> list[int]:
     _retire(conn, company_id, kind)
     ids = []
     for ordinal, item in enumerate(items, start=1):
+        cited: list[Cited] = item.get("cited", [])
+        rows = _evidence_rows(0, cited, resolved, resolver)
+        dates = [r["source_date"] for r in rows if r["source_date"]]
         result = conn.execute(
             insert(insight).values(
                 company_id=company_id, kind=kind, ordinal=ordinal,
@@ -188,19 +231,29 @@ def _store_insights(
                 insight_type=item.get("insight_type"), title=item["title"],
                 summary=item["summary"], uw_relevance=item.get("uw_relevance"),
                 supporting_evidence=item.get("supporting_evidence"),
-                event_date=item.get("event_date"), is_current=True, model=model,
-                prompt_version=prompt_version, input_hash=input_hash, created_at=now,
+                supporting_evidence_text=evidence_text(rows) or None,
+                event_date=item.get("event_date"),
+                updated_at=item.get("event_date") or (max(dates) if dates else None),
+                is_current=True, model=model, prompt_version=prompt_version,
+                input_hash=input_hash, created_at=now,
             )
         )  # fmt: skip
         pk = result.inserted_primary_key
         assert pk is not None
         insight_id = int(pk[0])
         ids.append(insight_id)
-        rows = _evidence_rows(insight_id, item.get("cited", []), resolved)
         if rows:
-            conn.execute(insert(insight_evidence), rows)
-        for code in sorted(set(item.get("metric_codes", []))):
-            conn.execute(insert(insight_metric).values(insight_id=insight_id, metric_code=code))
+            conn.execute(insert(insight_evidence), [r | {"insight_id": insight_id} for r in rows])
+        # Metrics: the ones named with the insight plus the metric rows it cites.
+        codes = set(item.get("metric_codes", []))
+        codes |= {c.source.metric_code for c in cited if c.source.metric_code}
+        for code in sorted(codes):
+            conn.execute(insert(insight_metric).values(insight_id=insight_id, metric_code=code,
+                                                       link_source="INSIGHT"))  # fmt: skip
+        linked = {c.source.insight_id for c in cited if c.source.insight_id is not None}
+        for other in sorted(linked):
+            conn.execute(insert(insight_link).values(insight_id=insight_id,
+                                                     linked_insight_id=other))  # fmt: skip
     return ids
 
 
@@ -233,11 +286,106 @@ def _stored_evidence(conn: Connection, insight_id: int) -> list[Cited]:
                 metric_code=r["metric_code"],
                 signal_id=r["signal_id"],
                 activity_id=r["activity_id"],
+                ref=SourceRef(r["source_title"], r["source_url"], r["source_date"], r["doc_id"])
+                if r["source_title"]
+                else None,
             ),
             r["snippet"],
         )
         for r in rows
     ]
+
+
+def latest_metric_refs(
+    conn: Connection, company_id: int, codes: Sequence[str], resolver: SourceResolver,
+    display: dict[str, str],
+) -> dict[str, SourceRef]:  # fmt: skip
+    """The filing behind each metric's latest value (quarter first, else fiscal year)."""
+    out: dict[str, SourceRef] = {}
+    for code in codes:
+        r = conn.execute(
+            select(metric_value.c.period_type, metric_value.c.fiscal_year,
+                   metric_value.c.fiscal_quarter, metric_value.c.source_accn)
+            .where(metric_value.c.company_id == company_id, metric_value.c.metric_code == code)
+            .order_by(desc(metric_value.c.period_end), desc(metric_value.c.period_type == "Q"))
+            .limit(1)
+        ).first()  # fmt: skip
+        if r is None:
+            continue
+        period = f"FY{r.fiscal_year}" + (f" Q{r.fiscal_quarter}" if r.period_type == "Q" else "")
+        out[code] = resolver.metric(f"{display.get(code, code)} {period}", r.source_accn)
+    return out
+
+
+def _store_followups(
+    conn: Connection,
+    company_id: int,
+    questions: Sequence[Any],
+    pkg: Package,
+    insight_ids: dict[str, int],
+    resolver: SourceResolver,
+    *,
+    model: str,
+    prompt_version: str,
+    input_hash: str,
+    now: datetime,
+) -> None:
+    """Questions plus, by rules, their insight and metric links and their Sources: the evidence
+    of the insights they follow from, then the filings behind their metrics."""
+    _retire(conn, company_id, "FOLLOWUP")
+    metric_ids = {s.id: s.metric_code for s in pkg.of("METRIC") if s.metric_code}
+    display = {s.metric_code: s.label.rsplit(" FY", 1)[0] for s in pkg.of("METRIC")
+               if s.metric_code}  # fmt: skip
+    for ordinal, q in enumerate(questions, start=1):
+        res = conn.execute(
+            insert(followup_question).values(
+                company_id=company_id, ordinal=ordinal, category=q.category,
+                question=q.question, rationale=q.uw_relevance, summary=q.summary,
+                following_risk=q.following_risk[:200], uw_relevance=q.uw_relevance,
+                system_priority=q.system_priority, is_current=True, model=model,
+                prompt_version=prompt_version, input_hash=input_hash, created_at=now,
+            )
+        )  # fmt: skip
+        pk = res.inserted_primary_key
+        assert pk is not None
+        qid = int(pk[0])
+        refs = sorted({r.strip() for r in q.related_insight_ids} & insight_ids.keys())
+        for ref in refs:
+            conn.execute(
+                insert(followup_question_insight).values(question_id=qid,
+                                                         insight_id=insight_ids[ref])
+            )  # fmt: skip
+        codes = sorted({metric_ids[m.strip()] for m in q.related_metric_ids
+                        if m.strip() in metric_ids})  # fmt: skip
+        for code in codes:
+            conn.execute(insert(followup_question_metric).values(
+                question_id=qid, metric_code=code, link_source="QUESTION"))  # fmt: skip
+        sources: list[dict[str, Any]] = []
+        seen: set[tuple[str, str | None]] = set()
+        ev = conn.execute(
+            select(insight_evidence.c.source_kind, insight_evidence.c.source_title,
+                   insight_evidence.c.source_url, insight_evidence.c.source_date,
+                   insight_evidence.c.doc_id, insight_evidence.c.metric_code)
+            .where(insight_evidence.c.insight_id.in_([insight_ids[r] for r in refs]),
+                   insight_evidence.c.source_title.is_not(None))
+            .order_by(insight_evidence.c.evidence_id)
+        ).all() if refs else []  # fmt: skip
+        for e in ev:
+            if (e.source_title, e.source_url) not in seen:
+                seen.add((e.source_title, e.source_url))
+                sources.append({"source_kind": e.source_kind, "title": e.source_title,
+                                "url": e.source_url, "source_date": e.source_date,
+                                "doc_id": e.doc_id, "metric_code": e.metric_code})  # fmt: skip
+        for code, ref in latest_metric_refs(conn, company_id, codes, resolver, display).items():
+            if (ref.title, ref.url) not in seen:
+                seen.add((ref.title, ref.url))
+                sources.append({"source_kind": "METRIC", "title": ref.title[:500],
+                                "url": ref.url, "source_date": ref.date, "doc_id": ref.doc_id,
+                                "metric_code": code})  # fmt: skip
+        if sources:
+            conn.execute(insert(followup_question_source),
+                         [s | {"question_id": qid, "ordinal": i}
+                          for i, s in enumerate(sources, start=1)])  # fmt: skip
 
 
 # -- company pipeline --------------------------------------------------------------------------
@@ -248,7 +396,8 @@ def _insight_source(prefix: str, n: int, row: dict[str, Any]) -> Source:
     text = f"{head} | {row['title']} | {row['summary']}"
     if row.get("uw_relevance"):
         text += f" | UW relevance: {row['uw_relevance']}"
-    return Source(id=f"{prefix}{n}", kind="INSIGHT", label=row["title"], text=text)
+    return Source(id=f"{prefix}{n}", kind="INSIGHT", label=row["title"], text=text,
+                  insight_id=row["insight_id"])  # fmt: skip
 
 
 def process_company(
@@ -257,11 +406,13 @@ def process_company(
     industry: IndustryConfig,
     llm_pair: tuple[LLMClient, LLMConfig],
     icfg: InsightsConfig,
+    labels: SourceLabels,
     conn: Connection,
     now: datetime,
 ) -> CompanyStats:
     client, llm = llm_pair
     row = company_row(conn, cfg)
+    resolver = SourceResolver(conn, row, labels)
     company_id = row["company_id"]
     group = industry.groups[row["industry_group"]]
     metrics = registry.for_company(cfg.ticker, group).metrics
@@ -286,9 +437,13 @@ def process_company(
                                          created_at=now)
         )  # fmt: skip
 
-    def produce(kind: str, task: str, user: str, run: Callable[[], list[dict[str, Any]] | None]):  # type: ignore[no-untyped-def]
-        """Store a new version unless the input is unchanged; return the current rows."""
-        input_hash = _hash(GROUNDING_VERSION, versions["common"], versions[task], spec.model, user)
+    def produce(kind: str, task: str, user: str, run: Callable[[], list[dict[str, Any]] | None],  # type: ignore[no-untyped-def]
+                cited_ids: str = ""):  # fmt: skip
+        """Store a new version unless the input is unchanged; return the current rows.
+        `cited_ids` (database ids of citable earlier insights) is part of the hash so that links
+        follow re-stored insights even when their text is the same."""
+        input_hash = _hash(GROUNDING_VERSION, versions["common"], versions[task], spec.model, user,
+                           cited_ids)  # fmt: skip
         if _current_hash(conn, company_id, kind) == input_hash:
             stats.tasks[task] = "unchanged"
             return _stored_set(conn, company_id, kind)
@@ -298,7 +453,7 @@ def process_company(
             return _stored_set(conn, company_id, kind)
         _store_insights(conn, company_id, kind, items, model=spec.model,
                         prompt_version=versions[task], input_hash=input_hash, now=now,
-                        resolved=resolved)  # fmt: skip
+                        resolved=resolved, resolver=resolver)  # fmt: skip
         return _stored_set(conn, company_id, kind)
 
     # 2. behavioral
@@ -367,7 +522,8 @@ def process_company(
                  "metric_codes": [c for c in i.related_metric_codes if c in known],
                  "cited": c} for i, c in kept]  # fmt: skip
 
-    key = produce("KEY", "key_insights", user_k, run_k)
+    earlier = json.dumps([r["insight_id"] for r in (*behavioral, *strategic)])
+    key = produce("KEY", "key_insights", user_k, run_k, earlier)
     lo, hi = icfg.counts["key_insights"]
     if not lo <= len(key) <= hi:
         log.warning("%s: %d key insights (expected %d-%d)", cfg.ticker, len(key), lo, hi)
@@ -379,7 +535,8 @@ def process_company(
                    for p, rows in (("K", key), ("R", strategic), ("B", behavioral))
                    for n, r in enumerate(rows, start=1)}  # fmt: skip
     user_q = pkg.render("METRIC", "INSIGHT")
-    q_hash = _hash(GROUNDING_VERSION, versions["common"], versions["followups"], spec.model, user_q)
+    q_hash = _hash(GROUNDING_VERSION, versions["common"], versions["followups"], spec.model, user_q,
+                   json.dumps(sorted(insight_ids.items())))  # fmt: skip
     if _current_hash(conn, company_id, "FOLLOWUP") == q_hash:
         stats.tasks["followups"] = "unchanged"
     else:
@@ -392,7 +549,9 @@ def process_company(
             good = [
                 q
                 for q in out.questions
-                if not ungrounded_numbers(f"{q.question} {q.rationale}", insight_text, values)
+                if not ungrounded_numbers(
+                    f"{q.question} {q.summary} {q.uw_relevance}", insight_text, values
+                )
             ]
             stats.tasks["followups"] = f"{len(good)}/{len(out.questions)}"
             conn.execute(
@@ -400,25 +559,9 @@ def process_company(
                                              generated=len(out.questions), kept=len(good),
                                              created_at=now)
             )  # fmt: skip
-            _retire(conn, company_id, "FOLLOWUP")
-            for ordinal, q in enumerate(good, start=1):
-                res = conn.execute(
-                    insert(followup_question).values(
-                        company_id=company_id, ordinal=ordinal, category=q.category,
-                        question=q.question, rationale=q.rationale,
-                        system_priority=q.system_priority, is_current=True, model=spec.model,
-                        prompt_version=versions["followups"], input_hash=q_hash, created_at=now,
-                    )
-                )  # fmt: skip
-                pk = res.inserted_primary_key
-                assert pk is not None
-                refs = {r.strip() for r in q.related_insight_ids} & insight_ids.keys()
-                for ref in sorted(refs):
-                    conn.execute(
-                        insert(followup_question_insight).values(
-                            question_id=int(pk[0]), insight_id=insight_ids[ref]
-                        )
-                    )
+            _store_followups(conn, company_id, good, pkg, insight_ids, resolver,
+                             model=spec.model, prompt_version=versions["followups"],
+                             input_hash=q_hash, now=now)  # fmt: skip
     return stats
 
 
@@ -428,6 +571,7 @@ def run_insights_stage(
     industry: IndustryConfig,
     llm: tuple[LLMClient, LLMConfig] | None,
     icfg: InsightsConfig,
+    labels: SourceLabels,
     engine: Engine,
     *,
     now: Callable[[], datetime] = lambda: datetime.now(UTC),
@@ -439,7 +583,7 @@ def run_insights_stage(
     for cfg in companies:
         try:
             with engine.begin() as conn:
-                stats = process_company(cfg, registry, industry, llm, icfg, conn, now())
+                stats = process_company(cfg, registry, industry, llm, icfg, labels, conn, now())
             for ex in stats.dropped_examples:
                 log.info("%s: dropped %s", cfg.ticker, ex)
             log.info("%s: insights %s, %d activities summarised", cfg.ticker, stats.tasks,

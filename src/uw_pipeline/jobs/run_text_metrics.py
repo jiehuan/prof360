@@ -5,7 +5,8 @@
 - Preliminary results from earnings releases (decisions D-022) -> metric_value, derivation
   PRELIMINARY, only for periods without an XBRL value. Where XBRL exists, the release value is
   cross-checked against it instead.
-- Bank loan book by segment -> loan_portfolio_segment.
+- Bank loan book by loan class, latest period and prior year-end -> loan_portfolio_segment,
+  plus the rule-generated Loan Portfolio modal content -> loan_portfolio_detail (Phase 8).
 Bank metrics (`dual_check`) and the loan book are kept only where Claude Sonnet 5.5 and Claude
 Opus 5.5 extract the same number independently.
 """
@@ -27,13 +28,17 @@ from uw_pipeline.clients.storage import Storage
 from uw_pipeline.compute.registry import MetricDef, Registry
 from uw_pipeline.config import CompanyConfig, IndustryConfig
 from uw_pipeline.enrich.llm import PROMPTS_DIR, LLMConfig, ModelSpec, cached_call
+from uw_pipeline.enrich.package import fmt_value
 from uw_pipeline.enrich.schemas import LoanBook, TextValues, strict_json_schema
+from uw_pipeline.enrich.sources import SourceLabels, SourceResolver
 from uw_pipeline.enrich.text_metrics import (
     Candidate,
+    LoanRow,
     TextConfig,
     agree,
     candidates,
     dual_checked,
+    loan_key,
     loan_rows,
     select_chunks,
 )
@@ -46,6 +51,7 @@ from uw_pipeline.normalize.sections import chunk
 from uw_pipeline.schema import (
     filing_section,
     llm_task_stat,
+    loan_portfolio_detail,
     loan_portfolio_segment,
     metric_value,
     release_check,
@@ -139,14 +145,16 @@ class Extractor:
     ) -> None:
         self.client, self.llm, self.cfg, self.conn, self.now = client, llm, cfg, conn, now
         self.system = (PROMPTS_DIR / f"{cfg.prompt_version}.md").read_text(encoding="utf-8")
-        self.loan_system = (PROMPTS_DIR / "loan_book_v1.md").read_text(encoding="utf-8")
+        self.loan_version = cfg.loan_portfolio.prompt_version
+        self.loan_system = (PROMPTS_DIR / f"{self.loan_version}.md").read_text(encoding="utf-8")
 
     def _call(
         self, spec: ModelSpec, task: str, system: str, user: str, schema: dict[str, Any],
-        model: type[BaseModel],
+        model: type[BaseModel], prompt_version: str | None = None,
     ) -> Any:  # fmt: skip
         raw = cached_call(
-            self.conn, self.client, spec, task=task, prompt_version=self.cfg.prompt_version,
+            self.conn, self.client, spec, task=task,
+            prompt_version=prompt_version or self.cfg.prompt_version,
             system=system, user=user, schema=schema, now=self.now,
         )  # fmt: skip
         if raw is None:
@@ -199,7 +207,9 @@ class Extractor:
             f"Definition: {definition}\n\n<excerpt>\n{source}\n</excerpt>"
         )
         out = [
-            self._call(spec, "loan_book", self.loan_system, user, LOAN_SCHEMA, LoanBook)
+            self._call(
+                spec, "loan_book", self.loan_system, user, LOAN_SCHEMA, LoanBook, self.loan_version
+            )
             for spec in (self.llm.extractor, self.llm.tiebreaker)
         ]
         return source, out[0], out[1]
@@ -225,6 +235,7 @@ def process_company(
     storage: Storage,
     conn: Connection,
     now: datetime,
+    labels: SourceLabels | None = None,
 ) -> Stats:
     row = company_row(conn, cfg)
     company_id = row["company_id"]
@@ -347,7 +358,9 @@ def process_company(
         )
 
     if group.code in text_cfg.loan_portfolio.groups:
-        stats.loan_segments = _loan_book(conn, ex, company_id, company, text_cfg, docs, now)
+        resolver = SourceResolver(conn, row, labels) if labels else None
+        stats.loan_segments = _loan_book(conn, ex, company_id, company, text_cfg, docs, now,
+                                         resolver)  # fmt: skip
     return stats
 
 
@@ -359,8 +372,10 @@ def _loan_book(
     text_cfg: TextConfig,
     docs: Sequence[DocText],
     now: datetime,
+    resolver: SourceResolver | None,
 ) -> int:
-    """Loan book from the latest periodic report's MD&A; both models must agree."""
+    """Loan book by class from the latest periodic report's MD&A, for the latest period and the
+    prior year-end shown with it; both models must agree on each row."""
     periodic = [d for d in docs if d.doc_role == "PRIMARY"]
     if not periodic:
         return 0
@@ -371,42 +386,127 @@ def _loan_book(
         return 0
     rows_a, _ = loan_rows(first.segments, source)
     rows_b, _ = loan_rows(second.segments, source)
-    other = {(r.segment.lower(), r.period_end): r for r in rows_b}
-    agreed = [
-        r
-        for r in rows_a
-        if (m := other.get((r.segment.lower(), r.period_end))) is not None
-        and agree(r.outstanding, m.outstanding)
-    ]
+    other = {(loan_key(r.segment), r.period_end): r for r in rows_b}
+    agreed: dict[tuple[str, str], LoanRow] = {}
+    for r in rows_a:
+        m = other.get((loan_key(r.segment), r.period_end))
+        if m is not None and agree(r.outstanding, m.outstanding):
+            agreed.setdefault((loan_key(r.segment), r.period_end), r)
     if not agreed:
         return 0
-    latest = max(r.period_end for r in agreed)
-    agreed = [r for r in agreed if r.period_end == latest]
-    total = sum(r.outstanding for r in agreed)
+    periods = sorted({p for _, p in agreed}, reverse=True)
+    latest = periods[0]
+    # The comparison column: the latest earlier period shown (the prior fiscal year-end).
+    prior = periods[1] if len(periods) > 1 else None
+    keep = [r for r in agreed.values() if r.period_end in (latest, prior)]
+    totals = {p: sum(r.outstanding for r in keep if r.period_end == p) for p in (latest, prior)}
     rows = [
         {
             "company_id": company_id,
             "period_end": r.period_end,
-            "segment": r.segment,
+            "segment": r.segment[:200],
+            "parent_segment": r.parent_segment[:200] or None,
             "outstanding": r.outstanding,
-            "pct_of_book": r.outstanding / total if total else None,
+            "pct_of_book": r.outstanding / totals[r.period_end] if totals[r.period_end] else None,
             "nonaccrual": r.nonaccrual,
+            "nonaccrual_ratio": r.nonaccrual / r.outstanding
+            if r.nonaccrual is not None and r.outstanding
+            else None,
             "evidence": r.evidence[:1000],
             "source_doc_id": doc.doc_id,
             "updated_at": now,
         }
-        for r in agreed
+        for r in keep
     ]
     upsert(conn, loan_portfolio_segment, rows, key_cols=["company_id", "period_end", "segment"])
-    conn.execute(
-        delete(loan_portfolio_segment).where(
-            and_(
-                loan_portfolio_segment.c.company_id == company_id,
-                loan_portfolio_segment.c.period_end != latest,
+    current = {(r["period_end"], r["segment"]) for r in rows}
+    stale = [
+        (pe, seg)
+        for pe, seg in conn.execute(
+            select(loan_portfolio_segment.c.period_end, loan_portfolio_segment.c.segment).where(
+                loan_portfolio_segment.c.company_id == company_id
             )
-        )
-    )
+        ).all()
+        if (pe, seg) not in current
+    ]
+    if stale:
+        conn.execute(
+            delete(loan_portfolio_segment).where(
+                and_(
+                    loan_portfolio_segment.c.company_id == company_id,
+                    tuple_(loan_portfolio_segment.c.period_end,
+                           loan_portfolio_segment.c.segment).in_(stale),
+                )
+            )
+        )  # fmt: skip
+    if resolver is not None:
+        detail = loan_detail(rows, latest, prior, doc, resolver)
+        upsert(conn, loan_portfolio_detail, [detail | {"company_id": company_id,
+                                                      "updated_at": now}],
+               key_cols=["company_id"])  # fmt: skip
     return len(rows)
+
+
+def _pct(x: float) -> str:
+    return f"{x * 100:.1f}%"
+
+
+def loan_detail(
+    rows: Sequence[dict[str, Any]],
+    latest: str,
+    prior: str | None,
+    doc: DocText,
+    resolver: SourceResolver,
+) -> dict[str, Any]:
+    """Left side of the Loan Portfolio Composition modal, by rules (Phase 8)."""
+    section = "10K-7" if doc.form_type.startswith("10-K") else "10Q-I-2"
+    ref = resolver.document(doc.doc_id, section)
+    where = f"{doc.form_type} filed {doc.filed_at} ({resolver.section_label(section)})"
+    compare = f", compared with {prior}" if prior else ""
+    methodology = (
+        f"Retained loans by loan class as of {latest}{compare}, from the credit portfolio "
+        f"tables in the {where}. Loans held-for-sale and loans at fair value are excluded. "
+        "Each balance and nonaccrual amount is read from the filing by two models "
+        "independently and kept only where both agree and the number appears in the quoted "
+        "table row. Share of book = class balance / sum of the classes shown; nonaccrual "
+        "ratio = nonaccrual loans / class balance (credit card loans are generally exempt from "
+        "nonaccrual status, so no ratio is shown for them)."
+    )
+    sources = [{"title": ref.title, "url": ref.url, "date": ref.date}] if ref else []
+    cur = [r for r in rows if r["period_end"] == latest]
+    old = {r["segment"]: r for r in rows if r["period_end"] == prior}
+    points: list[dict[str, str]] = []
+    for r in sorted(cur, key=lambda r: -r["outstanding"]):
+        parts = [f"{fmt_value(r['outstanding'], 'USD')} ({_pct(r['pct_of_book'] or 0)} of book)"]
+        if r["nonaccrual"] is not None:
+            parts.append(f"nonaccrual {fmt_value(r['nonaccrual'], 'USD')}"
+                         f" ({_pct(r['nonaccrual_ratio'] or 0)})")  # fmt: skip
+        p = old.get(r["segment"])
+        if p is not None and p["outstanding"]:
+            change = r["outstanding"] / p["outstanding"] - 1
+            parts.append(f"{change:+.1%} vs {prior}")
+        points.append({"label": r["segment"], "text": "; ".join(parts),
+                       "evidence": r["evidence"]})  # fmt: skip
+    total = sum(r["outstanding"] for r in cur)
+    summary = f"Total of the classes shown: {fmt_value(total, 'USD')} as of {latest}"
+    if old:
+        before = sum(p["outstanding"] for p in old.values())
+        if before:
+            summary += f" ({total / before - 1:+.1%} vs {fmt_value(before, 'USD')} at {prior})"
+    disclosed = [r for r in cur if r["nonaccrual"] is not None]
+    if disclosed:
+        na = sum(r["nonaccrual"] for r in disclosed)
+        base = sum(r["outstanding"] for r in disclosed)
+        summary += (f"; nonaccrual {fmt_value(na, 'USD')}, {_pct(na / base)} of the classes "
+                    "that disclose it")  # fmt: skip
+    points.insert(0, {"label": "Total", "text": summary, "evidence": ""})
+    return {
+        "period_end": latest,
+        "prior_period_end": prior,
+        "methodology": methodology,
+        "data_sources_json": json.dumps(sources),
+        "raw_data_points_json": json.dumps(points),
+    }
 
 
 def run_text_metrics_stage(
@@ -418,6 +518,7 @@ def run_text_metrics_stage(
     storage: Storage,
     engine: Engine,
     *,
+    labels: SourceLabels | None = None,
     now: Callable[[], datetime] = lambda: datetime.now(UTC),
 ) -> list[TaskResult]:
     if llm is None:
@@ -428,7 +529,16 @@ def run_text_metrics_stage(
         try:
             with engine.begin() as conn:
                 stats = process_company(
-                    cfg, registry, industry, text_cfg, llm[0], llm[1], storage, conn, now()
+                    cfg,
+                    registry,
+                    industry,
+                    text_cfg,
+                    llm[0],
+                    llm[1],
+                    storage,
+                    conn,
+                    now(),
+                    labels,
                 )
             for m in stats.mismatches:
                 log.warning("%s: earnings release vs XBRL mismatch: %s", cfg.ticker, m)

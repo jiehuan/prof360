@@ -504,3 +504,37 @@ and the Phase 0 contract.
 - `docs/schema-contract.md` maps front-end modules to tables and columns, with "no data"
   behaviour, as the starting point for BFF alignment. `docs/OPERATIONS.md` is the operations
   guide (Chinese).
+
+**D-036 Detail modals (Phase 8).** The front end's five detail modals (metric, Loan Portfolio
+Composition, Strategic & Risk / Behavioral insight, Key Insight, Follow-Up Question) read one
+set of links between metrics, insights and questions, and one set of source titles and links.
+- **Rules first.** Methodology, Data Sources, Supporting Evidence, Sources and the loan book's
+  Raw Data Points are built by rules (`enrich/sources.py`, `enrich/metric_detail.py`,
+  `config/source_labels.yaml`): traceable and free. The LLM writes only what needs judgment:
+  each metric's Underwriting Relevance and its related insights/questions (one Claude Opus 5.5
+  call per company, `metricdetail` stage), and the new question fields (`followups_v2`:
+  summary, following risk, UW relevance, related metric rows). Numbers are checked as before.
+- **Source titles** follow "<company> <form> filed <date> · <section>" and link to the SEC
+  document; values from XBRL link to their filing (EDGAR filing index when the filing is older
+  than the document window). Transcripts have no public link (the Alpha Vantage URL needs a
+  key) and get a title only; their date is unknown, so an insight resting only on transcripts
+  has no Updated At.
+- **Links.** `insight_link` (key insight → the R/B insights it cites), `insight_metric` (now
+  also the metric rows an insight cites, plus `link_source = METRIC_DETAIL` rows from the
+  metric stage), `followup_question_metric` (metric ids M… chosen by the model, mapped to codes
+  by the pipeline, so the model never guesses a code), `followup_question_source` (the evidence
+  of the question's insights plus the filings behind its metrics). Database ids of the cited
+  objects are part of the key-insight, question and metric-relevance hashes, so links follow
+  re-stored objects even when the text is identical (the LLM output then comes from the cache).
+- **FI.** Fee income = total noninterest income (`us-gaap:NoninterestIncome`), with YoY growth
+  for Performance Trends. Banks keep the MD&A of the last 5 years of 10-Ks
+  (`mdna_history_years`, only that section, so no extra signal votes or insight excerpts) for
+  5 years of NIM / CET1 / NPL; values still need both models to agree. The loan book is now by
+  loan class with its parent segment, for the latest period and the prior year-end, with a
+  nonaccrual ratio; only classes with a reported balance are kept (JPM's MD&A splits wholesale
+  by class only as allowance percentages, so wholesale stays one row; balances are never
+  computed from percentages).
+- **DQ** (`detail_coverage`, `source_coverage`, `link_integrity`) and `audit-insights` check
+  that every displayed metric with data has methodology and sources (≥ 90% with relevance),
+  every insight and question has a source, links reach current objects, and loan rows are found
+  in the cited filing.

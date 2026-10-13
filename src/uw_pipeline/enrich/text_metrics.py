@@ -26,6 +26,7 @@ AGREE_REL = 0.005
 
 
 class LoanPortfolioConfig(BaseModel):
+    prompt_version: str
     groups: list[str]
     keywords: list[str]
     definition: str
@@ -228,6 +229,7 @@ def dual_checked(
 @dataclass(frozen=True)
 class LoanRow:
     segment: str
+    parent_segment: str
     period_end: str
     outstanding: float  # USD
     nonaccrual: float | None  # USD
@@ -253,6 +255,7 @@ def loan_rows(segments: Iterable[LoanSegment], source: str) -> tuple[list[LoanRo
         rows.append(
             LoanRow(
                 segment=s.segment.strip(),
+                parent_segment=s.parent_segment.strip(),
                 period_end=s.period_end,
                 outstanding=out * scale,
                 nonaccrual=nonacc * scale if nonacc is not None else None,
@@ -260,3 +263,10 @@ def loan_rows(segments: Iterable[LoanSegment], source: str) -> tuple[list[LoanRo
             )
         )
     return rows, rejected
+
+
+def loan_key(name: str) -> str:
+    """Loan class names compared across models: case, footnote marks and punctuation ignored."""
+    name = re.sub(r"\([a-z0-9]\)", "", name.lower())
+    name = name.replace("&", " and ")
+    return " ".join(re.findall(r"[a-z0-9]+", name))

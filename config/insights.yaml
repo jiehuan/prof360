@@ -13,7 +13,8 @@ prompt_versions:
   behavioral: behavioral_v1
   strategic_risk: strategic_risk_v1
   key_insights: key_insights_v1
-  followups: followups_v1
+  followups: followups_v2
+  metric_detail: metric_detail_v1   # metricdetail stage (Phase 8): per-metric UW relevance
 
 # Filing excerpts in the package: section code -> max characters taken (latest filing with that
 # section). Sections longer than the budget are cut at a paragraph boundary and marked as cut.

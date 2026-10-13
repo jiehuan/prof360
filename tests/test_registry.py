@@ -24,7 +24,7 @@ def test_metric_list_comes_from_group_config(reg, industry) -> None:
     jpm = reg.for_company("JPM", industry.groups["BANKS"])
     assert {m.code for m in jpm.metrics} == {
         "revenue", "revenue_growth_qoq", "revenue_growth_yoy", "net_income", "equity",
-        "buybacks", "buyback_intensity",
+        "buybacks", "buyback_intensity", "noninterest_income", "fee_income_growth_yoy",
         "cet1_ratio", "tier1_ratio", "lcr", "nim", "npl_ratio",  # text-extracted (BANK_REGULATORY)
     }  # fmt: skip
     assert jpm.concepts["revenue"] == [TagRef(tag="us-gaap:RevenuesNetOfInterestExpense")]
