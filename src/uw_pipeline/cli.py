@@ -18,9 +18,12 @@ from uw_pipeline.compute.coverage import company_coverage, load_notes, render_ma
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig, load_companies, load_industry_config
 from uw_pipeline.jobs.run_company import TaskResult, run_company_stage
+from uw_pipeline.jobs.run_documents import run_documents_stage
+from uw_pipeline.jobs.run_signals import run_signals_stage
 from uw_pipeline.jobs.run_xbrl import company_row, run_compute_stage, run_facts_stage
 from uw_pipeline.schema import metric_value
 from uw_pipeline.settings import Settings
+from uw_pipeline.signals.rules import load_signal_rules
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 log = logging.getLogger("uw_pipeline")
@@ -30,10 +33,12 @@ class Stage(StrEnum):
     company = "company"
     facts = "facts"
     compute = "compute"
+    documents = "documents"
+    signals = "signals"
 
 
 # Stages in execution order; later phases append here.
-STAGE_ORDER = [Stage.company, Stage.facts, Stage.compute]
+STAGE_ORDER = [Stage.company, Stage.facts, Stage.compute, Stage.documents, Stage.signals]
 
 
 def _select_companies(
@@ -76,6 +81,7 @@ def run(
     industry = load_industry_config(settings.config_dir)
     registry = load_registry(settings.config_dir)
     registry.check_groups(industry.groups.values())
+    signal_rules = load_signal_rules(settings.config_dir)
     engine = make_engine(settings.database_url)
     if engine.dialect.name == "sqlite":
         ensure_schema(engine)
@@ -100,6 +106,14 @@ def run(
                 )  # fmt: skip
             elif s is Stage.compute:
                 results += run_compute_stage(selected, registry, industry, engine)
+            elif s is Stage.documents:
+                results += run_documents_stage(
+                    selected, sec, registry, signal_rules, engine,
+                    text_lookback_days=settings.text_lookback_days,
+                    event_lookback_days=settings.event_lookback_days, force=force,
+                )  # fmt: skip
+            elif s is Stage.signals:
+                results += run_signals_stage(selected, sec, signal_rules, engine)
 
     failed = [r for r in results if not r.ok]
     typer.echo(f"{len(results) - len(failed)}/{len(results)} tasks succeeded")

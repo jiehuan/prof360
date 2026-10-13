@@ -128,9 +128,17 @@ class MetricDef(BaseModel):
         }
 
 
+class SectionRule(BaseModel):
+    """Locate a section by its own heading lines when item headings don't work (e.g. JPM)."""
+
+    start: str
+    end: str
+
+
 class CompanyOverride(BaseModel):
     concepts: dict[str, ConceptDef] = Field(default_factory=dict)
     metrics: list[MetricDef] = Field(default_factory=list)
+    sections: dict[str, SectionRule] = Field(default_factory=dict)
 
 
 class Registry(BaseModel):
@@ -160,6 +168,9 @@ class Registry(BaseModel):
     def _catalog(self, ticker: str) -> list[MetricDef]:
         extra = self.overrides[ticker].metrics if ticker in self.overrides else []
         return [*self.metrics, *(m.model_copy(update={"company_specific": True}) for m in extra)]
+
+    def section_rules(self, ticker: str) -> dict[str, SectionRule]:
+        return self.overrides[ticker].sections if ticker in self.overrides else {}
 
     def check_groups(self, groups: Iterable[IndustryGroup]) -> None:
         codes = {m.code for m in self.metrics}

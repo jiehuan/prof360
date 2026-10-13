@@ -425,10 +425,10 @@ uw-pipeline dq-report --run-id <id>
 - 覆盖率报告中每家公司核心指标缺失项都有说明
 
 ### Phase 3 — 文件文本 + 规则信号
-- [ ] 10-K / 10-Q 主文档下载与章节切分 → `filing_section`
-- [ ] 8-K item 规则 → 事件信号（§5.4）
-- [ ] 治理信号：审计师（dei:AuditorName + 审计报告任期）、4.01 审计师变更、5.02 CEO/CFO 变更
-- [ ] 关键词信号：going concern、material weakness、restatement
+- [x] 10-K / 10-Q 主文档下载与章节切分 → `filing_section`（自写切分，未用 edgartools，见 decisions D-023；财报 EX-99.1 一并下载，D-026）
+- [x] 8-K item 规则 → 事件信号（§5.4）
+- [x] 治理信号：审计师（dei:AuditorName + 审计报告任期）、4.01 审计师变更、5.02 CEO/CFO 变更
+- [x] 关键词信号：going concern、material weakness、restatement
 
 **验收**：9 家公司最近一份 10-K 的 Item 1A / 3 / 7 切分成功率 ≥ 90%，失败的有日志；最近 2 年 8-K 事件全部入库。
 

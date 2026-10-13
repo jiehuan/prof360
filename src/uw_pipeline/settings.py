@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     http_timeout_sec: float = 30.0
     # How far back to read filing XBRL instances for instance-only concepts (company overrides).
     xbrl_history_years: int = Field(default=6, ge=1)
+    # 10-K/10-Q text (sections) and earnings releases are kept for this many days back.
+    text_lookback_days: int = Field(default=400, ge=30)
+    # 8-K events and governance signals look back this far.
+    event_lookback_days: int = Field(default=730, ge=30)
 
     data_dir: Path = Path("data")
     config_dir: Path = Path("config")

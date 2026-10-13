@@ -41,12 +41,34 @@ def upsert(
     return len(rows)
 
 
+def insert_missing(
+    conn: Connection,
+    table: Table,
+    rows: Sequence[Mapping[str, Any]],
+    key_cols: Sequence[str],
+) -> int:
+    """Insert rows whose key is not present yet; existing rows are left untouched."""
+    if not rows:
+        return 0
+    dialect = conn.dialect.name
+    if dialect == "sqlite":
+        stmt = sqlite.insert(table).on_conflict_do_nothing(index_elements=list(key_cols))
+        conn.execute(stmt, list(rows))
+    elif dialect == "mssql":
+        _mssql_merge(conn, table, rows, list(rows[0].keys()), key_cols, update=False)
+    else:
+        raise NotImplementedError(f"insert_missing not implemented for dialect {dialect!r}")
+    return len(rows)
+
+
 def build_merge_sql(
     preparer: IdentifierPreparer,
     target: Table,
     staging: str,
     cols: Sequence[str],
     key_cols: Sequence[str],
+    *,
+    update: bool = True,
 ) -> str:
     q = preparer.quote
     tgt = preparer.format_table(target)
@@ -54,7 +76,7 @@ def build_merge_sql(
     updates = ", ".join(f"t.{q(c)} = s.{q(c)}" for c in cols if c not in key_cols)
     col_list = ", ".join(q(c) for c in cols)
     src_list = ", ".join(f"s.{q(c)}" for c in cols)
-    matched = f"WHEN MATCHED THEN UPDATE SET {updates} " if updates else ""
+    matched = f"WHEN MATCHED THEN UPDATE SET {updates} " if updates and update else ""
     return (
         f"MERGE {tgt} WITH (HOLDLOCK) AS t USING {staging} AS s ON {on} "
         f"{matched}"
@@ -68,6 +90,8 @@ def _mssql_merge(
     rows: Sequence[Mapping[str, Any]],
     cols: Sequence[str],
     key_cols: Sequence[str],
+    *,
+    update: bool = True,
 ) -> None:
     preparer = conn.dialect.identifier_preparer
     staging = "#stg_" + table.name
@@ -78,5 +102,5 @@ def _mssql_merge(
     conn.execute(text(f"SELECT TOP 0 {col_list} INTO {staging} FROM {tgt}"))
     params = ", ".join(f":{c}" for c in cols)
     conn.execute(text(f"INSERT INTO {staging} ({col_list}) VALUES ({params})"), list(rows))
-    conn.execute(text(build_merge_sql(preparer, table, staging, cols, key_cols)))
+    conn.execute(text(build_merge_sql(preparer, table, staging, cols, key_cols, update=update)))
     conn.execute(text(f"DROP TABLE {staging}"))

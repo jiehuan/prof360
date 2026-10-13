@@ -8,7 +8,7 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 
 ```bash
 .venv/bin/pip install -e ".[dev]"             # Python 3.14 venv (project supports >=3.11)
-.venv/bin/uw-pipeline run --all                      # stages: company -> facts -> compute
+.venv/bin/uw-pipeline run --all     # stages: company -> facts -> compute -> documents -> signals
 .venv/bin/uw-pipeline run --ticker MAR --stage compute
 .venv/bin/uw-pipeline run --ticker MAR --force       # ignore same-day raw cache / input hash
 .venv/bin/uw-pipeline coverage-report                # data/reports/coverage-<date>.md
@@ -37,3 +37,5 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
   `config/industry_groups.yaml`; never generate them at run time.
 - Every metric gap shown by `coverage-report` needs a note in `config/coverage_notes.yaml`.
 - Golden values come from the filing itself (XBRL instance / document), not from estimates.
+- Signal and section rules live in `config/signal_rules.yaml` and `company_overrides/*.yaml`
+  (`sections:`); every false positive found becomes a test case in `tests/test_signals.py`.

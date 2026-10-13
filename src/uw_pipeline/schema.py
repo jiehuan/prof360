@@ -12,6 +12,7 @@ from sqlalchemy import (
     MetaData,
     String,
     Table,
+    Text,
     UniqueConstraint,
 )
 
@@ -114,4 +115,73 @@ metric_value = Table(
         "fiscal_quarter",
         name="uq_metric_value_period",
     ),
+)
+
+# Every SEC document the pipeline references: filings (metadata only for most 8-Ks), primary
+# documents it downloaded, and exhibits such as the EX-99.1 earnings release.
+source_document = Table(
+    "source_document",
+    metadata,
+    Column("doc_id", Integer, primary_key=True, autoincrement=True),
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False, index=True),
+    Column("source_type", String(20), nullable=False),  # SEC_FILING | NEWS | TRANSCRIPT
+    Column("form_type", String(20), nullable=False),
+    Column("doc_role", String(20), nullable=False),  # PRIMARY | EX-99.1
+    Column("accession_no", String(25), nullable=False),
+    Column("doc_name", String(200), nullable=False),
+    Column("items", String(100)),  # 8-K item numbers
+    Column("filed_at", String(10), nullable=False),
+    Column("period_end", String(10)),
+    Column("url", String(500), nullable=False),
+    Column("content_hash", String(64)),  # NULL until the document is downloaded
+    Column("raw_path", String(500)),
+    Column("fetched_at", DateTime(timezone=True)),
+    UniqueConstraint("accession_no", "doc_name", name="uq_source_document"),
+)
+
+filing_section = Table(
+    "filing_section",
+    metadata,
+    Column("section_id", Integer, primary_key=True, autoincrement=True),
+    Column("doc_id", Integer, ForeignKey("source_document.doc_id"), nullable=False),
+    Column("section_code", String(20), nullable=False),
+    Column("start_offset", Integer, nullable=False),  # in the document's plain text
+    Column("char_count", Integer, nullable=False),
+    Column("text", Text, nullable=False),
+    Column("text_hash", String(64), nullable=False),
+    UniqueConstraint("doc_id", "section_code", name="uq_filing_section"),
+)
+
+# Paragraph-aligned chunks for LLM input and citation (offsets are within the section text).
+section_chunk = Table(
+    "section_chunk",
+    metadata,
+    Column("chunk_id", Integer, primary_key=True, autoincrement=True),
+    Column("section_id", Integer, ForeignKey("filing_section.section_id"), nullable=False),
+    Column("chunk_index", Integer, nullable=False),
+    Column("start_offset", Integer, nullable=False),
+    Column("end_offset", Integer, nullable=False),
+    Column("text", Text, nullable=False),
+    UniqueConstraint("section_id", "chunk_index", name="uq_section_chunk"),
+)
+
+# Rule-based signals (no LLM). One row per (rule, company, evidence source).
+signal = Table(
+    "signal",
+    metadata,
+    Column("signal_id", Integer, primary_key=True, autoincrement=True),
+    Column("signal_key", String(40), nullable=False, unique=True),
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False, index=True),
+    Column("rule_id", String(60), nullable=False),
+    Column("category", String(60), nullable=False),
+    Column("subcategory", String(100), nullable=False),
+    Column("severity", String(10), nullable=False),  # Info | Warning | Critical
+    Column("title", String(300), nullable=False),
+    Column("description", String(2000), nullable=False),
+    Column("event_date", String(10), nullable=False),
+    Column("doc_id", Integer, ForeignKey("source_document.doc_id")),
+    Column("accession_no", String(25)),
+    Column("section_code", String(20)),
+    Column("snippet", String(2000)),
+    Column("detected_at", DateTime(timezone=True), nullable=False),
 )

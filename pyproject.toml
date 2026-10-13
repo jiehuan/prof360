@@ -16,6 +16,7 @@ dependencies = [
     "typer>=0.12",
     "pyyaml>=6.0",
     "pandas>=2.2",
+    "lxml>=5.0",
 ]
 
 [project.optional-dependencies]
@@ -27,6 +28,7 @@ dev = [
     "mypy>=1.10",
     "types-PyYAML",
     "pandas-stubs",
+    "lxml-stubs",
 ]
 
 [project.scripts]
@@ -49,6 +51,9 @@ select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/test_xbrl_facts.py" = ["E501"]  # inline XBRL instance sample
+"tests/test_phase3_stages.py" = ["E501"]  # inline HTML samples
+"tests/test_signals.py" = ["E501"]  # real 8-K sentences
+"tests/test_html_text.py" = ["E501"]  # inline HTML sample
 
 [tool.mypy]
 python_version = "3.11"

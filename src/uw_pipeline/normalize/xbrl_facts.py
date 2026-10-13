@@ -147,3 +147,33 @@ def facts_from_instance(
             }
         )
     return pd.DataFrame(rows, columns=FACT_COLUMNS) if rows else _empty()
+
+
+def text_facts_from_instance(xml: bytes, tags: Iterable[str]) -> dict[str, str]:
+    """Non-dimensional text facts (e.g. dei:AuditorName) from an XBRL instance."""
+    wanted = set(tags)
+    ns_prefix: dict[str, str] = {}
+    root: ET.Element | None = None
+    for event, item in ET.iterparse(io.BytesIO(xml), events=("start-ns", "start")):
+        if event == "start-ns":
+            prefix, uri = item
+            ns_prefix.setdefault(uri, prefix)
+        elif root is None and isinstance(item, ET.Element):
+            root = item
+    if root is None:
+        return {}
+    dimensional = {
+        ctx.get("id", "")
+        for ctx in root.iter(f"{_XBRLI}context")
+        if ctx.find(f".//{_XBRLDI}explicitMember") is not None
+        or ctx.find(f".//{_XBRLDI}typedMember") is not None
+    }
+    out: dict[str, str] = {}
+    for el in root:
+        if not el.tag.startswith("{") or el.get("contextRef") in dimensional:
+            continue
+        uri, local = el.tag[1:].split("}", 1)
+        tag = f"{ns_prefix.get(uri, uri)}:{local}"
+        if tag in wanted and (el.text or "").strip():
+            out.setdefault(tag, " ".join((el.text or "").split()))
+    return out

@@ -159,3 +159,62 @@ Rejected options:
 
 Phase 3 downloads and stores EX-99.1 documents for 2.02 8-Ks. Extraction happens in Phase 5,
 together with PLAN §6 Adjusted EBITDA option B.
+
+## Phase 3 (2026-10-13)
+
+**D-023 Own section splitter instead of edgartools.** I evaluated edgartools 5.62 on the 9
+latest 10-Ks:
+- It failed on 2: LUV and SKYD, whose latest "10-K" is a Part III-only 10-K/A.
+- It makes its own HTTP calls, bypassing the rate limiter, cache and raw landing
+  (`clients/` rule).
+- It pulls in 45 packages.
+
+The replacement is `html_to_text` (lxml; block elements become lines; `display:inline` divs
+and hidden iXBRL headers handled) plus item-heading detection:
+- Repeated page headers ("Item 7 … (Continued)") are merged into one block.
+- The longest block per item wins, which skips the table of contents.
+
+Results on the latest original 10-Ks:
+- Items 1A/3/7 were found for 27/27 (100%), and the auditor's report for 9/9.
+- Sizes match edgartools where it worked (Ford 1A 94k / 7 159k chars vs 94k / 162k).
+- Short Item 3 sections (JPM, LUMN, M, SKYD) are genuine cross-references to a litigation
+  note in Item 8. Phase 5 legal analysis must follow them.
+
+**D-024 Company section rules for non-standard layouts.** JPM's 10-K/10-Q body uses its own
+headings and lists Items only in a page index at the back. `company_overrides/JPM.yaml`
+`sections:` locates the MD&A by its own start and end heading lines (10-K MD&A 391k chars).
+This is config, not code.
+
+**D-025 Only original 10-K/10-Qs are split.** Amendments (10-K/A, 10-Q/A) are registered in
+`source_document` but not split: they are often Part III only. All 10-K/10-Q/8-K filings
+within `EVENT_LOOKBACK_DAYS` (730) are registered. Original 10-K/10-Qs within
+`TEXT_LOOKBACK_DAYS` (400) are downloaded and split. 8-K bodies are downloaded only for the
+items in `fetch_body_items`. SKYD documents start at `history_start` (D-012).
+
+**D-026 EX-99.1 is found by document type, not file name.** File names vary too much
+("er-6302026xerdoc.htm", "exhibit99tojuly282026for.htm"). The type column of the filing's
+`-index.html` is used. Single-exhibit filers label it plain "EX-99", so the lookup tries
+EX-99.1, then EX-99. Each company has 4 earnings releases in the last 400 days, stored as
+`doc_role = 'EX-99.1'` for Phase 5 (D-022). One ENPH 2.02 8-K (2026-04-06, items 2.02 + 8.01)
+has no exhibit; this is logged.
+
+**D-027 Signals are rule-based, with rules in `config/signal_rules.yaml`.**
+- 8-K items: mapped per PLAN §5.4. Item 3.01 is downgraded to Info "Listing Transfer" when the
+  text describes a voluntary exchange transfer (LUMN and SKYD in 2026-09).
+- 5.02 CEO/CFO rule: the role must belong to this company. A role followed by "of <other
+  entity>" does not count; this excluded a JPM business-unit Co-CEO and a CFO title held at a
+  previous employer. Sentences with "continue to serve" / "previously served" are excluded.
+  The change verb must be within 100 characters of the role. A departure outranks an
+  appointment within one filing. Sentence splitting ignores abbreviations (Mr., Jr., Inc.).
+  On 2 years of 8-Ks for 9 companies this gives 7 CEO/CFO signals, all true positives after
+  review; 4 false positives found during development became test cases.
+- Auditor: name from `dei:AuditorName` (10-K XBRL instance) and tenure from the auditor's
+  report ("served as … auditor since [at least] YYYY"). A name change between 10-Ks is a
+  Warning.
+- Keywords: going concern (auditor's report only), material weakness, controls not effective,
+  restatement. Each rule is limited to specific sections and drops sentences with negation;
+  none fired for the 9 companies.
+- Metrics: negative equity (latest quarter), plus buybacks continuing while equity is negative
+  (MAR, LUMN).
+- `signal_key` = hash(company, rule, accession, section, extra). Reruns keep `detected_at`
+  and delete only that company's signals that are no longer produced.
