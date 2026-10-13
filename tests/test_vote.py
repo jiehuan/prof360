@@ -178,6 +178,15 @@ def test_grounding_tolerates_formatting_only() -> None:
     assert not is_grounded("since", src)  # too short to mean anything
 
 
+def test_schema_keeps_fields_named_title() -> None:
+    from uw_pipeline.enrich.schemas import BehavioralInsights, KeyInsights
+
+    for model in (BehavioralInsights, KeyInsights):
+        schema = strict_json_schema(model)
+        item = next(d for n, d in schema["$defs"].items() if n != "Evidence")
+        assert "title" in item["properties"] and "title" in item["required"]
+
+
 def test_schema_is_strict() -> None:
     schema = strict_json_schema(SectionSignals)
     assert schema["additionalProperties"] is False

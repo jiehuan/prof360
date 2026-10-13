@@ -19,11 +19,16 @@ from uw_pipeline.clients.storage import LocalStorage
 from uw_pipeline.compute.coverage import company_coverage, load_notes, render_markdown
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig, load_companies, load_industry_config
+from uw_pipeline.enrich.audit import audit
 from uw_pipeline.enrich.llm import LLMConfig, load_llm_config
+from uw_pipeline.enrich.package import load_insights_config
+from uw_pipeline.enrich.text_metrics import load_text_config
 from uw_pipeline.jobs.run_company import TaskResult, run_company_stage
 from uw_pipeline.jobs.run_documents import run_documents_stage
+from uw_pipeline.jobs.run_insights import run_insights_stage
 from uw_pipeline.jobs.run_news import load_news_config, run_news_stage
 from uw_pipeline.jobs.run_signals import run_signals_stage
+from uw_pipeline.jobs.run_text_metrics import run_text_metrics_stage
 from uw_pipeline.jobs.run_transcripts import run_transcripts_stage
 from uw_pipeline.jobs.run_xbrl import company_row, run_compute_stage, run_facts_stage
 from uw_pipeline.schema import metric_value
@@ -41,13 +46,15 @@ class Stage(StrEnum):
     documents = "documents"
     transcripts = "transcripts"
     news = "news"
+    textmetrics = "textmetrics"
     signals = "signals"
+    insights = "insights"
 
 
 # Stages in execution order; later phases append here.
 STAGE_ORDER = [
     Stage.company, Stage.facts, Stage.compute, Stage.documents,
-    Stage.transcripts, Stage.news, Stage.signals,
+    Stage.transcripts, Stage.news, Stage.textmetrics, Stage.signals, Stage.insights,
 ]  # fmt: skip
 AV_STAGES = {Stage.transcripts, Stage.news}
 
@@ -165,6 +172,16 @@ def run(
                         results += run_news_stage(
                             selected, av, engine, news_cfg, llm=_llm(settings)
                         )
+            elif s is Stage.textmetrics:
+                results += run_text_metrics_stage(
+                    selected, registry, industry, load_text_config(settings.config_dir),
+                    _llm(settings), storage, engine,
+                )  # fmt: skip
+            elif s is Stage.insights:
+                results += run_insights_stage(
+                    selected, registry, industry, _llm(settings),
+                    load_insights_config(settings.config_dir), engine,
+                )  # fmt: skip
             elif s is Stage.signals:
                 results += run_signals_stage(
                     selected, sec, signal_rules, engine, llm=_llm(settings)
@@ -214,6 +231,23 @@ def coverage_report(
         typer.echo(f"  {status:12} {t} {code}")
     if problems:
         typer.echo(f"{len(problems)} metric gaps have no explanation in coverage_notes.yaml")
+
+
+@app.command("audit-insights")
+def audit_insights(sample: Annotated[int, typer.Option(help="Insights to sample")] = 20) -> None:
+    """Re-check stored insight evidence against the sources (Phase 5 acceptance)."""
+    settings = Settings()
+    with make_engine(settings.database_url).connect() as conn:
+        rep = audit(conn, sample=sample)
+    pct = 100 * rep.snippets_found / rep.snippets if rep.snippets else 100.0
+    typer.echo(f"sampled insights:            {rep.sampled_insights}")
+    typer.echo(f"evidence snippets found:     {rep.snippets_found}/{rep.snippets} ({pct:.0f}%)")
+    typer.echo(f"insights without evidence:   {rep.insights_without_evidence}")
+    typer.echo(f"FI rows for non-FI companies: {rep.fi_rows_for_non_fi}")
+    for f in rep.failures:
+        typer.echo(f"  NOT FOUND {f}", err=True)
+    if rep.failures or rep.insights_without_evidence or rep.fi_rows_for_non_fi:
+        raise typer.Exit(code=1)
 
 
 @app.command("init-db")

@@ -301,3 +301,106 @@ Articles with AV ticker relevance < 0.3 are dropped. All thresholds are in `conf
 **D-031 No Alpha Vantage financial statements for now** (user decision). The XBRL-vs-AV
 cross-check in PLAN Phase 4 is deferred. A first look showed MAR 2026 Q2 AV figures (revenue
 7,071M, operating income 1,229M, interest 221M, D&A 222M) match our XBRL values.
+
+## Phase 5 (2026-10-13)
+
+User: Phase 5 runs on my judgement until commit. Split into 5a (numbers from text) and 5b
+(insights). Sonnet 5.5 handles extraction and per-item summaries, Opus 5.5 handles
+company-level synthesis, and only bank capital/liquidity metrics get a two-model check.
+
+**D-032 Numbers from text (5a).**
+- Text metrics are curated per industry group like every other metric: `metrics.yaml`
+  `kind: text` with `extraction` (definition, keywords, dual_check), and the `HOTEL_OPERATING`
+  and `BANK_REGULATORY` sets.
+- Sources: MD&A sections (10-K Item 7, 10-Q Part I Item 2) and the EX-99.1 earnings releases.
+- Each metric first gets its 2 best keyword chunks; then the most-mentioned chunks fill a 60k-char
+  budget. Without the per-metric step, frequent "CET1" chunks crowded out JPM's NIM wording.
+- The model copies numbers as written, with unit, scale, period start and end. Code converts
+  them. A value is kept only if its quote is in the source, the number as written is in the
+  quote, the unit fits the metric, and the period length fits (quarter 75–105 days, year
+  350–380). The period check is what rejected SKYD's Aug 8 – Sep 30 merger stub shown in a
+  "quarter" column. Year-to-date values are skipped.
+- Bank metrics (`dual_check`) and the loan book are kept only where Sonnet and Opus agree
+  within 0.5%. When several documents report the same metric and period, the latest-filed one
+  wins and disagreements are counted.
+- Earnings releases (D-022): when a period already has XBRL, the release value is only
+  cross-checked. Live run: 200 checks across 9 companies, 0 mismatches, which also confirms
+  the scale handling. Otherwise the value is written as PRELIMINARY. Today the only case is SKYD
+  FY2025 Q4: its stub-year 10-K can't yield Q4 from XBRL, so that release value stays.
+- The compute stage now deletes only rows it owns (REPORTED/DERIVED/COMPUTED). The text stage
+  owns LLM_EXTRACTED/PRELIMINARY, so a later 10-Q upsert replaces a PRELIMINARY value.
+- Results:
+  - MAR: RevPAR, occupancy and ADR for 5 periods. FY2025 is RevPAR $128.80 and occupancy 69.3%,
+    the same as the SEC_metrics repo.
+  - JPM: CET1, Tier 1 and LCR for about 8 quarters, NIM for 8 periods, NPL ratio for FY, and the
+    loan book by segment (Consumer ex-card $367bn, Card $250bn, Wholesale $847bn at 2026-06-30).
+- Prompt `text_metrics_v2` adds the period start.
+
+**D-033 Insights (5b).**
+- Package (`enrich/package.py`): every input item has an id.
+  - M: metric rows (latest 5 quarters + 3 fiscal years, formatted as shown to users)
+  - S: signals, with OVERRULED/DISPUTED marked
+  - E: filing excerpts (risk factors up to 120k chars, legal, 10-Q MD&A start)
+  - T: the latest 3 earnings call transcripts
+  - N: news activities from the last 30 days
+  - B, R, K: insights from earlier steps
+- Tasks, in order:
+  1. activity summaries (Sonnet 5.5, batches of 20)
+  2. behavioral insights from transcripts (Opus 5.5)
+  3. strategic & risk insights for 3 categories, with explicit "no signal" (Opus)
+  4. key insights, 6–10 (Opus)
+  5. follow-up questions, 10–15 (Opus)
+
+  Prompts are `common_v1` (shared rules: no underwriting decisions, cite everything, numbers
+  only from the input) plus one versioned prompt per task.
+- Grounding (`enrich/insights.py`, `grounding.py`):
+  - An item needs at least one citation whose quote is found in the cited item. Metric rows
+    accept short quotes such as "$16.91B"; other items need at least 8 characters.
+  - Every financial number in the text must match a package metric value (allowing unit
+    conversion and rounding to the precision written), or appear as written in a cited item.
+    The digits are matched with boundaries.
+  - Years, quarter numbers and small counts are ignored.
+  - Failing items are dropped and logged.
+  - A citation of an earlier insight (R/B) is stored as that insight's own evidence, so
+    lineage always ends at a document, metric, signal or news item.
+- Versioning: a set is stored only when its input hash changes. The hash includes the grounding
+  version, prompts, model and the rendered input. A new set becomes `is_current` and older sets
+  are kept. An unchanged input writes nothing, and its LLM output comes from the cache.
+- Bug found in the first live run: `strict_json_schema` removed the schema annotation key
+  "title" and also dropped fields named `title`. That made the behavioral output fail
+  validation. It is fixed and has a regression test. Earlier schemas had no `title` field.
+- Acceptance tooling:
+  - `uw-pipeline audit-insights` re-checks a random sample's evidence against the sources,
+    checks that no insight lacks evidence, and checks that no FI data exists for non-FI
+    companies.
+  - `scripts/export_golden.py` writes MAR/JPM/ENPH outputs to `tests/golden/` as the
+    regression baseline for prompt changes.
+- **Live run, 9 companies (2026-10-13).** Kept / generated per company:
+  - Behavioral (5 companies with ≥2 transcripts): 6/6
+  - Strategic & risk: 9–12 of 12
+  - Key insights: 9–10 of 10
+  - Follow-up questions: 14–15 per company
+- **Grounding dropped 8 items**, e.g. JPM CEO pay ($43M), which is not in the input (no proxy
+  data) and so came from model knowledge, and ENPH "$1.08B safe harbor deals". Two fixes during
+  the run:
+  - Grounding compared "1819m" instead of the digits, so "$1,819M" vs "$1,819 million" failed.
+  - Bare integers under 100 (days, counts) were treated as financial figures; they are now
+    ignored.
+
+  Each fix bumped `GROUNDING_VERSION` and re-grounded the cached outputs.
+- **Acceptance:**
+  - `audit-insights`: 20 sampled insights, 107/107 evidence snippets found in their sources;
+    0 insights without evidence; 0 FI rows for non-FI companies.
+  - A rerun with unchanged inputs made 0 LLM calls and wrote 0 rows.
+  - Golden outputs for MAR/JPM/ENPH were exported to `tests/golden/`.
+- **Cost:** all LLM calls so far total about $17.7, including development reruns (text-metric
+  prompt v1→v2, the NIM definition change, the schema bug).
+  - Biggest items: strategic & risk ($4.4 for 9 companies, ~70k input tokens each), text
+    metrics ($6.7 including reruns) and key insights ($2.5).
+  - A full first run for one company is about $1.2–1.5 with Opus 5.5 for synthesis. Nightly
+    cost depends only on which companies have new inputs.
+- **Open:**
+  - Activity summaries are built and tested but have no live data until the premium Alpha
+    Vantage key arrives.
+  - Behavioral insights for JPM, LUMN, SKYD and ENPH wait for their transcripts (quota).
+  - Secure GPT is still to be added as an `LLMClient` implementation.

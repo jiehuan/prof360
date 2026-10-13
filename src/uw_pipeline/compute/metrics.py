@@ -220,6 +220,8 @@ def compute_metrics(
     known: dict[str, dict[PeriodKey, Value]] = dict(concept_values(periods, registry))
     results: dict[str, dict[PeriodKey, Value]] = {}
     for metric in registry.metrics:
+        if metric.kind == "text":
+            continue  # extracted from filing text by the LLM stage, not computed here
         inputs = metric.inputs()
         keys = sorted({k for n in inputs for k in known.get(n, {})})
         values: dict[PeriodKey, Value] = {}

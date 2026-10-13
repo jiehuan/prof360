@@ -1,0 +1,816 @@
+{
+ "insights": [
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Three securities class actions span 2023-2025",
+   "summary": "Two Section 10(b)/20(a) class actions in N.D. Cal. (Hayes, and the Pension Fund Action) name the CEO and, in one case, the chief products officer. Together they cover purchasers from Feb 7, 2023 to Oct 22, 2024. A third action, Tripathi v. Enphase, was filed February 17, 2026 against the company, CEO and CFO for purchasers between April 22, 2025 and October 28, 2025. Motion-to-dismiss rulings are pending in all three.",
+   "uw_relevance": "These are active securities claims against the company and named senior officers. The alleged misstatement periods are not overlapping and run continuously from early 2023 to late 2025.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "A hearing on the motion to dismiss is currently scheduled for September 17, 2026."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "The Court vacated the previously scheduled hearing on the motion to dismiss, but has not yet issued a decision."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "A hearing on the motion to dismiss is currently scheduled for September 17, 2026."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "The Court vacated the previously scheduled hearing on the motion to dismiss, but has not yet issued a decision."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "On February 17, 2026, a putative class action complaint was filed naming us, our chief executive officer, and our chief financial officer"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "purportedly on behalf of a class of individuals who purchased or otherwise acquired our common stock between April 22, 2025 and October 28, 2025."
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Derivative suits target directors, allege insider sales",
+   "summary": "On April 23, 2026, Collins v. Kothandaraman was filed in the Delaware Court of Chancery against non-employee directors and certain executives. It alleges fiduciary breaches tied to the statements challenged in all three class actions and to purported stock sales. Two federal derivative actions remain stayed, and on April 9, 2026 the federal court denied motions to intervene in the Derivative II Action.",
+   "uw_relevance": "Derivative claims name individual directors and officers personally, including insider-sale allegations. They are pending in two forums, and the stayed federal suits could proceed depending on the class action rulings.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "On April 23, 2026, purported shareholder Terrence Collins filed a derivative lawsuit in the Court of Chancery for the State of Delaware against our non-employee directors and certain of our executives"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "as well as in connection with purported sales of stock."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "On April 9, 2026, the Court denied both motions to intervene, and the case remains stayed."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "On April 23, 2026, purported shareholder Terrence Collins filed a derivative lawsuit in the Court of Chancery for the State of Delaware against our non-employee directors and certain of our executives"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "as well as in connection with purported sales of stock."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "On April 9, 2026, the Court denied both motions to intervene, and the case remains stayed."
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Negative",
+   "title": "Revenue down about 20% year over year",
+   "summary": "Revenue was $292M in FY2026 Q2, down 19.6% YoY, after $283M in FY2026 Q1, down 20.6% YoY. FY2026 Q1 posted an operating loss of $30M and a net loss of $7M. In Q2, IQ Battery MWh shipped fell 40%. US revenue fell $44.4M (16%), attributed to the Section 25D credit expiration, and international revenue fell 29%.",
+   "uw_relevance": "A sustained, policy-driven revenue decline puts pressure on operating results and on the company's forward-looking disclosures. Declines of this kind often feature in disclosure-based securities claims.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "Revenue Growth (YoY) | FY2026 Q2 | -19.6% | COMPUTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "Revenue Growth (YoY) | FY2026 Q1 | -20.6% | COMPUTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "operating_income",
+     "snippet": "Operating Income | FY2026 Q1 | $-30M | REPORTED"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "driven primarily by a 40% decrease in IQ Batteries MWh shipped and product price decreases, partially offset by a 4% increase in microinverter units sold."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "a decrease of $44.4 million, or 16%, primarily due to the expiration of the federal residential clean energy tax credit under Section 25D of the Internal Revenue Code."
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "-19.6%"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "operating_income",
+     "snippet": "$-30M"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Q2 profit aided by one-time tariff refunds",
+   "summary": "After IEEPA tariffs were invalidated, the company received refunds and interest of about $41.0M in Q2 2026 and $11.0M in July 2026. Of these, $45.4M was recorded as a reduction to Q2 cost of revenues, which supported Q2 operating income of $52M. New Section 301 tariffs of 10% to 12.5% were announced July 23, 2026, and LFP battery cells remain sole-sourced from two vendors in China.",
+   "uw_relevance": "Reported Q2 2026 profitability includes a non-recurring benefit, so earnings quality and disclosure of the refund's effect matter. Tariff changes and China-concentrated cell sourcing are ongoing margin and supply risks.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "of which $45.4 million was recognized as a reduction to cost of revenues during the three and six months ended June 30, 2026"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "the Administration announced new tariffs ranging from 10% to 12.5% on imports from 60 trading partners."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "of which $45.4 million was recognized as a reduction to cost of revenues during the three and six months ended June 30, 2026"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "the Administration announced new tariffs ranging from 10% to 12.5% on imports from 60 trading partners."
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "operating_income",
+     "snippet": "Operating Income | FY2026 Q2 | $52M | REPORTED"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Negative",
+   "title": "Operating and free cash flow sharply lower",
+   "summary": "Free cash flow fell from $586M in FY2023 and $480M in FY2024 to $96M in FY2025. Operating cash flow followed the same path: $697M, $514M and then $137M. In FY2026, free cash flow was $83M in Q1 and $26M in Q2.",
+   "uw_relevance": "Much lower internal cash generation leaves less room to absorb litigation costs, tariff shocks or further demand weakness.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "free_cash_flow",
+     "snippet": "Free Cash Flow | FY2025 | $96M | COMPUTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "free_cash_flow",
+     "snippet": "Free Cash Flow | FY2024 | $480M | COMPUTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "free_cash_flow",
+     "snippet": "Free Cash Flow | FY2023 | $586M | COMPUTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "free_cash_flow",
+     "snippet": "Free Cash Flow | FY2026 Q2 | $26M | COMPUTED"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Positive",
+   "title": "2026 convertible maturity cleared, leverage reduced",
+   "summary": "Total debt fell from $1.20B at FY2025 Q4 to $573M at FY2026 Q1. This coincides with the $632.5M 0.0% convertible notes due 2026; the input does not state how they were settled. Debt-to-equity improved to 0.48x at FY2026 Q2 from 1.11x at FY2025 year-end. The remaining debt is the $575.0M 0.0% notes due 2028.",
+   "uw_relevance": "Removing the 2026 maturity reduces near-term refinancing and insolvency-related risk. The 2028 convertible notes carry fundamental-change repurchase provisions.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "total_debt",
+     "snippet": "$1.20B"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "total_debt",
+     "snippet": "$573M"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "$632.5 million aggregate principal amount of our 0.0% convertible senior notes due 2026"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "$575.0 million aggregate principal amount of our 0.0% convertible senior notes due 2028"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "debt_to_equity",
+     "snippet": "Debt-to-Equity | FY2026 Q2 | 0.48x | COMPUTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "total_debt",
+     "snippet": "Total Debt | FY2025 Q4 | $1.20B | COMPUTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "total_debt",
+     "snippet": "Total Debt | FY2026 Q2 | $573M | COMPUTED"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Positive",
+   "title": "Liquidity remains solid after debt repayment",
+   "summary": "Cash and equivalents rose to $529M at FY2026 Q2 from $371M at FY2025 Q2. The current ratio was 3.45x and working capital was $1.39B at FY2026 Q2. Stockholders' equity increased to $1.18B.",
+   "uw_relevance": "A strong balance-sheet cushion lowers near-term financial distress risk, even while revenue and cash flow are declining.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "cash",
+     "snippet": "Cash & Equivalents | FY2026 Q2 | $529M | REPORTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "current_ratio",
+     "snippet": "Current Ratio | FY2026 Q2 | 3.45x | COMPUTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "working_capital",
+     "snippet": "Working Capital | FY2026 Q2 | $1.39B | COMPUTED"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Info",
+   "title": "Liquidity partly depends on tax credit sales",
+   "summary": "In March 2026 the company sold $235.0M of 2025 AMPTC at 93% of face value, a discount of about $16.5M plus about $2.5M in fees. In June 2026 it agreed to sell up to $150.0M of 2026 AMPTC on the same terms. Of that amount, $37.5M of Q1 2026 credits were sold for about $34.9M.",
+   "uw_relevance": "Section 45X credit sales are a material liquidity source. That source depends on continued FEOC and domestic content compliance under evolving Treasury guidance, which is a disclosure-sensitive area.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "In March 2026, we entered into an agreement for the sale of $235.0 million of AMPTC we generated during 2025 at 93% of face value, resulting in a discount of approximately $16.5 million."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "In June 2026, we entered into an agreement for the sale of up to $150.0 million of AMPTC we generated during 2026 at 93% of face value."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "In March 2026, we entered into an agreement for the sale of $235.0 million of AMPTC we generated during 2025 at 93% of face value, resulting in a discount of approximately $16.5 million."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "In June 2026, we entered into an agreement for the sale of up to $150.0 million of AMPTC we generated during 2026 at 93% of face value."
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Distributor and installer distress raises credit risk",
+   "summary": "Management states that prolonged solar demand softness has led to reduced liquidity, bankruptcies and closures among distributors and installers. A customer that filed Chapter 11 in 2024 led to a $6.2M receivable write-off in FY2025.",
+   "uw_relevance": "Counterparty stress in the sales channel can cause further write-offs, earnings volatility and questions about the adequacy of credit-loss reserves.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "contributing to reduced liquidity, bankruptcies and business closures across the channel."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "However, the accounts receivable related to that customer of $6.2 million was written-off during the year ended"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "contributing to reduced liquidity, bankruptcies and business closures across the channel."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "However, the accounts receivable related to that customer of $6.2 million was written-off during the year ended"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Info",
+   "title": "Buybacks halted after repurchases exceeded earnings",
+   "summary": "Share repurchases were $410M in FY2023 and $391M in FY2024; the FY2024 amount equaled 3.81x net income. Repurchases fell to $130M in FY2025 and have been $0 in every quarter from FY2025 Q3 through FY2026 Q2.",
+   "uw_relevance": "The heavy FY2024 buybacks took place during class periods now in litigation, which could draw scrutiny of capital-allocation decisions. The current halt preserves cash.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buyback_intensity",
+     "snippet": "Buybacks / Net Income | FY2024 | 3.81x | COMPUTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buyback_intensity",
+     "snippet": "3.81x"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "$391M"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "$130M"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "$0.00"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Governance & Leadership",
+   "subcategory": "Board composition",
+   "insight_type": null,
+   "title": "Board expanded to eight directors June 2026",
+   "summary": "An 8-K Item 5.02 reports that effective June 11, 2026 the Board increased its size to eight directors and appointed a new director on the recommendation of the Nominating and Corporate Governance Committee. The excerpt does not name the appointee or describe committee roles.",
+   "uw_relevance": "This is a board composition change while the company faces multiple pending securities class actions and derivative suits naming its non-employee directors. The new director's background and committee assignments are not given in the input.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "has increased the size of the Board to eight directors and, upon the recommendation of the Nominating and Corporate Governance Committee of"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Governance & Leadership",
+   "subcategory": "Equity compensation",
+   "insight_type": null,
+   "title": "Equity plan amended at consecutive annual meetings",
+   "summary": "Stockholders approved an amendment and restatement of the 2021 Equity Incentive Plan at the May 14, 2025 annual meeting. They approved another amendment and restatement at the May 13, 2026 annual meeting. The excerpts do not give share reserve details. The 10-K notes the company relies on stock-based awards to retain executives.",
+   "uw_relevance": "Repeated plan amendments point to ongoing equity compensation needs and possible dilution. The pending Collins derivative action separately alleges claims tied to purported stock sales by insiders.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "the Company\u2019s stockholders approved an amendment and restatement to the Company\u2019s 2021 Equity In"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "On May 14, 2025, Enphase Energy, Inc. (the \u201cCompany\u201d) held its 2025 Annual Meeting of Stockholders"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Governance & Leadership",
+   "subcategory": "Capital allocation",
+   "insight_type": null,
+   "title": "Share buybacks halted after heavy FY2024 repurchases",
+   "summary": "Share repurchases were $410M in FY2023 and $391M in FY2024, the latter equal to 3.81x net income. They fell to $130M in FY2025 (0.75x net income). Repurchases have been $0 in every quarter from FY2025 Q3 through FY2026 Q2. Stockholders' equity was $1.18B at FY2026 Q2.",
+   "uw_relevance": "Repurchases above net income in FY2024 happened during the class periods now at issue in securities litigation. The current halt preserves cash while revenue declines and convertible debt remains outstanding.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buyback_intensity",
+     "snippet": "3.81x"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "$391M"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "$130M"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "$0.00"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Securities litigation",
+   "insight_type": null,
+   "title": "Two securities class actions await dismissal rulings",
+   "summary": "Two Section 10(b)/20(a) class actions are pending in N.D. Cal. The Hayes action names the CEO and covers purchasers from Feb 7, 2023 to Apr 25, 2023; a motion to dismiss hearing is set for September 17, 2026. The Pension Fund Action names the CEO and chief products officer and covers purchasers from Apr 25, 2023 to Oct 22, 2024. The court vacated its hearing and has not yet ruled. Both seek unspecified damages.",
+   "uw_relevance": "These are active securities claims against the company and named officers. Motion-to-dismiss rulings are pending, and the outcomes will determine whether the stayed derivative suits proceed.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "A hearing on the motion to dismiss is currently scheduled for September 17, 2026."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "The Court vacated the previously scheduled hearing on the motion to dismiss, but has not yet issued a decision."
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Securities litigation",
+   "insight_type": null,
+   "title": "New Tripathi class action covers 2025 period",
+   "summary": "A third putative securities class action (Tripathi v. Enphase) was filed on February 17, 2026 against the company, CEO and CFO. It covers purchasers between April 22, 2025 and October 28, 2025. A lead plaintiff was appointed July 7, 2026. The amended complaint is due September 8, 2026 and the motion to dismiss is due November 9, 2026.",
+   "uw_relevance": "This adds a new, non-overlapping class period, so alleged misstatements now span 2023 through late 2025. It is the third securities class action naming senior officers.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "On February 17, 2026, a putative class action complaint was filed naming us, our chief executive officer, and our chief financial officer"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "purportedly on behalf of a class of individuals who purchased or otherwise acquired our common stock between April 22, 2025 and October 28, 2025."
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Derivative litigation",
+   "insight_type": null,
+   "title": "Delaware derivative suit alleges fiduciary breaches, stock sales",
+   "summary": "On April 23, 2026 a derivative suit (Collins v. Kothandaraman) was filed in the Delaware Court of Chancery against non-employee directors and certain executives. It alleges fiduciary breaches tied to the statements challenged in all three class actions and to purported stock sales. Two federal derivative actions remain stayed. On April 9, 2026 the federal court denied motions to intervene in the Derivative II Action.",
+   "uw_relevance": "Derivative claims directly target individual directors and officers, including insider-sale allegations. These are core D&O exposures now pending in both federal court and Delaware Chancery.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "On April 23, 2026, purported shareholder Terrence Collins filed a derivative lawsuit in the Court of Chancery for the State of Delaware against our non-employee directors and certain of our executives"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "as well as in connection with purported sales of stock."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "On April 9, 2026, the Court denied both motions to intervene, and the case remains stayed."
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Operating deterioration",
+   "insight_type": null,
+   "title": "Revenue down ~20% after Section 25D expiry",
+   "summary": "FY2026 Q2 revenue was $292M, down 19.6% YoY; FY2026 Q1 revenue fell 20.6% YoY. In Q2, IQ Battery MWh shipped fell 40%. US revenue fell $44.4M (16%), attributed to the Section 25D credit expiration, and international revenue fell 29%. FY2026 Q1 showed an operating loss of $30M and a net loss of $7M. Free cash flow was $96M in FY2025 versus $480M in FY2024.",
+   "uw_relevance": "Sustained revenue and cash flow declines tied to policy changes raise operating pressure. Declines of this kind often feature in disclosure-based securities claims.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "driven primarily by a 40% decrease in IQ Batteries MWh shipped and product price decreases, partially offset by a 4% increase in microinverter units sold."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "a decrease of $44.4 million, or 16%, primarily due to the expiration of the federal residential clean energy tax credit under Section 25D of the Internal Revenue Code."
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "-19.6%"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "operating_income",
+     "snippet": "$-30M"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Trade and supply chain",
+   "insight_type": null,
+   "title": "Tariff flux; Q2 profit aided by refunds",
+   "summary": "IEEPA tariffs were invalidated, and the company received refunds and interest of about $41.0M in Q2 2026 and $11.0M in July 2026. Of these, $45.4M was recorded as a reduction to Q2 cost of revenues, which supported Q2 operating income of $52M. Meanwhile, new Section 301 tariffs of 10% to 12.5% on 60 trading partners were announced July 23, 2026. LFP battery cells remain sole-sourced from two vendors in China.",
+   "uw_relevance": "Q2 2026 profitability includes a non-recurring tariff refund benefit. Ongoing tariff changes and single-country battery cell sourcing are company-specific supply and margin risks.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "of which $45.4 million was recognized as a reduction to cost of revenues during the three and six months ended June 30, 2026"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "the Administration announced new tariffs ranging from 10% to 12.5% on imports from 60 trading partners."
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Customer credit",
+   "insight_type": null,
+   "title": "Channel distress: bankruptcies and receivable write-off",
+   "summary": "Management states that prolonged solar demand softness has led to reduced liquidity, bankruptcies and closures among distributors and installers. This could raise credit loss allowances. A customer that filed Chapter 11 in 2024 led to a $6.2M receivable write-off in FY2025.",
+   "uw_relevance": "Counterparty stress in the sales channel can drive further write-offs and earnings volatility.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "contributing to reduced liquidity, bankruptcies and business closures across the channel."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "However, the accounts receivable related to that customer of $6.2 million was written-off during the year ended"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Event Signals",
+   "subcategory": "Debt event",
+   "insight_type": null,
+   "title": "Debt halved as 2026 convertible notes cleared",
+   "summary": "Total debt fell from $1.20B at FY2025 Q4 to $573M at FY2026 Q1. Current liabilities fell from $1.26B to $482M and current assets from $2.61B to $1.83B over the same period. This coincides with the $632.5M 0.0% convertible notes due 2026, though the input does not state the settlement mechanics. The $575.0M 0.0% notes due 2028 remain outstanding. Debt-to-equity was 0.48x at FY2026 Q2.",
+   "uw_relevance": "Clearing the 2026 maturity reduces near-term refinancing risk. The 2028 convertible notes remain the main debt obligation, with fundamental-change repurchase provisions.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "total_debt",
+     "snippet": "$1.20B"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "total_debt",
+     "snippet": "$573M"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "$632.5 million aggregate principal amount of our 0.0% convertible senior notes due 2026"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "$575.0 million aggregate principal amount of our 0.0% convertible senior notes due 2028"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Event Signals",
+   "subcategory": "Tax credit monetization",
+   "insight_type": null,
+   "title": "Manufacturing tax credits sold at 7% discount",
+   "summary": "In March 2026 the company sold $235.0M of 2025 AMPTC at 93% of face value, a discount of about $16.5M plus about $2.5M in fees. In June 2026 it agreed to sell up to $150.0M of 2026 AMPTC at 93% of face value. Of that amount, $37.5M of Q1 2026 credits were sold for about $34.9M.",
+   "uw_relevance": "Sales of Section 45X credits are a material liquidity source. That source depends on continued FEOC and domestic content compliance under evolving Treasury guidance.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "In March 2026, we entered into an agreement for the sale of $235.0 million of AMPTC we generated during 2025 at 93% of face value, resulting in a discount of approximately $16.5 million."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "In June 2026, we entered into an agreement for the sale of up to $150.0 million of AMPTC we generated during 2026 at 93% of face value."
+    }
+   ]
+  }
+ ],
+ "followups": [
+  {
+   "category": "Governance",
+   "question": "What is the current status and defense strategy for the three securities class actions: the Hayes motion-to-dismiss hearing set for September 17, 2026, the pending ruling in the Pension Fund Action after the court vacated its hearing, and the Tripathi amended complaint due September 8, 2026? Have all three been noticed to the D&O program?",
+   "rationale": "Three non-overlapping class periods running from February 2023 to October 2025 against the CEO, CFO and chief products officer are the most direct source of securities claim severity and defense cost.",
+   "system_priority": "high"
+  },
+  {
+   "category": "Governance",
+   "question": "For the Collins v. Kothandaraman derivative suit in Delaware Chancery, which directors and executives are named, were their challenged stock sales made under Rule 10b5-1 trading plans, and has the board formed a special litigation committee or responded to any demand?",
+   "rationale": "Insider-sale and fiduciary-breach allegations target individual directors and officers personally, and these claims are often non-indemnifiable Side A exposures.",
+   "system_priority": "high"
+  },
+  {
+   "category": "Financial",
+   "question": "How was the $45.4M IEEPA tariff refund, recorded as a reduction to Q2 2026 cost of revenues, disclosed in the earnings release and call, and how does management describe Q2 operating income of $52M and its outlook without this benefit?",
+   "rationale": "A non-recurring benefit that supports reported profit, during a period of active disclosure litigation, raises earnings-quality and misstatement risk.",
+   "system_priority": "high"
+  },
+  {
+   "category": "Market",
+   "question": "How did management communicate the expected impact of the Section 25D credit expiration in guidance during the April 22 to October 28, 2025 Tripathi class period? How do actual results compare: Q2 2026 revenue down 19.6% YoY, IQ Battery MWh shipped down 40%, and US revenue down $44.4M?",
+   "rationale": "The gap between earlier forward-looking statements and the later policy-driven revenue decline is the likely factual core of the newest securities claim.",
+   "system_priority": "high"
+  },
+  {
+   "category": "Governance",
+   "question": "Who is the director appointed effective June 11, 2026 when the board expanded to eight members? What are this director's independence status, committee assignments and any role in overseeing the pending litigation?",
+   "rationale": "Board composition and the independence of litigation oversight affect how derivative claims and demand-futility arguments develop.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Governance",
+   "question": "What share reserve changes were made by the 2021 Equity Incentive Plan amendments approved on May 14, 2025 and May 13, 2026? Do any awards go to executives named in the class or derivative actions?",
+   "rationale": "Repeated plan amendments while insider-sale allegations are pending can attract stockholder scrutiny of compensation and dilution.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Governance",
+   "question": "What board process approved the $391M of FY2024 repurchases (3.81x net income), and did any named officers or directors sell shares while the company was buying back stock during the class periods?",
+   "rationale": "Buybacks above earnings that coincide with alleged misstatement periods and insider sales can be cited in derivative and securities claims.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Financial",
+   "question": "What controls ensure FEOC and domestic content compliance for the Section 45X credits sold: the $235.0M of 2025 AMPTC sold in March 2026 and up to $150.0M of 2026 AMPTC at 93% of face value? Do the sale agreements include indemnities or recapture obligations?",
+   "rationale": "A material liquidity source that depends on evolving Treasury guidance creates disclosure and contingent-liability exposure if compliance is challenged.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Operational",
+   "question": "With LFP battery cells sole-sourced from two vendors in China and new Section 301 tariffs of 10% to 12.5% announced July 23, 2026, what alternative sourcing or pricing actions are underway? How are these risks reflected in risk-factor disclosures?",
+   "rationale": "Concentrated supply and changing tariffs can cause margin shocks that, if under-disclosed, become the basis for securities claims.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Financial",
+   "question": "How are credit-loss allowances being set given management's statement on bankruptcies and closures among distributors and installers? What receivable concentration exists with financially stressed channel partners beyond the customer that caused the $6.2M FY2025 write-off?",
+   "rationale": "Under-reserved receivables in a distressed channel could lead to unexpected write-offs and questions about the adequacy of financial reporting.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Financial",
+   "question": "How were the $632.5M 0.0% convertible notes due 2026 settled, and what is the plan for the $575.0M 0.0% notes due 2028, including exposure under their fundamental-change repurchase provisions?",
+   "rationale": "Settlement mechanics and the remaining convertible obligation shape refinancing risk and potential bondholder claims in a change-of-control or distress scenario.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Financial",
+   "question": "What drove free cash flow down from $480M in FY2024 to $96M in FY2025 and to $26M in Q2 2026? How much of the increase in cash to $529M at Q2 2026 came from AMPTC sales and tariff refunds rather than operations?",
+   "rationale": "Dependence on one-time or policy-linked cash inflows reduces the cushion available for litigation costs and continued demand weakness.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Market",
+   "question": "What explains the 29% decline in international revenue in Q2 2026? What channel inventory levels and sell-through trends is management seeing in those markets?",
+   "rationale": "Channel inventory build-ups or undisclosed regional weakness are common triggers for guidance misses and follow-on disclosure claims.",
+   "system_priority": "low"
+  },
+  {
+   "category": "Strategy",
+   "question": "With a current ratio of 3.45x and working capital of $1.39B at Q2 2026, what are the board's capital allocation priorities, including any resumption of buybacks halted since FY2025 Q3 and reserves for litigation?",
+   "rationale": "Capital allocation choices made during pending securities and derivative litigation are subject to board-level fiduciary scrutiny.",
+   "system_priority": "low"
+  }
+ ]
+}

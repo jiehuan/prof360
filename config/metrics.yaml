@@ -6,6 +6,9 @@
 # company_overrides/ can add company-specific metrics. Helper metrics a listed metric depends
 # on (e.g. ebit) are computed automatically.
 #
+# kind: text -> extracted from filing text by the LLM (Phase 5a, decisions D-032). `extraction`
+#         gives the exact scope (`definition`), the words that locate it (`keywords`), and
+#         whether two models must agree (`dual_check`, used for bank capital/liquidity metrics).
 # kind: formula (default) -> `formula` is one expression or an ordered list of alternatives.
 #         The first alternative that evaluates wins. Names are concepts (concept_map.yaml)
 #         or earlier metric codes. Supported operators: + - * / and parentheses.
@@ -42,6 +45,16 @@ metric_sets:
     - buyback_intensity
   # Bank-specific metrics (NIM, CET1, NPL, loan book) are text-extracted in Phase 5. Only the
   # XBRL metrics that make sense for a bank are here.
+  HOTEL_OPERATING:
+    - revpar
+    - occupancy
+    - adr
+  BANK_REGULATORY:
+    - cet1_ratio
+    - tier1_ratio
+    - lcr
+    - nim
+    - npl_ratio
   BANK_CORE:
     - revenue
     - revenue_growth_qoq
@@ -199,3 +212,96 @@ metrics:
     unit: ratio
     formula: buybacks / net_income
     nm_when: net_income <= 0
+
+  # -- Text-extracted operating metrics (kind: text) ---------------------------------------
+  - code: revpar
+    display_name: RevPAR
+    section: operational
+    unit: USD
+    kind: text
+    extraction:
+      definition: >-
+        Comparable systemwide worldwide RevPAR (revenue per available room) for the period, in
+        US dollars. Use the worldwide (or total) comparable systemwide figure; not a region,
+        brand, or owned/leased subset, and not a percentage change.
+      keywords: [RevPAR]
+  - code: occupancy
+    display_name: Occupancy Rate
+    section: operational
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Comparable systemwide worldwide occupancy rate for the period (a percentage level such
+        as 69.3%, not a change in percentage points).
+      keywords: [occupancy]
+  - code: adr
+    display_name: Average Daily Rate
+    section: operational
+    unit: USD
+    kind: text
+    extraction:
+      definition: >-
+        Comparable systemwide worldwide average daily rate for the period, in US dollars (a
+        level, not a percentage change).
+      keywords: [average daily rate, ADR]
+
+  # -- Text-extracted bank metrics (FI only) -----------------------------------------------
+  - code: cet1_ratio
+    display_name: CET1 Ratio
+    section: fi_performance
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Firm-wide Common Equity Tier 1 (CET1) capital ratio at period end under the
+        Standardized approach. Not a bank subsidiary, not the Advanced approach, not a
+        regulatory minimum or target.
+      keywords: [CET1, Common equity Tier 1]
+      dual_check: true
+  - code: tier1_ratio
+    display_name: Tier 1 Capital Ratio
+    section: fi_performance
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Firm-wide Tier 1 capital ratio at period end under the Standardized approach. Not a
+        bank subsidiary, not the Advanced approach, not a minimum or target.
+      keywords: [Tier 1 capital ratio, Tier 1 ratio]
+      dual_check: true
+  - code: lcr
+    display_name: Liquidity Coverage Ratio
+    section: fi_performance
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Firm-wide average liquidity coverage ratio (LCR) for the period (the firm, not a bank
+        subsidiary), as a percentage.
+      keywords: [LCR, liquidity coverage ratio]
+      dual_check: true
+  - code: nim
+    display_name: Net Interest Margin
+    section: fi_performance
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Firm-wide net interest margin / net yield on interest-earning assets for the period
+        (e.g. "the net yield on these assets, on an FTE basis, was 2.40%"). Use the firm-wide
+        figure; an FTE (fully taxable-equivalent) basis is fine when it is the only one given.
+        Not a figure excluding a business (e.g. "excluding Markets"), not a change in bps.
+      keywords: [net interest margin, net interest yield, net yield on]
+      dual_check: true
+  - code: npl_ratio
+    display_name: Nonperforming Loan Ratio
+    section: fi_performance
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Firm-wide nonaccrual (nonperforming) loans as a percentage of total loans at period end,
+        only when the filing states this ratio directly.
+      keywords: [nonaccrual loans to total loans, nonperforming loans to total loans, nonaccrual]
+      dual_check: true

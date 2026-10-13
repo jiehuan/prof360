@@ -1,0 +1,32 @@
+# LLM extraction of numbers from filing text (Phase 5a, decisions D-032).
+# Every value needs a verbatim quote that contains the number as written; otherwise dropped.
+
+prompt_version: text_metrics_v2
+# Where text metrics (metrics.yaml `kind: text`) are looked for.
+sections: ["10K-7", "10Q-I-2"]   # MD&A
+earnings_release: true           # EX-99.1 of Item 2.02 8-Ks
+# Chunks containing a metric keyword are sent, most matches first, up to this much text.
+max_chars: 60000
+
+# Preliminary results from the earnings release (decisions D-022). Stored with
+# derivation = PRELIMINARY only for periods that have no XBRL value yet; the 10-Q/10-K replaces
+# them. A metric is extracted only if it is on the company's curated metric list.
+preliminary:
+  revenue: >-
+    Total revenues (GAAP, as reported) for the fiscal quarter the release announces. For banks:
+    total net revenue on a reported (not managed) basis.
+  net_income: >-
+    Net income attributable to the company (GAAP, as reported) for the fiscal quarter the
+    release announces.
+  operating_income: >-
+    Operating income (GAAP, as reported) for the fiscal quarter the release announces.
+
+# Loan book by segment (BANKS only).
+loan_portfolio:
+  groups: [BANKS]
+  keywords: [loans, retained loans, loan portfolio]
+  definition: >-
+    Total retained loans by top-level segment (for example Consumer, Credit Card, Wholesale /
+    Commercial) at period end, as shown in the filing's loan portfolio table, with nonaccrual
+    loans per segment when the same table shows them. Use the firm's own top-level segments;
+    do not break down further.

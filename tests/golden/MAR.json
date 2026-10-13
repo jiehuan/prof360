@@ -1,0 +1,1398 @@
+{
+ "insights": [
+  {
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Emerging Risk Language",
+   "insight_type": null,
+   "title": "Middle East conflict becomes the main drag",
+   "summary": "The Q4 2025 call (T1) did not discuss Middle East conflict risk. In the Q1 2026 call (T2) it became the largest guidance headwind, estimated at 100 to 125 bps of full-year global RevPAR growth. By Q2 2026 (T3), management reported Middle East RevPAR down 43% for the quarter. They also linked the region to construction delays that pushed net rooms growth toward the low end of guidance. Management noted the region is 3% of open rooms and 7% of pipeline rooms.",
+   "uw_relevance": "This is a new geopolitical exposure that now affects RevPAR, IMFs and unit growth guidance. Disclosures about how far conflict impacts are reflected in forward guidance may be scrutinised if results fall short.",
+   "prompt_version": "behavioral_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Our guidance assumes the conflict in the Middle East could impact full year global RevPAR growth by 100 to 125 basis points."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "As a reminder, the Middle East accounts for 3% of open rooms, 7% of pipeline rooms and for full year 2025, 3% of global gross speeds."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Middle East RevPAR declined 43% in the quarter, a bit better than prior expectations on better-than-expected domestic leisure demand."
+    }
+   ]
+  },
+  {
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Wording Change",
+   "insight_type": null,
+   "title": "Net rooms growth guidance softens to low end",
+   "summary": "Net rooms growth language weakened across the three calls. In T1, management said growth was expected to 'accelerate' to 4.5%\u20135% and the departing CFO said they were 'very comfortable' with it. In T2, management 'still feel comfortable' but began pointing to multiyear CAGR as more instructive. In T3, full-year 2026 growth is 'more likely to be towards the low end', and management again leaned on a 30-month CAGR of 5.2%.",
+   "uw_relevance": "Unit growth is a core KPI that management highlights to investors. A shift from confident point guidance to defending a multiyear CAGR is a guidance-credibility signal to track.",
+   "prompt_version": "behavioral_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "For the full year 2026, net room growth is expected to accelerate up to 4.5% to 5%."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We still feel comfortable with a 4.5% to 5% global outlook for the full year. Though as a reminder, it's more instructive to look over a multiyear CAGR."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Our full year 2026 net rooms growth is now more likely to be towards the low end of our previous 4.5% to 5% range, primarily due to construction delays in the Middle East"
+    }
+   ]
+  },
+  {
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Tone Shift",
+   "insight_type": null,
+   "title": "Owner relations turn guarded after owner letter",
+   "summary": "In T1, the CEO discussed franchisee economics openly as a recovery issue. By T3, an analyst referred to an owner letter, and the CEO declined to give an official response. He also gave only a non-specific answer on how much owner concessions would hit Marriott's P&L. Over the same period, management introduced concessions: loyalty charge-out rates lowered by roughly 5%, and an ITR fee discount of up to 50 bps of gross room revenue paid by Marriott.",
+   "uw_relevance": "Organised owner or franchisee pressure is a potential source of disputes and claims. The guarded Q&A posture and the new Marriott-funded concessions indicate an active, unresolved stakeholder issue.",
+   "prompt_version": "behavioral_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "we recognize and focus every day on the fact that the owner and franchise community is at a different stage in their recovery from the damage done by the pandemic."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Well, yes, I'm not going to give an official response. That's a matter between us and our owners."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "In terms of potential impact to the Marriott P&L, our guidance is reflective of our expectations of the impact of those discussions on Marriott's P&L going forward."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "It's up to 50 basis points of gross room revenue fee reimbursement for achieving defined ITR thresholds."
+    }
+   ]
+  },
+  {
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Emerging Risk Language",
+   "insight_type": null,
+   "title": "Litigation accrual appears; owned-leased guidance cut",
+   "summary": "In T2, litigation was mentioned only as lower litigation expenses offsetting G&A growth. In T3, a $27 million property-related litigation accrual was a primary reason Q2 owned, leased and other net fell to $49 million from $78 million. Full-year owned, leased and other net guidance fell across the calls: $230\u2013$240 million in T1, $215\u2013$225 million in T2, and $175\u2013$185 million in T3. The T3 cut cites the litigation accrual, the ITR incentive and a slower Marriott Media Networks ramp.",
+   "uw_relevance": "A new litigation accrual large enough to be called out in results is directly relevant litigation-exposure information. The repeated guidance cuts on this line are also relevant.",
+   "prompt_version": "behavioral_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "First quarter G&A rose 5% year-over-year, primarily due to timing of compensation costs, partially offset by lower litigation expenses."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "totaled $49 million compared to $78 million in the second quarter of last year, primarily due to a $27 million property-related litigation accrual as well as lower termination fees."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Owned leased and other revenue net of owned leased and other expenses expected to total $230 million to $240 million."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Owned, leased and other revenue, net of owned, leased and other expenses is now anticipated to total $175 million to $185 million in 2026."
+    }
+   ]
+  },
+  {
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Wording Change",
+   "insight_type": null,
+   "title": "Key money language hardens as investment rises",
+   "summary": "In T1, the CFO stressed only 'a bit' more key money and guided 2026 investment spending of $1 billion to $1.1 billion. In T3, the CEO called the environment 'more and more fierce', with key money 'the weapon of choice', and spending guidance rose to $1.25\u2013$1.35 billion. Planned 2026 capital returns also rose, from over $4.3 billion in T1 to over $4.5 billion in T3. Over the same period, total debt reached $16.91B at Q2 2026, up from $16.20B at FY2025, and stockholders' equity was -$4.53B.",
+   "uw_relevance": "Growing contract-acquisition spending and larger shareholder returns, funded alongside rising debt and negative equity, increase balance-sheet sensitivity. This matters if fee growth slows.",
+   "prompt_version": "behavioral_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "over time we have seen a bit more key money required across all the tiers. And I emphasize the a bit."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "The competitive environment gets more and more fierce. Whether we like it or not, key money seems to be the weapon of choice in many of those competitive circumstances."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We now expect 2026 investment spending to be $1.25 billion to $1.35 billion, an increase versus our prior expectations with slightly higher expectations across most categories."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "In 2026, we expect another year of strong capital returns of over $4.3 billion."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We now expect to return over $4.5 billion to shareholders in 2026."
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "total_debt",
+     "snippet": "Total Debt | FY2026 Q2 | $16.91B"
+    }
+   ]
+  },
+  {
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Tone Shift",
+   "insight_type": null,
+   "title": "Royalty rate: vague in T1, quantified later",
+   "summary": "In T1, management repeatedly declined to size the credit card royalty rate increase or say whether it was one-time. They answered with general statements of comfort, even though it drives an expected ~35% rise in co-branded card fees after a contractual limitation was amended. In T3, after new US agreements with JPMorgan Chase and American Express were signed, the CEO disclosed a 'current royalty rate of 26%'. He also sized the new-deal impact at $100\u2013$125 million by full year 2028.",
+   "uw_relevance": "A large fee uplift driven by a contract amendment and an internal allocation choice was initially explained in non-specific terms. That makes disclosure quality around this revenue stream worth tracking.",
+   "prompt_version": "behavioral_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "we're very comfortable with the change that we've made and where we are."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We were able to do this because we recently amended a long-standing contractual limitation affecting the royalty rate."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "by full year 2028, the impact on Marriott's co-brand card fees from these new deals could be somewhere between $100 million and $125 million at our current royalty rate of 26%."
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Debt-funded buybacks deepen negative stockholders' equity",
+   "summary": "Stockholders' equity fell to -$4.53B at Q2 2026, from -$3.77B at FY2025 and -$682M at FY2023, while buybacks continued above net income (1.46x in Q2 2026, 2.25x in Q4 2025). Total debt rose from $11.87B at FY2023 to $16.91B at Q2 2026. In H1 2026, repurchases of $1,819M exceeded operating cash flow of $1,806M. Management now targets more than $4.5B of 2026 shareholder returns and has raised key-money and investment spending guidance to $1.25\u2013$1.35 billion.",
+   "uw_relevance": "Repurchases above earnings while equity is negative, funded partly by new debt, are a recurring basis for creditor and shareholder challenges to board capital-allocation decisions. They also thin the balance-sheet cushion if fee growth slows.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Stockholders' equity is negative; debt-to-equity is not meaningful"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Share repurchases continue while equity is negative"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "We repurchased 3.0 million shares of our common stock for $1.1 billion in the 2026 second quarter. Year-to-date through July 29, 2026, we repurchased 6.2 million shares for $2.2 billion."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We now expect to return over $4.5 billion to shareholders in 2026."
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Stockholders' equity is negative; debt-to-equity is not meaningful"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Share repurchases continue while equity is negative"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "We repurchased 3.0 million shares of our common stock for $1.1 billion in the 2026 second quarter. Year-to-date through July 29, 2026, we repurchased 6.2 million shares for $2.2 billion."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We now expect to return over $4.5 billion to shareholders in 2026."
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Share repurchases continue while equity is negative"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "over time we have seen a bit more key money required across all the tiers. And I emphasize the a bit."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "The competitive environment gets more and more fierce. Whether we like it or not, key money seems to be the weapon of choice in many of those competitive circumstances."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We now expect 2026 investment spending to be $1.25 billion to $1.35 billion, an increase versus our prior expectations with slightly higher expectations across most categories."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "In 2026, we expect another year of strong capital returns of over $4.3 billion."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We now expect to return over $4.5 billion to shareholders in 2026."
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "total_debt",
+     "snippet": "Total Debt | FY2026 Q2 | $16.91B"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Sub-1x current ratio; revolver expires 2027",
+   "summary": "At Q2 2026 the current ratio was 0.53x, working capital was -$3.68B and cash was $462M. Liquidity relies on a $4.5B revolver and commercial paper; the revolver expires December 14, 2027 and carries a 4.5x maximum leverage covenant, which the company says it meets. Interest expense rose from $565M in FY2023 to $809M in FY2025, and interest coverage fell from 6.84x to 5.12x, with a low of 3.74x in Q4 2025.",
+   "uw_relevance": "Refinancing of the 2027 facility and covenant headroom are key liquidity checkpoints while debt-funded buybacks continue. Liquidity stress would raise scrutiny of prior capital-return decisions.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "The Credit Facility expires on December 14, 2027."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "a single financial covenant that limits our maximum leverage (consisting of the ratio of Adjusted Total Debt to EBITDA, each as defined in the Credit Facility) to not more than 4.5 to 1.0."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Interest expense increased in the 2026 second quarter and 2026 first half primarily due to higher debt balances driven by Senior Notes issuances, net of maturities ($28 million and $55 million, respectively)."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Because we do not have purchase commitments from buyers for our commercial paper, our ability to issue commercial paper is subject to market demand."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "The Credit Facility expires on December 14, 2027."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "a single financial covenant that limits our maximum leverage (consisting of the ratio of Adjusted Total Debt to EBITDA, each as defined in the Credit Facility) to not more than 4.5 to 1.0."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Interest expense increased in the 2026 second quarter and 2026 first half primarily due to higher debt balances driven by Senior Notes issuances, net of maturities ($28 million and $55 million, respectively)."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Because we do not have purchase commitments from buyers for our commercial paper, our ability to issue commercial paper is subject to market demand."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "The Credit Facility expires on December 14, 2027."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "a single financial covenant that limits our maximum leverage (consisting of the ratio of Adjusted Total Debt to EBITDA, each as defined in the Credit Facility) to not more than 4.5 to 1.0."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Interest expense increased in the 2026 second quarter and 2026 first half primarily due to higher debt balances driven by Senior Notes issuances, net of maturities ($28 million and $55 million, respectively)."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Because we do not have purchase commitments from buyers for our commercial paper, our ability to issue commercial paper is subject to market demand."
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Organized hotel owner discontent, unresolved",
+   "summary": "On the Q2 2026 call an analyst raised a letter from a group of hotel owners; the CEO declined to respond publicly and said meetings with the group are ongoing. Marriott has cut loyalty charge-out rates by roughly 5% and introduced an ITR fee incentive of up to 50 bps of gross room revenue, paid by Marriott. The CEO gave only a non-specific answer on the P&L cost of these concessions.",
+   "uw_relevance": "In an asset-light model, organized owner pressure can lead to arbitration or litigation over system fund and loyalty economics. The 10-K says such disagreements have already resulted in disputes.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "But I'm wondering if you could give a specific official public response directly to that owner letter at this time."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "The letter that we received, I think, is reflective of the passion and commitment that that group of owners has to the relationship"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "It's up to 50 basis points of gross room revenue fee reimbursement for achieving defined ITR thresholds."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "We have seen, and may in the future see, an increase in such disagreements during periods when hotel returns are weaker."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "Failure to resolve such disagreements has resulted in arbitration or litigation."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "But I'm wondering if you could give a specific official public response directly to that owner letter at this time."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "The letter that we received, I think, is reflective of the passion and commitment that that group of owners has to the relationship"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "It's up to 50 basis points of gross room revenue fee reimbursement for achieving defined ITR thresholds."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "We have seen, and may in the future see, an increase in such disagreements during periods when hotel returns are weaker."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "Failure to resolve such disagreements has resulted in arbitration or litigation."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "we recognize and focus every day on the fact that the owner and franchise community is at a different stage in their recovery from the damage done by the pandemic."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Well, yes, I'm not going to give an official response. That's a matter between us and our owners."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "In terms of potential impact to the Marriott P&L, our guidance is reflective of our expectations of the impact of those discussions on Marriott's P&L going forward."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "It's up to 50 basis points of gross room revenue fee reimbursement for achieving defined ITR thresholds."
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Negative",
+   "title": "New litigation accrual and repeated guidance cuts",
+   "summary": "Q2 2026 included a $27M property-related litigation accrual, a main reason owned, leased and other net fell to $49M from $78M a year earlier. Full-year guidance for this line was cut on each call, from $230\u2013$240 million to $175\u2013$185 million. Separately, the FY2025 10-K disclosed an EPA letter on alleged Clean Air Act violations at a managed hotel, which management does not consider material.",
+   "uw_relevance": "Litigation is already affecting reported results, and the underlying dispute is not described in the input. Repeated cuts to a guided line are also a disclosure-credibility point.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Owned, leased, and other revenue, net of owned, leased, and other expense, decreased in the 2026 second quarter and 2026 first half primarily due to a property-related litigation accrual ($27 million for both the 2026 second quarter and 2026 first half)."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-3",
+     "metric_code": null,
+     "snippet": "offering to engage in settlement discussions in relation to violations of the Clean Air Act that the EPA alleges occurred at a hotel we manage."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "First quarter G&A rose 5% year-over-year, primarily due to timing of compensation costs, partially offset by lower litigation expenses."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "totaled $49 million compared to $78 million in the second quarter of last year, primarily due to a $27 million property-related litigation accrual as well as lower termination fees."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Owned leased and other revenue net of owned leased and other expenses expected to total $230 million to $240 million."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Owned, leased and other revenue, net of owned, leased and other expenses is now anticipated to total $175 million to $185 million in 2026."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Owned, leased, and other revenue, net of owned, leased, and other expense, decreased in the 2026 second quarter and 2026 first half primarily due to a property-related litigation accrual ($27 million for both the 2026 second quarter and 2026 first half)."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-3",
+     "metric_code": null,
+     "snippet": "offering to engage in settlement discussions in relation to violations of the Clean Air Act that the EPA alleges occurred at a hotel we manage."
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Middle East conflict hits RevPAR and growth guidance",
+   "summary": "Systemwide Middle East & Africa RevPAR fell 33.1% in Q2 2026, with Middle East RevPAR down 43%. Management estimated the drag on full-year global RevPAR growth at 100 to 125 bps in Q1 2026. Net rooms growth language moved from expecting acceleration to 4.5%\u20135% to 'more likely to be towards the low end', with management leaning on a 30-month CAGR of 5.2%.",
+   "uw_relevance": "Softening point guidance in favour of multiyear CAGR is a guidance-credibility signal. Statements on how far conflict impacts are reflected in forward guidance may be scrutinised if results fall short.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Performance was negatively impacted by the conflict in the Middle East, which resulted in a sharp decline in RevPAR in our Middle East & Africa region beginning in March 2026, with the impact from the conflict continuing into the third quarter."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Our full year 2026 net rooms growth is now more likely to be towards the low end of our previous 4.5% to 5% range, primarily due to construction delays in the Middle East"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "the Middle East accounts for 3% of open rooms, 7% of pipeline rooms"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Our guidance assumes the conflict in the Middle East could impact full year global RevPAR growth by 100 to 125 basis points."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "As a reminder, the Middle East accounts for 3% of open rooms, 7% of pipeline rooms and for full year 2025, 3% of global gross speeds."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Middle East RevPAR declined 43% in the quarter, a bit better than prior expectations on better-than-expected domestic leisure demand."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "For the full year 2026, net room growth is expected to accelerate up to 4.5% to 5%."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We still feel comfortable with a 4.5% to 5% global outlook for the full year. Though as a reminder, it's more instructive to look over a multiyear CAGR."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Our full year 2026 net rooms growth is now more likely to be towards the low end of our previous 4.5% to 5% range, primarily due to construction delays in the Middle East"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Positive",
+   "title": "Fee revenue and cash flow keep growing",
+   "summary": "Net fee revenues rose from $4.74B in FY2023 to $5.30B in FY2025, and total revenue reached $26.19B in FY2025 (up 4.3%). Q2 2026 revenue was $7.07B (up 4.8% YoY), with RevPAR of $138.74 and operating income of $1.23B. Free cash flow was $2.61B in FY2025 and $796M in Q2 2026.",
+   "uw_relevance": "Steady fee-based earnings and cash generation support debt service and offset some of the balance-sheet risk from negative equity and rising debt.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "net_fee_revenue",
+     "snippet": "Net Fee Revenues | FY2025 | $5.30B | REPORTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue",
+     "snippet": "Total Revenue | FY2025 | $26.19B | REPORTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "Revenue Growth (YoY) | FY2026 Q2 | 4.8% | COMPUTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "free_cash_flow",
+     "snippet": "Free Cash Flow | FY2025 | $2.61B | COMPUTED"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Starwood breach obligations remain open-ended",
+   "summary": "The 2018 Starwood breach led to 2024 settlements with the FTC and attorneys general of 49 states plus DC. These impose long-term data-privacy and security program requirements, and noncompliance could trigger enforcement or contempt proceedings. The Q2 2026 10-Q says further financial impact cannot be estimated, and the 10-K warns insurance may not cover all losses.",
+   "uw_relevance": "Multi-year regulatory compliance obligations create continuing board and officer oversight duties. Unquantified residual exposure keeps cyber governance a company-specific liability theme.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "which include, among other terms, various long-term requirements relating to our data privacy and information security programs"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "In the event of alleged or actual noncompliance with these resolutions, we could face enforcement actions or contempt proceedings"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "We are currently unable to reasonably estimate the range of total possible financial impact to the Company from the Data Security Incident in excess of the expenses already recorded"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "Insurance coverage designed to limit our exposure to losses such as those related to the Data Security Incident is costly and may not be sufficient or available"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "which include, among other terms, various long-term requirements relating to our data privacy and information security programs"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "In the event of alleged or actual noncompliance with these resolutions, we could face enforcement actions or contempt proceedings"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "We are currently unable to reasonably estimate the range of total possible financial impact to the Company from the Data Security Incident in excess of the expenses already recorded"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "Insurance coverage designed to limit our exposure to losses such as those related to the Data Security Incident is costly and may not be sufficient or available"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Info",
+   "title": "CFO, regional and board changes amid systems overhaul",
+   "summary": "Long-tenured CFO and EVP Development Kathleen Oberg stepped down after the FY2025 10-K, succeeded internally by Jennifer Mason. William P. Brown, Group President for US and Canada, stepped down effective March 28, 2026, and director Debra L. Lee notified a change in board status in February 2026. These changes coincide with a replacement of reservations, property management and loyalty platforms that the 10-K says could affect financial reporting or internal controls.",
+   "uw_relevance": "A new principal financial officer signing SOX certifications during a major systems migration raises control-deficiency risk. The internal CFO hire limits but does not remove transition risk.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "She intends to step down from her role as Chief Financial Officer and Executive Vice President, Development immediately following the date on which Marriott files its Annual Report on Form 10-K"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "William P. Brown, Group President, United States and Canada, of Marriott International, Inc."
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "notified Marriott of his intent to step down from his role effective March 28, 2026"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "Debra L. Lee, who currently serves as a member of the Board of Directors"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "increased the size of the Board to thirteen (13)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "The development and deployment of our new systems could involve delays, system interruptions, compromises of data security, or other operational impacts, including impacts on our financial reporting or internal control environment."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We have over 2,000 select service U.S. and Canada hotels that have transitioned."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Our anticipated capital and technology expenditures include higher than typical spending on our worldwide technology systems transformation, the overwhelming portion of which we expect to be reimbursed over time."
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Info",
+   "title": "Card royalty rate change: judgment-driven fee uplift",
+   "summary": "Marriott raised the share of co-brand card payments it recognizes as royalty after amending a long-standing contractual limitation, and signed new US card agreements with JPMorgan Chase and American Express. Management initially declined to size the royalty increase, later disclosing a 26% royalty rate and $100M\u2013$125M of uplift by full-year 2028. A further material definitive agreement 8-K was flagged on 2026-09-24; its subject is not in the input.",
+   "uw_relevance": "The split of card funding between the loyalty program and Marriott's royalty is a management judgment that owners or regulators could challenge. Initially vague disclosure on this revenue stream is a disclosure-quality point.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "During 2026, we executed new multi-year agreements in the U.S. with JPMorgan Chase and American Express in connection with our co-branded credit card program."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We were able to do this because we recently amended a long-standing contractual limitation affecting the royalty rate."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "The increase in the royalty rate is supported by GAAP required valuation that were performed by third parties when the credit card deals were signed."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "by full year 2028, the impact on Marriott's co-brand card fees from these new deals could be somewhere between $100 million and $125 million at our current royalty rate of 26%."
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Entered into a material definitive agreement"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "During 2026, we executed new multi-year agreements in the U.S. with JPMorgan Chase and American Express in connection with our co-branded credit card program."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We were able to do this because we recently amended a long-standing contractual limitation affecting the royalty rate."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "The increase in the royalty rate is supported by GAAP required valuation that were performed by third parties when the credit card deals were signed."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "by full year 2028, the impact on Marriott's co-brand card fees from these new deals could be somewhere between $100 million and $125 million at our current royalty rate of 26%."
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Entered into a material definitive agreement"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "we're very comfortable with the change that we've made and where we are."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We were able to do this because we recently amended a long-standing contractual limitation affecting the royalty rate."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "by full year 2028, the impact on Marriott's co-brand card fees from these new deals could be somewhere between $100 million and $125 million at our current royalty rate of 26%."
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Negative",
+   "title": "Impairment and Sonder exit charges hit results",
+   "summary": "Q2 2026 included a $68M impairment on a US & Canada hotel, with a $17M related tax benefit in H1. Sonder's November 2025 exit from the system produced one-time charges, including $23M in owned, leased and other results, excluded from adjusted figures. Reported Q4 2025 net income was $445M and EBITDA $954M, the lowest quarters shown.",
+   "uw_relevance": "Partner failure and asset write-downs widen gaps between adjusted and GAAP results, which can draw scrutiny of non-GAAP presentation. The Sonder exit illustrates counterparty risk in the licensing model.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Depreciation, amortization, and other expenses increased in the 2026 second quarter and 2026 first half primarily due to the $68 million impairment charge discussed in Note 7."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "the tax benefit from the impairment charge on a U.S. & Canada hotel ($17 million)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "dispositions ($93 million, primarily due to the sale of a U.S. & Canada hotel)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Our adjusted results for the fourth quarter and the full year exclude the one-time charges related to Sonder exiting our system in November."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "including $23 million of Sonder related charges"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "net_income",
+     "snippet": "Net Income | FY2025 Q4 | $445M | DERIVED"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Governance & Leadership",
+   "subcategory": "CFO succession",
+   "insight_type": null,
+   "title": "Long-tenured CFO retired; internal successor installed",
+   "summary": "CFO and EVP Development Kathleen (Leeny) Oberg announced in July 2025 that she would step down after the FY2025 10-K was filed. The Q4 2025 call (February 2026) was her last. Jennifer Mason, who says she has 33 years at Marriott, took over as EVP and CFO and led the Q1 2026 call. Oberg's former title also covered Development, so the change affects both the finance and development functions.",
+   "uw_relevance": "A change in the principal financial officer during a period of rising debt, active buybacks and a multi-year systems transformation means new SOX certifications and disclosure ownership. The internal hire limits, but does not remove, transition risk.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "She intends to step down from her role as Chief Financial Officer and Executive Vice President, Development immediately following the date on which Marriott files its Annual Report on Form 10-K"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Jennifer Mason, our new Executive Vice President and Chief Financial Officer"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "While I have listened to over 130 earnings calls over my 33 years with Marriott, this is, of course, my first time on the call as CFO."
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Governance & Leadership",
+   "subcategory": "Executive and board changes",
+   "insight_type": null,
+   "title": "Senior operator and director departures in 2026",
+   "summary": "On January 6, 2026, William P. Brown, Group President, United States and Canada, gave notice that he would step down effective March 28, 2026. The US & Canada segment is the largest by rooms. On February 3, 2026, director Debra L. Lee, chair of the Inclusion and Social Impact Committee, informed Marriott of a change in her board status; the 8-K excerpt is truncated, so the details are not in the input. In January 2025 the board was expanded to 13 members.",
+   "uw_relevance": "Leadership of the largest operating region changed in the same year as the CFO. Board composition and committee leadership are also shifting, which matters for oversight continuity.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "William P. Brown, Group President, United States and Canada, of Marriott International, Inc."
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "notified Marriott of his intent to step down from his role effective March 28, 2026"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "Debra L. Lee, who currently serves as a member of the Board of Directors"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "increased the size of the Board to thirteen (13)"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Governance & Leadership",
+   "subcategory": "Capital allocation",
+   "insight_type": null,
+   "title": "Debt-funded buybacks deepen negative stockholders' equity",
+   "summary": "Stockholders' equity was -$4.53B at Q2 2026, compared with -$3.77B at FY2025 and -$682M at FY2023. Share repurchases were $3.95B in FY2023, $3.76B in FY2024, $3.30B in FY2025 and $1.12B in Q2 2026. Buybacks were 1.46x net income in Q2 2026 and 2.25x in Q4 2025. Over the same period total debt rose from $11.87B (FY2023) to $16.91B (Q2 2026). In H1 2026, repurchases of $1,819M exceeded operating cash flow of $1,806M, with net debt issuance of $670M. Management now targets more than $4.5B of shareholder returns in 2026.",
+   "uw_relevance": "Repurchasing shares in excess of earnings while equity is negative, funded partly by new debt, is a recurring source of creditor and shareholder scrutiny of board capital-allocation decisions. It also reduces balance-sheet cushion if conditions weaken.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Stockholders' equity is negative; debt-to-equity is not meaningful"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Share repurchases continue while equity is negative"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "We repurchased 3.0 million shares of our common stock for $1.1 billion in the 2026 second quarter. Year-to-date through July 29, 2026, we repurchased 6.2 million shares for $2.2 billion."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We now expect to return over $4.5 billion to shareholders in 2026."
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Cybersecurity / regulatory consent obligations",
+   "insight_type": null,
+   "title": "Starwood breach: ongoing FTC/AG compliance exposure",
+   "summary": "The 2018 Starwood reservations database breach still produces legal exposure. Marriott settled with the FTC and attorneys general of 49 states plus DC in 2024. Those settlements impose long-term data-privacy and security program requirements, and noncompliance could trigger enforcement or contempt proceedings. The Q2 2026 10-Q says the company cannot estimate the range of possible further financial impact beyond expenses already recorded. The 10-K warns that insurance may not cover all related losses.",
+   "uw_relevance": "Multi-year regulatory obligations create continuing oversight duties for the board and officers. An unquantified residual exposure and acknowledged insurance gaps keep cyber governance a company-specific liability theme.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "which include, among other terms, various long-term requirements relating to our data privacy and information security programs"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "In the event of alleged or actual noncompliance with these resolutions, we could face enforcement actions or contempt proceedings"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "We are currently unable to reasonably estimate the range of total possible financial impact to the Company from the Data Security Incident in excess of the expenses already recorded"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "Insurance coverage designed to limit our exposure to losses such as those related to the Data Security Incident is costly and may not be sufficient or available"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Litigation and regulatory matters",
+   "insight_type": null,
+   "title": "$27M litigation accrual; EPA Clean Air Act matter",
+   "summary": "In Q2 2026 Marriott recorded a $27M property-related litigation accrual. It reduced owned, leased and other revenue net of expense to $49M, from $78M a year earlier, and contributed to lower US & Canada segment profit. Separately, the FY2025 10-K disclosed an EPA letter received in Q2 2025 offering settlement discussions over alleged Clean Air Act violations at a managed hotel. Management does not consider the EPA matter material.",
+   "uw_relevance": "These are active, company-specific legal matters. The accrual shows litigation is already affecting reported results, although the underlying dispute is not described in the input.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Owned, leased, and other revenue, net of owned, leased, and other expense, decreased in the 2026 second quarter and 2026 first half primarily due to a property-related litigation accrual ($27 million for both the 2026 second quarter and 2026 first half)."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-3",
+     "metric_code": null,
+     "snippet": "offering to engage in settlement discussions in relation to violations of the Clean Air Act that the EPA alleges occurred at a hotel we manage."
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Counterparty / franchisee relations",
+   "insight_type": null,
+   "title": "Hotel owner group letter signals owner friction",
+   "summary": "On the Q2 2026 call an analyst asked for a public response to a letter from a group of hotel owners. The CEO declined to respond publicly and said meetings with that group are ongoing. Management has cut loyalty charge-out rates by roughly 5% and is introducing an intent-to-recommend (ITR) incentive. The ITR incentive reimburses up to 50 basis points of gross room revenue fees and will be paid by Marriott, not the system fund. The 10-K risk factors say owner disagreements rise when hotel returns weaken and have resulted in arbitration or litigation. The board also raised its co-brand credit card royalty rate after amending a long-standing contractual limit.",
+   "uw_relevance": "Organized owner discontent in an asset-light model can turn into contract disputes, arbitration or litigation over system fund and loyalty economics. Concessions are already being absorbed in Marriott's own P&L.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "But I'm wondering if you could give a specific official public response directly to that owner letter at this time."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "The letter that we received, I think, is reflective of the passion and commitment that that group of owners has to the relationship"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "It's up to 50 basis points of gross room revenue fee reimbursement for achieving defined ITR thresholds."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "We have seen, and may in the future see, an increase in such disagreements during periods when hotel returns are weaker."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "Failure to resolve such disagreements has resulted in arbitration or litigation."
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Leverage and liquidity",
+   "insight_type": null,
+   "title": "Rising debt, sub-1x current ratio, 2027 revolver expiry",
+   "summary": "Total debt was $16.91B at Q2 2026, up from $14.45B at FY2024 and $11.87B at FY2023. Interest expense rose from $565M in FY2023 to $809M in FY2025, and interest coverage fell from 6.84x to 5.12x over the same period. Q2 2026 interest expense was $221M. At Q2 2026 the current ratio was 0.53x, working capital was -$3.68B and cash was $462M. Liquidity depends on the $4.5B revolving credit facility and commercial paper. The revolver expires December 14, 2027 and carries a maximum leverage covenant of 4.5x. The company says it is in compliance.",
+   "uw_relevance": "Structurally negative working capital and heavy reliance on the revolver and commercial paper make refinancing of the 2027 facility and covenant headroom key liquidity checkpoints. This matters especially while debt-funded buybacks continue.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "The Credit Facility expires on December 14, 2027."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "a single financial covenant that limits our maximum leverage (consisting of the ratio of Adjusted Total Debt to EBITDA, each as defined in the Credit Facility) to not more than 4.5 to 1.0."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Interest expense increased in the 2026 second quarter and 2026 first half primarily due to higher debt balances driven by Senior Notes issuances, net of maturities ($28 million and $55 million, respectively)."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Because we do not have purchase commitments from buyers for our commercial paper, our ability to issue commercial paper is subject to market demand."
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Geopolitical / operating risk",
+   "insight_type": null,
+   "title": "Middle East conflict hits RevPAR and pipeline",
+   "summary": "The Middle East conflict caused a sharp RevPAR decline in Middle East & Africa from March 2026. Systemwide MEA RevPAR fell 33.1% in Q2 2026, and management said Middle East RevPAR fell 43%. Management estimates about 100bp of drag on full-year 2026 global RevPAR. Full-year net rooms growth is now expected toward the low end of the 4.5\u20135.0% range because of construction delays in the region. The Middle East accounts for 3% of open rooms and 7% of pipeline rooms.",
+   "uw_relevance": "This is a current, company-specific disruption to managed-hotel fees and to development timing. Q4 is the peak quarter for the Middle East, so further guidance revisions are possible.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Performance was negatively impacted by the conflict in the Middle East, which resulted in a sharp decline in RevPAR in our Middle East & Africa region beginning in March 2026, with the impact from the conflict continuing into the third quarter."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Our full year 2026 net rooms growth is now more likely to be towards the low end of our previous 4.5% to 5% range, primarily due to construction delays in the Middle East"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "the Middle East accounts for 3% of open rooms, 7% of pipeline rooms"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Internal controls / systems",
+   "insight_type": null,
+   "title": "Core systems overhaul flagged as control risk",
+   "summary": "Marriott is replacing its reservations, property management and loyalty platforms. The 10-K risk factors say deployment could affect financial reporting or the internal control environment. More than 2,000 US & Canada select-service hotels have transitioned, with full-service and luxury hotels to follow. Capital and technology spending includes higher than typical transformation costs, most of which management expects owners to reimburse over time.",
+   "uw_relevance": "Large ERP-style migrations during a CFO transition are a common source of control deficiencies. Expected owner reimbursement also ties this risk to the owner-relations issues above.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "The development and deployment of our new systems could involve delays, system interruptions, compromises of data security, or other operational impacts, including impacts on our financial reporting or internal control environment."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We have over 2,000 select service U.S. and Canada hotels that have transitioned."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Our anticipated capital and technology expenditures include higher than typical spending on our worldwide technology systems transformation, the overwhelming portion of which we expect to be reimbursed over time."
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Event Signals",
+   "subcategory": "Impairment / disposition",
+   "insight_type": null,
+   "title": "$68M hotel impairment and hotel sale in 2026",
+   "summary": "Q2 2026 results include a $68M impairment charge tied to a US & Canada hotel, with a $17M related tax benefit in H1. This pushed depreciation, amortization and other expense to $115M, from $53M a year earlier. H1 2026 dispositions brought in $93M, mainly from the sale of a US & Canada hotel that stays in the system under a long-term management agreement.",
+   "uw_relevance": "This is a discrete asset write-down and disposal in the small owned/leased portfolio. It is not described as systemic, but it affects reported segment profit.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Depreciation, amortization, and other expenses increased in the 2026 second quarter and 2026 first half primarily due to the $68 million impairment charge discussed in Note 7."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "the tax benefit from the impairment charge on a U.S. & Canada hotel ($17 million)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "dispositions ($93 million, primarily due to the sale of a U.S. & Canada hotel)"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Event Signals",
+   "subcategory": "Material contracts",
+   "insight_type": null,
+   "title": "New Chase/Amex card deals; royalty rate raised",
+   "summary": "In 2026 Marriott signed new multi-year US co-branded credit card agreements with JPMorgan Chase and American Express. Management expects about $30M of incremental 2026 fees and $100M\u2013$125M by full-year 2028 at a 26% royalty rate. Separately, Marriott raised the share of card payments it recognizes as royalty, after amending a long-standing contractual limitation. Management says third-party valuations performed under GAAP when the deals were signed support the higher rate. A further material definitive agreement 8-K was flagged on 2026-09-24; its subject is not in the input and is unconfirmed.",
+   "uw_relevance": "Material contracts and a management-determined split of card funding between loyalty program funding and Marriott royalty are judgment areas. That split could draw owner or regulatory challenge.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "During 2026, we executed new multi-year agreements in the U.S. with JPMorgan Chase and American Express in connection with our co-branded credit card program."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We were able to do this because we recently amended a long-standing contractual limitation affecting the royalty rate."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "The increase in the royalty rate is supported by GAAP required valuation that were performed by third parties when the credit card deals were signed."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "by full year 2028, the impact on Marriott's co-brand card fees from these new deals could be somewhere between $100 million and $125 million at our current royalty rate of 26%."
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Entered into a material definitive agreement"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Event Signals",
+   "subcategory": "Partner exit",
+   "insight_type": null,
+   "title": "Sonder exited system with one-time charges",
+   "summary": "Sonder exited Marriott's system in November 2025. The exit generated one-time charges that management excluded from adjusted Q4 and full-year 2025 results, including $23M recorded in owned, leased and other results. Reported Q4 2025 net income was $445M and EBITDA $954M, both below the other quarters shown.",
+   "uw_relevance": "A licensing partner exit led to charges and adjusted-versus-GAAP differences, an example of counterparty failure risk in the licensing model.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Our adjusted results for the fourth quarter and the full year exclude the one-time charges related to Sonder exiting our system in November."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "including $23 million of Sonder related charges"
+    }
+   ]
+  }
+ ],
+ "followups": [
+  {
+   "category": "Financial",
+   "question": "How does the board evaluate and approve the more than $4.5B of planned 2026 shareholder returns when stockholders' equity was -$4.53B at Q2 2026, total debt was $16.91B, and H1 2026 repurchases of $1,819M exceeded operating cash flow of $1,806M?",
+   "rationale": "Debt-funded buybacks above earnings while equity is negative are a recurring basis for creditor and shareholder challenges to board capital-allocation decisions.",
+   "system_priority": "high"
+  },
+  {
+   "category": "Financial",
+   "question": "What is the plan and timeline for refinancing the $4.5B revolving credit facility that expires December 14, 2027, and how much headroom exists under its 4.5x maximum leverage covenant given a Q2 2026 current ratio of 0.53x and cash of $462M?",
+   "rationale": "Reliance on the revolver and commercial paper makes refinancing and covenant headroom key liquidity checkpoints, and liquidity stress would sharpen scrutiny of prior capital returns.",
+   "system_priority": "high"
+  },
+  {
+   "category": "Governance",
+   "question": "What does the hotel owner group's letter raised on the Q2 2026 call demand, has any owner threatened or started arbitration or litigation, and what is the expected P&L cost of the roughly 5% cut in loyalty charge-out rates and the ITR incentive of up to 50 bps of gross room revenue?",
+   "rationale": "Organized owner discontent in an asset-light model can become contract disputes over system fund and loyalty economics, and the CEO gave only a non-specific answer on the cost.",
+   "system_priority": "high"
+  },
+  {
+   "category": "Governance",
+   "question": "What dispute underlies the $27M property-related litigation accrual recorded in Q2 2026, is further exposure possible beyond the accrual, and why was owned, leased and other net guidance cut on each call from $230\u2013$240 million to $175\u2013$185 million?",
+   "rationale": "Litigation is already affecting reported results without the underlying matter being described, and repeated cuts to a guided line raise disclosure-credibility questions.",
+   "system_priority": "high"
+  },
+  {
+   "category": "Market",
+   "question": "How fully does current 2026 guidance reflect the Middle East conflict, given systemwide MEA RevPAR fell 33.1% in Q2 2026, Middle East RevPAR fell 43%, and Q4 is the region's peak quarter?",
+   "rationale": "If results fall short, statements on how far conflict impacts were reflected in forward guidance may be scrutinised.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Strategy",
+   "question": "Why did net rooms growth messaging shift from expecting acceleration to 4.5%\u20135% to 'more likely to be towards the low end', and what process governs the move to citing a 30-month CAGR of 5.2% instead of the annual figure?",
+   "rationale": "Softening point guidance on a core investor KPI is a guidance-credibility signal that matters for disclosure-based claims.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Strategy",
+   "question": "With 2026 investment spending guidance raised to $1.25\u2013$1.35 billion and key money described as 'the weapon of choice', how does Marriott assess recoverability and impairment of key money, including deals in the Middle East, which holds 7% of pipeline rooms?",
+   "rationale": "Rising contract-acquisition spending alongside higher debt increases balance-sheet sensitivity if fee growth slows or development projects are delayed.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Governance",
+   "question": "What board and audit committee review supported amending the long-standing contractual limitation to raise the co-brand card royalty share, what do the third-party valuations behind the 26% royalty rate cover, and what is the subject of the material definitive agreement 8-K flagged on 2026-09-24?",
+   "rationale": "The split of card funding between the loyalty program and Marriott's royalty is a management judgment that owners or regulators could challenge, and early disclosure was vague.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Governance",
+   "question": "Following Kathleen Oberg's departure, who now leads Development, and what handover and sub-certification steps supported Jennifer Mason's first SOX certifications as CFO?",
+   "rationale": "A change in principal financial officer during rising debt and a systems overhaul shifts disclosure ownership and creates transition risk.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Operational",
+   "question": "Has the replacement of reservations, property management and loyalty platforms, with more than 2,000 US & Canada select-service hotels already transitioned, produced any control deficiencies, and are owners disputing their expected reimbursement of transformation costs?",
+   "rationale": "Large platform migrations are a common source of control deficiencies, and owner reimbursement links this risk to the existing owner friction.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Governance",
+   "question": "How does the board monitor compliance with the 2024 Starwood breach settlements with the FTC and attorneys general of 49 states plus DC, have any regulators raised compliance concerns, and how much residual loss does management expect insurance not to cover?",
+   "rationale": "Multi-year consent obligations create continuing oversight duties, and residual exposure that cannot be estimated keeps cyber governance a live liability theme.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Governance",
+   "question": "What change in board status did director Debra L. Lee report on February 3, 2026, who now chairs the Inclusion and Social Impact Committee, and how was leadership of US & Canada transitioned after William P. Brown's March 28, 2026 departure?",
+   "rationale": "Concurrent changes in board committee leadership and the largest operating region affect oversight continuity.",
+   "system_priority": "low"
+  },
+  {
+   "category": "Financial",
+   "question": "What triggered the $68M impairment on a US & Canada hotel in Q2 2026, are other owned or leased hotels under impairment review, and how are items such as the $23M Sonder exit charge chosen for exclusion from adjusted results?",
+   "rationale": "Write-downs and partner-exit charges widen gaps between adjusted and GAAP results, which can draw scrutiny of non-GAAP presentation.",
+   "system_priority": "low"
+  },
+  {
+   "category": "Operational",
+   "question": "What is the current status of the EPA settlement discussions over alleged Clean Air Act violations at a managed hotel, and how is responsibility for environmental compliance split between Marriott and hotel owners under management agreements?",
+   "rationale": "Regulatory matters at managed properties can create liability for the manager even when management considers them immaterial.",
+   "system_priority": "low"
+  }
+ ]
+}

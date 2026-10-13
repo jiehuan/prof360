@@ -58,6 +58,8 @@ select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
 "tests/test_vote.py" = ["E501"]  # filing sentences
 "tests/test_news.py" = ["E501"]  # synthetic feed
 "tests/test_alphavantage.py" = ["E501"]  # API messages
+"tests/test_text_metrics.py" = ["E501"]  # filing rows
+"tests/test_insights.py" = ["E501"]  # canned LLM outputs
 
 [tool.mypy]
 python_version = "3.11"

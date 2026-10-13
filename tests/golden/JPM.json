@@ -1,0 +1,1032 @@
+{
+ "insights": [
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Buybacks rising while regulatory capital ratios decline",
+   "summary": "Share repurchases grew from $9.82B in FY2023 to $18.83B in FY2024 and $31.59B in FY2025, or 0.55x FY2025 net income. Over the same period the CET1 ratio fell from 15.7% (FY2024) to 14.6% (FY2025) and 14.2% in FY2026 Q2. The Tier 1 ratio fell from 16.8% to 15.1%. Buybacks slowed to $6.79B (0.32x net income) in FY2026 Q2.",
+   "uw_relevance": "Capital return decisions are board-level choices. The steady decline in the capital cushion is relevant to oversight and disclosure scrutiny if capital later proves constrained. The 10-K notes that failing to meet capital requirements would restrict repurchases and dividends.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "$31.59B"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "$18.83B"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buyback_intensity",
+     "snippet": "0.55x"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "cet1_ratio",
+     "snippet": "15.7%"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "CET1 capital was $303 billion, and the Standardized and Advanced CET1 ratios were each 14.2%."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "reducing the amount of common stock that JPMorganChase is permitted to repurchase"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "$31.59B"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "$18.83B"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buyback_intensity",
+     "snippet": "0.55x"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "cet1_ratio",
+     "snippet": "15.7%"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "CET1 capital was $303 billion, and the Standardized and Advanced CET1 ratios were each 14.2%."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "reducing the amount of common stock that JPMorganChase is permitted to repurchase"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "tier1_ratio",
+     "snippet": "Tier 1 Capital Ratio | FY2024 | 16.8% | LLM_EXTRACTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "tier1_ratio",
+     "snippet": "Tier 1 Capital Ratio | FY2026 Q2 | 15.1% | LLM_EXTRACTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "$31.59B"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "$18.83B"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buyback_intensity",
+     "snippet": "0.55x"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "cet1_ratio",
+     "snippet": "15.7%"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "CET1 capital was $303 billion, and the Standardized and Advanced CET1 ratios were each 14.2%."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "reducing the amount of common stock that JPMorganChase is permitted to repurchase"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Pervasive litigation and punitive enforcement expected",
+   "summary": "The 2025 10-K states the Firm is a defendant in many proceedings, including class actions, derivative actions and criminal proceedings. It says legal exposure could exceed established reserves. It expects authorities to pursue formal and punitive enforcement rather than informal actions. The specific matter disclosures (Note 30 of the 10-K and Note 24 of the 2Q26 10-Q) are not in the input.",
+   "uw_relevance": "The company itself discloses derivative and class actions and an escalating enforcement environment, which are core D&O exposure drivers. Individual pending matters could not be assessed from the input.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "including class actions, derivative actions and other litigation or disputes with third parties, as well as investigations and enforcement actions by U.S. and non-U.S. governmental authorities, including criminal proceedings."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "the extent of JPMorganChase\u2019s exposure to legal matters is unpredictable and could, in some cases, exceed the amount of reserves that JPMorganChase has established for those matters."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "governmental authorities will forgo opportunities to resolve investigations with informal supervisory actions, and will pursue formal and punitive enforcement actions with respect to actual or deemed violations of law"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "Refer to the discussion of the Firm\u2019s material legal proceedings in Note 24 of this Form 10-Q"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "including class actions, derivative actions and other litigation or disputes with third parties, as well as investigations and enforcement actions by U.S. and non-U.S. governmental authorities, including criminal proceedings."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "the extent of JPMorganChase\u2019s exposure to legal matters is unpredictable and could, in some cases, exceed the amount of reserves that JPMorganChase has established for those matters."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "governmental authorities will forgo opportunities to resolve investigations with informal supervisory actions, and will pursue formal and punitive enforcement actions with respect to actual or deemed violations of law"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "Refer to the discussion of the Firm\u2019s material legal proceedings in Note 24 of this Form 10-Q"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "including class actions, derivative actions and other litigation or disputes with third parties, as well as investigations and enforcement actions by U.S. and non-U.S. governmental authorities, including criminal proceedings."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "the extent of JPMorganChase\u2019s exposure to legal matters is unpredictable and could, in some cases, exceed the amount of reserves that JPMorganChase has established for those matters."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "governmental authorities will forgo opportunities to resolve investigations with informal supervisory actions, and will pursue formal and punitive enforcement actions with respect to actual or deemed violations of law"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "Refer to the discussion of the Firm\u2019s material legal proceedings in Note 24 of this Form 10-Q"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Broad senior leadership transition underway",
+   "summary": "On June 25, 2026 the CIB Co-CEOs, Doug Petno and Troy Rohrbaugh, were elected Co-Presidents. Petno became sole CEO of CIB and Rohrbaugh became CEO of CCB, while former CCB CEO Marianne Lake is retiring. Separately, President and COO Daniel Pinto will retire at the end of 2026.",
+   "uw_relevance": "The heads of two of the three reportable segments changed within about 18 months. The 10-K names CEO and Operating Committee succession as a specific people risk, so management continuity and oversight are directly in focus.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "Doug Petno, 61, and Troy Rohrbaugh, 56, Co-CEOs of the Commercial & Investment Bank"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Marianne Lake, the former CEO of CCB, is retiring after more than 25 years with the Firm."
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "Daniel Pinto, 62, President and Chief Operating Officer of the Firm, will retire at the end of 2026."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "if it is unable to attract or retain qualified employees or to effectively manage succession planning for key leadership roles, such as the Chief Executive Officer, members of the Operating Committee and other senior leaders."
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "Doug Petno, 61, and Troy Rohrbaugh, 56, Co-CEOs of the Commercial & Investment Bank"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Marianne Lake, the former CEO of CCB, is retiring after more than 25 years with the Firm."
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "Daniel Pinto, 62, President and Chief Operating Officer of the Firm, will retire at the end of 2026."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "if it is unable to attract or retain qualified employees or to effectively manage succession planning for key leadership roles, such as the Chief Executive Officer, members of the Operating Committee and other senior leaders."
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "Daniel Pinto, 62, President and Chief Operating Officer of the Firm, will retire at the end of 2026."
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Info",
+   "title": "Record 2Q26 earnings boosted by one-time gains",
+   "summary": "FY2026 Q2 net income was $21.16B on revenue of $57.35B, with YoY revenue growth of 27.7%. The quarter included a $4.6B net gain from Visa accepting the Firm's tender of 18.6 million Visa Class B-2 shares, plus $1.0B of gains on certain equity investments. For comparison, FY2025 Q4 net income was $13.03B.",
+   "uw_relevance": "Headline profitability overstates recurring performance. A normalization in later periods could invite questions about how results and guidance were communicated.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "resulting in a $4.6 billion net gain for the three months ended June 30, 2026."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "results included a $4.6 billion net gain related to Visa shares in Corporate and $1.0 billion of gains on certain equity investments in Corporate and CIB"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "net_income",
+     "snippet": "$21.16B"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "27.7%"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Investment securities losses increased, reflecting higher losses on sales of securities associated with repositioning the investment securities portfolio in Treasury and CIO."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "resulting in a $4.6 billion net gain for the three months ended June 30, 2026."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "results included a $4.6 billion net gain related to Visa shares in Corporate and $1.0 billion of gains on certain equity investments in Corporate and CIB"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "net_income",
+     "snippet": "$21.16B"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "27.7%"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Investment securities losses increased, reflecting higher losses on sales of securities associated with repositioning the investment securities portfolio in Treasury and CIO."
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "net_income",
+     "snippet": "Net Income | FY2026 Q2 | $21.16B | REPORTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "Revenue Growth (YoY) | FY2026 Q2 | 27.7% | COMPUTED"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Collateral fraud losses and private credit risk",
+   "summary": "The 2025 10-K adds language stating the Firm has experienced borrower fraud in the accounting, reporting or representation of collateral, and that this resulted in losses. It also warns that the expansion of private credit could worsen losses among non-bank lenders and spread to funding markets.",
+   "uw_relevance": "These are risks the Firm says have already occurred, not generic disclosures. If further losses emerge, the adequacy of earlier disclosures and of credit oversight could be challenged.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "the interconnectivity across credit markets increases the risk that the significant expansion of private credit could worsen losses among non-bank lenders and their borrowers"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "JPMorganChase has in the past, and could in the future, experience instances in which borrowers or other counterparties engage in fraudulent activity related to the accounting, reporting or representation"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "the interconnectivity across credit markets increases the risk that the significant expansion of private credit could worsen losses among non-bank lenders and their borrowers"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "JPMorganChase has in the past, and could in the future, experience instances in which borrowers or other counterparties engage in fraudulent activity related to the accounting, reporting or representation"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Past breaches disclosed; future breaches called inevitable",
+   "summary": "The 10-K states the Firm has experienced security breaches from cyber attacks and that future breaches are inevitable. It lists past incidents that included exfiltration of customer personal data. A dedicated risk factor covers generative and agentic AI, including AI-enabled cyber threats.",
+   "uw_relevance": "The acknowledged breaches and data exfiltration support privacy litigation. Board oversight of cyber and AI risk is an increasing focus of derivative claims.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "JPMorganChase has experienced security breaches due to cyber attacks in the past, and future breaches are inevitable."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "the exfiltration of customer personal data"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "The rapid development and deployment of advanced technologies, including generative and agentic AI systems, present a range of risks to JPMorganChase\u2019s businesses and operations"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "JPMorganChase has experienced security breaches due to cyber attacks in the past, and future breaches are inevitable."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "the exfiltration of customer personal data"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "The rapid development and deployment of advanced technologies, including generative and agentic AI systems, present a range of risks to JPMorganChase\u2019s businesses and operations"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Positive",
+   "title": "Credit quality stable, with Card losses elevated",
+   "summary": "The nonperforming loan ratio held at 0.7% in FY2024 and FY2025. Nonperforming assets were $9.8B at June 30, 2026, down 6%, and the 2Q26 net charge-off rate was 0.66%. Card Services net charge-offs were 3.34% in 2Q26, above full-year guidance of approximately 3.2%. The allowance-to-retained-loans ratio eased to 1.79% from 1.85%.",
+   "uw_relevance": "There is no broad credit stress to drive loss-related claims. Card loss rates, wholesale downgrades and the pending Apple Card portfolio are points to monitor.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "npl_ratio",
+     "snippet": "Nonperforming Loan Ratio | FY2025 | 0.7% | LLM_EXTRACTED"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "The Firm\u2019s nonperforming assets totaled $9.8 billion at June 30, 2026, down 6%, driven by:"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "lower wholesale nonperforming assets, reflecting net portfolio activity, predominantly offset by net downgrades"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Card Services net charge-off rate of 3.34%"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Management expects the net charge-off rate in Card Services to be approximately 3.2%."
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "npl_ratio",
+     "snippet": "0.7%"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "The Firm\u2019s nonperforming assets totaled $9.8 billion at June 30, 2026, down 6%, driven by:"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "lower wholesale nonperforming assets, reflecting net portfolio activity, predominantly offset by net downgrades"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Card Services net charge-off rate of 3.34%"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Management expects the net charge-off rate in Card Services to be approximately 3.2%."
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "npl_ratio",
+     "snippet": "0.7%"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "The Firm\u2019s nonperforming assets totaled $9.8 billion at June 30, 2026, down 6%, driven by:"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "lower wholesale nonperforming assets, reflecting net portfolio activity, predominantly offset by net downgrades"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Card Services net charge-off rate of 3.34%"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Management expects the net charge-off rate in Card Services to be approximately 3.2%."
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "npl_ratio",
+     "snippet": "0.7%"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Positive",
+   "title": "Equity growing and liquidity coverage steady",
+   "summary": "Stockholders' equity rose from $327.88B in FY2023 to $344.76B in FY2024, $362.44B in FY2025 and $374.60B in FY2026 Q2. The Liquidity Coverage Ratio stayed between 110.0% and 113.0% across the five quarters from FY2025 Q2 to FY2026 Q2.",
+   "uw_relevance": "A large and growing equity base and a stable liquidity position reduce the likelihood of solvency- or funding-driven claims.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "equity",
+     "snippet": "Stockholders' Equity | FY2023 | $327.88B | REPORTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "equity",
+     "snippet": "Stockholders' Equity | FY2026 Q2 | $374.60B | REPORTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "lcr",
+     "snippet": "Liquidity Coverage Ratio | FY2025 Q2 | 113.0% | LLM_EXTRACTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "lcr",
+     "snippet": "Liquidity Coverage Ratio | FY2026 Q2 | 110.0% | LLM_EXTRACTED"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Info",
+   "title": "Margin drifting lower; FY2025 earnings flat",
+   "summary": "Net interest margin declined from 2.7% in FY2023 to 2.6% in FY2024, 2.5% in FY2025 and 2.4% in FY2026 Q2. FY2025 net income was $57.05B against $58.47B in FY2024. FY2025 revenue of $182.45B grew 2.8%, compared with 12.3% growth in FY2024.",
+   "uw_relevance": "Core earnings growth has slowed, which provides context for judging the one-off-boosted 2Q26 results and the pace of capital returns.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "nim",
+     "snippet": "Net Interest Margin | FY2023 | 2.7% | LLM_EXTRACTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "nim",
+     "snippet": "Net Interest Margin | FY2026 Q2 | 2.4% | LLM_EXTRACTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "net_income",
+     "snippet": "Net Income | FY2025 | $57.05B | REPORTED"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "Revenue Growth (YoY) | FY2025 | 2.8% | COMPUTED"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Governance & Leadership",
+   "subcategory": "Executive succession",
+   "insight_type": null,
+   "title": "CIB co-heads named Co-Presidents; Lake retiring",
+   "summary": "On June 25, 2026 the Firm elected Doug Petno and Troy Rohrbaugh, previously Co-CEOs of the CIB, as Co-Presidents, effective immediately. Petno became sole CEO of CIB and Rohrbaugh became CEO of CCB. Marianne Lake, the former CCB CEO, is retiring. This follows the January 2025 announcement that President and COO Daniel Pinto will retire at the end of 2026.",
+   "uw_relevance": "Several senior roles changed within about 18 months, including the heads of two of the three reportable segments. The 10-K lists succession planning for the CEO and Operating Committee as a specific people risk, so the leadership transition is directly relevant to management oversight.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "Doug Petno, 61, and Troy Rohrbaugh, 56, Co-CEOs of the Commercial & Investment Bank"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Marianne Lake, the former CEO of CCB, is retiring after more than 25 years with the Firm."
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "Daniel Pinto, 62, President and Chief Operating Officer of the Firm, will retire at the end of 2026."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "if it is unable to attract or retain qualified employees or to effectively manage succession planning for key leadership roles, such as the Chief Executive Officer, members of the Operating Committee and other senior leaders."
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Governance & Leadership",
+   "subcategory": "Board change",
+   "insight_type": null,
+   "title": "Director Todd Combs resigned December 2025",
+   "summary": "Todd A. Combs resigned from the Board effective December 7, 2025, the same day he gave notice. The 8-K states the resignation was not the result of any disagreement. Recent director additions were Brad Smith (effective January 21, 2025) and Michele G. Buck (effective March 17, 2025).",
+   "uw_relevance": "The filing states there was no disagreement behind the immediate resignation. Board composition continues to turn over.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "Todd A. Combs notified JPMorgan Chase & Co."
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "Mr. Combs\u2019 resignation is not the result of any disagreement with"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "JPMorgan Chase & Co. elected Michele G. Buck as a director, effective March 17, 2025."
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "JPMorgan Chase & Co. elected Brad Smith as a director, effective January 21, 2025."
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Governance & Leadership",
+   "subcategory": "Capital allocation",
+   "insight_type": null,
+   "title": "Buybacks rose as CET1 ratio declined",
+   "summary": "Share repurchases were $31.59B in FY2025, up from $18.83B in FY2024 and $9.82B in FY2023, equal to 0.55x FY2025 net income. Repurchases were $8.32B in 1Q26 and $6.79B in 2Q26. Over the same period the Standardized CET1 ratio fell from 15.7% (FY2024) to 14.6% (FY2025) and 14.2% (2Q26). The Tier 1 ratio fell from 16.8% to 15.1%. Stockholders' equity is positive and rising, at $374.6B in 2Q26.",
+   "uw_relevance": "Larger capital returns are drawing down the regulatory capital cushion, although equity remains substantial. The 10-K notes that failing to meet capital requirements would restrict repurchases and dividends.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "$31.59B"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "$18.83B"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buyback_intensity",
+     "snippet": "0.55x"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "cet1_ratio",
+     "snippet": "15.7%"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "CET1 capital was $303 billion, and the Standardized and Advanced CET1 ratios were each 14.2%."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "reducing the amount of common stock that JPMorganChase is permitted to repurchase"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Governance & Leadership",
+   "subcategory": "Auditor",
+   "insight_type": null,
+   "title": "PwC has audited the Firm since 1965",
+   "summary": "PricewaterhouseCoopers LLP has been the Firm's auditor since 1965, according to the 2025 10-K filed February 13, 2026. No auditor change is indicated in the input.",
+   "uw_relevance": "The auditor relationship is stable. The very long tenure is a common topic in discussions of auditor independence.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "10K-AUDIT",
+     "metric_code": null,
+     "snippet": "We have served as the Firm\u2019s auditor since 1965."
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Litigation and regulatory exposure",
+   "insight_type": null,
+   "title": "Firm expects pervasive investigations and enforcement",
+   "summary": "The 2025 10-K says the Firm is a defendant in many proceedings, including class actions, derivative actions and criminal proceedings. It states that legal exposure could exceed established reserves. It also expects continued heightened scrutiny, with authorities pursuing formal and punitive enforcement rather than informal actions. Specific matters are described in Note 30 (10-K) and Note 24 (2Q26 10-Q), which are not included in the input.",
+   "uw_relevance": "The company itself flags derivative actions, securities-holder claims and enforcement trends, all relevant to D&O exposure. Details of individual pending matters could not be reviewed from the input.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "including class actions, derivative actions and other litigation or disputes with third parties, as well as investigations and enforcement actions by U.S. and non-U.S. governmental authorities, including criminal proceedings."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "the extent of JPMorganChase\u2019s exposure to legal matters is unpredictable and could, in some cases, exceed the amount of reserves that JPMorganChase has established for those matters."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "governmental authorities will forgo opportunities to resolve investigations with informal supervisory actions, and will pursue formal and punitive enforcement actions with respect to actual or deemed violations of law"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "Refer to the discussion of the Firm\u2019s material legal proceedings in Note 24 of this Form 10-Q"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Company-specific risk factors",
+   "insight_type": null,
+   "title": "Private credit contagion and collateral fraud flagged",
+   "summary": "The 2025 10-K adds specific language on two credit risks. First, the expansion of private credit could worsen losses among non-bank lenders and spread to funding markets. Second, the Firm states it has experienced, and could again experience, borrower fraud in the accounting, reporting or representation of collateral, and that this has resulted in losses.",
+   "uw_relevance": "These are risks the Firm says it has already experienced, not generic disclosure. Collateral fraud losses and private-credit exposure can lead to disclosure-based claims if losses emerge.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "the interconnectivity across credit markets increases the risk that the significant expansion of private credit could worsen losses among non-bank lenders and their borrowers"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "JPMorganChase has in the past, and could in the future, experience instances in which borrowers or other counterparties engage in fraudulent activity related to the accounting, reporting or representation"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Cyber, operational and AI risk",
+   "insight_type": null,
+   "title": "Past breaches disclosed; future breaches called inevitable",
+   "summary": "The 10-K states the Firm has experienced security breaches from cyber attacks and that future breaches are inevitable. It lists past operational incidents that included exfiltration of customer personal data. A dedicated risk factor covers generative and agentic AI, including system failures, data access and AI-enabled cyber threats.",
+   "uw_relevance": "The acknowledged past breaches and data exfiltration support privacy litigation and oversight-related claims. Board oversight of cyber and AI risk is a growing focus of derivative claims.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "JPMorganChase has experienced security breaches due to cyber attacks in the past, and future breaches are inevitable."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "the exfiltration of customer personal data"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "The rapid development and deployment of advanced technologies, including generative and agentic AI systems, present a range of risks to JPMorganChase\u2019s businesses and operations"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Credit quality",
+   "insight_type": null,
+   "title": "Credit metrics stable; Card charge-offs elevated",
+   "summary": "Nonperforming assets were $9.8B at June 30, 2026, down 6%. Lower wholesale nonperforming assets were predominantly offset by net downgrades. The allowance for credit losses was $31.5B, and the allowance-to-retained-loans ratio was 1.79%, compared with 1.85% a year earlier. The 2Q26 net charge-off rate was 0.66%. The Card Services net charge-off rate was 3.34% for 2Q26, against full-year guidance of approximately 3.2%. The nonperforming loan ratio was 0.7% at FY2025.",
+   "uw_relevance": "Overall credit quality shows no stress. Points to monitor are wholesale downgrades and Card loss rates, especially as the Apple Card portfolio is pending.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "The Firm\u2019s nonperforming assets totaled $9.8 billion at June 30, 2026, down 6%, driven by:"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "lower wholesale nonperforming assets, reflecting net portfolio activity, predominantly offset by net downgrades"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Card Services net charge-off rate of 3.34%"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Management expects the net charge-off rate in Card Services to be approximately 3.2%."
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "npl_ratio",
+     "snippet": "0.7%"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Event Signals",
+   "subcategory": "Non-recurring gains",
+   "insight_type": null,
+   "title": "Visa share exchange produced $4.6B 2Q26 gain",
+   "summary": "On May 11, 2026 Visa accepted the Firm's tender of 18.6 million Visa Class B-2 shares, producing a $4.6B net gain in 2Q26. The quarter also included $1.0B of gains on certain equity investments. 2Q26 net income was $21.16B and revenue $57.35B, with YoY revenue growth of 27.7%. Separately, investment securities losses rose to $395M from $54M due to portfolio repositioning.",
+   "uw_relevance": "Record 2Q26 earnings were materially boosted by one-time gains, so headline profitability overstates recurring performance.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "resulting in a $4.6 billion net gain for the three months ended June 30, 2026."
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "results included a $4.6 billion net gain related to Visa shares in Corporate and $1.0 billion of gains on certain equity investments in Corporate and CIB"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "net_income",
+     "snippet": "$21.16B"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "27.7%"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Investment securities losses increased, reflecting higher losses on sales of securities associated with repositioning the investment securities portfolio in Treasury and CIO."
+    }
+   ]
+  }
+ ],
+ "followups": [
+  {
+   "category": "Financial",
+   "question": "The CET1 ratio fell from 15.7% at FY2024 to 14.6% at FY2025 and 14.2% in 2Q26, while share repurchases rose to $31.59B in FY2025. What CET1 target and management buffer does the Board approve, how far above the regulatory minimum does 14.2% sit, and what drove the slowdown in repurchases to $6.79B in 2Q26?",
+   "rationale": "Capital return is a board-level decision, and a shrinking regulatory cushion that later proves constraining could be framed as an oversight or disclosure failure.",
+   "system_priority": "high"
+  },
+  {
+   "category": "Governance",
+   "question": "Please list the pending derivative actions, securities class actions and criminal proceedings described in Note 30 of the 2025 10-K and Note 24 of the 2Q26 10-Q. For each, which current or former directors or officers are named, what is reserved, and what is the estimated range of reasonably possible losses above reserves?",
+   "rationale": "The 10-K states legal exposure could exceed reserves, and these matter-level details were not available in the review materials, yet they drive D&O frequency and severity.",
+   "system_priority": "high"
+  },
+  {
+   "category": "Operational",
+   "question": "The 2025 10-K says the Firm has experienced borrower fraud in the accounting, reporting or representation of collateral, and that this caused losses. How large were those losses, in which lending businesses did they occur, and what control, underwriting and board-reporting changes followed?",
+   "rationale": "A disclosed, already-realized fraud loss invites claims that credit oversight or earlier disclosures were inadequate if more losses surface.",
+   "system_priority": "high"
+  },
+  {
+   "category": "Governance",
+   "question": "With the 10-K expecting formal and punitive enforcement rather than informal actions, which open consent orders, regulatory findings or investigations currently involve conduct by named executives? How have compensation clawback or forfeiture policies been applied in recent matters?",
+   "rationale": "Enforcement actions that point to individual accountability often lead to follow-on derivative and securities claims against directors and officers.",
+   "system_priority": "high"
+  },
+  {
+   "category": "Strategy",
+   "question": "What is the Firm's total exposure to private credit funds and other non-bank lenders, including lending, financing facilities and derivatives? How is that exposure stress-tested against the contagion scenario described in the 2025 10-K?",
+   "rationale": "The Firm itself flags private-credit contagion, so the size and oversight of this exposure affects the likelihood of losses that are later called undisclosed.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Operational",
+   "question": "For the past security breaches and incidents involving exfiltration of customer personal data disclosed in the 10-K, how many customers were affected, what litigation or regulatory outcomes resulted, and which board committee oversees cyber and generative/agentic AI risk, and how often?",
+   "rationale": "Acknowledged breaches and a statement that future breaches are inevitable put board oversight of cyber and AI risk at the center of potential privacy and derivative claims.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Governance",
+   "question": "Following the June 25, 2026 election of Doug Petno and Troy Rohrbaugh as Co-Presidents, Marianne Lake's retirement and Daniel Pinto's planned retirement at the end of 2026, what is the Board's documented CEO succession plan? How are segment-level risk and control responsibilities being transferred during the transition?",
+   "rationale": "The 10-K names CEO and Operating Committee succession as a specific people risk, and simultaneous leadership changes can weaken management oversight.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Governance",
+   "question": "Todd Combs resigned from the Board effective December 7, 2025, the same day he gave notice. What were the circumstances of the immediate departure, and what are the Board's refreshment plans and committee reassignments following his exit and the 2025 additions of Brad Smith and Michele G. Buck?",
+   "rationale": "Unexpected same-day director departures and ongoing board turnover are relevant to board stability and the continuity of committee oversight.",
+   "system_priority": "low"
+  },
+  {
+   "category": "Financial",
+   "question": "2Q26 net income of $21.16B included a $4.6B net gain from the Visa Class B-2 share exchange and $1.0B of gains on certain equity investments. How were these gains presented in earnings materials and guidance, and what does management view as recurring quarterly earnings excluding them?",
+   "rationale": "If headline results boosted by one-time gains are not clearly separated, a later normalization could prompt securities claims over how performance was communicated.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Financial",
+   "question": "The Card Services net charge-off rate was 3.34% in 2Q26, against full-year guidance of approximately 3.2%. Has that guidance been revisited? What credit due diligence and loss expectations apply to the pending Apple Card portfolio, and how will those be disclosed?",
+   "rationale": "Card losses running above public guidance, combined with a large portfolio acquisition, create disclosure risk if loss rates move further from stated expectations.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Financial",
+   "question": "The allowance-to-retained-loans ratio eased to 1.79% from 1.85% a year earlier, while net downgrades predominantly offset lower wholesale nonperforming assets. What justified the lower allowance coverage, and which wholesale sectors account for the downgrades?",
+   "rationale": "Reserve adequacy decisions made while credit migration is negative are a common target of allegations that losses were foreseeable.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Market",
+   "question": "Net interest margin declined from 2.7% in FY2023 to 2.4% in 2Q26, and investment securities losses rose to $395M from $54M due to portfolio repositioning. What is the Board-approved interest rate risk appetite, and what further repositioning losses are anticipated?",
+   "rationale": "Compressing core margins and realized securities losses frame whether the current pace of capital returns and earnings guidance is sustainable.",
+   "system_priority": "medium"
+  },
+  {
+   "category": "Financial",
+   "question": "The Liquidity Coverage Ratio ranged between 110.0% and 113.0% from FY2025 Q2 to FY2026 Q2. What internal LCR floor and contingency funding triggers does the Firm maintain, and how concentrated are its uninsured and wholesale deposits?",
+   "rationale": "Liquidity is a key solvency safeguard for a bank, and clear internal limits reduce the risk of funding-driven claims under stress.",
+   "system_priority": "low"
+  },
+  {
+   "category": "Governance",
+   "question": "Given PricewaterhouseCoopers' tenure as auditor since 1965, how does the Audit Committee evaluate auditor independence and lead partner rotation? Which critical audit matters, such as the allowance for credit losses or litigation reserves, were raised in the 2025 audit?",
+   "rationale": "Auditor independence and the audit of judgmental areas such as reserves bear on the reliability of financial statements underlying securities claims.",
+   "system_priority": "low"
+  }
+ ]
+}

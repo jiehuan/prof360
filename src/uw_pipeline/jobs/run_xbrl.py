@@ -30,6 +30,9 @@ from uw_pipeline.schema import company, ingest_state, metric_definition, metric_
 
 log = logging.getLogger(__name__)
 
+# metric_value.derivation values written by the compute stage.
+RULE_DERIVATIONS = ("REPORTED", "DERIVED", "COMPUTED")
+
 # companyfacts can lag or miss filings (Ford's Q2 2026 10-Q was still missing 2.5 months after
 # filing), so recent filings absent from companyfacts are read from their own XBRL instance.
 GAP_LOOKBACK_DAYS = 400
@@ -330,9 +333,12 @@ def run_compute_stage(
                 upsert(conn, metric_value, out, key_cols=keys)
                 # Drop this company's rows the current rules no longer produce (not a full wipe).
                 produced = {tuple(r[k] for k in keys[1:]) for r in out}
+                # Only rows this stage owns; LLM-extracted / preliminary rows belong to the
+                # text-metrics stage.
                 existing = conn.execute(
                     select(*(metric_value.c[k] for k in keys[1:])).where(
-                        metric_value.c.company_id == row["company_id"]
+                        metric_value.c.company_id == row["company_id"],
+                        metric_value.c.derivation.in_(RULE_DERIVATIONS),
                     )
                 ).all()
                 stale = [tuple(e) for e in existing if tuple(e) not in produced]

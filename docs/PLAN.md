@@ -443,11 +443,11 @@ uw-pipeline dq-report --run-id <id>
 
 ### Phase 5 — LLM 增强
 - [ ] `LLMClient` 抽象 + Secure GPT / Claude 实现（抽象与 Claude 实现已完成，D-028；Secure GPT 待接入）
-- [ ] `schemas.py`、prompts v1、`grounding.py`（引用 + 数字校验）
-- [ ] Key Insights、Strategic & Risk Insights、Behavioral Insights、Follow-Up Questions、Activity 摘要
-- [ ] 文本指标抽取：酒店 RevPAR/入住率；FI：CET1/NIM/NPL/贷款组合
-- [ ] 财报 8-K（Item 2.02）EX-99.1 抽取核心财务数字 → `derivation = PRELIMINARY`，对应期间 10-Q/10-K 入库后自动被替换（隔夜更新，见 decisions D-022）
-- [ ] input_hash 缓存（`llm_call` 已实现，D-028），`is_current` 版本切换
+- [x] `schemas.py`、prompts v1、`grounding.py`（引用 + 数字校验）（D-033）
+- [x] Key Insights、Strategic & Risk Insights、Behavioral Insights、Follow-Up Questions、Activity 摘要（D-033；Activity 摘要待付费新闻数据）
+- [x] 文本指标抽取：酒店 RevPAR/入住率；FI：CET1/NIM/NPL/贷款组合（D-032）
+- [x] 财报 8-K（Item 2.02）EX-99.1 抽取核心财务数字 → `derivation = PRELIMINARY`，对应期间 10-Q/10-K 入库后自动被替换（隔夜更新，见 decisions D-022）
+- [x] input_hash 缓存（`llm_call`，D-028），`is_current` 版本切换（D-033）
 
 **验收**：
 - 3 家 golden 公司输出全部通过 schema 校验和 grounding 校验

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
+from dataclasses import dataclass
 
 _QUOTES = str.maketrans({"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"'})
 _DASHES = re.compile(r"[\u2010-\u2015]")
@@ -20,3 +22,78 @@ def is_grounded(quote: str, source: str, *, min_chars: int = 12) -> bool:
     A trailing "..." or a quote wrapped in quotation marks is tolerated."""
     q = normalize(quote).strip("\"'").removesuffix("...").removesuffix("…").strip()
     return len(q) >= min_chars and q in normalize(source)
+
+
+# -- numbers in generated text (PLAN §7.1) -----------------------------------------------------
+
+_NUMBER = re.compile(
+    r"(?<![\w.])(?P<sign>[-\u2212])?\$?(?P<num>\d{1,3}(?:,\d{3})+|\d+)(?P<dec>\.\d+)?"
+    r"\s*(?P<unit>%|x\b|bps\b|basis points|billion\b|bn\b|B\b|million\b|mn\b|M\b|trillion\b|T\b)?",
+    re.I,
+)
+_SCALE = {"billion": 1e9, "bn": 1e9, "b": 1e9, "million": 1e6, "mn": 1e6, "m": 1e6,
+          "trillion": 1e12, "t": 1e12}  # fmt: skip
+
+
+@dataclass(frozen=True)
+class NumberMention:
+    text: str
+    literal: str  # the digits as written, without separators, e.g. "1819" or "4.9"
+    value: float
+    decimals: int
+    unit: str  # "", "%", "x", "bps", or a scale word
+
+
+def numbers_in(text: str) -> list[NumberMention]:
+    """Financial numbers in generated text; years, quarter numbers and small counts are skipped."""
+    out = []
+    for m in _NUMBER.finditer(text):
+        digits = m.group("num").replace(",", "")
+        dec = m.group("dec") or ""
+        unit = (m.group("unit") or "").lower()
+        value = float(digits + dec)
+        has_money = m.group(0).lstrip("-\u2212").startswith("$")
+        prefix = text[max(0, m.start() - 2) : m.start()]
+        if not unit and not dec and not has_money:
+            if 1900 <= value <= 2100 or value < 100:
+                continue  # years, days of month, quarters, item numbers, counts
+            if prefix.endswith(("Q", "FY", "H")):
+                continue
+        if prefix.endswith("Q") or prefix.endswith("FY"):
+            continue
+        out.append(
+            NumberMention(m.group(0).strip(), digits + dec, value, len(dec) - 1 if dec else 0, unit)
+        )
+    return out
+
+
+def _matches_value(n: NumberMention, actual: float) -> bool:
+    """Does the mention express `actual` (stored in base units / fractions), allowing for unit
+    conversion and rounding to the mention's precision?"""
+    tolerance = 0.5 * 10 ** (-n.decimals) if n.decimals else 0.5
+    scales: list[float]
+    if n.unit == "%":
+        scales = [100.0]
+    elif n.unit == "bps" or n.unit == "basis points":
+        scales = [10_000.0]
+    elif n.unit in _SCALE:
+        scales = [1 / _SCALE[n.unit]]
+    else:
+        scales = [1.0, 1e-6, 1e-9, 100.0]
+    return any(abs(abs(actual) * s - n.value) <= tolerance + 1e-9 for s in scales)
+
+
+def ungrounded_numbers(text: str, quotes: Iterable[str], values: Iterable[float]) -> list[str]:
+    """Numbers in `text` found neither in the quoted source text nor among `values`."""
+    quote_text = normalize(" ".join(quotes)).replace(",", "")
+    vals = list(values)
+    missing = []
+    for n in numbers_in(text):
+        # The number as written appears in a cited source ("$27M" vs "$27 million" both
+        # contain 27), bounded so that 27 does not match inside 2027 or 1.27.
+        if re.search(rf"(?<![\d.]){re.escape(n.literal)}(?![\d])", quote_text):
+            continue
+        if any(_matches_value(n, v) for v in vals):
+            continue
+        missing.append(n.text)
+    return missing

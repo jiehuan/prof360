@@ -14,7 +14,7 @@ groups:
   HOTELS:
     label: Hotels & Lodging
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, HOTEL_OPERATING]
   AIRLINES:
     label: Airlines
     is_financial: false
@@ -30,7 +30,7 @@ groups:
   BANKS:
     label: Banks
     is_financial: true
-    metric_sets: [BANK_CORE]
+    metric_sets: [BANK_CORE, BANK_REGULATORY]
   # Groups with no metric set get one when their first company is onboarded.
   CREDIT:
     label: Non-depository Credit

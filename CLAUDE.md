@@ -8,7 +8,9 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 
 ```bash
 .venv/bin/pip install -e ".[dev]"             # Python 3.14 venv (project supports >=3.11)
-.venv/bin/uw-pipeline run --all     # company -> facts -> compute -> documents -> transcripts -> news -> signals
+.venv/bin/uw-pipeline run --all     # company -> facts -> compute -> documents -> transcripts
+                                     #   -> news -> textmetrics -> signals -> insights
+.venv/bin/uw-pipeline audit-insights # re-verify insight evidence (Phase 5 acceptance)
 .venv/bin/uw-pipeline run --ticker MAR --stage compute
 .venv/bin/uw-pipeline run --ticker MAR --force       # ignore same-day raw cache / input hash
 .venv/bin/uw-pipeline coverage-report                # data/reports/coverage-<date>.md
@@ -41,6 +43,8 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
   version. Calls go through `enrich/llm.cached_call` (cached by input hash). Outputs are
   schema-validated and evidence must be grounded in the source text. Tests use
   `tests/fake_llm.py`, never the real API. `LLM_ENABLED=false` runs rules only.
+- Grounding rules changed? Bump `GROUNDING_VERSION` in `jobs/run_insights.py`. Prompt changed?
+  New prompt version, then `scripts/export_golden.py` and review `git diff tests/golden`.
 - Alpha Vantage: never log or store the API key (messages are masked in `clients/alphavantage.py`).
   The free plan has ~25 calls/day; stages stop cleanly at the quota and resume next run.
 - Signal and section rules live in `config/signal_rules.yaml` and `company_overrides/*.yaml`

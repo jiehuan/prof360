@@ -102,10 +102,13 @@ metric_value = Table(
     Column("value", Float(53)),  # NULL when value_status = NM
     Column("value_status", String(4), nullable=False),  # OK | NM (not meaningful)
     Column("unit", String(20), nullable=False),
-    Column("derivation", String(20), nullable=False),  # REPORTED | DERIVED | COMPUTED
+    # REPORTED | DERIVED | COMPUTED (compute stage) | LLM_EXTRACTED | PRELIMINARY (text stage)
+    Column("derivation", String(20), nullable=False),
     Column("formula", String(300), nullable=False),
     Column("source_tags", String(2000), nullable=False),
     Column("source_accn", String(25), nullable=False),
+    # Verbatim source quote for LLM_EXTRACTED / PRELIMINARY values (decisions D-032).
+    Column("evidence", String(1000)),
     Column("computed_at", DateTime(timezone=True), nullable=False),
     UniqueConstraint(
         "company_id",
@@ -245,6 +248,8 @@ activity = Table(
     Column("source_count", Integer, nullable=False),  # articles grouped into this activity
     Column("summary", Text),
     Column("uw_relevance", Text),
+    Column("llm_sentiment", String(10)),
+    Column("summary_input_hash", String(64)),
     Column("first_seen_at", DateTime(timezone=True), nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False),
     UniqueConstraint("company_id", "url_hash", name="uq_activity_canonical"),
@@ -275,4 +280,90 @@ news_item = Table(
     Column("raw_path", String(500), nullable=False),
     Column("fetched_at", DateTime(timezone=True), nullable=False),
     UniqueConstraint("company_id", "url_hash", name="uq_news_item_url"),
+)
+
+# Loan book by segment for banks (FI module), extracted from MD&A text (decisions D-032).
+loan_portfolio_segment = Table(
+    "loan_portfolio_segment",
+    metadata,
+    Column("segment_id", Integer, primary_key=True, autoincrement=True),
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False),
+    Column("period_end", String(10), nullable=False),
+    Column("segment", String(200), nullable=False),
+    Column("outstanding", Float(53), nullable=False),  # USD
+    Column("pct_of_book", Float),  # fraction of the segments' total
+    Column("nonaccrual", Float(53)),  # USD, when disclosed
+    Column("evidence", String(1000), nullable=False),
+    Column("source_doc_id", Integer, ForeignKey("source_document.doc_id"), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint("company_id", "period_end", "segment", name="uq_loan_segment"),
+)
+
+# LLM insights (Phase 5b, decisions D-033). Each generation is a new set of rows; the newest set
+# per (company, kind) has is_current = 1 and older sets are kept for audit.
+insight = Table(
+    "insight",
+    metadata,
+    Column("insight_id", Integer, primary_key=True, autoincrement=True),
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False, index=True),
+    Column("kind", String(20), nullable=False),  # KEY | STRATEGIC_RISK | BEHAVIORAL
+    Column("ordinal", Integer, nullable=False),  # order within its set
+    Column("category", String(60)),
+    Column("subcategory", String(100)),
+    Column("insight_type", String(10)),  # KEY: Warning | Negative | Positive | Info
+    Column("title", String(300), nullable=False),
+    Column("summary", Text, nullable=False),
+    Column("uw_relevance", Text),
+    Column("supporting_evidence", Text),
+    Column("event_date", String(10)),
+    Column("is_current", Boolean, nullable=False),
+    Column("model", String(60), nullable=False),
+    Column("prompt_version", String(40), nullable=False),
+    Column("input_hash", String(64), nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+)
+
+insight_evidence = Table(
+    "insight_evidence",
+    metadata,
+    Column("evidence_id", Integer, primary_key=True, autoincrement=True),
+    Column("insight_id", Integer, ForeignKey("insight.insight_id"), nullable=False, index=True),
+    Column("source_kind", String(12), nullable=False),  # DOCUMENT | METRIC | SIGNAL | NEWS
+    Column("doc_id", Integer, ForeignKey("source_document.doc_id")),
+    Column("section_code", String(20)),
+    Column("metric_code", String(60)),
+    Column("signal_id", Integer),
+    Column("activity_id", Integer),
+    Column("snippet", String(1000), nullable=False),
+)
+
+insight_metric = Table(
+    "insight_metric",
+    metadata,
+    Column("insight_id", Integer, ForeignKey("insight.insight_id"), primary_key=True),
+    Column("metric_code", String(60), primary_key=True),
+)
+
+followup_question = Table(
+    "followup_question",
+    metadata,
+    Column("question_id", Integer, primary_key=True, autoincrement=True),
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False, index=True),
+    Column("ordinal", Integer, nullable=False),
+    Column("category", String(20), nullable=False),
+    Column("question", Text, nullable=False),
+    Column("rationale", Text, nullable=False),
+    Column("system_priority", String(10), nullable=False),
+    Column("is_current", Boolean, nullable=False),
+    Column("model", String(60), nullable=False),
+    Column("prompt_version", String(40), nullable=False),
+    Column("input_hash", String(64), nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+)
+
+followup_question_insight = Table(
+    "followup_question_insight",
+    metadata,
+    Column("question_id", Integer, ForeignKey("followup_question.question_id"), primary_key=True),
+    Column("insight_id", Integer, ForeignKey("insight.insight_id"), primary_key=True),
 )

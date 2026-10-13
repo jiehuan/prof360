@@ -1,0 +1,34 @@
+# LLM insights (Phase 5b, decisions D-033).
+
+# Company-level synthesis (behavioral, strategic & risk, key insights, follow-up questions).
+synthesis:
+  model: claude-opus-5-5
+  effort: high
+  max_tokens: 16000
+# Per-item work (news activity summaries). The extractor spec from llm.yaml is used.
+
+prompt_versions:
+  common: common_v1          # shared rules, prepended to every company-level task
+  activity_summary: activity_summary_v1
+  behavioral: behavioral_v1
+  strategic_risk: strategic_risk_v1
+  key_insights: key_insights_v1
+  followups: followups_v1
+
+# Filing excerpts in the package: section code -> max characters taken (latest filing with that
+# section). Sections longer than the budget are cut at a paragraph boundary and marked as cut.
+excerpts:
+  "10K-1A": 120000   # risk factors
+  "10K-3": 15000     # legal proceedings
+  "10Q-II-1": 15000  # legal proceedings update
+  "10Q-II-1A": 15000 # risk factor update
+  "10Q-I-2": 30000   # MD&A (start: overview and results)
+transcripts: 3            # latest earnings calls for behavioral insights
+news_days: 30             # activities in the package
+activity_batch: 20        # activities per summary call
+metric_quarters: 5        # latest quarters of each metric in the table
+metric_years: 3           # latest fiscal years
+
+counts:                   # asked of the model; enforced loosely (log only)
+  key_insights: [6, 10]
+  followups: [10, 15]

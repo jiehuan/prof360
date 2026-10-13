@@ -84,13 +84,21 @@ class ConceptDef(BaseModel):
         return {k: _tag_refs(x) for k, x in v.items()}
 
 
+class TextExtraction(BaseModel):
+    """How an LLM finds a `kind: text` metric in filing text (Phase 5a)."""
+
+    definition: str  # exact scope, e.g. "comparable systemwide worldwide RevPAR"
+    keywords: list[str]  # used to pick the relevant text chunks
+    dual_check: bool = False  # extractor and tie-breaker models must agree
+
+
 class MetricDef(BaseModel):
     code: str
     display_name: str
     description: str | None = None
     section: str
     unit: Literal["USD", "ratio", "fraction"]
-    kind: Literal["formula", "growth"] = "formula"
+    kind: Literal["formula", "growth", "text"] = "formula"
     formula: list[str] = Field(default_factory=list)
     optional: list[str] = Field(default_factory=list)
     nm_when: str | None = None
@@ -99,6 +107,7 @@ class MetricDef(BaseModel):
     period_types: list[PeriodType] = Field(default_factory=lambda: list(ALL_PERIOD_TYPES))
     display: bool = True
     company_specific: bool = False
+    extraction: TextExtraction | None = None
 
     @field_validator("formula", mode="before")
     @classmethod
@@ -112,11 +121,16 @@ class MetricDef(BaseModel):
                 raise ValueError(f"{self.code}: formula metric needs `formula`")
             for f in [*self.formula, *([self.nm_when] if self.nm_when else [])]:
                 ast.parse(f, mode="eval")
+        elif self.kind == "text":
+            if self.extraction is None:
+                raise ValueError(f"{self.code}: text metric needs `extraction`")
         elif not (self.base and self.compare):
             raise ValueError(f"{self.code}: growth metric needs `base` and `compare`")
         return self
 
     def inputs(self) -> set[str]:
+        if self.kind == "text":
+            return set()
         if self.kind == "growth":
             return {self.base} if self.base else set()
         exprs = [*self.formula, *([self.nm_when] if self.nm_when else [])]
