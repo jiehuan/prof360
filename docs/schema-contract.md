@@ -5,6 +5,8 @@
 
 ## 对数据模型图的改动（尽量少）
 
+建表脚本（SQL Server / Azure SQL，可重复执行）：`deploy/sql/app_schema_changes.sql` 只包含下面这些改动；`deploy/sql/app_schema_full.sql` 是管线写入的全部表，供核对或新环境建库使用。两个文件由 `python scripts/export_app_ddl.py` 从 `schema_app.py` 生成，表结构改动后需重新生成。
+
 | 改动 | 原因 |
 |---|---|
 | 新表 `ItemLink`（CompanyId, FromType, FromId, ToType, ToId, LinkSource），类型为 KEY_INSIGHT / STRATEGIC_RISK / FOLLOWUP / METRIC | 所有弹窗的 Related tab；一张表代替四张关联表 |
