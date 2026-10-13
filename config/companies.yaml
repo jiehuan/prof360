@@ -35,6 +35,9 @@ companies:
     display_name: Skydance Corp
     news_aliases: ["Skydance", "Paramount"]
     former_tickers: [PARA, PSKY]
+    # Alpha Vantage files news before the 2026-10-06 rename and all earnings call transcripts
+    # under PSKY (checked 2026-10-13); PARA now belongs to another company.
+    av_symbols: [SKYD, PSKY]
     predecessor_ciks: [813828]  # Paramount Global; stopped filing after the Aug 2025 merger
     # Successor periods start 2025-08-08. Earlier values in this registrant's filings are
     # predecessor (Paramount Global) figures and are excluded (decisions D-012).

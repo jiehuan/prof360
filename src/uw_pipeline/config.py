@@ -33,7 +33,13 @@ class CompanyConfig(BaseModel):
     # Names an article must mention (headline or summary) to count as news about the company
     # (Phase 9). Default: the first word of display_name.
     news_aliases: list[str] = Field(default_factory=list)
+    # Symbols Alpha Vantage files this company under, newest first (default: the ticker). After a
+    # ticker change AV keeps older news and transcripts under the old symbol.
+    av_symbols: list[str] = Field(default_factory=list)
     notes: str | None = None
+
+    def symbols(self) -> list[str]:
+        return self.av_symbols or [self.ticker]
 
     def aliases(self) -> list[str]:
         if self.news_aliases:

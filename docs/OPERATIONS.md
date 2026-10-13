@@ -86,7 +86,7 @@
 | 现象 | 原因与处理 |
 |---|---|
 | transcripts 显示 `daily quota ... used` | 检查 `ALPHAVANTAGE_CALLS_PER_MINUTE=75`、`ALPHAVANTAGE_DAILY_QUOTA=0`（付费 key）是否已设置 |
-| transcripts 显示 `unavailable` | AV 没有这家公司这一季的记录，常见于改过 ticker 的公司（SKYD 以前是 PARA/PSKY） |
+| transcripts 显示 `unavailable` | AV 没有这家公司这一季的记录。改过 ticker 的公司，AV 常把旧数据留在旧代码下：在 `config/companies.yaml` 设置 `av_symbols`（新代码在前，例如 SKYD 是 `[SKYD, PSKY]`），下次运行会按新列表重试，新闻也会重新回补 30 天 |
 | SEC 返回 403/429 | 检查 `SEC_USER_AGENT` 是否包含联系邮箱，限速不要超过 10 次/秒（默认 8）。客户端已经带了重试 |
 | 日志里出现 `LLM unavailable` | key 或 workspace 有问题。用户级 key 需要设置 `ANTHROPIC_WORKSPACE_ID`。此时 signals 会退回纯规则，textmetrics 和 insights 会失败 |
 | 运行一直显示 RUNNING | 进程已经死了。30 分钟后再次启动同一个 job 就会续跑；也可以等下一次 CronJob |

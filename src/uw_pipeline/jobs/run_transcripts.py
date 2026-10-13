@@ -96,13 +96,21 @@ def process_company(
         if have is not None:
             stats["already"] += 1
             continue
-        state_key = f"av_transcript:{quarter}"
+        symbols = cfg.symbols()
+        # The symbols tried are part of the key: adding one retries quarters found empty.
+        state_key = f"av_transcript:{quarter}" + ("" if symbols == [cfg.ticker]
+                                                  else ":" + "+".join(symbols))  # fmt: skip
         state = _state(conn, company_id, state_key)
         if state and state[0] == "EMPTY" and now - state[1] < RETRY_EMPTY_AFTER:
             stats["unavailable"] += 1
             continue
 
-        payload, raw_key = av.transcript(cfg.ticker, quarter)
+        symbol, raw_key = cfg.ticker, ""
+        payload: Any = {}
+        for symbol in symbols:
+            payload, raw_key = av.transcript(symbol, quarter)
+            if payload.get("transcript"):
+                break
         turns = payload.get("transcript") or []
         if not turns:
             upsert(
@@ -116,7 +124,7 @@ def process_company(
             continue
 
         text = transcript_text(turns)
-        params = {"function": "EARNINGS_CALL_TRANSCRIPT", "symbol": cfg.ticker, "quarter": quarter}
+        params = {"function": "EARNINGS_CALL_TRANSCRIPT", "symbol": symbol, "quarter": quarter}
         upsert(
             conn,
             source_document,

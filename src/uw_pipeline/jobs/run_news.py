@@ -24,6 +24,7 @@ from uw_pipeline.enrich.news_events import event_pairs
 from uw_pipeline.enrich.news_relevance import judge
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import company_row
+from uw_pipeline.load.upsert import upsert
 from uw_pipeline.normalize.news import (
     Doc,
     NewsConfig,
@@ -33,7 +34,7 @@ from uw_pipeline.normalize.news import (
     near_duplicates,
     parse_feed,
 )
-from uw_pipeline.schema import activity, news_item
+from uw_pipeline.schema import activity, ingest_state, news_item
 
 log = logging.getLogger(__name__)
 
@@ -357,18 +358,35 @@ def run_news_stage(
                     )
                 ).scalar_one_or_none()
                 stamp = now()
+                # A changed symbol list (e.g. an old ticker added) re-reads the full window.
+                symbols = "+".join(company_cfg.symbols())
+                known = conn.execute(
+                    select(ingest_state.c.content_hash).where(
+                        ingest_state.c.company_id == row["company_id"],
+                        ingest_state.c.source_key == "av_news_symbols",
+                    )
+                ).scalar()
+                # (no record yet: the list was the ticker alone, as before av_symbols existed)
+                incremental = latest is not None and (known or company_cfg.ticker) == symbols
                 since = (
                     latest - timedelta(days=cfg.overlap_days)
-                    if latest
+                    if latest is not None and incremental
                     else stamp.replace(tzinfo=None) - timedelta(days=cfg.lookback_days)
                 )
                 pruned = prune_unrelated(conn, row["company_id"], company_cfg.aliases(), cfg)
-                fetched, irrelevant = fetch_items(av, company_cfg.ticker, since, cfg,
-                                                  company_cfg.aliases())  # fmt: skip
+                fetched, irrelevant = [], 0
+                for symbol in company_cfg.symbols():  # duplicates are removed by URL later
+                    got, dropped = fetch_items(av, symbol, since, cfg, company_cfg.aliases())
+                    fetched += got
+                    irrelevant += dropped
                 stats = dedup_and_store(
                     conn, row["company_id"], row["legal_name"], fetched, cfg, llm=llm, now=stamp
                 )
                 stats.irrelevant = irrelevant
+                upsert(conn, ingest_state, [{"company_id": row["company_id"],
+                                             "source_key": "av_news_symbols",
+                                             "content_hash": symbols, "updated_at": stamp}],
+                       key_cols=["company_id", "source_key"])  # fmt: skip
                 stats.judged, removed = judge_and_prune(
                     conn, row["company_id"], row["legal_name"], cfg, llm, stamp
                 )

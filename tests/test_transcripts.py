@@ -88,3 +88,26 @@ def test_transcript_text_one_line_per_turn() -> None:
     turns = [{"speaker": "Operator", "title": "Operator", "content": "Welcome.\n Go ahead."},
              {"speaker": "Jane Doe", "title": "CFO", "content": "Thanks."}]  # fmt: skip
     assert transcript_text(turns) == "Operator: Welcome. Go ahead.\nJane Doe (CFO): Thanks."
+
+
+def test_old_symbol_tried_after_a_ticker_change(tmp_path) -> None:
+    """SKYD's calls are filed under PSKY at Alpha Vantage (live check 2026-10-13)."""
+    engine = _db()
+    cfg = [CompanyConfig(ticker="MAR", cik=1048286, av_symbols=["NEWT", "MAR"])]
+    body = (FIXTURES / "av" / "transcript_MAR_2026Q2.json").read_bytes()
+
+    def respond(request):
+        if request.url.params["symbol"] == "MAR" and request.url.params["quarter"] == "2026Q2":
+            return httpx.Response(200, content=body)
+        return httpx.Response(200, json={"symbol": request.url.params["symbol"], "transcript": []})
+
+    with respx.mock() as router, _av(tmp_path) as av:
+        route = router.get(AV_URL).mock(side_effect=respond)
+        res = run_transcripts_stage(cfg, av, engine, now=lambda: NOW)
+        assert res[0].detail == "stored=1, already=0, unavailable=3"
+        asked = [(c.request.url.params["symbol"], c.request.url.params["quarter"])
+                 for c in route.calls]  # fmt: skip
+        assert ("NEWT", "2026Q2") in asked and ("MAR", "2026Q2") in asked
+    with engine.connect() as conn:
+        doc = conn.execute(select(source_document)).mappings().one()
+    assert doc["accession_no"] == "AV-MAR-2026Q2" and "symbol=MAR" in doc["url"]
