@@ -402,3 +402,57 @@ pipeline_task = Table(
     Column("updated_at", DateTime(timezone=True), nullable=False),
     UniqueConstraint("run_id", "ticker", "stage", name="uq_pipeline_task"),
 )
+
+# Data quality (Phase 7, decisions D-035) ------------------------------------------------------
+
+# Every earnings-release value compared with the XBRL value for the same period.
+release_check = Table(
+    "release_check",
+    metadata,
+    Column("check_id", Integer, primary_key=True, autoincrement=True),
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False),
+    Column("accession_no", String(25), nullable=False),
+    Column("metric_code", String(60), nullable=False),
+    Column("period_type", String(2), nullable=False),
+    Column("fiscal_year", Integer, nullable=False),
+    Column("fiscal_quarter", Integer, nullable=False),
+    Column("release_value", Float(53), nullable=False),
+    Column("xbrl_value", Float(53), nullable=False),
+    Column("agrees", Boolean, nullable=False),
+    Column("checked_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint(
+        "company_id",
+        "accession_no",
+        "metric_code",
+        "period_type",
+        "fiscal_year",
+        "fiscal_quarter",
+        name="uq_release_check",
+    ),
+)
+
+# Generated vs kept (after grounding) per LLM generation, for the drop-rate DQ rule.
+llm_task_stat = Table(
+    "llm_task_stat",
+    metadata,
+    Column("stat_id", Integer, primary_key=True, autoincrement=True),
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False),
+    Column("task", String(40), nullable=False),
+    Column("generated", Integer, nullable=False),
+    Column("kept", Integer, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+)
+
+dq_finding = Table(
+    "dq_finding",
+    metadata,
+    Column("finding_id", Integer, primary_key=True, autoincrement=True),
+    Column("run_id", Integer, ForeignKey("pipeline_run.run_id")),  # NULL for ad-hoc checks
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False),
+    Column("rule_id", String(40), nullable=False),
+    Column("severity", String(8), nullable=False),  # Error | Warning | Info
+    Column("metric_code", String(60)),
+    Column("period", String(20)),
+    Column("message", String(1000), nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+)

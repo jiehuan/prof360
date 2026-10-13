@@ -1,0 +1,86 @@
+# 运维手册
+
+读者：维护这条管线的工程师。设计和背后的理由见 `docs/decisions.md`（D-xxx），开发约定见 `CLAUDE.md`。
+
+## 1. 日常运行
+
+| 命令 | 用途 |
+|---|---|
+| `uw-pipeline run --job nightly` | 定时任务。nightly 在美东 23:30 运行，morning 在 05:30 运行，阶段定义在 `config/jobs.yaml` |
+| `uw-pipeline run --ticker MAR --stage compute` | 手动运行指定公司的指定阶段，`--stage` 可以写多次 |
+| `uw-pipeline runs` | 列出最近的运行，以及最近一次里失败或被跳过的任务和原因 |
+| `uw-pipeline dq-report` | 生成数据质量报告，写到 `data/reports/dq-run<id>.md` |
+| `uw-pipeline coverage-report` | 生成 XBRL 指标覆盖率报告，并列出没有说明原因的缺口 |
+| `uw-pipeline audit-insights` | 抽样检查 LLM 洞察：引用的原文能否找到、非 FI 公司是否混入了 FI 数据 |
+
+**运行状态**：`pipeline_run.status` 有以下几种取值：
+
+| 状态 | 含义 |
+|---|---|
+| SUCCEEDED | 全部成功 |
+| PARTIAL | 部分任务失败或被跳过 |
+| FAILED | 没有任何任务成功 |
+| RUNNING | 正在运行，或者进程已经死掉 |
+
+**续跑**：进程或 pod 被杀之后，再次启动同一个 job 会自动接着跑，前提是上一次运行的心跳已经超过 30 分钟（可在 `config/jobs.yaml` 里调整）。
+
+**运行锁**：如果同一个 job 已经在运行（心跳仍然新鲜），新的启动会以退出码 2 退出。
+
+**费用**：每次运行的 LLM token 用量和估算费用记录在 `pipeline_run.stats_json` 中，`runs` 命令也会显示。
+
+## 2. 新增公司
+
+1. 在 `config/companies.yaml` 中加一项，**必须固定 CIK**。CIK 可以在 `https://www.sec.gov/files/company_tickers.json` 查到，但要到 submissions 里核对公司名称：ticker 会被转给别的公司，例如 PARA 现在属于 Banzai。
+2. 如果公司经历过合并、目前的申报主体是后继公司，设置 `history_start`，只使用后继主体的数据（参考 SKYD 的写法）。
+3. 确认它的 SIC 在 `config/industry_groups.yaml` 里有对应的行业组。没有的话，见下文"新增行业组"。
+4. 运行 `uw-pipeline run --ticker XXX`，然后运行 `coverage-report`。对每一个缺口，要么修正 tag 映射，要么在 `config/coverage_notes.yaml` 里写明原因。
+5. 首次运行的 LLM 费用约为每家公司 $1.5–3。
+6. MVP 阶段的约定是每个 SIC 只放一家公司（D-007）。
+
+## 3. 新增指标或修改指标集合
+
+- **计算类指标**：在 `config/metrics.yaml` 中定义 `formula`。所需的 XBRL 概念加到 `config/concept_map.yaml`：候选 tag 会**按期间逐个选择**，排在前面的优先；如果某个行业组需要不同的 tag，用 `by_group` 覆盖。
+- **文本类指标**（`kind: text`）：写清 `definition`，包括口径和需要排除的情况；配好 `keywords`；银行的资本类指标设 `dual_check: true`，要求两个模型的结果一致。
+- **加入行业组**：把指标放进某个 `metric_sets`，或者加到行业组的 `metrics` 列表。**指标清单只在配置中维护，不在运行时生成**（D-016）。
+- **验证**：运行 `pytest`，然后对一家受影响的公司运行 `run --stage compute`（文本类指标运行 `--stage textmetrics`），最后看 `coverage-report`。
+
+## 4. 新增行业组或 SIC
+
+1. 在 `config/industry_groups.yaml` 的 `groups` 下新增一组，设置 `is_financial`（决定 FI 模块是否出数据）和 `metric_sets`。
+2. 在 `sic:` 下加精确的 SIC 映射。范围映射只作兜底。
+3. 保险业目前设为非 FI（D-008）。如果业务方要求改，修改 `is_financial` 即可。
+
+## 5. 公司特有的设置
+
+文件放在 `config/company_overrides/<TICKER>.yaml`：
+- `concepts`：替换某个概念的候选 tag。可以写公司扩展 taxonomy 或带维度的 tag，管线会从每份申报的 XBRL instance 里读取，参考 `MAR.yaml` 中的 fee revenue。
+- `metrics`：公司专属指标。
+- `sections`：标准的 Item 标题切不出章节时，用起止标题的正则来定位，参考 `JPM.yaml` 中的 MD&A。
+
+## 6. 修改 prompt 或 grounding 规则
+
+1. **不要改已有的 prompt 文件**。新建 `src/uw_pipeline/enrich/prompts/<task>_v<N+1>.md`，然后修改 `config/llm.yaml`、`config/insights.yaml` 或 `config/text_extraction.yaml` 里的版本号。版本号会进入缓存键，所以改版后会重新调用 LLM。
+2. 对 golden 公司重跑：`uw-pipeline run --ticker MAR --ticker JPM --ticker ENPH --stage insights`。
+3. 导出结果：`python scripts/export_golden.py`。
+4. 用 `git diff tests/golden` 审阅输出的变化，确认之后把 golden 文件一并提交。
+5. 修改了 grounding 规则（`enrich/grounding.py` 或 `enrich/insights.py`）时，要在 `jobs/run_insights.py` 里提升 `GROUNDING_VERSION`。这样已缓存的 LLM 输出会按新规则重新校验，**不会产生 LLM 费用**。
+
+## 7. 常见故障
+
+| 现象 | 原因与处理 |
+|---|---|
+| transcripts 显示 `daily quota ... used` | 免费 Alpha Vantage 额度是每天 25 次，下次运行会自动接着拉。有了付费 key 后，设置 `ALPHAVANTAGE_CALLS_PER_MINUTE=75`、`ALPHAVANTAGE_DAILY_QUOTA=0` |
+| news 显示 `premium` | NEWS_SENTIMENT 需要付费 key。在此之前 `uw-news` CronJob 保持 `suspend: true` |
+| SEC 返回 403/429 | 检查 `SEC_USER_AGENT` 是否包含联系邮箱，限速不要超过 10 次/秒（默认 8）。客户端已经带了重试 |
+| 日志里出现 `LLM unavailable` | key 或 workspace 有问题。用户级 key 需要设置 `ANTHROPIC_WORKSPACE_ID`。此时 signals 会退回纯规则，textmetrics 和 insights 会失败 |
+| 运行一直显示 RUNNING | 进程已经死了。30 分钟后再次启动同一个 job 就会续跑；也可以等下一次 CronJob |
+| 退出码 2 | 同一个 job 仍在运行（运行锁），无需处理 |
+| DQ 报出 `quarters_vs_year` 错误 | 通常是公司在新申报里重述了前期数据，新旧口径混在一起（例如 LUV 2025 年的 capex，见 D-035）。要核对原始文件；等下一份 10-K 入库后，口径通常会恢复一致 |
+| DQ 报出 `quarter_jump` | 先在申报文件里核实，常见原因是一次性的减值或计提。如果是单位错误，修正 concept 映射 |
+| `coverage-report` 列出 UNEXPLAINED | 要么修正 tag 映射，要么在 `coverage_notes.yaml` 里写明原因 |
+
+## 8. 密钥和费用
+
+- 密钥只放在 `.env`（本地，已被 git 忽略）或 OpenShift Secret 中，**不要写进代码、日志或测试数据**。Alpha Vantage 的报错消息里会带 key，客户端已经做了脱敏。
+- 提交前检查：用 `git grep --cached` 搜索 Anthropic key 的固定前缀和 Alpha Vantage key 的前几位，应该没有任何结果。
+- LLM 调用会按输入哈希缓存，输入不变时不会再次调用。每晚的费用只来自内容发生变化的公司。可以用 `runs` 查看每次运行的估算费用。

@@ -463,9 +463,9 @@ uw-pipeline dq-report --run-id <id>
 **验收**：dev 环境 CronJob 连续 3 天成功运行；手动杀掉 pod 后重跑能从未完成的 task 继续。
 
 ### Phase 7 — 数据质量与上线准备
-- [ ] DQ 规则：指标缺失率、季度值跳变异常（如环比 > 500%）、XBRL vs AV 差异、LLM 校验失败率
-- [ ] BFF 联调：所有模块读真实数据，移除 mock
-- [ ] 运维文档：如何新增公司、新增指标、升级 prompt
+- [x] DQ 规则：指标缺失率、季度值跳变异常（如环比 > 500%）、~~XBRL vs AV 差异~~（不取 AV 财报，D-031）、LLM 校验失败率（D-035，另含新闻稿 vs XBRL、季度合计 vs 全年等）
+- [ ] BFF 联调：所有模块读真实数据，移除 mock（待 BFF 仓库；对照草案见 `docs/schema-contract.md`）
+- [x] 运维文档：如何新增公司、新增指标、升级 prompt（`docs/OPERATIONS.md`）
 
 **验收**：前端 9 家公司页面全部显示真实数据，无 mock 残留。
 

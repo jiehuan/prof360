@@ -1,0 +1,44 @@
+# Data-quality rules (Phase 7, decisions D-035). Run by the `dq` stage at the end of nightly and
+# morning jobs; findings go to dq_finding and `uw-pipeline dq-report`.
+# Severity: Error = data is probably wrong; Warning = someone should look; Info = review queue.
+
+missing_metric:      # latest periods lack a core metric and coverage_notes.yaml doesn't explain it
+  severity: Warning
+
+quarter_jump:        # change vs the prior quarter AND vs a year earlier (scale/sign errors)
+  severity: Warning
+  metrics: [revenue, operating_income, net_income, cash, total_debt, current_assets,
+            current_liabilities, equity]
+  max_change: 5.0    # 5.0 = 500%
+  min_base_usd: 50000000   # ignore when the previous quarter is smaller than this
+  quarters: 8
+
+negative_value:      # metrics that should never be negative
+  severity: Error
+  metrics: [revenue, cash, current_assets, current_liabilities, total_debt, long_term_debt]
+  quarters: 8
+  years: 3
+
+quarters_vs_year:    # four quarters must add up to the fiscal year
+  severity: Error
+  metrics: [revenue, net_income, operating_income, operating_cash_flow, capex]
+  tolerance: 0.005
+  years: 3
+
+release_vs_xbrl:     # earnings release value disagrees with the later XBRL value
+  severity: Error
+  days: 180
+
+llm_drop_rate:       # share of LLM items dropped by grounding, per task
+  severity: Warning
+  max_rate: 0.2
+  min_generated: 10
+  days: 30
+
+stale_filings:       # no new 10-K/10-Q for this long
+  severity: Warning
+  days: 120
+
+review_queue:        # signals the rule/LLM vote could not settle
+  severity: Info
+  statuses: [DISPUTED, OVERRULED]

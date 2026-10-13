@@ -21,12 +21,14 @@ from uw_pipeline.enrich.package import load_insights_config
 from uw_pipeline.enrich.text_metrics import load_text_config
 from uw_pipeline.jobs.run_company import TaskResult, run_company_stage
 from uw_pipeline.jobs.run_documents import run_documents_stage
+from uw_pipeline.jobs.run_dq import run_dq_stage
 from uw_pipeline.jobs.run_insights import run_insights_stage
 from uw_pipeline.jobs.run_news import load_news_config, run_news_stage
 from uw_pipeline.jobs.run_signals import run_signals_stage
 from uw_pipeline.jobs.run_text_metrics import run_text_metrics_stage
 from uw_pipeline.jobs.run_transcripts import run_transcripts_stage
 from uw_pipeline.jobs.run_xbrl import run_compute_stage, run_facts_stage
+from uw_pipeline.quality.dq import load_dq_config
 from uw_pipeline.schema import llm_call
 from uw_pipeline.settings import Settings
 from uw_pipeline.signals.rules import load_signal_rules
@@ -42,6 +44,7 @@ class StageRunner:
         self.engine = engine
         self.force = force
         self.refresh_sec = refresh_sec
+        self.run_id: int | None = None  # set by the CLI once the run exists (dq findings)
         cfg_dir = settings.config_dir
         self.companies = {c.ticker: c for c in load_companies(cfg_dir)}
         self.industry = load_industry_config(cfg_dir)
@@ -125,6 +128,10 @@ class StageRunner:
             )
         if stage == "signals":
             return lambda c: run_signals_stage(c, self.sec, self.signal_rules, e, llm=self.llm)
+        if stage == "dq":
+            return lambda c: run_dq_stage(
+                c, reg, ind, load_dq_config(s.config_dir), s.config_dir, e, run_id=self.run_id
+            )
         if stage == "insights":
             return lambda c: run_insights_stage(
                 c, reg, ind, self.llm, load_insights_config(s.config_dir), e

@@ -43,6 +43,7 @@ DEPENDS: dict[str, tuple[str, ...]] = {
     "textmetrics": ("compute", "documents"),
     "signals": ("compute", "documents"),
     "insights": ("signals", "textmetrics"),
+    "dq": ("compute",),
 }
 
 DONE = ("SUCCEEDED", "SKIPPED")

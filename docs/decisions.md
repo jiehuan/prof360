@@ -468,3 +468,39 @@ schedule as proposed.
 
   Only those two companies' insights were regenerated (8 LLM calls, about $1.31), and every
   other company was "unchanged". This is the overnight-update path from D-022, end to end.
+
+## Phase 7 (2026-10-13)
+
+User: data-quality rules and an operations guide now; BFF integration waits for the BFF repo
+and the Phase 0 contract.
+
+**D-035 Data quality.**
+- The `dq` stage runs at the end of the nightly and morning jobs. Rules are in
+  `config/dq_rules.yaml`, findings go to `dq_finding` per run, and `uw-pipeline dq-report`
+  writes the report. Findings are data, so the task succeeds even when it finds issues.
+- Rules:
+  - missing core metric (uses the coverage notes)
+  - quarter jump: > 500% both vs the prior quarter and vs a year earlier, on core metrics with a
+    meaningful base, which catches scale/sign errors but not seasonality
+  - negative value of a positive-only metric
+  - four quarters ≠ fiscal year (> 0.5%)
+  - earnings release ≠ XBRL (new `release_check` table)
+  - LLM grounding drop rate > 20% in 30 days (new `llm_task_stat` table)
+  - no 10-K/10-Q for 120 days
+  - review queue (DISPUTED / OVERRULED signals)
+- The XBRL-vs-Alpha-Vantage rule from PLAN Phase 7 is not implemented (no AV financials, D-031).
+- Tuning from the first live run:
+  - The coverage window is anchored on XBRL periods, so JPM's PRELIMINARY Q3 2026 no longer
+    shifts it.
+  - Text metrics target the last 4 quarters.
+  - The quarter-jump rule went from 30 findings, mostly seasonality and one-off charges, to 3,
+    all real events: Ford's Q4 2025 operating loss and net loss, and LUMN's Q2 2025 operating
+    loss.
+- **Known limitation found by DQ.** LUV's 2026 10-Qs restated 2025 Q1/Q2 capex (comparatives
+  501→527M, 635→660M), while FY2025 and Q3 are still on the old basis. "Latest filing wins per
+  period" therefore mixes bases, and the derived Q4 makes the quarters disagree with the year
+  (2,724M vs 2,673M). It is flagged as an Error, not auto-corrected. A proper fix would take
+  every period of a fiscal year from the same filing when a restatement is detected.
+- `docs/schema-contract.md` maps front-end modules to tables and columns, with "no data"
+  behaviour, as the starting point for BFF alignment. `docs/OPERATIONS.md` is the operations
+  guide (Chinese).

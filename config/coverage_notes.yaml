@@ -49,3 +49,8 @@ LUV:
     FY2021 interest expense isn't tagged with a supported tag (InterestExpense ends FY2019,
     InterestExpenseNonoperating starts FY2022).
   interest_coverage: FY2021 interest expense missing; see interest_expense.
+
+JPM:
+  npl_ratio: >-
+    JPM states the nonaccrual-loans-to-total-loans ratio only in its 10-K, so quarterly values
+    exist for fiscal Q4 only.

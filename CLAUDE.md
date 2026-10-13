@@ -9,10 +9,11 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 ```bash
 .venv/bin/pip install -e ".[dev]"             # Python 3.14 venv (project supports >=3.11)
 .venv/bin/uw-pipeline run --all     # company -> facts -> compute -> documents -> transcripts
-                                     #   -> news -> textmetrics -> signals -> insights
+                                     #   -> news -> textmetrics -> signals -> insights -> dq
 .venv/bin/uw-pipeline audit-insights # re-verify insight evidence (Phase 5 acceptance)
 .venv/bin/uw-pipeline run --job nightly   # scheduled job (config/jobs.yaml); resumes a dead run
 .venv/bin/uw-pipeline runs           # recent runs and failed/skipped tasks
+.venv/bin/uw-pipeline dq-report      # data-quality findings of the latest run
 .venv/bin/uw-pipeline run --ticker MAR --stage compute
 .venv/bin/uw-pipeline run --ticker MAR --force       # ignore same-day raw cache / input hash
 .venv/bin/uw-pipeline coverage-report                # data/reports/coverage-<date>.md
@@ -20,6 +21,9 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy
 .venv/bin/python scripts/refresh_sec_fixtures.py   # rebuild SEC fixtures from data/raw
 ```
+
+Operations (adding companies/metrics, prompt changes, troubleshooting): `docs/OPERATIONS.md`.
+Pipeline output for the BFF: `docs/schema-contract.md`.
 
 Local dev: settings come from env vars / `.env` (see `.env.example`). Raw responses land in
 `data/raw/` (stand-in for ADLS) and the database defaults to SQLite at `data/uw.db`.

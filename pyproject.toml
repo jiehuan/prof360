@@ -60,6 +60,7 @@ select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
 "tests/test_alphavantage.py" = ["E501"]  # API messages
 "tests/test_text_metrics.py" = ["E501"]  # filing rows
 "tests/test_insights.py" = ["E501"]  # canned LLM outputs
+"tests/test_dq.py" = ["E501"]  # synthetic rows
 
 [tool.mypy]
 python_version = "3.11"

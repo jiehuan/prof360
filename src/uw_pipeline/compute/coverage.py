@@ -18,6 +18,12 @@ from uw_pipeline.compute.registry import MetricDef
 
 TARGET_FY = 5
 TARGET_Q = 8
+# Text-extracted metrics only cover the last ~400 days of filings (D-032), and several are
+# quarterly-only (e.g. LCR is a quarterly average).
+TARGET_TEXT_Q = 4
+# Periods are counted back from the latest period with XBRL data, so a PRELIMINARY quarter from
+# an earnings release doesn't shift the window ahead of everything else.
+WINDOW_DERIVATIONS = ("REPORTED", "DERIVED", "COMPUTED")
 
 
 @dataclass
@@ -31,6 +37,8 @@ class MetricCoverage:
     note: str | None = None
 
     def target(self, metric: MetricDef) -> tuple[int, int]:
+        if metric.kind == "text":
+            return 0, TARGET_TEXT_Q
         fy = TARGET_FY if "FY" in metric.period_types else 0
         q = TARGET_Q if "Q" in metric.period_types else 0
         return fy, q
@@ -80,8 +88,9 @@ def company_coverage(
     notes: dict[str, str],
 ) -> CompanyCoverage:
     """`rows` are this company's metric_value rows."""
-    fys = [r["fiscal_year"] for r in rows if r["period_type"] == "FY"]
-    qs = [(r["fiscal_year"], r["fiscal_quarter"]) for r in rows if r["period_type"] == "Q"]
+    anchor = [r for r in rows if r.get("derivation", "REPORTED") in WINDOW_DERIVATIONS]
+    fys = [r["fiscal_year"] for r in anchor if r["period_type"] == "FY"]
+    qs = [(r["fiscal_year"], r["fiscal_quarter"]) for r in anchor if r["period_type"] == "Q"]
     latest_fy = max(fys) if fys else None
     latest_q = max(qs) if qs else None
     fy_window = set(range(latest_fy - TARGET_FY + 1, latest_fy + 1)) if latest_fy else set()

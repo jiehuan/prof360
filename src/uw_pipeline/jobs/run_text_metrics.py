@@ -20,7 +20,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel, ValidationError
-from sqlalchemy import Connection, Engine, and_, delete, select, tuple_
+from sqlalchemy import Connection, Engine, and_, delete, insert, select, tuple_
 
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.clients.storage import Storage
@@ -45,8 +45,10 @@ from uw_pipeline.normalize.periods import FiscalCalendar, learn_calendar
 from uw_pipeline.normalize.sections import chunk
 from uw_pipeline.schema import (
     filing_section,
+    llm_task_stat,
     loan_portfolio_segment,
     metric_value,
+    release_check,
     section_chunk,
     source_document,
 )
@@ -279,6 +281,7 @@ def process_company(
 
     xbrl = _xbrl_values(conn, company_id)
     out: list[dict[str, Any]] = []
+    checks: list[dict[str, Any]] = []
     for (code, key), (doc, c) in chosen.items():
         derivation = "LLM_EXTRACTED"
         if code in prelim:
@@ -286,6 +289,13 @@ def process_company(
                 continue
             reported = xbrl.get((code, *key))
             if reported is not None:
+                checks.append(
+                    {"company_id": company_id, "accession_no": doc.accession_no,
+                     "metric_code": code, "period_type": key[0], "fiscal_year": key[1],
+                     "fiscal_quarter": key[2], "release_value": c.value,
+                     "xbrl_value": reported, "agrees": agree(reported, c.value),
+                     "checked_at": now}
+                )  # fmt: skip
                 if agree(reported, c.value):
                     stats.crosscheck_ok += 1
                 else:
@@ -310,6 +320,15 @@ def process_company(
         )  # fmt: skip
     keys = ["company_id", "metric_code", "period_type", "fiscal_year", "fiscal_quarter"]
     upsert(conn, metric_value, out, key_cols=keys)
+    upsert(conn, release_check, checks,
+           key_cols=["company_id", "accession_no", *keys[1:]])  # fmt: skip
+    if stats.extracted or stats.rejected:
+        conn.execute(
+            insert(llm_task_stat).values(
+                company_id=company_id, task="text_metrics",
+                generated=stats.extracted + stats.rejected, kept=stats.extracted, created_at=now,
+            )
+        )  # fmt: skip
     produced = {tuple(r[k] for k in keys[1:]) for r in out}
     existing = conn.execute(
         select(*(metric_value.c[k] for k in keys[1:])).where(

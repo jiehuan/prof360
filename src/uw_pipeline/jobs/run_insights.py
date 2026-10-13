@@ -44,6 +44,7 @@ from uw_pipeline.schema import (
     insight,
     insight_evidence,
     insight_metric,
+    llm_task_stat,
 )
 
 log = logging.getLogger(__name__)
@@ -279,6 +280,11 @@ def process_company(
     def record(task: str, gstats: GroundingStats) -> None:
         stats.tasks[task] = f"{gstats.kept}/{gstats.generated}"
         stats.dropped_examples += gstats.examples
+        conn.execute(
+            insert(llm_task_stat).values(company_id=company_id, task=task,
+                                         generated=gstats.generated, kept=gstats.kept,
+                                         created_at=now)
+        )  # fmt: skip
 
     def produce(kind: str, task: str, user: str, run: Callable[[], list[dict[str, Any]] | None]):  # type: ignore[no-untyped-def]
         """Store a new version unless the input is unchanged; return the current rows."""
@@ -389,6 +395,11 @@ def process_company(
                 if not ungrounded_numbers(f"{q.question} {q.rationale}", insight_text, values)
             ]
             stats.tasks["followups"] = f"{len(good)}/{len(out.questions)}"
+            conn.execute(
+                insert(llm_task_stat).values(company_id=company_id, task="followups",
+                                             generated=len(out.questions), kept=len(good),
+                                             created_at=now)
+            )  # fmt: skip
             _retire(conn, company_id, "FOLLOWUP")
             for ordinal, q in enumerate(good, start=1):
                 res = conn.execute(

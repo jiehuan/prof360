@@ -21,7 +21,7 @@ from uw_pipeline.jobs.orchestrator import Orchestrator, RunInProgressError, load
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.jobs.stages import StageRunner
 from uw_pipeline.logs import log_context, setup_logging
-from uw_pipeline.schema import metric_value, pipeline_run, pipeline_task
+from uw_pipeline.schema import company, dq_finding, metric_value, pipeline_run, pipeline_task
 from uw_pipeline.settings import Settings
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
@@ -38,12 +38,13 @@ class Stage(StrEnum):
     textmetrics = "textmetrics"
     signals = "signals"
     insights = "insights"
+    dq = "dq"
 
 
 # Default order for manual runs (scheduled jobs list their stages in config/jobs.yaml).
 STAGE_ORDER = [
     Stage.company, Stage.facts, Stage.compute, Stage.documents,
-    Stage.transcripts, Stage.news, Stage.textmetrics, Stage.signals, Stage.insights,
+    Stage.transcripts, Stage.news, Stage.textmetrics, Stage.signals, Stage.insights, Stage.dq,
 ]  # fmt: skip
 
 
@@ -121,6 +122,7 @@ def run(
                  stages, [c.ticker for c in selected])  # fmt: skip
         refresh = jobs_cfg.jobs[job].refresh_sec if job else False
         with StageRunner(settings, engine, force=force, refresh_sec=refresh) as runner:
+            runner.run_id = run_id
             outcome = orch.execute(run_id, runner)
             orch.add_stats(run_id, {"usage_last_start": runner.usage(started)})
     counts = ", ".join(f"{k.lower()}={v}" for k, v in sorted(outcome.counts.items()))
@@ -226,6 +228,60 @@ def audit_insights(sample: Annotated[int, typer.Option(help="Insights to sample"
         typer.echo(f"  NOT FOUND {f}", err=True)
     if rep.failures or rep.insights_without_evidence or rep.fi_rows_for_non_fi:
         raise typer.Exit(code=1)
+
+
+@app.command("dq-report")
+def dq_report(
+    run_id: Annotated[
+        int | None, typer.Option(help="Run (default: latest with dq results)")
+    ] = None,
+) -> None:
+    """Data-quality findings of a run (data/reports/dq-run<id>.md)."""
+    settings = Settings()
+    engine = make_engine(settings.database_url)
+    if engine.dialect.name == "sqlite":
+        ensure_schema(engine)
+    with engine.connect() as conn:
+        if run_id is None:
+            run_id = conn.execute(
+                select(pipeline_task.c.run_id)
+                .where(pipeline_task.c.stage == "dq", pipeline_task.c.status == "SUCCEEDED")
+                .order_by(pipeline_task.c.run_id.desc())
+                .limit(1)
+            ).scalar()
+        if run_id is None:
+            typer.echo("no run with dq results yet; run `uw-pipeline run --job nightly`")
+            raise typer.Exit(code=1)
+        rows = conn.execute(
+            select(company.c.ticker, dq_finding.c.severity, dq_finding.c.rule_id,
+                   dq_finding.c.metric_code, dq_finding.c.period, dq_finding.c.message)
+            .join(company, company.c.company_id == dq_finding.c.company_id)
+            .where(dq_finding.c.run_id == run_id)
+            .order_by(company.c.ticker, dq_finding.c.finding_id)
+        ).all()  # fmt: skip
+    order = {"Error": 0, "Warning": 1, "Info": 2}
+    rows = sorted(rows, key=lambda r: (order.get(r.severity, 3), r.ticker))
+    counts: dict[str, int] = {}
+    for r in rows:
+        counts[r.severity] = counts.get(r.severity, 0) + 1
+    by_severity = sorted(counts.items(), key=lambda kv: order.get(kv[0], 3))
+    summary = ", ".join(f"{k} {v}" for k, v in by_severity) or "no findings"
+    lines = [f"# Data quality — run {run_id}", "", f"Severity: {summary}", ""]
+    for sev in ("Error", "Warning", "Info"):
+        mine = [r for r in rows if r.severity == sev]
+        if not mine:
+            continue
+        lines += [f"## {sev} ({len(mine)})", "", "| Company | Rule | Message |", "|---|---|---|"]
+        lines += [f"| {r.ticker} | {r.rule_id} | {r.message} |" for r in mine]
+        lines.append("")
+    out = settings.data_dir / "reports" / f"dq-run{run_id}.md"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("\n".join(lines), encoding="utf-8")
+    typer.echo(f"wrote {out}")
+    for r in rows:
+        if r.severity != "Info":
+            typer.echo(f"  {r.severity:<7} {r.ticker:<5} {r.rule_id:<17} {r.message}")
+    typer.echo(f"{counts.get('Info', 0)} items in the review queue (Info), see the report")
 
 
 @app.command("init-db")

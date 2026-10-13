@@ -5,11 +5,11 @@
 jobs:
   # 23:30 ET: SEC accepts filings until 22:00 ET, so the evening's filings are included.
   nightly:
-    stages: [company, facts, compute, documents, transcripts, textmetrics, signals, insights]
+    stages: [company, facts, compute, documents, transcripts, textmetrics, signals, insights, dq]
     refresh_sec: true   # nightly and morning share a UTC date; never reuse the earlier fetch
   # 05:30 ET catch-up: late filings and anything that failed overnight.
   morning:
-    stages: [company, facts, compute, documents, transcripts, textmetrics, signals, insights]
+    stages: [company, facts, compute, documents, transcripts, textmetrics, signals, insights, dq]
     refresh_sec: true
   # Every 6 hours, once a premium Alpha Vantage key is configured (NEWS_SENTIMENT is premium).
   news:
