@@ -277,6 +277,9 @@ news_item = Table(
     Column("overall_sentiment_label", String(40)),
     # FIRST (the activity's canonical article) | NEAR_DUP (syndicated copy) | LLM_EVENT
     Column("dedup_method", String(12), nullable=False),
+    # LLM relevance verdict (Phase 9): SUBJECT | PASSING | ANALYST | HOLDING | MARKET |
+    # UNCLASSIFIED (no usable answer; kept). NULL = not judged yet.
+    Column("relevance_verdict", String(12)),
     Column("raw_path", String(500), nullable=False),
     Column("fetched_at", DateTime(timezone=True), nullable=False),
     UniqueConstraint("company_id", "url_hash", name="uq_news_item_url"),
@@ -568,5 +571,59 @@ dq_finding = Table(
     Column("metric_code", String(60)),
     Column("period", String(20)),
     Column("message", String(1000), nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+)
+
+# Risk scores (Phase 9.4, decisions D-037). Scales: 0.00-1.00, tone -1.00..1.00.
+
+# One row per earnings call transcript (source_document.doc_id): chunk scores averaged by length.
+transcript_tone = Table(
+    "transcript_tone",
+    metadata,
+    Column("doc_id", Integer, ForeignKey("source_document.doc_id"), primary_key=True),
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False),
+    Column("overall_tone", Float),  # -1 (negative) .. 1 (positive)
+    Column("confidence", Float),
+    Column("hedging", Float),
+    Column("uncertainty", Float),
+    Column("forward_looking", Float),
+    Column("liability_cues", Float),
+    Column("n_chunks", Integer, nullable=False),  # chunks with a usable score
+    Column("n_chunks_attempted", Integer, nullable=False),
+    Column("model", String(60), nullable=False),
+    Column("prompt_version", String(40), nullable=False),
+    Column("input_hash", String(64), nullable=False),
+    Column("run_id", Integer),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+)
+
+# Risk statements in a transcript; `flag_text` is a verbatim quote found in the chunk.
+transcript_flag = Table(
+    "transcript_flag",
+    metadata,
+    Column("doc_id", Integer, ForeignKey("source_document.doc_id"), primary_key=True),
+    Column("flag_index", Integer, primary_key=True),
+    Column("category", String(30), nullable=False),
+    Column("flag_text", String(1000), nullable=False),
+    Column("chunk_index", Integer, nullable=False),
+)
+
+# One row per news activity (scored on its canonical article and summary).
+news_risk_score = Table(
+    "news_risk_score",
+    metadata,
+    Column("activity_id", Integer, ForeignKey("activity.activity_id"), primary_key=True),
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False),
+    Column("litigation", Float, nullable=False),
+    Column("regulatory", Float, nullable=False),
+    Column("financial_distress", Float, nullable=False),
+    Column("governance", Float, nullable=False),
+    Column("operational", Float, nullable=False),
+    Column("overall", Float, nullable=False),
+    Column("rationale", String(1000), nullable=False),
+    Column("model", String(60), nullable=False),
+    Column("prompt_version", String(40), nullable=False),
+    Column("input_hash", String(64), nullable=False),
+    Column("run_id", Integer),
     Column("created_at", DateTime(timezone=True), nullable=False),
 )

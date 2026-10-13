@@ -13,7 +13,7 @@ from typing import Any
 
 import yaml
 from pydantic import BaseModel
-from sqlalchemy import Connection, desc, select
+from sqlalchemy import Connection, desc, or_, select
 
 from uw_pipeline.compute.registry import MetricDef
 from uw_pipeline.enrich.llm import ModelSpec
@@ -22,9 +22,15 @@ from uw_pipeline.schema import (
     activity,
     filing_section,
     metric_value,
+    news_risk_score,
     signal,
     source_document,
 )
+
+
+class Materiality(BaseModel):
+    overall: float
+    any_dimension: float
 
 
 class InsightsConfig(BaseModel):
@@ -33,6 +39,7 @@ class InsightsConfig(BaseModel):
     excerpts: dict[str, int]
     transcripts: int
     news_days: int
+    news_materiality: Materiality
     activity_batch: int
     metric_quarters: int
     metric_years: int
@@ -237,11 +244,21 @@ def build_package(
             )
         )  # fmt: skip
 
+    nr = news_risk_score.c
+    mat = cfg.news_materiality
+    material = or_(
+        nr.overall >= mat.overall,
+        *(col >= mat.any_dimension for col in (nr.litigation, nr.regulatory,
+                                                nr.financial_distress, nr.governance,
+                                                nr.operational)),
+    )  # fmt: skip
     news = conn.execute(
         select(activity)
-        .where(activity.c.company_id == company_id, activity.c.published_at >= news_since)
+        .join(news_risk_score, nr.activity_id == activity.c.activity_id)
+        .where(activity.c.company_id == company_id, activity.c.published_at >= news_since,
+               material)
         .order_by(desc(activity.c.published_at))
-    ).mappings()
+    ).mappings()  # fmt: skip
     for i, a in enumerate(news, start=1):
         summary = a["summary"] or a["av_summary"] or ""
         pkg.add(

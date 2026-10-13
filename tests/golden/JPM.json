@@ -1,70 +1,167 @@
 {
  "insights": [
   {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Warning",
-   "title": "Capital ratios declining for six straight quarters",
-   "summary": "The CET1 ratio fell from 15.7% at FY2024 to 14.6% at FY2025, 14.2% at FY2026 Q2 and an extracted 13.9% for FY2026 Q3. The Tier 1 capital ratio fell from 16.8% (FY2024) to 15.1% (FY2026 Q2), and the SLR was 5.5% at June 30, 2026, as total assets reached $5.0 trillion. Ratios remain well above typical minimums, but the direction is consistently downward.",
-   "uw_relevance": "Falling capital at a systemically important bank draws regulatory scrutiny and could support claims that the board's capital allocation increased risk. The 10-K links capital shortfalls to restricted repurchases.",
-   "prompt_version": "key_insights_v1",
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Tone Shift",
+   "insight_type": null,
+   "title": "Dimon moves from positive outlook to peak-cycle caution",
+   "summary": "In the Q4 2025 call, Dimon called the near-term macro picture positive while flagging geopolitical risk. By the Q2 2026 call he described the environment as close to peak and said management does not know how long it will last. Barnum also described the market as extremely risk-on and said the firm is trying to be appropriately cautious. Q2 2026 results were strong: net income of $21.16B and revenue growth of 27.7% year over year.",
+   "uw_relevance": "Management is publicly framing current earnings strength as possibly cyclical. Results may be exposed to a market reversal, which matters when assessing disclosure and forward-looking statements.",
+   "prompt_version": "behavioral_v1",
    "evidence": [
     {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "cet1_ratio",
-     "snippet": "CET1 Ratio | FY2024 | 15.7%",
-     "source_title": "CET1 Ratio FY2024 \u2014 JPMORGAN CHASE & CO 10-K filed 2026-02-13"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "cet1_ratio",
-     "snippet": "CET1 Ratio | FY2026 Q3 | 13.9%",
-     "source_title": "CET1 Ratio FY2026 Q3 \u2014 JPMORGAN CHASE & CO 8-K filed 2026-10-13"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "tier1_ratio",
-     "snippet": "Tier 1 Capital Ratio | FY2026 Q2 | 15.1%",
-     "source_title": "Tier 1 Capital Ratio FY2026 Q2 \u2014 JPMORGAN CHASE & CO 10-Q filed 2026-08-06"
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "in the short run, call it six months and nine months and even a year, you know, that's pretty positive.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2025Q4 (quarter ended 2025-12-31)"
     },
     {
      "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
+     "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "CET1 capital 14.2 % 15.1 % 14.2 % 15.1 %",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "cet1_ratio",
-     "snippet": "CET1 Ratio | FY2026 Q3 | 13.9%",
-     "source_title": "CET1 Ratio FY2026 Q3 \u2014 JPMORGAN CHASE & CO 8-K filed 2026-10-13"
+     "snippet": "It's getting close to as good as it gets. We just don't know how long it's going to last.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
     },
     {
      "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
+     "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "SLR was 5.5%.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+     "snippet": "we're in a very healthy, active, exuberant market with very high prices and very high volumes",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
+    }
+   ]
+  },
+  {
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Emerging Risk Language",
+   "insight_type": null,
+   "title": "Credit underwriting weakness and cycle warnings grow",
+   "summary": "On the Q4 2025 call, Barnum said he saw nothing concerning in wholesale credit. On the Q1 2026 call, Dimon said underwriting had weakened and that losses in the next credit cycle would be worse than people expect. On the Q2 2026 call, Dimon described the weakness as mild but spread across revenue assumptions, PIK, covenants and rollover risk.",
+   "uw_relevance": "The CEO is on record warning about industry underwriting standards and a coming credit cycle. This is relevant to credit-loss and systemic-event scenarios, including leveraged lending and private credit exposure.",
+   "prompt_version": "behavioral_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "I definitely would not say we're saying anything concerning in a broader sense.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2025Q4 (quarter ended 2025-12-31)"
     },
     {
      "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
+     "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "JPMorganChase had $5.0 trillion in assets and $374.6 billion in stockholders",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+     "snippet": "There will be a credit cycle one day. When there's a credit cycle, losses will be worse than people expect relative to the scenario.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q1 (quarter ended 2026-03-31)"
     },
     {
      "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
+     "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "of approximately $956 billion and unencumbered marketable securities with a fair value of approximately $541 billion, resulting in approximately $1.5 trillion of liquidity sources.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+     "snippet": "Some weaker covenants, some people taking more rollover risk.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
+    }
+   ]
+  },
+  {
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Strategic Focus Shift",
+   "insight_type": null,
+   "title": "Buybacks deprioritised in favour of organic deployment",
+   "summary": "In Q4 2025 Barnum framed buybacks as the low-return alternative to deploying capital. In Q1 2026 Dimon said the preferred use of capital is building businesses, not buybacks. In Q2 2026 Barnum and Dimon said repurchases are an investment decision and not a return of money to shareholders. Share repurchases were $6.79B in FY2026 Q2 versus $8.32B in Q1, and CET1 declined across the three calls.",
+   "uw_relevance": "Capital return is being subordinated to growth deployment and a roughly $40B excess-capital buffer. The firm's capital distribution behaviour and capital trajectory are relevant to a financial institution's balance-sheet review.",
+   "prompt_version": "behavioral_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Our preferred use of capital is to build businesses and serve clients, not buybacks for their own sake.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "buying back stock is not returning money to shareholders.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
+    }
+   ]
+  },
+  {
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Emerging Risk Language",
+   "insight_type": null,
+   "title": "Regulatory capital friction rises: Basel III, G-SIB",
+   "summary": "In Q4 2025 Dimon welcomed deregulation as a plus. In Q1 2026 management detailed concerns with the Basel III endgame and G-SIB reproposals, including a planned surcharge of 5.2% in 2028 against 4.5% currently. In Q2 2026 Dimon was more combative, saying the proposed numbers are falsely done.",
+   "uw_relevance": "Rising capital requirements and open disputes with regulators affect capital planning and could bring regulatory scrutiny. They also bear on the firm's stated willingness to push back publicly on the rule-making process.",
+   "prompt_version": "behavioral_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Deregulation is a plus in general, not just for banks, you know, but they banks will be able to redeploy capital.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2025Q4 (quarter ended 2025-12-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "The net result is that we need to plan for 5.2% in 2028, a 70 basis point increase from the current 4.5% requirement",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "I'm not happy to have these numbers falsely done.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
+    }
+   ]
+  },
+  {
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Wording Change",
+   "insight_type": null,
+   "title": "Expense guidance hardened higher; card charge-offs lowered",
+   "summary": "The 2026 adjusted expense outlook was about $105B in Q4 2025 and again in Q1 2026, when Dimon said spending would exceed $105B if every quarter were as strong. In Q2 2026 it was raised to about $107.5B, tied to revenue-related expense. The card net charge-off outlook moved from about 3.4% to about 3.2%, attributed to better-than-expected consumer credit.",
+   "uw_relevance": "Guidance moved from 'continues' to explicit upward revision on expenses, while credit guidance improved. Expense growth is volume-linked and would be expected to track a revenue reversal.",
+   "prompt_version": "behavioral_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "we expect 2026 adjusted expense to be about $105 billion.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2025Q4 (quarter ended 2025-12-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "If every quarter were as good as this quarter, we would spend more than $105 billion for a very good reason.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "The new adjusted expense outlook is about $107.5 billion",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "we now expect card net charge-off rate to be approximately 3.2%, reflecting better-than-expected consumer credit performance",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
     }
    ]
   },
@@ -73,52 +170,66 @@
    "category": null,
    "subcategory": null,
    "insight_type": "Warning",
-   "title": "Major senior leadership reshuffle and succession transition",
-   "summary": "On June 25, 2026, CIB Co-CEOs Doug Petno and Troy Rohrbaugh were elected Co-Presidents. Petno became sole CEO of CIB and Rohrbaugh became CEO of Consumer & Community Banking, replacing the retiring Marianne Lake. President and COO Daniel Pinto retires at the end of 2026, and the 10-K names succession planning for the CEO and Operating Committee as a risk factor.",
-   "uw_relevance": "Simultaneous turnover in the top operating roles and the CEO succession line raises execution and oversight risk. Succession is a disclosed risk factor that boards can be challenged on.",
+   "title": "CET1 and Tier 1 ratios keep drifting lower",
+   "summary": "CET1 fell from 15.7% at FY2024 to 14.6% at FY2025, 14.2% at Q2 2026 and 13.9% at Q3 2026. The Q2 2026 call cited about $103 billion of standardized RWA growth, largely from markets financing and lending. Tier 1 was 15.1% at Q2 2026 against 16.8% at FY2024.",
+   "uw_relevance": "For a bank, falling capital ratios while RWA grows is the central balance-sheet trend. Ratios remain above regulatory minimums per the earlier review, but the direction bears on distribution capacity and stress resilience.",
    "prompt_version": "key_insights_v1",
    "evidence": [
     {
-     "source_kind": "SIGNAL",
-     "section_code": "8K-5.02",
-     "metric_code": null,
-     "snippet": "Doug Petno, 61, and Troy Rohrbaugh, 56, Co-CEOs of the Commercial & Investment Bank (\"CIB\"), have been elected Co-Presidents of the Firm, effective immediatel",
-     "source_title": "JPMORGAN CHASE & CO 8-K filed 2026-06-25 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "cet1_ratio",
+     "snippet": "CET1 Ratio | FY2026 Q3 | 13.9% | LLM_EXTRACTED",
+     "source_title": "CET1 Ratio FY2026 Q3 \u2014 JPMORGAN CHASE & CO 8-K filed 2026-10-13"
     },
     {
-     "source_kind": "SIGNAL",
-     "section_code": "8K-5.02",
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "have been elected Co-Presidents of the Firm",
-     "source_title": "JPMORGAN CHASE & CO 8-K filed 2026-06-25 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
+     "snippet": "standardized RWA increase of approximately $103 billion is largely driven by increases in financing across our markets business",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "10Q-I-2",
      "metric_code": null,
-     "snippet": "Mr. Petno became the sole CEO of the CIB, and Mr. Rohrbaugh became the CEO of Consumer & Community Banking",
+     "snippet": "Firm Liquidity coverage ratio (\u201cLCR\u201d) (average)(c)\n110 112 111 110 113 110 113",
      "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "we've always said we want to buy back less stock as the price goes up and more stock as the price goes down.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "the board intends to increase the quarterly dividend to $1.65 per share, effective in the third quarter",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "10Q-I-2",
      "metric_code": null,
-     "snippet": "Marianne Lake, the former CEO of CCB, is retiring after more than 25 years with the Firm.",
+     "snippet": "CET1 capital was $303 billion, and the Standardized and Advanced CET1 ratios were each 14.2%.",
      "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
     },
     {
-     "source_kind": "SIGNAL",
-     "section_code": "8K-5.02",
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "Daniel Pinto, 62, President and Chief Operating Officer of the Firm, will retire at the end of 2026.",
-     "source_title": "JPMORGAN CHASE & CO 8-K filed 2025-01-14 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
+     "snippet": "Our preferred use of capital is to build businesses and serve clients, not buybacks for their own sake.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q1 (quarter ended 2026-03-31)"
     },
     {
      "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
+     "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "effectively manage succession planning for key leadership roles, such as the Chief Executive Officer, members of the Operating Committee and other senior leaders",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
+     "snippet": "buying back stock is not returning money to shareholders.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
     }
    ]
   },
@@ -127,45 +238,92 @@
    "category": null,
    "subcategory": null,
    "insight_type": "Warning",
-   "title": "Pervasive litigation, derivative and enforcement exposure",
-   "summary": "The Firm discloses that it is a defendant in class actions, derivative actions and governmental investigations, including criminal proceedings. It states that legal exposure could exceed established reserves and that it expects formal, punitive enforcement. It also flags government policies that penalize doing, or not doing, business with certain industries.",
-   "uw_relevance": "Derivative actions directly implicate directors and officers. Case-level details (10-K Note 30, 10-Q Note 24) are not in the input, so specific matters cannot be assessed here.",
+   "title": "Basel III and G-SIB reproposals raise capital needs",
+   "summary": "The CFO said the Basel III endgame and G-SIB reproposals are worse for the Firm than for peers. He estimates a G-SIB surcharge of 5.2% in 2028 against 4.5% now, and about $20 billion of added G-SIB capital on the current balance sheet. The CEO has become more combative with regulators, saying the proposed numbers are falsely done.",
+   "uw_relevance": "Higher required capital for this firm specifically constrains future distributions. Public disputes with rule-makers may also bring regulatory scrutiny. The rules are not final.",
    "prompt_version": "key_insights_v1",
    "evidence": [
     {
      "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
+     "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "including class actions, derivative actions and other litigation or disputes with third parties, as well as investigations and enforcement actions by U.S. and non-U.S. governmental authorities, including criminal proceedings",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
+     "snippet": "we need to plan for 5.2% in 2028, a 70 basis point increase from the current 4.5% requirement",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "results in a total increase of about $20 billion of G-SIB capital based on our current balance sheet",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "we need to plan for 5.2% in 2028, a 70 basis point increase from the current 4.5% requirement",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "results in a total increase of about $20 billion of G-SIB capital based on our current balance sheet",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Deregulation is a plus in general, not just for banks, you know, but they banks will be able to redeploy capital.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2025Q4 (quarter ended 2025-12-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "The net result is that we need to plan for 5.2% in 2028, a 70 basis point increase from the current 4.5% requirement",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "I'm not happy to have these numbers falsely done.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Negative",
+   "title": "SEC censure for supervision failure",
+   "summary": "The SEC censured JPMorgan Chase and its securities unit for failing to supervise a statutorily disqualified person who traded in the US without permission from late 2021 to early 2024. No fine was imposed, and a cease-and-desist order was issued.",
+   "uw_relevance": "This is a recent formal enforcement action tied to supervision and controls. The 10-K risk factors say prior enforcement history makes further formal actions more likely.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "NEWS",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "The bank was not fined, and the SEC issued a cease-and-desist order.",
+     "source_title": "Bloomberg.com: JPMorgan Censured by SEC But Avoids Fine Over Supervision Lapse"
+    },
+    {
+     "source_kind": "NEWS",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "The SEC censured JPMorgan Chase and its securities unit for failing to supervise a statutorily disqualified person",
+     "source_title": "Bloomberg.com: JPMorgan Censured by SEC But Avoids Fine Over Supervision Lapse"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "10K-1A",
      "metric_code": null,
-     "snippet": "exposure to legal matters is unpredictable and could, in some cases, exceed the amount of reserves",
+     "snippet": "governmental authorities will be more likely to bring formal enforcement actions against JPMorganChase if it has previously been subject to other investigations or enforcement actions",
      "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "governmental authorities will forgo opportunities to resolve investigations with informal supervisory actions, and will pursue formal and punitive enforcement actions",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "seek to discourage financial institutions from doing business with companies engaged in certain industries, or conversely, to penalize financial institutions that elect not to do business with such companies",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
-     "metric_code": null,
-     "snippet": "material legal proceedings in Note 24 of this Form 10-Q",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part II, Item 1. Legal Proceedings"
     }
    ]
   },
@@ -174,390 +332,17 @@
    "category": null,
    "subcategory": null,
    "insight_type": "Info",
-   "title": "Q2 2026 earnings inflated by Visa gain",
-   "summary": "FY2026 Q2 net income was $21.16B, up 41%. It included a $4.6B net gain on the Visa Class B-2 share exchange and $1.0B of equity investment gains. Fee income growth of 46.7% and YoY revenue growth of 27.7% in that quarter reflect these items, and preliminary FY2026 Q3 net income is $15.30B.",
-   "uw_relevance": "Headline growth in Q2 2026 is not representative of run-rate earnings. Investors anchoring on it could later allege misleading trend disclosures.",
+   "title": "Senior leadership and board turnover",
+   "summary": "On June 25, 2026, Doug Petno and Troy Rohrbaugh were elected Co-Presidents, and CCB CEO Marianne Lake is retiring. Director Todd Combs resigned effective December 7, 2025, and COO Daniel Pinto is set to retire at the end of 2026. Dimon described his own succession timetable as 'several years', with the board deciding.",
+   "uw_relevance": "Multiple board and senior officer transitions fall within roughly 18 months, and CEO succession is a topic investors are probing. The filings do not link any of the changes to a dispute.",
    "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "resulting in a $4.6 billion net gain for the three months ended June 30, 2026.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "The second quarter of 2026 included $1.0 billion of gains on certain equity investments, consisting of $763 million in Corporate and $263 million in CIB.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "For the second quarter of 2026, JPMorganChase reported net income of $21.2 billion, up 41%",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "higher losses on sales of securities associated with repositioning the investment securities portfolio in Treasury and CIO.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "net_income",
-     "snippet": "Net Income | FY2026 Q3 | $15.30B",
-     "source_title": "Net Income FY2026 Q3 \u2014 JPMORGAN CHASE & CO 8-K filed 2026-10-13"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "fee_income_growth_yoy",
-     "snippet": "Fee Income Growth (YoY) | FY2026 Q2 | 46.7%",
-     "source_title": "Fee Income Growth (YoY) FY2026 Q2 \u2014 JPMORGAN CHASE & CO 10-Q filed 2026-08-06"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "net_income",
-     "snippet": "Net Income | FY2026 Q3 | $15.30B | PRELIMINARY",
-     "source_title": "Net Income FY2026 Q3 \u2014 JPMORGAN CHASE & CO 8-K filed 2026-10-13"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Warning",
-   "title": "Share buybacks tripled since FY2023",
-   "summary": "Share repurchases rose from $9.82B in FY2023 to $18.83B in FY2024 and $31.59B in FY2025, or 0.20x, 0.32x and 0.55x net income. Quarterly buybacks were $8.32B in FY2026 Q1 and $6.79B in FY2026 Q2. Period-end shares fell from 2,749.7M (2Q25) to 2,658.2M (2Q26).",
-   "uw_relevance": "Rising capital returns coincide with falling CET1 ratios, a combination that can draw challenges to board capital decisions if conditions deteriorate.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "buybacks",
-     "snippet": "Share Repurchases | FY2025 | $31.59B",
-     "source_title": "Share Repurchases FY2025 \u2014 JPMORGAN CHASE & CO 10-K filed 2026-02-13"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "buyback_intensity",
-     "snippet": "Buybacks / Net Income | FY2023 | 0.20x",
-     "source_title": "Buybacks / Net Income FY2023 \u2014 JPMORGAN CHASE & CO 10-K filed 2026-02-13"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "buyback_intensity",
-     "snippet": "Buybacks / Net Income | FY2025 | 0.55x",
-     "source_title": "Buybacks / Net Income FY2025 \u2014 JPMORGAN CHASE & CO 10-K filed 2026-02-13"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "buybacks",
-     "snippet": "Share Repurchases | FY2025 | $31.59B",
-     "source_title": "Share Repurchases FY2025 \u2014 JPMORGAN CHASE & CO 10-K filed 2026-02-13"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "buybacks",
-     "snippet": "Share Repurchases | FY2023 | $9.82B",
-     "source_title": "Share Repurchases FY2023 \u2014 JPMORGAN CHASE & CO 10-K filed 2026-02-13"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "buyback_intensity",
-     "snippet": "Buybacks / Net Income | FY2025 | 0.55x",
-     "source_title": "Buybacks / Net Income FY2025 \u2014 JPMORGAN CHASE & CO 10-K filed 2026-02-13"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "Common shares at period-end 2,658.2 2,679.5 2,696.2 2,722.2 2,749.7",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "reducing the amount of common stock that JPMorganChase is permitted to repurchase",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Warning",
-   "title": "Apple Card portfolio acquisition with long closing",
-   "summary": "On December 30, 2025, the Firm entered a forward purchase commitment to acquire the Apple credit card portfolio, with closing expected about 24 months later. The 4Q25 provision for credit losses included $2.2 billion tied to the transaction.",
-   "uw_relevance": "A large consumer credit acquisition with a two-year closing window carries integration, credit and disclosure risk. It has already driven a reserve build.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "The Firm entered into a forward purchase commitment on December 30, 2025 to acquire the Apple credit card portfolio",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "with an expected closing date approximately 24 months thereafter",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "Included $2.2 billion associated with the Apple Card transaction.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "The Firm entered into a forward purchase commitment on December 30, 2025 to acquire the Apple credit card portfolio",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "with an expected closing date approximately 24 months thereafter",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "Included $2.2 billion associated with the Apple Card transaction.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Positive",
-   "title": "Credit quality stable, with emerging private-credit flags",
-   "summary": "The nonperforming loan ratio has held at 0.7% from FY2024 through FY2025, and nonperforming assets were $9.8B at June 30, 2026, down 6%. Allowance coverage eased to 1.79% from 1.85%, and the Card Services net charge-off rate was 3.34%. The 10-K adds language on private credit expansion and discloses past borrower collateral fraud.",
-   "uw_relevance": "Current credit metrics are a mitigating strength. The private-credit and collateral-fraud disclosures are emerging exposures that could lead to losses and disclosure claims.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "npl_ratio",
-     "snippet": "Nonperforming Loan Ratio | FY2025 | 0.7%",
-     "source_title": "Nonperforming Loan Ratio FY2025 \u2014 JPMORGAN CHASE & CO 10-K filed 2026-02-13"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "nonperforming assets totaled $9.8 billion at June 30, 2026, down 6%",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "The Firm had an allowance for loan losses to retained loans coverage ratio of 1.79%, compared with 1.85% in the prior year.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "Card Services net charge-off rate of 3.34%",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "the interconnectivity across credit markets increases the risk that the significant expansion of private credit could worsen losses among non-bank lenders and their borrowers",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "JPMorganChase has in the past, and could in the future, experience instances in which borrowers or other counterparties engage in fraudulent activity related to the accounting, reporting or representation",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "nonperforming assets totaled $9.8 billion at June 30, 2026, down 6%",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "The Firm had an allowance for loan losses to retained loans coverage ratio of 1.79%, compared with 1.85% in the prior year.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "Card Services net charge-off rate of 3.34%",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "the interconnectivity across credit markets increases the risk that the significant expansion of private credit could worsen losses among non-bank lenders and their borrowers",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "JPMorganChase has in the past, and could in the future, experience instances in which borrowers or other counterparties engage in fraudulent activity related to the accounting, reporting or representation",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Positive",
-   "title": "Large liquidity buffers and growing equity",
-   "summary": "The Liquidity Coverage Ratio ranged from 110% to 113% between FY2025 Q2 and FY2026 Q2. Liquidity sources were about $1.5 trillion, including about $956B of HQLA. Stockholders' equity rose from $327.88B at FY2023 to $374.60B at FY2026 Q2.",
-   "uw_relevance": "Substantial liquidity and rising equity reduce the likelihood of a distress scenario that typically drives D&O claims.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "lcr",
-     "snippet": "Liquidity Coverage Ratio | FY2026 Q2 | 110.0%",
-     "source_title": "Liquidity Coverage Ratio FY2026 Q2 \u2014 JPMORGAN CHASE & CO 10-Q filed 2026-08-06"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "CET1 capital 14.2 % 15.1 % 14.2 % 15.1 %",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "cet1_ratio",
-     "snippet": "CET1 Ratio | FY2026 Q3 | 13.9%",
-     "source_title": "CET1 Ratio FY2026 Q3 \u2014 JPMORGAN CHASE & CO 8-K filed 2026-10-13"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "SLR was 5.5%.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "JPMorganChase had $5.0 trillion in assets and $374.6 billion in stockholders",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "of approximately $956 billion and unencumbered marketable securities with a fair value of approximately $541 billion, resulting in approximately $1.5 trillion of liquidity sources.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "equity",
-     "snippet": "Stockholders' Equity | FY2026 Q2 | $374.60B",
-     "source_title": "Stockholders' Equity FY2026 Q2 \u2014 JPMORGAN CHASE & CO 10-Q filed 2026-08-06"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Warning",
-   "title": "Past cyber breaches and data exfiltration disclosed",
-   "summary": "The 10-K states the Firm has experienced security breaches from cyber attacks and that future breaches are inevitable. It says operational incidents have included exfiltration of customer personal data. It also flags AI-enabled threats and agentic AI risks.",
-   "uw_relevance": "Acknowledged past data incidents raise the profile of cyber and privacy failures, which are a recognized source of securities and derivative claims.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "JPMorganChase has experienced security breaches due to cyber attacks in the past, and future breaches are inevitable.",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "the exfiltration of customer personal data",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "increased exposure to cyber attacks, system manipulation, or data loss if AI systems, particularly agentic systems, are not designed and implemented with appropriate safeguards",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    }
-   ]
-  },
-  {
-   "kind": "STRATEGIC_RISK",
-   "category": "Governance & Leadership",
-   "subcategory": "Executive changes",
-   "insight_type": null,
-   "title": "CIB co-heads elected Co-Presidents; CCB CEO retires",
-   "summary": "On June 25, 2026, Doug Petno and Troy Rohrbaugh, previously Co-CEOs of the Commercial & Investment Bank, were elected Co-Presidents effective immediately. Petno became sole CEO of CIB and Rohrbaugh became CEO of Consumer & Community Banking. Marianne Lake, the former CCB CEO, is retiring after more than 25 years with the Firm.",
-   "uw_relevance": "This is a significant reshuffle of the top operating leadership. It changes who runs the two largest segments and places two executives in the line of succession below the CEO.",
-   "prompt_version": "strategic_risk_v1",
    "evidence": [
     {
      "source_kind": "SIGNAL",
      "section_code": "8K-5.02",
      "metric_code": null,
-     "snippet": "have been elected Co-Presidents of the Firm",
+     "snippet": "Doug Petno, 61, and Troy Rohrbaugh, 56, Co-CEOs of the Commercial & Investment Bank",
      "source_title": "JPMORGAN CHASE & CO 8-K filed 2026-06-25 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "Mr. Petno became the sole CEO of the CIB, and Mr. Rohrbaugh became the CEO of Consumer & Community Banking",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
     },
     {
      "source_kind": "DOCUMENT",
@@ -565,19 +350,207 @@
      "metric_code": null,
      "snippet": "Marianne Lake, the former CEO of CCB, is retiring after more than 25 years with the Firm.",
      "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Hasn't changed the timetable or anything",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "intention to resign as a member of the Board of Directors, effective December 7, 2025.",
+     "source_title": "JPMORGAN CHASE & CO 8-K filed 2025-12-08 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "Daniel Pinto, 62, President and Chief Operating Officer of the Firm, will retire at the end of 2026.",
+     "source_title": "JPMORGAN CHASE & CO 8-K filed 2025-01-14 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "10K-AUDIT",
+     "metric_code": null,
+     "snippet": "We have served as the Firm\u2019s auditor since 1965.",
+     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Report of Independent Registered Public Accounting Firm"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Info",
+   "title": "Apple Card portfolio purchase pending",
+   "summary": "The Firm entered a forward purchase commitment on December 30, 2025 to acquire the Apple credit card portfolio, closing about 24 months later. Q4 2025 provisions included $2.2 billion tied to the deal, and about $23 billion of standardized RWA was added.",
+   "uw_relevance": "A large pending acquisition with a two-year integration of a separate tech stack brings execution, reserve and temporary capital effects. This is relevant to M&A-related disclosure and claims exposure.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "The Firm entered into a forward purchase commitment on December 30, 2025 to acquire the Apple credit card portfolio",
+     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Included $2.2 billion associated with the Apple Card transaction.",
+     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "it's going to take two years and cost a bit of money",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2025Q4 (quarter ended 2025-12-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "The Firm entered into a forward purchase commitment on December 30, 2025 to acquire the Apple credit card portfolio",
+     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Included $2.2 billion associated with the Apple Card transaction.",
+     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "it's going to take two years and cost a bit of money",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2025Q4 (quarter ended 2025-12-31)"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Credit card rate-cap policy risk",
+   "summary": "On the Q4 2025 call, analysts raised a proposed cap on credit card interest rates. The CFO said he would not quantify the impact and that effects on subprime and co-brand portfolios would be most severe. No rule had been enacted in the material provided.",
+   "uw_relevance": "Card is a key earnings driver, and management acknowledges that policy intervention on pricing is a direct risk. This is relevant to regulatory and political event scenarios.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "that would present a significant challenge, clearly",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2025Q4 (quarter ended 2025-12-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "It would be traumatic on subprime.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2025Q4 (quarter ended 2025-12-31)"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Positive",
+   "title": "Liquidity, equity and credit metrics remain solid",
+   "summary": "Stockholders' equity rose to $374.60B at Q2 2026 from $344.76B at FY2024. The liquidity coverage ratio was 110.0% at Q2 2026. The nonperforming loan ratio was 0.7% at FY2025, and FY2025 net income was $57.05B.",
+   "uw_relevance": "These are mitigants against the capital-trend and credit-cycle concerns. Net interest margin of 2.4% in Q2 2026 (2.7% at FY2023) shows some spread compression.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "equity",
+     "snippet": "Stockholders' Equity | FY2026 Q2 | $374.60B | REPORTED",
+     "source_title": "Stockholders' Equity FY2026 Q2 \u2014 JPMORGAN CHASE & CO 10-Q filed 2026-08-06"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "lcr",
+     "snippet": "Liquidity Coverage Ratio | FY2026 Q2 | 110.0% | LLM_EXTRACTED",
+     "source_title": "Liquidity Coverage Ratio FY2026 Q2 \u2014 JPMORGAN CHASE & CO 10-Q filed 2026-08-06"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "net_income",
+     "snippet": "Net Income | FY2025 | $57.05B | REPORTED",
+     "source_title": "Net Income FY2025 \u2014 JPMORGAN CHASE & CO 10-K filed 2026-02-13"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "nim",
+     "snippet": "Net Interest Margin | FY2026 Q2 | 2.4% | LLM_EXTRACTED",
+     "source_title": "Net Interest Margin FY2026 Q2 \u2014 JPMORGAN CHASE & CO 10-Q filed 2026-08-06"
     }
    ]
   },
   {
    "kind": "STRATEGIC_RISK",
    "category": "Governance & Leadership",
-   "subcategory": "Succession planning",
+   "subcategory": "Executive succession",
    "insight_type": null,
-   "title": "President/COO Pinto retiring end of 2026",
-   "summary": "On January 14, 2025, the Firm announced that Daniel Pinto, President and Chief Operating Officer, will retire at the end of 2026. The 10-K lists failure to manage succession planning for key roles, including the CEO and Operating Committee, as a company risk factor.",
-   "uw_relevance": "Multiple senior departures (Pinto, Lake) are scheduled within the same period as the Co-President appointments. Succession for the CEO role is a named risk factor in the filing.",
+   "title": "Co-Presidents named; CCB CEO Lake retiring",
+   "summary": "On June 25, 2026, CIB Co-CEOs Doug Petno and Troy Rohrbaugh were elected Co-Presidents of the Firm. Petno became sole CEO of the CIB and Rohrbaugh became CEO of Consumer & Community Banking. Marianne Lake, the former CCB CEO, is retiring. On the Q2 2026 call, CEO Jamie Dimon said the board's decision \"Hasn't changed the timetable\" for his own succession, and described that timetable as \"several years\" with the board deciding.",
+   "uw_relevance": "Senior leadership is being reshaped, and CEO succession timing is a topic investors are probing. The new CCB head comes from the markets side, not consumer banking.",
    "prompt_version": "strategic_risk_v1",
    "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "Doug Petno, 61, and Troy Rohrbaugh, 56, Co-CEOs of the Commercial & Investment Bank",
+     "source_title": "JPMORGAN CHASE & CO 8-K filed 2026-06-25 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "Marianne Lake, the former CEO of CCB, is retiring after more than 25 years with the Firm.",
+     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Hasn't changed the timetable or anything",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Governance & Leadership",
+   "subcategory": "Board and officer changes",
+   "insight_type": null,
+   "title": "Director resignation and COO retirement planned",
+   "summary": "Director Todd A. Combs resigned from the Board effective December 7, 2025. The 8-K says the resignation is not the result of any disagreement. Separately, President and COO Daniel Pinto announced in January 2025 that he will retire at the end of 2026. Jen Piepszak is described on the Q2 2026 call as Chief Operating Officer. Brad Smith and Michele Buck were elected as directors in 2025.",
+   "uw_relevance": "Several board and senior officer transitions have occurred or are scheduled within roughly 18 months. The filings do not link any of them to a dispute.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "On December 7, 2025, Todd A. Combs notified JPMorgan Chase",
+     "source_title": "JPMORGAN CHASE & CO 8-K filed 2025-12-08 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
+    },
     {
      "source_kind": "SIGNAL",
      "section_code": "8K-5.02",
@@ -587,57 +560,10 @@
     },
     {
      "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
+     "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "effectively manage succession planning for key leadership roles, such as the Chief Executive Officer, members of the Operating Committee and other senior leaders",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    }
-   ]
-  },
-  {
-   "kind": "STRATEGIC_RISK",
-   "category": "Governance & Leadership",
-   "subcategory": "Board composition and auditor",
-   "insight_type": null,
-   "title": "Combs resigned from board; directors added",
-   "summary": "Director Todd A. Combs resigned effective December 7, 2025, and the filing states this was not due to any disagreement. Michele G. Buck (effective March 17, 2025) and Brad Smith (effective January 21, 2025) were elected directors. PricewaterhouseCoopers LLP has been auditor since 1965.",
-   "uw_relevance": "The board change was disclosed as non-contentious, and new independent directors were added. The very long auditor tenure is a fact underwriters may note on auditor independence.",
-   "prompt_version": "strategic_risk_v1",
-   "evidence": [
-    {
-     "source_kind": "SIGNAL",
-     "section_code": "8K-5.02",
-     "metric_code": null,
-     "snippet": "of his intention to resign as a member of the Board of Directors, effective December 7, 2025",
-     "source_title": "JPMORGAN CHASE & CO 8-K filed 2025-12-08 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": "8K-5.02",
-     "metric_code": null,
-     "snippet": "resignation is not the result of any disagreement with",
-     "source_title": "JPMORGAN CHASE & CO 8-K filed 2025-12-08 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": "8K-5.02",
-     "metric_code": null,
-     "snippet": "JPMorgan Chase & Co. elected Michele G. Buck as a director, effective March 17, 2025.",
-     "source_title": "JPMORGAN CHASE & CO 8-K filed 2024-12-12 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": "8K-5.02",
-     "metric_code": null,
-     "snippet": "JPMorgan Chase & Co. elected Brad Smith as a director, effective January 21, 2025.",
-     "source_title": "JPMORGAN CHASE & CO 8-K filed 2024-10-17 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": "10K-AUDIT",
-     "metric_code": null,
-     "snippet": "auditor since 1965",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Report of Independent Registered Public Accounting Firm"
+     "snippet": "we're blessed to have Jen Piepszak as the Chief Operating Officer",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
     }
    ]
   },
@@ -646,44 +572,56 @@
    "category": "Governance & Leadership",
    "subcategory": "Capital allocation",
    "insight_type": null,
-   "title": "Buybacks stepped up sharply since FY2023",
-   "summary": "Share repurchases were $9.8B in FY2023, $18.8B in FY2024 and $31.6B in FY2025. Buybacks were 0.20x net income in FY2023, 0.32x in FY2024 and 0.55x in FY2025. Quarterly buybacks were $8.32B in FY2026 Q1 and $6.79B in FY2026 Q2. Period-end common shares fell from 2,749.7M (2Q25) to 2,658.2M (2Q26). Stockholders' equity remains positive and rising, at $374.6B in FY2026 Q2.",
-   "uw_relevance": "Higher capital returns coincide with declining CET1 ratios. The 10-K notes that failing capital requirements would reduce permitted repurchases. Equity is not negative.",
+   "title": "Buybacks stepped down while capital ratios decline",
+   "summary": "Repurchases were $31.59B in FY2025 (0.55x net income), up from $18.83B in FY2024. They were $8.32B in Q1 2026 (0.50x) and $6.79B in Q2 2026 (0.32x). The CET1 ratio moved from 15.7% at FY2024 to 14.6% at FY2025 and 14.2% at Q2 2026. Management says it holds about $40 billion of excess capital. It prefers to deploy that capital in the business and will buy back less stock as the price rises. The Board also intends to raise the quarterly dividend to $1.65 per share.",
+   "uw_relevance": "Distributions are being managed against falling CET1 and rising risk-weighted assets, with management signalling organic deployment and possible acquisitions ahead of buybacks.",
    "prompt_version": "strategic_risk_v1",
    "evidence": [
     {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "buybacks",
-     "snippet": "Share Repurchases | FY2025 | $31.59B",
-     "source_title": "Share Repurchases FY2025 \u2014 JPMORGAN CHASE & CO 10-K filed 2026-02-13"
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "we've always said we want to buy back less stock as the price goes up and more stock as the price goes down.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
     },
     {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "buybacks",
-     "snippet": "Share Repurchases | FY2023 | $9.82B",
-     "source_title": "Share Repurchases FY2023 \u2014 JPMORGAN CHASE & CO 10-K filed 2026-02-13"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "buyback_intensity",
-     "snippet": "Buybacks / Net Income | FY2025 | 0.55x",
-     "source_title": "Buybacks / Net Income FY2025 \u2014 JPMORGAN CHASE & CO 10-K filed 2026-02-13"
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "the board intends to increase the quarterly dividend to $1.65 per share, effective in the third quarter",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "10Q-I-2",
      "metric_code": null,
-     "snippet": "Common shares at period-end 2,658.2 2,679.5 2,696.2 2,722.2 2,749.7",
+     "snippet": "CET1 capital was $303 billion, and the Standardized and Advanced CET1 ratios were each 14.2%.",
      "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Regulatory enforcement",
+   "insight_type": null,
+   "title": "SEC censure for supervision failure, no fine",
+   "summary": "The SEC censured JPMorgan Chase and its securities unit for failing to supervise a statutorily disqualified person who traded in the US without permission from late 2021 to early 2024. No fine was imposed, and the SEC issued a cease-and-desist order.",
+   "uw_relevance": "This is a recent formal SEC enforcement action tied to supervision and controls. The 10-K risk factors say prior enforcement history makes further formal actions more likely.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "NEWS",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "The SEC censured JPMorgan Chase and its securities unit for failing to supervise a statutorily disqualified person",
+     "source_title": "Bloomberg.com: JPMorgan Censured by SEC But Avoids Fine Over Supervision Lapse"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "10K-1A",
      "metric_code": null,
-     "snippet": "reducing the amount of common stock that JPMorganChase is permitted to repurchase",
+     "snippet": "governmental authorities will be more likely to bring formal enforcement actions against JPMorganChase if it has previously been subject to other investigations or enforcement actions",
      "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
     }
    ]
@@ -691,47 +629,118 @@
   {
    "kind": "STRATEGIC_RISK",
    "category": "Risk & Legal",
-   "subcategory": "Capital and liquidity",
+   "subcategory": "Capital regulation",
    "insight_type": null,
-   "title": "CET1 and leverage ratios trending lower",
-   "summary": "Standardized CET1 fell from 15.1% at 2Q25 to 14.2% at 2Q26, versus 15.7% at FY2024. An extracted FY2026 Q3 figure shows 13.9%. Tier 1 capital fell from 16.1% to 15.1%, and SLR was 5.5% at June 30, 2026. Total assets reached $5.0 trillion. Firm LCR averaged 110%, and liquidity sources were about $1.5 trillion, including about $956B of HQLA.",
-   "uw_relevance": "Capital ratios remain well above typical minimums but are declining as the balance sheet grows and buybacks continue. Liquidity buffers remain large.",
+   "title": "Basel III and G-SIB reproposals raise capital needs",
+   "summary": "On the Q1 2026 call the CFO said the Basel III endgame and G-SIB reproposals are worse for the Firm than for peers. He estimates that the Firm must plan for a G-SIB surcharge of 5.2% in 2028, up from the current 4.5%. The CFO estimated a combined increase of about $20 billion of G-SIB capital on the current balance sheet. On the Q2 call the CEO again urged regulators to remove double counts in operational risk and market risk capital.",
+   "uw_relevance": "Proposed rules would raise required capital for this firm specifically, which bears on future distribution capacity. The rules are not final.",
    "prompt_version": "strategic_risk_v1",
    "evidence": [
     {
      "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
+     "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "CET1 capital 14.2 % 15.1 % 14.2 % 15.1 %",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+     "snippet": "we need to plan for 5.2% in 2028, a 70 basis point increase from the current 4.5% requirement",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q1 (quarter ended 2026-03-31)"
     },
     {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "cet1_ratio",
-     "snippet": "CET1 Ratio | FY2026 Q3 | 13.9%",
-     "source_title": "CET1 Ratio FY2026 Q3 \u2014 JPMORGAN CHASE & CO 8-K filed 2026-10-13"
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "results in a total increase of about $20 billion of G-SIB capital based on our current balance sheet",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q1 (quarter ended 2026-03-31)"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Capital and balance sheet",
+   "insight_type": null,
+   "title": "Capital ratios trending lower on RWA growth",
+   "summary": "The standardized CET1 ratio was 14.2% at Q2 2026, versus 14.3% in Q1 2026, 14.6% at FY2025 and 15.7% at FY2024. The Tier 1 ratio was 15.1% at Q2 2026. The Q2 2026 call cited about $103 billion of standardized RWA growth, largely from markets financing and lending. The 10-Q table shows the supplementary leverage ratio at 5.5% versus 5.9% a year earlier. The liquidity coverage ratio was 110%.",
+   "uw_relevance": "Capital ratios are still well above regulatory minimums but have declined for several quarters as RWA grew faster than retained earnings net of distributions.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "standardized RWA increase of approximately $103 billion is largely driven by increases in financing across our markets business",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "10Q-I-2",
      "metric_code": null,
-     "snippet": "SLR was 5.5%.",
+     "snippet": "Firm Liquidity coverage ratio (\u201cLCR\u201d) (average)(c)\n110 112 111 110 113 110 113",
      "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Credit risk",
+   "insight_type": null,
+   "title": "Non-bank and private credit exposure, softer underwriting",
+   "summary": "Management defines core non-bank financial institution lending at about $160 billion, of which about $50 billion is private credit exposure to leveraged loan investors. Management reported only one charge-off since 2018, tied to apparent fraud. The CEO said there has been a mild weakening in credit underwriting across the market, with weaker covenants, more PIK and more rollover risk. The 10-K risk factors name private credit expansion and collateral fraud as specific risks.",
+   "uw_relevance": "Exposure to non-bank lenders has grown, and management expects a future credit cycle to produce worse losses than models imply. Fraud is the loss driver that management itself highlights.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Inside that $160 billion, about $50 billion is private credit",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q1 (quarter ended 2026-03-31)"
     },
     {
      "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
+     "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "JPMorganChase had $5.0 trillion in assets and $374.6 billion in stockholders",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+     "snippet": "we've only seen one charge-off. One related to apparent fraud.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2025Q4 (quarter ended 2025-12-31)"
     },
     {
      "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
+     "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "of approximately $956 billion and unencumbered marketable securities with a fair value of approximately $541 billion, resulting in approximately $1.5 trillion of liquidity sources.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+     "snippet": "you've seen a little bit of weakness",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2026Q2 (quarter ended 2026-06-30)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "the significant expansion of private credit could worsen losses among non-bank lenders and their borrowers",
+     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Regulatory and political risk",
+   "insight_type": null,
+   "title": "Credit card APR cap threat flagged by management",
+   "summary": "On the Q4 2025 call, analysts raised a proposed cap on credit card interest rates. The CFO said that if price controls made the card business unprofitable, \"that would present a significant challenge, clearly\". He said card is a big business for the Firm and he would not quantify the impact. He said the effect on subprime and co-brand portfolios would be most severe. The 10-K lists governmental policies that require specific business practices as a risk factor.",
+   "uw_relevance": "Card is a key earnings driver, and the Firm acknowledges policy intervention on pricing is a direct risk. No rule was enacted in the material provided.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "that would present a significant challenge, clearly",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2025Q4 (quarter ended 2025-12-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "It would be traumatic on subprime.",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2025Q4 (quarter ended 2025-12-31)"
     }
    ]
   },
@@ -740,9 +749,9 @@
    "category": "Event Signals",
    "subcategory": "M&A / portfolio acquisition",
    "insight_type": null,
-   "title": "Apple Card portfolio acquisition commitment",
-   "summary": "On December 30, 2025, the Firm entered a forward purchase commitment to acquire the Apple credit card portfolio, with expected closing about 24 months later. Chase will become the Apple Card issuer. The 4Q25 provision for credit losses included $2.2 billion associated with the transaction.",
-   "uw_relevance": "This is a large consumer credit portfolio acquisition with a long closing timeline. It has already driven a reserve build and carries integration and credit risk.",
+   "title": "Apple Card forward purchase commitment",
+   "summary": "The Firm entered into a forward purchase commitment on December 30, 2025 to acquire the Apple credit card portfolio, with closing about 24 months later. Q4 2025 provision for credit losses included $2.2 billion associated with the transaction. Management said integration of Apple's separate tech stack will take two years and cost money, and said the transaction added about $23 billion of standardized RWA in Q4 2025.",
+   "uw_relevance": "This is a large pending acquisition with a multi-year integration, upfront reserve build and temporary capital effects.",
    "prompt_version": "strategic_risk_v1",
    "evidence": [
     {
@@ -756,15 +765,15 @@
      "source_kind": "DOCUMENT",
      "section_code": "10Q-I-2",
      "metric_code": null,
-     "snippet": "with an expected closing date approximately 24 months thereafter",
+     "snippet": "Included $2.2 billion associated with the Apple Card transaction.",
      "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
     },
     {
      "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
+     "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "Included $2.2 billion associated with the Apple Card transaction.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
+     "snippet": "it's going to take two years and cost a bit of money",
+     "source_title": "JPMORGAN CHASE & CO earnings call 2025Q4 (quarter ended 2025-12-31)"
     }
    ]
   },
@@ -773,9 +782,9 @@
    "category": "Event Signals",
    "subcategory": "Non-recurring gains",
    "insight_type": null,
-   "title": "Visa share exchange lifted 2Q26 earnings",
-   "summary": "Q2 2026 net income was $21.2B, up 41%. It included a $4.6B net gain on the Visa Class B-2 share exchange and $1.0B of gains on certain equity investments. Investment securities losses were $395M versus $54M a year earlier, from portfolio repositioning. Preliminary FY2026 Q3 net income is $15.30B.",
-   "uw_relevance": "Headline 2Q26 profitability and growth metrics, such as 46.7% fee income growth, are inflated by one-time items. Underlying earnings are closer to other quarters.",
+   "title": "Visa share gain inflates Q2 2026 results",
+   "summary": "On May 11, 2026 Visa accepted the Firm's tender of 18.6 million Visa Class B-2 shares, producing a $4.6 billion net gain in Q2 2026. The quarter also included $1.0 billion of gains on certain equity investments. Q2 2026 noninterest revenue was $31.84B, with year-over-year fee income growth of 46.7%. The 10-Q attributes the rise predominantly to the Visa gain.",
+   "uw_relevance": "Q2 2026 net income of $21.16B and fee growth include about $5.6B of non-recurring or valuation gains. Underlying run-rate comparisons should adjust for them.",
    "prompt_version": "strategic_risk_v1",
    "evidence": [
     {
@@ -789,182 +798,27 @@
      "source_kind": "DOCUMENT",
      "section_code": "10Q-I-2",
      "metric_code": null,
-     "snippet": "The second quarter of 2026 included $1.0 billion of gains on certain equity investments, consisting of $763 million in Corporate and $263 million in CIB.",
+     "snippet": "The second quarter of 2026 included $1.0 billion of gains on certain equity investments",
      "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "For the second quarter of 2026, JPMorganChase reported net income of $21.2 billion, up 41%",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "higher losses on sales of securities associated with repositioning the investment securities portfolio in Treasury and CIO.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "net_income",
-     "snippet": "Net Income | FY2026 Q3 | $15.30B",
-     "source_title": "Net Income FY2026 Q3 \u2014 JPMORGAN CHASE & CO 8-K filed 2026-10-13"
     }
    ]
   },
   {
    "kind": "STRATEGIC_RISK",
-   "category": "Risk & Legal",
-   "subcategory": "Credit quality",
+   "category": "Governance & Leadership",
+   "subcategory": "Auditor",
    "insight_type": null,
-   "title": "Credit stable; private credit, collateral fraud flagged",
-   "summary": "Nonperforming assets were $9.8B at June 30, 2026, down 6%. Lower wholesale NPAs were predominantly offset by net downgrades. Loan loss allowance coverage was 1.79% versus 1.85%, and the Card Services net charge-off rate was 3.34%. The 10-K adds risk language on the expansion of private credit. It also states the Firm has experienced borrower fraud involving collateral representation.",
-   "uw_relevance": "Current credit metrics are stable. The private-credit and collateral-fraud disclosures are company-specific emerging exposures that could lead to losses and disclosure claims.",
+   "title": "PwC has audited the Firm since 1965",
+   "summary": "The 10-K states that PricewaterhouseCoopers LLP has served as the Firm's auditor since 1965. No auditor change is noted in the material provided.",
+   "uw_relevance": "Auditor tenure is very long and unchanged. No auditor change signal appears in this data.",
    "prompt_version": "strategic_risk_v1",
    "evidence": [
     {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
+     "source_kind": "SIGNAL",
+     "section_code": "10K-AUDIT",
      "metric_code": null,
-     "snippet": "nonperforming assets totaled $9.8 billion at June 30, 2026, down 6%",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "The Firm had an allowance for loan losses to retained loans coverage ratio of 1.79%, compared with 1.85% in the prior year.",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "Card Services net charge-off rate of 3.34%",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "the interconnectivity across credit markets increases the risk that the significant expansion of private credit could worsen losses among non-bank lenders and their borrowers",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "JPMorganChase has in the past, and could in the future, experience instances in which borrowers or other counterparties engage in fraudulent activity related to the accounting, reporting or representation",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    }
-   ]
-  },
-  {
-   "kind": "STRATEGIC_RISK",
-   "category": "Risk & Legal",
-   "subcategory": "Litigation and regulatory",
-   "insight_type": null,
-   "title": "Pervasive litigation and enforcement exposure",
-   "summary": "The Firm is a defendant in class actions, derivative actions and governmental investigations, including criminal proceedings. It states legal exposure could exceed established reserves and expects formal, punitive enforcement rather than informal supervisory resolution. It also flags government policies that penalize doing, or not doing, business with certain industries. Specific matters are in 10-K Note 30 and 10-Q Note 24, which are not in the input.",
-   "uw_relevance": "The Firm explicitly discloses derivative actions and reserve-exceeding exposure. The case-level details needed to assess specific matters are not provided.",
-   "prompt_version": "strategic_risk_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "including class actions, derivative actions and other litigation or disputes with third parties, as well as investigations and enforcement actions by U.S. and non-U.S. governmental authorities, including criminal proceedings",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "exposure to legal matters is unpredictable and could, in some cases, exceed the amount of reserves",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "governmental authorities will forgo opportunities to resolve investigations with informal supervisory actions, and will pursue formal and punitive enforcement actions",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "seek to discourage financial institutions from doing business with companies engaged in certain industries, or conversely, to penalize financial institutions that elect not to do business with such companies",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
-     "metric_code": null,
-     "snippet": "material legal proceedings in Note 24 of this Form 10-Q",
-     "source_title": "JPMORGAN CHASE & CO 10-Q filed 2026-08-06 \u00b7 Part II, Item 1. Legal Proceedings"
-    }
-   ]
-  },
-  {
-   "kind": "STRATEGIC_RISK",
-   "category": "Risk & Legal",
-   "subcategory": "Cyber and operational",
-   "insight_type": null,
-   "title": "Past breaches and data exfiltration disclosed",
-   "summary": "The 10-K states the Firm has experienced security breaches from cyber attacks and that future breaches are inevitable. It says operational incidents have included exfiltration of customer personal data. It also flags AI-enabled threats and agentic AI system risks.",
-   "uw_relevance": "The Firm acknowledges past data incidents. Cyber and privacy failures are a recognized source of securities and derivative claims.",
-   "prompt_version": "strategic_risk_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "JPMorganChase has experienced security breaches due to cyber attacks in the past, and future breaches are inevitable.",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "the exfiltration of customer personal data",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "increased exposure to cyber attacks, system manipulation, or data loss if AI systems, particularly agentic systems, are not designed and implemented with appropriate safeguards",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    }
-   ]
-  },
-  {
-   "kind": "STRATEGIC_RISK",
-   "category": "Risk & Legal",
-   "subcategory": "Internal controls and models",
-   "insight_type": null,
-   "title": "Models and controls flagged as loss sources",
-   "summary": "The 10-K states disclosure and financial reporting controls may not always be effective and that a material weakness could occur. It also says inadequate models or estimates could cause unexpected losses and reduce capital. The input contains no reported material weakness or restatement.",
-   "uw_relevance": "This is a standard control risk disclosure. No actual control failure appears in the input, but model-dependent capital and allowance estimates are a recurring exposure area.",
-   "prompt_version": "strategic_risk_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "JPMorganChase\u2019s disclosure and financial reporting controls may not always be effective, and a material weakness or significant deficiency in internal control over financial reporting could occur.",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "JPMorganChase could incur unexpected losses if models and estimations used in connection with its risk management activities or the preparation of its financial statements are inadequate or incorrect.",
-     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Item 1A. Risk Factors"
+     "snippet": "We have served as the Firm\u2019s auditor since 1965.",
+     "source_title": "JPMORGAN CHASE & CO 10-K filed 2026-02-13 \u00b7 Report of Independent Registered Public Accounting Firm"
     }
    ]
   }
@@ -972,155 +826,128 @@
  "followups": [
   {
    "category": "Financial",
-   "question": "What CET1 management target and buffer above regulatory minimums does the board use, and at what level would the decline from 14.2% at FY2026 Q2 trigger a change in capital actions?",
-   "summary": "Standardized CET1 fell from 15.7% at FY2024 to 14.6% at FY2025 and 14.2% at FY2026 Q2, with an extracted 13.9% for FY2026 Q3. The Tier 1 capital ratio fell from 16.8% to 15.1% over the same span.",
+   "question": "CET1 fell to 13.9% at Q3 2026 from 14.2% at Q2 2026. At what level would management change its distribution plans, and what internal CET1 management buffer applies above regulatory requirements?",
+   "summary": "CET1 moved from 15.7% at FY2024 to 14.6% at FY2025, 14.2% at Q2 2026 and 13.9% at Q3 2026. The Q2 2026 call cited about $103 billion of standardized RWA growth, largely from markets financing and lending.",
    "following_risk": "Capital adequacy trend risk",
-   "uw_relevance": "A sustained capital decline at a systemically important bank can draw regulatory action and claims that directors mismanaged capital.",
+   "uw_relevance": "Falling capital ratios while RWA grows is the central balance-sheet trend for a bank, and it bears on distribution capacity and stress resilience.",
    "system_priority": "high",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Governance",
-   "question": "How does the board approve the share repurchase program, and how did it weigh FY2025 buybacks of $31.6B against the falling CET1 ratio?",
-   "summary": "Share repurchases rose from $9.82B in FY2023 to $31.59B in FY2025, or 0.55x net income. Quarterly buybacks were $8.32B in FY2026 Q1 and $6.79B in FY2026 Q2 (0.32x net income), while CET1 declined.",
-   "following_risk": "Capital allocation decision risk",
-   "uw_relevance": "Board capital-return decisions made while capital ratios fall are a common basis for derivative challenges if conditions deteriorate.",
-   "system_priority": "medium",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Financial",
-   "question": "With the SLR at 5.5% and total assets at $5.0 trillion, what balance sheet growth is planned, and which constraint (CET1 or SLR) is expected to bind first?",
-   "summary": "The SLR was 5.5% at June 30, 2026, as total assets reached $5.0 trillion. Capital ratios have declined as the balance sheet grew.",
-   "following_risk": "Leverage and balance sheet growth",
-   "uw_relevance": "Binding leverage constraints could force abrupt changes in capital returns or business mix, which raises disclosure and oversight exposure.",
-   "system_priority": "medium",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Governance",
-   "question": "What is the board's documented CEO succession plan following the June 2026 election of Doug Petno and Troy Rohrbaugh as Co-Presidents, and how will Daniel Pinto's responsibilities be reallocated when he retires at the end of 2026?",
-   "summary": "On June 25, 2026, CIB Co-CEOs Doug Petno and Troy Rohrbaugh were elected Co-Presidents. President and COO Daniel Pinto retires at the end of 2026, and the 10-K lists succession planning for the CEO and Operating Committee as a risk factor.",
-   "following_risk": "Key-person and succession risk",
-   "uw_relevance": "Succession is a disclosed risk factor, and simultaneous turnover in top roles raises oversight and execution risk that boards can be challenged on.",
-   "system_priority": "high",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Operational",
-   "question": "How is oversight of Consumer & Community Banking being handed over from the retiring Marianne Lake to Troy Rohrbaugh, who comes from the Commercial & Investment Bank, and who owns the Apple Card integration?",
-   "summary": "Troy Rohrbaugh became CEO of Consumer & Community Banking, replacing Marianne Lake, who is retiring after more than 25 years. The Firm has a forward purchase commitment to acquire the Apple credit card portfolio, with closing expected about 24 months after December 30, 2025.",
-   "following_risk": "Leadership transition execution risk",
-   "uw_relevance": "A new segment head overseeing a large consumer credit acquisition increases execution and control risk during the transition.",
+   "question": "How does management decide the pace of repurchases against falling CET1, given that repurchases fell to $6.79B in Q2 2026 from $8.32B in Q1 2026 and the planned dividend increase to $1.65 per share?",
+   "summary": "Repurchases were $31.59B in FY2025 (0.55x net income) and $6.79B in Q2 2026 (0.32x). Management says it holds about $40 billion of excess capital and prefers to deploy it in the business.",
+   "following_risk": "Capital distribution policy risk",
+   "uw_relevance": "Distribution decisions made against a declining CET1 ratio shape the capital plan and shareholder-facing disclosure about capital return.",
    "system_priority": "medium",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Strategy",
-   "question": "What credit profile and underwriting assumptions underlie the $2.2 billion provision taken in 4Q25 for the Apple Card portfolio, and what conditions or termination rights apply before the expected closing?",
-   "summary": "On December 30, 2025, the Firm entered a forward purchase commitment for the Apple credit card portfolio, with closing expected about 24 months later. The 4Q25 provision for credit losses included $2.2 billion associated with the transaction.",
-   "following_risk": "Acquisition integration and credit risk",
-   "uw_relevance": "Losses or delays on a large acquired portfolio could prompt claims that acquisition risks were understated.",
-   "system_priority": "medium",
+   "question": "What is the firm's capital plan if the proposed 5.2% G-SIB surcharge for 2028 and the Basel III endgame are finalized as proposed, including the roughly $20 billion of added G-SIB capital?",
+   "summary": "The CFO said the reproposals are worse for the Firm than for peers, with a surcharge of 5.2% in 2028 against 4.5% now. The CEO said the proposed numbers are falsely done.",
+   "following_risk": "Regulatory capital rule risk",
+   "uw_relevance": "Higher firm-specific capital requirements and public disputes with regulators affect distribution capacity and could draw regulatory scrutiny.",
+   "system_priority": "high",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Financial",
-   "question": "How did the Firm present the $4.6B Visa Class B-2 share exchange gain and $1.0B of equity investment gains in Q2 2026 communications, and what does management describe as underlying run-rate earnings?",
-   "summary": "FY2026 Q2 net income was $21.16B, including a $4.6B Visa gain and $1.0B of equity investment gains, with fee income growth of 46.7% and YoY revenue growth of 27.7%. Preliminary FY2026 Q3 net income is $15.30B.",
-   "following_risk": "Securities disclosure risk",
-   "uw_relevance": "If investors anchor on one-time-inflated results, a later earnings reset could lead to allegations of misleading trend disclosure.",
+   "question": "How is the roughly $160 billion core non-bank financial institution lending book, including about $50 billion of private credit exposure to leveraged loan investors, monitored for covenant, PIK and collateral-fraud risk?",
+   "summary": "Management reported only one charge-off since 2018, tied to apparent fraud. The CEO said underwriting has weakened across the market through weaker covenants, more PIK and more rollover risk, and the 10-K names private credit expansion and collateral fraud as risks.",
+   "following_risk": "Private credit and fraud exposure",
+   "uw_relevance": "The CEO has publicly warned that next-cycle losses will be worse than expected, which makes the firm's own exposure and controls central to credit-loss scenarios and related disclosure.",
+   "system_priority": "high",
+   "prompt_version": "followups_v2"
+  },
+  {
+   "category": "Financial",
+   "question": "What were Q2 2026 net income and fee income excluding the $4.6 billion Visa Class B-2 gain and $1.0 billion of equity investment gains, and how are such gains described in guidance and investor communications?",
+   "summary": "Q2 2026 noninterest revenue was $31.84B, up 46.7% year over year, and net income was $21.16B. The 10-Q attributes the rise predominantly to the Visa gain.",
+   "following_risk": "Earnings quality and disclosure",
+   "uw_relevance": "How non-recurring gains are presented affects the reliability of forward-looking statements and run-rate comparisons.",
+   "system_priority": "medium",
+   "prompt_version": "followups_v2"
+  },
+  {
+   "category": "Governance",
+   "question": "What remediation has been completed since the SEC censure for failing to supervise a statutorily disqualified person, and have regulators raised similar supervision gaps elsewhere in the firm?",
+   "summary": "The SEC censured JPMorgan Chase and its securities unit over a statutorily disqualified person who traded in the US without permission from late 2021 to early 2024. No fine was imposed, and a cease-and-desist order was issued.",
+   "following_risk": "Supervision and controls risk",
+   "uw_relevance": "The 10-K risk factors say prior enforcement history makes further formal actions more likely, so control remediation bears on repeat enforcement exposure.",
+   "system_priority": "medium",
+   "prompt_version": "followups_v2"
+  },
+  {
+   "category": "Governance",
+   "question": "How does the board plan to manage continuity with the Co-Presidents' appointment, CCB CEO Marianne Lake's retirement, COO Daniel Pinto's planned retirement at end of 2026 and Todd Combs' resignation, and what is the CEO succession process?",
+   "summary": "On June 25, 2026, Doug Petno and Troy Rohrbaugh were elected Co-Presidents, and Rohrbaugh became CEO of Consumer & Community Banking. Dimon described his succession timetable as 'several years' with the board deciding, and the 8-K says Combs' resignation was not due to any disagreement.",
+   "following_risk": "Leadership transition risk",
+   "uw_relevance": "Several board and senior officer transitions within roughly 18 months, with investors probing CEO succession, affect key-person and governance exposure.",
+   "system_priority": "medium",
+   "prompt_version": "followups_v2"
+  },
+  {
+   "category": "Strategy",
+   "question": "What are the integration milestones, expected costs and reserve and capital effects for the Apple Card portfolio acquisition ahead of closing about 24 months after December 30, 2025?",
+   "summary": "Q4 2025 provisions included $2.2 billion tied to the transaction, and about $23 billion of standardized RWA was added. Management said integrating Apple's separate tech stack will take two years and cost money.",
+   "following_risk": "M&A execution risk",
+   "uw_relevance": "A large pending acquisition with multi-year integration raises execution, reserve and disclosure questions relevant to M&A-related claims.",
    "system_priority": "medium",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Market",
-   "question": "What was the purpose of the investment portfolio repositioning that produced $395M of securities losses, and how is the Firm managing interest rate sensitivity given a net interest margin of 2.4% in FY2026 Q2?",
-   "summary": "Investment securities losses were $395M versus $54M a year earlier, from portfolio repositioning. Net interest margin was 2.7% in FY2023, 2.6% in FY2024 and 2.4% in FY2026 Q2.",
-   "following_risk": "Interest rate risk management",
-   "uw_relevance": "Securities portfolio losses and margin compression at large banks have been a source of shareholder claims about rate risk disclosure.",
-   "system_priority": "low",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Financial",
-   "question": "What is the Firm's total exposure to private credit providers and related lending, and what losses and control changes resulted from the borrower collateral-representation fraud disclosed in the 10-K?",
-   "summary": "The 10-K adds risk language on the expansion of private credit and states the Firm has experienced borrower fraud involving collateral representation. Lower wholesale NPAs were predominantly offset by net downgrades.",
-   "following_risk": "Emerging credit and fraud risk",
-   "uw_relevance": "Undisclosed or underestimated losses from private credit or collateral fraud could support securities and derivative claims.",
-   "system_priority": "high",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Financial",
-   "question": "What drove the decline in loan loss allowance coverage to 1.79% from 1.85%, and what model assumptions support reserve adequacy given a Card Services net charge-off rate of 3.34%?",
-   "summary": "Allowance coverage was 1.79% versus 1.85%, and the Card Services net charge-off rate was 3.34%. The 10-K states inadequate models or estimates could cause unexpected losses and reduce capital.",
-   "following_risk": "Reserve and model risk",
-   "uw_relevance": "Model-dependent allowance estimates that prove inadequate can lead to earnings surprises and allegations of misstated financials.",
+   "question": "Has management modeled the effect of a credit card interest-rate cap on card earnings, particularly the subprime and co-brand portfolios and the Apple Card portfolio to be acquired?",
+   "summary": "On the Q4 2025 call analysts raised a proposed cap on credit card interest rates. The CFO said it would present a significant challenge if card became unprofitable, would not quantify the impact, and said subprime and co-brand portfolios would be hit hardest.",
+   "following_risk": "Pricing-policy intervention risk",
+   "uw_relevance": "Card is a key earnings driver, and management's refusal to quantify the effect bears on risk-disclosure adequacy in a regulatory or political event.",
    "system_priority": "medium",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Governance",
-   "question": "Can the Firm provide a schedule of pending derivative actions, securities class actions and governmental investigations, including criminal proceedings, with reserves and reasonably possible loss ranges from 10-K Note 30 and 10-Q Note 24?",
-   "summary": "The Firm discloses it is a defendant in class actions, derivative actions and governmental investigations, including criminal proceedings, and that legal exposure could exceed established reserves. Note 30 and Note 24 details are not in the input.",
-   "following_risk": "Litigation and enforcement exposure",
-   "uw_relevance": "Derivative actions directly name directors and officers, and case-level details are needed to assess pending exposure.",
-   "system_priority": "high",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Governance",
-   "question": "How does the board oversee client onboarding and exit decisions in light of the disclosed government policies that penalize doing, or not doing, business with certain industries, and have any related inquiries been received?",
-   "summary": "The Firm flags government policies that penalize doing, or not doing, business with certain industries. It expects formal, punitive enforcement rather than informal supervisory resolution.",
-   "following_risk": "Political and regulatory enforcement risk",
-   "uw_relevance": "Enforcement or litigation over client selection decisions could lead to claims against directors for oversight failures.",
+   "question": "Given the CEO's Q2 2026 description of the environment as close to peak and Q2 revenue up 27.7% year over year, how does the disclosure committee reconcile cautionary commentary with forward guidance and risk factors?",
+   "summary": "Dimon moved from a positive near-term outlook on the Q4 2025 call to describing conditions as close to peak on the Q2 2026 call. Barnum described the market as extremely risk-on, and Q2 2026 net income was $21.16B.",
+   "following_risk": "Forward-looking statement disclosure risk",
+   "uw_relevance": "Public framing of current earnings as possibly cyclical raises disclosure questions if results reverse.",
    "system_priority": "medium",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Operational",
-   "question": "Which security breaches and customer personal data exfiltration incidents has the Firm experienced, what notifications and regulatory follow-up resulted, and how does the board oversee AI-enabled and agentic AI risks?",
-   "summary": "The 10-K states the Firm has experienced security breaches from cyber attacks, that future breaches are inevitable, and that operational incidents have included exfiltration of customer personal data. It also flags AI-enabled threats and agentic AI risks.",
-   "following_risk": "Cyber and privacy risk",
-   "uw_relevance": "Data breaches are a recognized trigger for securities and derivative claims alleging inadequate oversight.",
-   "system_priority": "medium",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Governance",
-   "question": "How does the audit committee assess the independence of PricewaterhouseCoopers given its tenure as auditor since 1965, and was the director resignation of Todd A. Combs accompanied by any committee changes?",
-   "summary": "PricewaterhouseCoopers LLP has been auditor since 1965. Director Todd A. Combs resigned effective December 7, 2025, not due to any disagreement, and Michele G. Buck and Brad Smith were elected directors.",
-   "following_risk": "Auditor independence and board",
-   "uw_relevance": "Auditor independence and board composition affect the credibility of financial reporting oversight.",
+   "question": "With 2026 adjusted expense guidance raised to about $107.5B from about $105B, how much of the increase is volume-linked, and what expense flexibility exists if revenue reverses?",
+   "summary": "The Q2 2026 increase was tied to revenue-related expense. The card net charge-off outlook was lowered from about 3.4% to about 3.2%, attributed to better-than-expected consumer credit.",
+   "following_risk": "Expense flexibility risk",
+   "uw_relevance": "If expense growth tracks revenue, a revenue reversal could pressure results and the firm's guidance credibility.",
    "system_priority": "low",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Financial",
-   "question": "What internal LCR floor does the Firm manage to, given that the ratio was 110% in FY2026 Q2, at the low end of the 110% to 113% range since FY2025 Q2?",
-   "summary": "The Liquidity Coverage Ratio ranged from 110% to 113% between FY2025 Q2 and FY2026 Q2. Liquidity sources were about $1.5 trillion, including about $956B of HQLA.",
-   "following_risk": "Liquidity risk",
-   "uw_relevance": "Liquidity strength reduces distress-driven claim likelihood, so understanding the internal floor helps confirm this mitigating factor.",
+   "question": "What is driving net interest margin compression, and how do the 110% liquidity coverage ratio and 5.5% supplementary leverage ratio fit with growth in markets financing and lending?",
+   "summary": "Net interest margin was 2.4% at Q2 2026 against 2.7% at FY2023. The liquidity coverage ratio was 110.0% at Q2 2026, and the supplementary leverage ratio was 5.5% versus 5.9% a year earlier.",
+   "following_risk": "Liquidity and margin pressure",
+   "uw_relevance": "Liquidity and leverage metrics are mitigants, but spread compression together with balance-sheet growth shows how much room exists under stress.",
    "system_priority": "low",
    "prompt_version": "followups_v2"
   }
  ],
  "metric_relevance": {
-  "buyback_intensity": "Buybacks climbed from 0.20x net income in FY2023 to 0.55x in FY2025, peaking at 0.63x in FY2025 Q4, before easing to 0.32x in FY2026 Q2. The higher payout share coincided with falling CET1 and Tier 1 ratios, which ties capital-allocation decisions to board oversight questions.",
-  "buybacks": "Repurchases rose from $9.82B in FY2023 to $31.59B in FY2025 and remained at $8.32B and $6.79B in FY2026 Q1 and Q2. Over the same period CET1 declined, so board approval of capital returns versus capital preservation is a potential focus of derivative or shareholder scrutiny.",
-  "cet1_ratio": "CET1 has declined every quarter from 15.7% at FY2024 to 14.2% at FY2026 Q2 and an extracted 13.9% for FY2026 Q3, while buybacks and assets grew. Ratios remain well above minimums, but the sustained downtrend links board capital-planning decisions to potential regulatory and shareholder scrutiny.",
-  "equity": "Stockholders' equity grew from $327.88B at FY2023 to $374.60B at FY2026 Q2 despite stepped-up buybacks. This absolute growth supports the capital base even as risk-based capital ratios decline, because assets have grown to $5.0 trillion.",
-  "fee_income_growth_yoy": "Fee income growth swung from -20.9% in FY2025 Q2 to 46.7% in FY2026 Q2, against 2.4% for full-year FY2025. This volatility is driven by one-time Visa-related items, so disclosure of non-recurring components matters for any later securities claim over earnings quality.",
-  "lcr": "The LCR has held between 110% and 113% since FY2025 Q2, at 110.0% in FY2026 Q2, backed by about $1.5 trillion of liquidity sources including about $956B of HQLA. Liquidity is ample, but the ratio sits at the low end of its recent range, so internal floors and management of further drift are open questions.",
-  "net_income": "Net income dipped from $58.47B in FY2024 to $57.05B in FY2025, with FY2025 Q4 at $13.03B after a $2.2B Apple Card-related provision. It spiked to $21.16B in FY2026 Q2 on the Visa gain and fell back to a preliminary $15.30B in Q3. Non-recurring items in both directions make earnings presentation and run-rate guidance a disclosure-sensitive area.",
-  "nim": "Net interest margin eased from 2.7% in FY2023 to 2.5% in FY2025 and 2.4% in FY2026 Q2. Rate-sensitivity management, including the portfolio repositioning that produced securities losses, is a core earnings driver and a subject of management disclosure.",
-  "noninterest_income": "Fee income reached $31.84B in FY2026 Q2 versus $87.00B for all of FY2025. The Q2 figure is inflated by the $4.6B Visa gain and $1.0B of equity investment gains, partly offset by $395M of securities losses from portfolio repositioning. The quality and recurrence of fee income are therefore central to how earnings were represented.",
-  "npl_ratio": "The NPL ratio has been stable at 0.7% in FY2024 and FY2025, and nonperforming assets were $9.8B at June 30, 2026. However, allowance coverage eased to 1.79% from 1.85% and the 10-K flags private credit expansion and past borrower collateral fraud, so reserve adequacy and credit-risk disclosures warrant attention.",
-  "revenue": "Revenue rose from $177.56B in FY2024 to $182.45B in FY2025, then jumped to $57.35B in FY2026 Q2 before easing to $50.17B in Q3. The Q2 peak includes a $4.6B Visa share exchange gain, so how management framed that quarter's revenue against underlying run-rate is a potential disclosure-based securities claim point.",
-  "revenue_growth_qoq": "Sequential growth reached 15.1% in FY2026 Q2 after 8.8% in Q1, against a flat-to-negative pattern through FY2025 (-1.4% in Q4). Much of the Q2 spike traces to non-recurring Visa and equity investment gains, so the swing is a non-repeatable comparison base that bears on how results were communicated to investors.",
-  "revenue_growth_yoy": "YoY growth of 27.7% in FY2026 Q2 stands far above the 2.8% full-year FY2025 rate and is lifted by the $4.6B Visa Class B-2 gain. A reversion in later periods could draw investor scrutiny if the one-off nature of the Q2 growth was not clearly disclosed.",
-  "tier1_ratio": "The Tier 1 ratio fell from 16.8% at FY2024 to 15.1% at FY2026 Q2, alongside a 5.5% SLR as total assets reached $5.0 trillion. Which capital constraint binds first shapes future capital actions and the board's oversight record."
+  "buyback_intensity": "Buybacks ran at 0.55x net income in FY2025 against 0.32x in FY2024, and fell to 0.32x in Q2 2026 from 0.50x in Q1. Q2 net income includes the Visa gain, and management now frames repurchases as an investment decision, so the pace of distributions against falling capital ratios is a key governance point.",
+  "buybacks": "Repurchases were $31.59B in FY2025 against $18.83B in FY2024, then $8.32B in Q1 2026 and $6.79B in Q2 2026. Large buybacks while CET1 declines and Basel and G-SIB capital rules tighten can draw shareholder and regulator scrutiny.",
+  "cet1_ratio": "CET1 fell to 13.9% at Q3 2026 from 14.2% at Q2 2026, 14.6% at FY2025 and 15.7% at FY2024, on RWA growth and the Apple Card deal. The CFO expects a 5.2% G-SIB surcharge in 2028 against 4.5% now, so shrinking headroom alongside ongoing buybacks is the central capital issue for D&O.",
+  "equity": "Stockholders' equity rose to $374.60B at Q2 2026 from $344.76B at FY2024, a growing loss-absorbing base. For a G-SIB, regulatory capital ratios (CET1, Tier 1) are the sharper test of the capital position.",
+  "fee_income_growth_yoy": "Fee income grew 46.7% year over year in Q2 2026, versus 11.0% in Q1, driven predominantly by the Visa gain and $1.0B of equity investment gains. Underwriters should look through this when assessing earnings trends and investor communications.",
+  "lcr": "The liquidity coverage ratio was 110.0% at Q2 2026, down from 113.0% at FY2024 Q4 and 112.0% at Q1 2026. Liquidity is adequate, but the small downward drift coincides with growth in markets financing and lending.",
+  "net_income": "Net income was $21.16B in Q2 2026, then $15.30B in Q3 2026. FY2025 was $57.05B against $58.47B in FY2024. Q2 includes non-recurring gains, so earnings quality and how those gains are described matter for disclosure scrutiny.",
+  "nim": "Net interest margin was 2.4% in Q2 2026, against 2.5% in Q1 2026 and 2.6% for FY2024. Compression in the core earnings engine matters because management is guiding expenses higher while capital ratios fall.",
+  "noninterest_income": "Fee income was $31.84B in Q2 2026, against $24.47B in Q1 and $20.80B in Q4 2025. The 10-Q attributes the rise predominantly to the Visa gain, so the figure is distorted by a non-recurring item that affects how results are presented.",
+  "npl_ratio": "The nonperforming loan ratio was 0.7% at FY2025, the same as FY2024 and up from 0.5% at FY2023. Reported credit quality is solid, but the CEO flags weaker underwriting and private credit exposure, so any deterioration would test earlier benign commentary.",
+  "revenue": "Quarterly revenue was $57.35B in Q2 2026, up from $49.84B in Q1, then $50.17B in Q3. The Q2 peak included a $4.6B Visa gain, so the Q2 level may overstate the underlying run rate that investor guidance is judged against.",
+  "revenue_growth_qoq": "Sequential growth was 15.1% in Q2 2026 and 8.8% in Q1 2026, after -1.4% in Q4 2025. The Q2 jump coincides with the Visa share gain, so it is not a clean read on momentum.",
+  "revenue_growth_yoy": "Year-over-year growth reached 27.7% in Q2 2026, versus 10.0% in Q1 2026 and 7.1% in Q4 2025. Management called the environment close to peak while reporting this strength, so how the disclosures reconcile the two is a D&O focus.",
+  "tier1_ratio": "The Tier 1 ratio was 15.1% at Q2 2026 against 16.8% at FY2024 and 15.5% at FY2025, tracking the CET1 decline. Continued drift while distributions continue and capital rules tighten is a point for shareholder and regulatory scrutiny."
  },
  "loan_portfolio": [
   {

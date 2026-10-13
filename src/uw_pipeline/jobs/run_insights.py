@@ -1,11 +1,11 @@
 """Phase 5b `insights` stage (decisions D-033).
 
 Per company, in order:
-  1. news activity summaries (Claude Sonnet 5.5, batched)
-  2. behavioral insights from earnings call transcripts   (Claude Opus 5.5)
-  3. strategic & risk insights                              (Claude Opus 5.5)
-  4. key insights, using 2-3                                (Claude Opus 5.5)
-  5. follow-up questions, using 2-4                         (Claude Opus 5.5)
+  1. news activity summaries (extractor model, batched)
+  2. behavioral insights from earnings call transcripts   (synthesis model, insights.yaml)
+  3. strategic & risk insights                              (synthesis model)
+  4. key insights, using 2-3                                (synthesis model)
+  5. follow-up questions, using 2-4                         (synthesis model)
 Each set is grounded (enrich/insights.py), then stored as a new current version unless its
 input is unchanged, in which case nothing is written (and the LLM call came from the cache).
 Sources, links between objects and the Supporting Evidence text are built by rules
@@ -59,7 +59,7 @@ log = logging.getLogger(__name__)
 
 # Part of every stored set's input hash: bump when grounding rules change so that unchanged
 # inputs are re-grounded (the LLM output itself still comes from the cache).
-GROUNDING_VERSION = "4"
+GROUNDING_VERSION = "5"
 
 
 @dataclass

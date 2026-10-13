@@ -1,0 +1,10 @@
+# Risk scores (Phase 9.4, decisions D-037). Extractor model (llm.yaml).
+# Scales: 0.00-1.00; transcript tone -1.00..1.00. Each item is scored once per input (cached).
+
+news:
+  prompt_version: news_risk_v1
+  batch_size: 25          # activities per call
+transcript:
+  prompt_version: transcript_tone_v1
+  chunks_per_call: 6      # transcript chunks (~3.5k characters each) per call
+  max_flags: 25           # per transcript, highest-scoring chunks first

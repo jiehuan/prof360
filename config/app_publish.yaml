@@ -1,0 +1,89 @@
+# How pipeline outputs are written into the application database (Phase 9, decisions D-037).
+# Read by the `publish` stage. Table definitions: src/uw_pipeline/schema_app.py.
+
+# metric_definition.section -> metric_category.categoryName
+metric_categories:
+  financial: Financial
+  liquidity: Liquidity
+  leverage: Leverage
+  cash_flow: Cash Flow
+  operational: Operational Metrics
+  fi_performance: Performance Trends
+  loan_portfolio: Loan Portfolio
+
+# Key insight type -> iconType
+key_insight_icons:
+  Warning: warning
+  Negative: trending-down
+  Positive: trending-up
+  Info: info
+
+# insight.category -> StrategicRisk.Category
+strategic_categories:
+  "Governance & Leadership": governance
+  "Risk & Legal": risk
+  "Event Signals": event
+  "Behavioral Insights": behavior
+
+# insight.subcategory (free text written by the model) -> RiskTypes.RiskTypeName.
+# Rules are tried in order; the first whose `pattern` (case-insensitive regex) matches the
+# subcategory wins. `categories` limits a rule to some StrategicRisk categories.
+risk_types:
+  - {pattern: "^no signal$", type: "No material signal"}
+  - {pattern: "^tone shift$", type: "Tone Shift"}
+  - {pattern: "^strategic focus shift$", type: "Strategic Focus Shift"}
+  - {pattern: "^emerging risk language$", type: "Emerging Risk Language"}
+  - {pattern: "^wording change$", type: "Wording Change"}
+  - {pattern: "auditor|internal control|controls", type: "Auditor & Internal Controls"}
+  - {pattern: "cfo|ceo|executive|succession|leadership|management", type: "Leadership Change",
+     categories: [governance]}
+  - {pattern: "compensation|pay\\b", type: "Compensation", categories: [governance]}
+  - {pattern: "board|independence|activism|control", type: "Board & Governance",
+     categories: [governance]}
+  - {pattern: "capital allocation|buyback|dividend", type: "Capital Allocation"}
+  - {pattern: "litigation|class action|lawsuit|suits|legal", type: "Litigation"}
+  - {pattern: "cyber", type: "Cybersecurity"}
+  - {pattern: "regulat|policy|pricing|tariff|trade|tax", type: "Regulatory & Policy"}
+  - {pattern: "liquidity|leverage|covenant|debt|capital and|balance sheet|financing",
+     type: "Liquidity & Leverage"}
+  - {pattern: "credit", type: "Credit Quality"}
+  - {pattern: "m&a|acqui|merger|divest|disposition|jv|partner exit", type: "M&A & Divestiture"}
+  - {pattern: "impairment|restructur|closure|strategy reset", type: "Impairment & Restructuring"}
+  - {pattern: "guidance|gain|earnings|accounting", type: "Earnings & Guidance"}
+  - {pattern: "listing", type: "Listing"}
+  - {pattern: "supply|labor|operat|fuel|geopolit|safety|product", type: "Operational"}
+  - {pattern: "concentration|demand|revenue|counterparty|franchis|program", type: "Business & Demand"}
+  - {pattern: "liabilit|incentive|clawback|legacy", type: "Contingent Liabilities"}
+  - {pattern: "contract", type: "Material Contracts"}
+  - {pattern: ".*", type: "Other"}
+
+# confidence (0.00-1.00), set by rules.
+confidence:
+  # MatrixData: by how the value was obtained
+  derivation:
+    REPORTED: 1.0
+    DERIVED: 0.95
+    COMPUTED: 0.95
+    LLM_EXTRACTED_DUAL: 0.9   # text metric both models agreed on
+    LLM_EXTRACTED: 0.8
+    PRELIMINARY: 0.7
+  # KeyInsights / StrategicRisk: by distinct sources behind the insight
+  insight:
+    one_source: 0.7
+    several_sources: 0.85
+    sec_filing_bonus: 0.05    # at least one source is an SEC filing
+    max: 0.95
+  # Activities: by how many articles reported the event
+  activity:
+    one_article: 0.6
+    several_articles: 0.8
+
+# FI metrics written to Trend (fiscal-year values, FI companies only); quarterly values stay in
+# MatrixData.
+trend_metrics: [nim, cet1_ratio, tier1_ratio, lcr, npl_ratio, fee_income_growth_yoy]
+
+# The Loan Portfolio modal is published as this pseudo-metric in CompanyMetricDetail.
+loan_portfolio_metric:
+  code: loan_portfolio
+  name: Loan Portfolio Composition
+  description: Retained loans by loan class, with nonaccrual loans and the prior year-end.

@@ -22,7 +22,9 @@ Operations:
 - Logs are one JSON object per line, with `run_id`, `ticker` and `stage`.
 
 Dev uses SQLite on the PVC (`DATABASE_URL=sqlite:////data/uw.db`). SQLite allows one writer at
-a time, so jobs must not overlap: nightly and morning are 6 hours apart, and `news` stays
-suspended until a premium Alpha Vantage key exists. Before Azure SQL: set `DATABASE_URL` in the
+a time, so jobs must not overlap: nightly (23:30) and morning (05:30) are 6 hours apart, and
+`news` runs at 03:00, 09:00, 15:00 and 21:00 ET with the premium Alpha Vantage key. The
+`publish` stage writes the application database (`APP_DATABASE_URL`, dev default
+`sqlite:////data/app.db`). Before Azure SQL: set `DATABASE_URL` in the
 secret, decide who owns the schema migrations, and test the MERGE upsert path. It has not run
 against SQL Server yet.

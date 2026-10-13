@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -259,3 +259,58 @@ class MetricRelevances(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     metrics: list[MetricRelevance]
+
+
+# -- Phase 9.4: risk scores -----------------------------------------------------------------------
+
+# Ranges are stated in the description and clamped by the caller (structured outputs do not
+# enforce numeric bounds, and one stray value must not invalidate a whole batch).
+Score = Annotated[float, Field(description="0.00 (none) to 1.00 (severe)")]
+
+
+class NewsScore(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    litigation: Score
+    regulatory: Score
+    financial_distress: Score
+    governance: Score
+    operational: Score
+    overall: Score
+    rationale: str = Field(description="One sentence naming the facts behind the scores")
+
+
+class NewsScores(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    articles: list[NewsScore]
+
+
+class RiskFlag(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    category: Literal[
+        "litigation", "regulatory", "financial_distress", "governance", "operational",
+        "guidance", "accounting",
+    ]  # fmt: skip
+    quote: str = Field(description="Verbatim sentence from the chunk, at most 300 characters")
+
+
+class ChunkScore(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    chunk: str = Field(description="Chunk id, e.g. C3")
+    tone: float = Field(description="-1.00 (very negative) to 1.00 (very positive)")
+    confidence: Score
+    hedging: Score
+    uncertainty: Score
+    forward_looking: Score
+    liability_cues: Score
+    flags: list[RiskFlag]
+
+
+class ChunkScores(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    chunks: list[ChunkScore]

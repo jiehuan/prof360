@@ -66,15 +66,9 @@ def _tags(rows: Sequence[Mapping[str, Any]]) -> list[str]:
     return sorted(count, key=lambda t: -count[t])
 
 
-def methodology(
-    m: MetricDef,
-    rows: Sequence[Mapping[str, Any]],
-    names: Mapping[str, str],
-    labels: SourceLabels,
-) -> str:
-    """Formula / Evidence Methodology for one metric; `rows` are all its stored values."""
-    shown = shown_rows(rows)
-    lines: list[str] = [m.description] if m.description else []
+def definition_lines(m: MetricDef, names: Mapping[str, str]) -> list[str]:
+    """How the metric is defined, the same for every company (formula or text definition)."""
+    lines: list[str] = []
     if m.kind == "growth":
         base = names.get(m.base or "", m.base or "")
         than = "the prior quarter"
@@ -98,12 +92,25 @@ def methodology(
             lines.append(f"Treated as zero when not reported: {opt}.")
     elif m.extraction is not None:
         lines.append(f"Definition: {m.extraction.definition}")
-        check = (" Two models (Claude Sonnet 5.5 and Claude Opus 5.5) read the text "
-                 "independently and the value is kept only where both agree.")  # fmt: skip
+        check = (" Two different models read the text independently and the value is kept "
+                 "only where both agree.")  # fmt: skip
         lines.append(
             "Extracted from the MD&A of the 10-Q/10-K and from earnings releases; the number "
             "must appear verbatim in the quoted text." + (check if m.extraction.dual_check else "")
         )
+    return lines
+
+
+def methodology(
+    m: MetricDef,
+    rows: Sequence[Mapping[str, Any]],
+    names: Mapping[str, str],
+    labels: SourceLabels,
+) -> str:
+    """Formula / Evidence Methodology for one metric; `rows` are all its stored values."""
+    shown = shown_rows(rows)
+    lines: list[str] = [m.description] if m.description else []
+    lines += definition_lines(m, names)
     if m.nm_when:
         lines.append(f"Shown as N/M when {_readable(m.nm_when, names)}.")
     tags = _tags(shown)

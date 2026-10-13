@@ -2,11 +2,11 @@
 # The extractor reads every in-scope section. When it disagrees with the rules, the tie-breaker
 # answers the same question independently and the majority of the three votes wins.
 extractor:
-  model: claude-sonnet-5-5
-  effort: low          # extraction/classification; Sonnet 5.5 guidance: low for extraction
+  model: claude-haiku-5-5
+  effort: low          # extraction/classification (user decision 2026-10-13: Haiku, was Sonnet)
   max_tokens: 8000
 tiebreaker:
-  model: claude-opus-5-5
+  model: claude-sonnet-5-5   # user decision 2026-10-13: Sonnet, was Opus
   effort: high
   max_tokens: 16000
 prompt_version: signals_v1
@@ -29,3 +29,4 @@ topics:
 pricing:
   claude-opus-5-5: [4.0, 20.0]
   claude-sonnet-5-5: [2.0, 10.0]
+  claude-haiku-5-5: [0.1, 0.5]     # prompts <= 100K tokens; longer prompts cost 0.5 / 2.5

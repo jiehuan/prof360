@@ -2,7 +2,7 @@
 
 # Company-level synthesis (behavioral, strategic & risk, key insights, follow-up questions).
 synthesis:
-  model: claude-opus-5-5
+  model: claude-sonnet-5-5   # user decision 2026-10-13: Sonnet, was Opus
   effort: high
   max_tokens: 16000
 # Per-item work (news activity summaries). The extractor spec from llm.yaml is used.
@@ -26,6 +26,12 @@ excerpts:
   "10Q-I-2": 30000   # MD&A (start: overview and results)
 transcripts: 3            # latest earnings calls for behavioral insights
 news_days: 30             # activities in the package
+# Only material news enters the package (Phase 9.4, decisions D-037), so routine news does not
+# regenerate the Opus insights: an activity needs a news_risk_score with overall >= `overall`
+# or any single dimension >= `any_dimension`. Unscored activities are left out.
+news_materiality:
+  overall: 0.5
+  any_dimension: 0.6
 activity_batch: 20        # activities per summary call
 metric_quarters: 5        # latest quarters of each metric in the table
 metric_years: 3           # latest fiscal years

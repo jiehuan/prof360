@@ -30,7 +30,15 @@ class CompanyConfig(BaseModel):
     # Ignore facts for periods starting before this date (e.g. predecessor figures that a
     # successor registrant reports in its own filings).
     history_start: date | None = None
+    # Names an article must mention (headline or summary) to count as news about the company
+    # (Phase 9). Default: the first word of display_name.
+    news_aliases: list[str] = Field(default_factory=list)
     notes: str | None = None
+
+    def aliases(self) -> list[str]:
+        if self.news_aliases:
+            return self.news_aliases
+        return [self.display_name.split()[0]] if self.display_name else [self.ticker]
 
     @field_validator("ticker")
     @classmethod

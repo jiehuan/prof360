@@ -34,6 +34,8 @@ class LoanPortfolioConfig(BaseModel):
 
 class TextConfig(BaseModel):
     prompt_version: str
+    # Effort for the extractor model on this task only (None = llm.yaml's).
+    extractor_effort: str | None = None
     sections: list[str]
     earnings_release: bool
     max_chars: int

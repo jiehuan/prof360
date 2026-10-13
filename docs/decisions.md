@@ -538,3 +538,69 @@ set of links between metrics, insights and questions, and one set of source titl
   that every displayed metric with data has methodology and sources (≥ 90% with relevance),
   every insight and question has a source, links reach current objects, and loan rows are found
   in the cited filing.
+
+**D-037 Application database, news quality and risk scores (Phase 9).** User decisions: the
+pipeline replaces the left half of the team's data model diagram; the score tables are wanted;
+the diagram may change, as little as possible; scores 0.00-1.00 (tone -1.00..1.00); RiskTypes
+by config; confidence by rules; only material news feeds the insights.
+- **Publish stage.** `publish` writes the application tables (`schema_app.py`) from the pipeline
+  tables, one transaction per company, in the app database (`APP_DATABASE_URL`; dev
+  `data/app.db`). App ids are identity columns; `pipeline_publish_map` (in the app database, so
+  a row and its mapping commit together) maps every pipeline object to its app id and stores a
+  content hash, so reruns update the same row and unchanged rows are not written. Key insights,
+  strategic risks and questions are versioned: a new version is a new row, older rows get
+  `isActive = 0`, so user flags never end up on a question whose text changed.
+- **Diagram changes:** new `ItemLink` (one table for every Related tab) and
+  `CompanyMetricDetail` (metric modal; the loan modal as pseudo-metric `loan_portfolio`); added
+  columns on LoanPortfolio/LoanTypes, FollowUpQuestions (Priority, isActive), KeyInsights
+  (isActive), NewsRiskScore (ActivityId), TranscriptRiskFlag (Category),
+  TranscriptToneAnalysis (CompanyId, Quarter); sources columns hold `[{title, url, date}]`.
+- **RiskTypes** come from the model's free-text subcategory through ordered regex rules in
+  `config/app_publish.yaml` (no prompt change, no regeneration). On the live data every
+  subcategory maps to a named type.
+- **Confidence** by rules (`config/app_publish.yaml`): metric values by derivation, insights by
+  number and kind of sources, activities by number of articles.
+- **News quality.** With the premium key, AV relevance proved useless for large companies: 1,893
+  JPM articles in 30 days, mostly other banks or JPMorgan as analyst / fund holder. Two filters:
+  (1) rules — the article must name the company (`news_aliases`, case-sensitive) and the
+  headline must not match analyst-action or holdings patterns; (2) a Claude Sonnet 5.5 verdict
+  per stored article (SUBJECT / PASSING / ANALYST / HOLDING / MARKET), judged once, only SUBJECT
+  kept. Result: 379 activities for 9 companies (JPM 1,714 → 117). Stored articles are re-checked
+  against the current rules on every run (`pruned`).
+- **Risk scores (Sonnet 5.5, anchored rubrics).** News: five dimensions plus overall, per
+  activity, rationale numbers checked (a failing rationale is withheld, scores kept, so the item
+  is not re-sent every run). Transcripts: per chunk (6 chunks per call), length-weighted mean;
+  risk flags must be verbatim quotes. Bounds are in the descriptions and clamped in code
+  (structured outputs do not enforce numeric bounds).
+- **Materiality gate (option C).** News enters the strategic/key/follow-up input only with
+  overall ≥ 0.5 or any dimension ≥ 0.6 (`config/insights.yaml`), so routine news does not
+  regenerate the Opus insights (measured ~$0.93 per company per regeneration). 0.6/0.7 admitted
+  4 items and missed an SEC censure of JPM and class actions against Ford; 0.5/0.6 admits 13.
+- **Schedules.** `uw-news` (news, scores, publish) runs at 03/09/15/21 ET, between nightly and
+  morning, because SQLite has one writer.
+
+**D-038 Cheaper models (user decision, 2026-10-13).** Claude Haiku 5.5 replaces Claude Sonnet 5.5
+(extractor: signal votes, text-metric first pass, news grouping and relevance, activity
+summaries, risk scores) and Claude Sonnet 5.5 replaces Claude Opus 5.5 (tie-breaker and second
+model of the dual check, and the synthesis tasks: behavioral, strategic & risk, key insights,
+follow-ups, metric relevance). Config only (`llm.yaml`, `insights.yaml`).
+- Haiku 5.5 rejects the `fallbacks` parameter (400), so the client sends server-side fallback
+  only to models that support it.
+- The dual check still pairs two different models (Haiku + Sonnet).
+- The model is part of every cache key, so the switch re-ran all LLM tasks once. Stored news
+  relevance verdicts and risk scores are keyed by their text and prompt version, not the model,
+  and were kept.
+- Text shown to users no longer names models ("two different models").
+- **Results of the re-run** (compared with the Sonnet/Opus outputs):
+  - Signal votes: all 102 signal outcomes identical (89 Haiku calls, 8 Sonnet tie-breaks).
+  - Text metrics: no value disagrees with the earlier extraction. At `low` effort Haiku lost
+    15 of ~94 values: it skipped comparative columns and quoted loosely, joining a table header
+    and a row with "..." and leaving out footnote markers ("capital3"). Grounding now accepts
+    elided quotes (every piece verbatim, in order, ≥ 8 characters) and ignores footnote markers
+    glued to words (`GROUNDING_VERSION` 5), and text extraction runs Haiku at `medium`
+    (`extractor_effort`). Remaining gap: three JPM 2025 Q1 comparatives.
+  - Synthesis (Sonnet): grounding dropped 17 of 89 key insights (about 19%, Opus about 5%),
+    almost all for figures the model computed itself (sums, ranges), which the prompt forbids.
+    Every company still has 6-10 key insights. If the drop rate stays near the 20% DQ
+    threshold, a stricter prompt version is the next step.
+  - Cost of the full re-run: about $6.

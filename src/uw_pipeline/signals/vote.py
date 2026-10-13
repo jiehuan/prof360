@@ -3,8 +3,8 @@
 For each in-scope document, every configured topic (e.g. "leadership:CFO" in an 8-K Item 5.02)
 gets three possible votes:
   1. the rules (already computed),
-  2. the extractor LLM (Claude Sonnet 5.5) reading the section text,
-  3. only when 1 and 2 disagree: the tie-breaker LLM (Claude Opus 5.5), asked the same question
+  2. the extractor LLM (config/llm.yaml) reading the section text,
+  3. only when 1 and 2 disagree: the tie-breaker LLM (a stronger model), asked the same question
      independently.
 The tie-breaker sees both claims (unlabelled) with their evidence and rules on the text. The
 majority answer wins. When all three differ, the topic is DISPUTED and left for a human.

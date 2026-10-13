@@ -11,6 +11,7 @@
 | `uw-pipeline runs` | 列出最近的运行，以及最近一次里失败或被跳过的任务和原因 |
 | `uw-pipeline dq-report` | 生成数据质量报告，写到 `data/reports/dq-run<id>.md` |
 | `uw-pipeline coverage-report` | 生成 XBRL 指标覆盖率报告，并列出没有说明原因的缺口 |
+| `uw-pipeline run --stage publish` | 把当前结果写进应用库（nightly、morning、news 三个 job 末尾都会跑） |
 | `uw-pipeline audit-insights` | 抽样检查 LLM 洞察：引用的原文能否找到、来源是否都有标题、追问问题是否都有来源、贷款行能否在原文找到、非 FI 公司是否混入了 FI 数据 |
 
 **运行状态**：`pipeline_run.status` 有以下几种取值：
@@ -72,12 +73,20 @@
 - 银行的 5 年历史由 `config/industry_groups.yaml` 的 `mdna_history_years` 控制，只保存旧 10-K 的 MD&A。
 - 贷款组合的口径在 `config/text_extraction.yaml` 的 `loan_portfolio`。只保留两个模型一致、且原文给出余额的类别，不会从百分比反推余额。
 
-## 8. 常见故障
+## 8. 应用库、新闻和评分（Phase 9，D-037）
+
+- `publish` 阶段把管线结果写进应用库（`APP_DATABASE_URL`，dev 是 `data/app.db`）。管线不写 `Company.logo` 和用户相关的表。重跑只写有变化的行。
+- 应用库的映射规则（指标分类、风险类型、confidence）在 `config/app_publish.yaml`。如果 `RiskTypes` 里出现 "Other"，在 `risk_types` 里加一条规则即可，重新 publish 不需要 LLM。
+- 新闻相关性：公司别名在 `config/companies.yaml` 的 `news_aliases`；排除规则和 LLM 判断在 `config/news.yaml`。新闻阶段的 `pruned` 是按当前规则删掉的旧文章数。
+- 风险评分在 `scores` 阶段（`config/scores.yaml`）。只有重要新闻进入洞察输入，阈值在 `config/insights.yaml` 的 `news_materiality`；阈值调低会让洞察更常重新生成（每家公司每次约 $0.9）。
+- 比较模型：`python scripts/compare_models.py --model claude-sonnet-5-5 MAR JPM ENPH`，报告在 `data/reports/`。
+
+## 9. 常见故障
 
 | 现象 | 原因与处理 |
 |---|---|
-| transcripts 显示 `daily quota ... used` | 免费 Alpha Vantage 额度是每天 25 次，下次运行会自动接着拉。有了付费 key 后，设置 `ALPHAVANTAGE_CALLS_PER_MINUTE=75`、`ALPHAVANTAGE_DAILY_QUOTA=0` |
-| news 显示 `premium` | NEWS_SENTIMENT 需要付费 key。在此之前 `uw-news` CronJob 保持 `suspend: true` |
+| transcripts 显示 `daily quota ... used` | 检查 `ALPHAVANTAGE_CALLS_PER_MINUTE=75`、`ALPHAVANTAGE_DAILY_QUOTA=0`（付费 key）是否已设置 |
+| transcripts 显示 `unavailable` | AV 没有这家公司这一季的记录，常见于改过 ticker 的公司（SKYD 以前是 PARA/PSKY） |
 | SEC 返回 403/429 | 检查 `SEC_USER_AGENT` 是否包含联系邮箱，限速不要超过 10 次/秒（默认 8）。客户端已经带了重试 |
 | 日志里出现 `LLM unavailable` | key 或 workspace 有问题。用户级 key 需要设置 `ANTHROPIC_WORKSPACE_ID`。此时 signals 会退回纯规则，textmetrics 和 insights 会失败 |
 | 运行一直显示 RUNNING | 进程已经死了。30 分钟后再次启动同一个 job 就会续跑；也可以等下一次 CronJob |
@@ -89,7 +98,7 @@
 | DQ 报出 `link_integrity` | 关联指向了已经被替换的洞察。重跑 `--stage insights --stage metricdetail`（输出来自缓存，不产生费用） |
 | DQ 报出 `source_coverage`（Info） | 洞察只引用了电话会议记录，没有公开链接，属于预期情况 |
 
-## 9. 密钥和费用
+## 10. 密钥和费用
 
 - 密钥只放在 `.env`（本地，已被 git 忽略）或 OpenShift Secret 中，**不要写进代码、日志或测试数据**。Alpha Vantage 的报错消息里会带 key，客户端已经做了脱敏。
 - 提交前检查：用 `git grep --cached` 搜索 Anthropic key 的固定前缀和 Alpha Vantage key 的前几位，应该没有任何结果。

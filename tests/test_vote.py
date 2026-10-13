@@ -234,3 +234,27 @@ def test_llm_departure_plus_appointment_is_succession() -> None:
     )  # fmt: skip
     sig = next(s for s in out if s.rule_id == "8k_5.02_cfo_succession")
     assert sig.severity == "Warning" and "Jane Roe" in sig.description
+
+
+def test_grounding_accepts_elided_quotes_in_order() -> None:
+    # Claude Haiku 5.5 joins a table header and the row it read with "..." (live MAR 10-Q).
+    src = ("Comparable Systemwide Properties\nThree Months Ended September 30, 2025\n"
+           "RevPAR Occupancy\nWorldwide (2) $ 131.43 0.5 % 71.5 % (0.3) % pts. $ 183.71 0.9 %")  # fmt: skip
+    q = "Comparable Systemwide Properties ... Worldwide (2) $ 131.43 0.5 % 71.5 %"
+    assert is_grounded(q, src)
+    assert is_grounded("Comparable Systemwide Properties … Worldwide (2) $ 131.43", src)
+    # pieces must appear in order, each long enough, and each verbatim
+    assert not is_grounded("Worldwide (2) $ 131.43 ... Comparable Systemwide Properties", src)
+    assert not is_grounded("Comparable Systemwide Properties ... $ 1 ... 71.5 %", src)
+    assert not is_grounded("Comparable Systemwide Properties ... Worldwide (2) $ 999.99", src)
+    # a leading or trailing ellipsis is still fine
+    assert is_grounded("... Worldwide (2) $ 131.43 0.5 %", src)
+
+
+def test_grounding_ignores_footnote_markers_left_out() -> None:
+    # live JPM earnings release: "capital3", "ratio3"; MD&A tables: "estate(a)"
+    src = "n Basel III common equity Tier 1 capital3 of $304 billion, Standardized ratio3 of 13.9%"
+    assert is_grounded("Basel III common equity Tier 1 capital of $304 billion, Standardized "
+                       "ratio of 13.9%", src)  # fmt: skip
+    assert is_grounded("Residential real estate $ 300,664", "Residential real estate(a)\n$ 300,664")
+    assert not is_grounded("Standardized ratio of 13.8%", src)

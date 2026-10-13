@@ -16,12 +16,44 @@ def normalize(text: str) -> str:
     return _WS.sub(" ", text).strip().lower()
 
 
+_ELLIPSIS = re.compile(r"\s*(?:\.\.\.|…)\s*")
+# Each piece of an elided quote ("Comparable Systemwide ... Worldwide $ 131.43") must be at
+# least this long, so elision cannot stitch together arbitrary fragments.
+MIN_PIECE = 8
+
+
+# Footnote markers glued to a word ("capital3", "estate(a)"); models often leave them out
+# when quoting, so a second comparison ignores them on both sides.
+_FOOTNOTE = re.compile(r"(?<=[a-z])(?:\d{1,2}|\([a-z0-9]{1,2}\))+(?=[\s,.;:)]|$)")
+
+
 def is_grounded(quote: str, source: str, *, min_chars: int = 12) -> bool:
+    if _grounded(quote, source, min_chars):
+        return True
+    return _grounded(_FOOTNOTE.sub("", normalize(quote)), _FOOTNOTE.sub("", normalize(source)),
+                     min_chars)  # fmt: skip
+
+
+def _grounded(quote: str, source: str, min_chars: int) -> bool:
     """True if the quote (whitespace/quote-style/case-insensitive) appears in the source.
 
-    A trailing "..." or a quote wrapped in quotation marks is tolerated."""
-    q = normalize(quote).strip("\"'").removesuffix("...").removesuffix("…").strip()
-    return len(q) >= min_chars and q in normalize(source)
+    A quote wrapped in quotation marks, and a leading or trailing "...", are tolerated. A quote
+    elided with "..." in the middle is grounded when every piece occurs in the source, in that
+    order (models often join a table header and a row this way)."""
+    q = normalize(quote).strip("\"'").strip()
+    pieces = [x for x in _ELLIPSIS.split(q) if x]
+    src = normalize(source)
+    if len(pieces) == 1:
+        return len(pieces[0]) >= min_chars and pieces[0] in src
+    if sum(len(x) for x in pieces) < min_chars or any(len(x) < MIN_PIECE for x in pieces):
+        return False
+    at = 0
+    for piece in pieces:
+        found = src.find(piece, at)
+        if found < 0:
+            return False
+        at = found + len(piece)
+    return True
 
 
 # -- numbers in generated text (PLAN §7.1) -----------------------------------------------------

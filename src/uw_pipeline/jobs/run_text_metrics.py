@@ -7,8 +7,8 @@
   cross-checked against it instead.
 - Bank loan book by loan class, latest period and prior year-end -> loan_portfolio_segment,
   plus the rule-generated Loan Portfolio modal content -> loan_portfolio_detail (Phase 8).
-Bank metrics (`dual_check`) and the loan book are kept only where Claude Sonnet 5.5 and Claude
-Opus 5.5 extract the same number independently.
+Bank metrics (`dual_check`) and the loan book are kept only where the extractor and the
+tie-breaker model (config/llm.yaml) extract the same number independently.
 """
 
 from __future__ import annotations
@@ -144,6 +144,11 @@ class Extractor:
         self, client: LLMClient, llm: LLMConfig, cfg: TextConfig, conn: Connection, now: datetime
     ) -> None:
         self.client, self.llm, self.cfg, self.conn, self.now = client, llm, cfg, conn, now
+        self.first = (
+            llm.extractor.model_copy(update={"effort": cfg.extractor_effort})
+            if cfg.extractor_effort
+            else llm.extractor
+        )
         self.system = (PROMPTS_DIR / f"{cfg.prompt_version}.md").read_text(encoding="utf-8")
         self.loan_version = cfg.loan_portfolio.prompt_version
         self.loan_system = (PROMPTS_DIR / f"{self.loan_version}.md").read_text(encoding="utf-8")
@@ -184,7 +189,7 @@ class Extractor:
             f"Company: {company}\nDocument: {doc.label} (accession {doc.accession_no})\n\n"
             f"Metrics to extract:\n{metrics}\n\n<excerpt>\n{source}\n</excerpt>"
         )
-        first = self._call(self.llm.extractor, "text_metrics", self.system, user,
+        first = self._call(self.first, "text_metrics", self.system, user,
                            VALUES_SCHEMA, TextValues)  # fmt: skip
         second = (
             self._call(
@@ -210,7 +215,7 @@ class Extractor:
             self._call(
                 spec, "loan_book", self.loan_system, user, LOAN_SCHEMA, LoanBook, self.loan_version
             )
-            for spec in (self.llm.extractor, self.llm.tiebreaker)
+            for spec in (self.first, self.llm.tiebreaker)
         ]
         return source, out[0], out[1]
 
@@ -418,6 +423,17 @@ def _loan_book(
         }
         for r in keep
     ]
+    # updated_at changes only when a row's content does (it is shown as "Updated At").
+    seg = loan_portfolio_segment.c
+    before = {
+        (r.period_end, r.segment): r
+        for r in conn.execute(select(loan_portfolio_segment).where(seg.company_id == company_id))
+    }
+    content = ("outstanding", "nonaccrual", "parent_segment", "evidence", "source_doc_id")
+    for row in rows:
+        old = before.get((row["period_end"], row["segment"]))
+        if old is not None and all(getattr(old, k) == row[k] for k in content):
+            row["updated_at"] = old.updated_at
     upsert(conn, loan_portfolio_segment, rows, key_cols=["company_id", "period_end", "segment"])
     current = {(r["period_end"], r["segment"]) for r in rows}
     stale = [
@@ -441,8 +457,14 @@ def _loan_book(
         )  # fmt: skip
     if resolver is not None:
         detail = loan_detail(rows, latest, prior, doc, resolver)
-        upsert(conn, loan_portfolio_detail, [detail | {"company_id": company_id,
-                                                      "updated_at": now}],
+        old_d = conn.execute(
+            select(loan_portfolio_detail)
+            .where(loan_portfolio_detail.c.company_id == company_id)
+        ).mappings().first()  # fmt: skip
+        same = old_d is not None and all(old_d[k] == v for k, v in detail.items())
+        stamp = old_d["updated_at"] if same and old_d is not None else now
+        upsert(conn, loan_portfolio_detail,
+               [detail | {"company_id": company_id, "updated_at": stamp}],
                key_cols=["company_id"])  # fmt: skip
     return len(rows)
 

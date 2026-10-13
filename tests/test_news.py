@@ -169,3 +169,64 @@ def test_next_run_attaches_and_never_duplicates(conn) -> None:
     assert count == 4
     # 4 stored on the first run (the tracking-URL copy was dropped) + MarketWatch.
     assert conn.execute(select(func.count()).select_from(news_item)).scalar_one() == 5
+
+
+MENTION = load_news_config(CONFIG_DIR).mention
+JPM = ["JPMorgan", "JP Morgan", "J.P. Morgan", "Chase", "Jamie Dimon"]
+
+
+@pytest.mark.parametrize(
+    ("title", "summary", "aliases", "keep"),
+    [
+        # live JPM feed, 2026-10: the company as analyst or fund holder is not news about it
+        ("JPMorgan Downgrades VICI Properties to Neutral From Overweight, Adjusts PT to $30", "", JPM, False),
+        ("Edison International (NYSE:EIX) Stock Price Target Lowered at JPMorgan Chase & Co.", "", JPM, False),
+        ("US BROKER MOVES: CBOE upgraded at Morgan Stanley; DD downgraded at JPM", "", ["JPM"], False),
+        ("JPMorgan initiates Marriott Vacations stock with overweight rating", "", JPM, False),
+        ("REG - Trainline PLC JPMorgan Chase & Co - Holding(s) in Company", "", JPM, False),
+        ("Bank of America Corp DE Makes New Investment in TPG RE Finance Trust, Inc. $TRTX", "", ["Bank of America"], False),
+        ("2,479,813 Shares in Citigroup Inc. $C Bought by Nykredit A S", "", JPM, False),
+        ("Crane Buys into Municipal Water with Trillium's US Pump Brands", "", JPM, False),
+        ("Investors chase yield as rates fall", "", JPM, False),  # the verb, not the bank
+        # about the company
+        ("JPMorgan Chase Falls 3% Despite New $20B QIA Partnership", "", JPM, True),
+        ("Bank stocks slide", "Jamie Dimon warned of cockroaches in private credit.", JPM, True),
+        ("Layoffs at Ford's Louisville plant", "", ["Ford"], True),
+        ("FDA approves new drug from Pfizer", "", ["Pfizer"], True),
+        ("Ford recalls 500,000 SUVs", "", ["Ford"], True),
+        ("Affordable housing push", "", ["Ford"], False),  # not a word match
+    ],
+)  # fmt: skip
+def test_news_must_be_about_the_company(title, summary, aliases, keep) -> None:
+    from uw_pipeline.normalize.news import about_company
+
+    assert about_company(title, summary, aliases, MENTION) is keep
+
+
+def test_llm_relevance_removes_non_subject_articles_once(conn) -> None:
+    from uw_pipeline.jobs.run_news import judge_and_prune
+
+    items, _ = parse_feed(FEED, "MAR", CFG)
+    dedup_and_store(conn, 1, "MARRIOTT", [(i, "raw") for i in items], CFG, llm=None, now=NOW)
+
+    def answer(model, user):
+        rows = [ln.split(" | ") for ln in user.splitlines() if ln.startswith("N")]
+        # the breach ruling is judged PASSING (to exercise removal); one id is left out
+        return {"articles": [
+            {"id": r[0], "verdict": "PASSING" if "breach" in r[1] else "SUBJECT"}
+            for r in rows if "CNBC" not in r[2] and "forecast" not in r[1]
+        ]}  # fmt: skip
+
+    fake = FakeLLM(answer)
+    judged, removed = judge_and_prune(conn, 1, "MARRIOTT", CFG, _llm(fake), NOW)
+    assert (judged, removed) == (4, 1)
+    titles = sorted(conn.execute(select(activity.c.title)).scalars())
+    assert titles == ["Hotel giant Marriott lifts forecast as travelers keep spending",
+                      "Marriott beats Q2 estimates, raises RevPAR outlook"]  # fmt: skip
+    verdicts = dict(conn.execute(select(news_item.c.title, news_item.c.relevance_verdict)).all())
+    assert (
+        verdicts["Hotel giant Marriott lifts forecast as travelers keep spending"] == "UNCLASSIFIED"
+    )
+    calls = len(fake.calls)
+    assert judge_and_prune(conn, 1, "MARRIOTT", CFG, _llm(fake), NOW) == (0, 0)
+    assert len(fake.calls) == calls

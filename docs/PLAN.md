@@ -524,6 +524,23 @@ uw-pipeline dq-report --run-id <id>
 
 ---
 
+### Phase 9 — 写入应用库、新闻质量、风险评分（2026-10-13 新增）
+
+**背景**：团队的数据模型图（应用库）就是 BFF 读的表。图的左半部分由管线取代；右半部分由新的 `publish` 阶段写入，并按详情弹窗的需要做少量改动（D-037）。
+
+- [x] 9.1 应用库表定义 `schema_app.py`：按数据模型图，加上 `ItemLink`、`CompanyMetricDetail` 两张新表和少量新列；`docs/schema-contract.md` 改为应用表的对照
+- [x] 9.2 `publish` 阶段：应用 id 稳定（`pipeline_publish_map`）、内容不变不写、版本化对象用 isActive、已删除的行会补回；RiskTypes 和 confidence 按 `config/app_publish.yaml`
+- [x] 9.3 新闻（付费 key）：回补 30 天；规则 + LLM 判断只保留与公司本身有关的新闻；`uw-news` CronJob 启用（03/09/15/21 点）
+- [x] 9.4 风险评分（Sonnet 5.5）：`NewsRiskScore`、`TranscriptToneAnalysis`、`TranscriptRiskFlag`；只有重要新闻（overall ≥ 0.5 或任一维度 ≥ 0.6）进入洞察输入
+- [x] 9.5 模型切换（用户决定，D-038）：抽取用 Haiku 5.5，复核和综合用 Sonnet 5.5；全部 LLM 任务按新模型重跑一次，并与旧结果对比质量。`scripts/compare_models.py` 留作以后对比用
+
+**验收**：
+- 9 家公司全部写入应用库；无变化时重跑写入 0 行
+- 版本更新后旧行 isActive = 0，id 不复用；ItemLink 只连接 isActive 的行
+- 新闻只保留与公司本身有关的；评分有理由且数字可核对；电话会议的风险标记都是原文引用
+
+---
+
 ## 11. 给 Claude Code 的工作约定（写入 CLAUDE.md）
 
 - 每个 Phase 开始前先列出要改动的文件和计划，等待确认后再动手

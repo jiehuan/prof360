@@ -10,6 +10,7 @@ from typing import Any
 from sqlalchemy import Engine, func, select
 
 from uw_pipeline.clients.alphavantage import AlphaVantageClient
+from uw_pipeline.clients.db import ensure_schema, make_engine
 from uw_pipeline.clients.llm import ClaudeClient, LLMClient
 from uw_pipeline.clients.ratelimit import TokenBucket
 from uw_pipeline.clients.sec import SecClient
@@ -26,12 +27,15 @@ from uw_pipeline.jobs.run_dq import run_dq_stage
 from uw_pipeline.jobs.run_insights import run_insights_stage
 from uw_pipeline.jobs.run_metric_detail import run_metric_detail_stage
 from uw_pipeline.jobs.run_news import load_news_config, run_news_stage
+from uw_pipeline.jobs.run_publish import load_publish_config, run_publish_stage
+from uw_pipeline.jobs.run_scores import load_scores_config, run_scores_stage
 from uw_pipeline.jobs.run_signals import run_signals_stage
 from uw_pipeline.jobs.run_text_metrics import run_text_metrics_stage
 from uw_pipeline.jobs.run_transcripts import run_transcripts_stage
 from uw_pipeline.jobs.run_xbrl import run_compute_stage, run_facts_stage
 from uw_pipeline.quality.dq import load_dq_config
 from uw_pipeline.schema import llm_call
+from uw_pipeline.schema_app import app_metadata
 from uw_pipeline.settings import Settings
 from uw_pipeline.signals.rules import load_signal_rules
 
@@ -59,6 +63,7 @@ class StageRunner:
         self._av_calls_at_start: int | None = None
         self._llm: tuple[LLMClient, LLMConfig] | None = None
         self._llm_built = False
+        self._app_engine: Engine | None = None
 
     # -- lazily built clients --------------------------------------------------------------
 
@@ -97,6 +102,15 @@ class StageRunner:
                 )
                 self._llm = (client, load_llm_config(s.config_dir))
         return self._llm
+
+    @property
+    def app_engine(self) -> Engine:
+        if self._app_engine is None:
+            url = self.settings.app_database_url
+            self._app_engine = make_engine(url)
+            if self._app_engine.dialect.name == "sqlite":  # dev stand-in for the app database
+                ensure_schema(self._app_engine, app_metadata)
+        return self._app_engine
 
     # -- running ---------------------------------------------------------------------------
 
@@ -151,6 +165,20 @@ class StageRunner:
                 load_insights_config(s.config_dir),
                 load_source_labels(s.config_dir),
                 e,
+            )
+        if stage == "scores":
+            return lambda c: run_scores_stage(
+                c, self.llm, load_scores_config(s.config_dir), e, run_id=self.run_id
+            )
+        if stage == "publish":
+            return lambda c: run_publish_stage(
+                c,
+                reg,
+                ind,
+                load_publish_config(s.config_dir),
+                load_source_labels(s.config_dir),
+                e,
+                self.app_engine,
             )
         if stage == "metricdetail":
             return lambda c: run_metric_detail_stage(

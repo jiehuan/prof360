@@ -22,6 +22,7 @@ from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.jobs.stages import StageRunner
 from uw_pipeline.logs import log_context, setup_logging
 from uw_pipeline.schema import company, dq_finding, metric_value, pipeline_run, pipeline_task
+from uw_pipeline.schema_app import app_metadata
 from uw_pipeline.settings import Settings
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
@@ -39,14 +40,17 @@ class Stage(StrEnum):
     signals = "signals"
     insights = "insights"
     metricdetail = "metricdetail"
+    publish = "publish"
+    scores = "scores"
     dq = "dq"
 
 
 # Default order for manual runs (scheduled jobs list their stages in config/jobs.yaml).
 STAGE_ORDER = [
     Stage.company, Stage.facts, Stage.compute, Stage.documents,
-    Stage.transcripts, Stage.news, Stage.textmetrics, Stage.signals, Stage.insights,
-    Stage.metricdetail, Stage.dq,
+    Stage.transcripts, Stage.news, Stage.scores, Stage.textmetrics, Stage.signals,
+    Stage.insights,
+    Stage.metricdetail, Stage.publish, Stage.dq,
 ]  # fmt: skip
 
 
@@ -292,10 +296,14 @@ def dq_report(
 
 @app.command("init-db")
 def init_db() -> None:
-    """Create tables in the local SQLite database."""
+    """Create tables in the local SQLite databases (pipeline and dev app database)."""
     settings = Settings()
     ensure_schema(make_engine(settings.database_url))
     typer.echo(f"schema ready at {settings.database_url}")
+    app_engine = make_engine(settings.app_database_url)
+    if app_engine.dialect.name == "sqlite":
+        ensure_schema(app_engine, app_metadata)
+        typer.echo(f"app schema ready at {settings.app_database_url}")
 
 
 if __name__ == "__main__":

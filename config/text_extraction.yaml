@@ -2,6 +2,9 @@
 # Every value needs a verbatim quote that contains the number as written; otherwise dropped.
 
 prompt_version: text_metrics_v2
+# Claude Haiku 5.5 at `low` skipped comparative columns and rewrote table headers in quotes
+# (D-038), so this task runs the extractor at a higher effort.
+extractor_effort: medium
 # Where text metrics (metrics.yaml `kind: text`) are looked for.
 sections: ["10K-7", "10Q-I-2"]   # MD&A
 earnings_release: true           # EX-99.1 of Item 2.02 8-Ks

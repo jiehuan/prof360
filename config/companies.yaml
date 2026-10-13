@@ -5,27 +5,35 @@ companies:
   - ticker: MAR
     cik: 1048286
     display_name: Marriott International
+    news_aliases: ["Marriott"]
   - ticker: LUV
     cik: 92380
     display_name: Southwest Airlines
+    news_aliases: ["Southwest Airlines", "Southwest"]
   - ticker: F
     cik: 37996
     display_name: Ford Motor Company
+    news_aliases: ["Ford"]
   - ticker: PFE
     cik: 78003
     display_name: Pfizer
+    news_aliases: ["Pfizer"]
   - ticker: JPM
     cik: 19617
     display_name: JPMorgan Chase
+    news_aliases: ["JPMorgan", "JP Morgan", "J.P. Morgan", "Chase", "Jamie Dimon"]
   - ticker: M
     cik: 794367
     display_name: Macy's
+    news_aliases: ["Macy's", "Macy’s", "Macys"]
   - ticker: LUMN
     cik: 18926
     display_name: Lumen Technologies
+    news_aliases: ["Lumen"]
   - ticker: SKYD
     cik: 2041610
     display_name: Skydance Corp
+    news_aliases: ["Skydance", "Paramount"]
     former_tickers: [PARA, PSKY]
     predecessor_ciks: [813828]  # Paramount Global; stopped filing after the Aug 2025 merger
     # Successor periods start 2025-08-08. Earlier values in this registrant's filings are
@@ -38,3 +46,4 @@ companies:
   - ticker: ENPH
     cik: 1463101
     display_name: Enphase Energy
+    news_aliases: ["Enphase"]

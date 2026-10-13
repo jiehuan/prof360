@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from sqlalchemy import Connection, Engine, and_, func, insert, select, update
+from sqlalchemy import Connection, Engine, and_, delete, func, insert, select, update
 
 from uw_pipeline.clients.alphavantage import (
     AlphaVantageClient,
@@ -21,6 +21,7 @@ from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.config import CompanyConfig
 from uw_pipeline.enrich.llm import LLMConfig, LLMUnavailableError
 from uw_pipeline.enrich.news_events import event_pairs
+from uw_pipeline.enrich.news_relevance import judge
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.normalize.news import (
@@ -28,6 +29,7 @@ from uw_pipeline.normalize.news import (
     NewsConfig,
     NewsItem,
     UnionFind,
+    about_company,
     near_duplicates,
     parse_feed,
 )
@@ -44,7 +46,11 @@ def load_news_config(config_dir: Path) -> NewsConfig:
 
 
 def fetch_items(
-    av: AlphaVantageClient, ticker: str, since: datetime, cfg: NewsConfig
+    av: AlphaVantageClient,
+    ticker: str,
+    since: datetime,
+    cfg: NewsConfig,
+    aliases: Sequence[str] = (),
 ) -> tuple[list[tuple[NewsItem, str]], int]:
     """(item, raw landing key) pairs since `since`, following pages; and items below the
     relevance threshold."""
@@ -53,7 +59,7 @@ def fetch_items(
     time_from = since
     while True:
         payload, raw_key = av.news(ticker, time_from)
-        items, dropped = parse_feed(payload, ticker, cfg)
+        items, dropped = parse_feed(payload, ticker, cfg, aliases)
         out += [(i, raw_key) for i in items]
         irrelevant += dropped
         feed = payload.get("feed") or []
@@ -69,6 +75,8 @@ def fetch_items(
 class DedupStats:
     fetched: int = 0
     irrelevant: int = 0
+    pruned: int = 0  # stored articles removed by the relevance rules or the LLM verdict
+    judged: int = 0  # articles given an LLM relevance verdict this run
     url_duplicates: int = 0
     near_duplicates: int = 0
     event_duplicates: int = 0
@@ -237,6 +245,98 @@ def dedup_and_store(
     return stats
 
 
+def _remove(conn: Connection, company_id: int, bad_ids: set[int]) -> int:
+    """Delete articles; an activity whose canonical article goes is dropped whole (its headline
+    is that article's), and activities left without articles are removed."""
+    if not bad_ids:
+        return 0
+    rows = conn.execute(
+        select(news_item.c.news_id, news_item.c.activity_id, news_item.c.dedup_method)
+        .where(news_item.c.company_id == company_id)
+    ).all()  # fmt: skip
+    dead = {r.activity_id for r in rows if r.news_id in bad_ids and r.dedup_method == "FIRST"}
+    gone = sorted(bad_ids | {r.news_id for r in rows if r.activity_id in dead})
+    for i in range(0, len(gone), 500):
+        conn.execute(delete(news_item).where(news_item.c.news_id.in_(gone[i : i + 500])))
+    counts: dict[int, int] = dict(
+        conn.execute(
+            select(news_item.c.activity_id, func.count())
+            .where(news_item.c.company_id == company_id)
+            .group_by(news_item.c.activity_id)
+        ).all()
+    )  # fmt: skip
+    acts = conn.execute(
+        select(activity.c.activity_id, activity.c.source_count)
+        .where(activity.c.company_id == company_id)
+    ).all()  # fmt: skip
+    empty = [a.activity_id for a in acts if a.activity_id not in counts]
+    for i in range(0, len(empty), 500):
+        conn.execute(delete(activity).where(activity.c.activity_id.in_(empty[i : i + 500])))
+    for a in acts:
+        n = counts.get(a.activity_id)
+        if n is not None and n != a.source_count:
+            conn.execute(update(activity).where(activity.c.activity_id == a.activity_id)
+                         .values(source_count=n))  # fmt: skip
+    return len(gone)
+
+
+def prune_unrelated(
+    conn: Connection, company_id: int, aliases: Sequence[str], cfg: NewsConfig
+) -> int:
+    """Apply the current relevance rules to stored articles. Idempotent; a no-op once clean."""
+    if not aliases:
+        return 0
+    rows = conn.execute(
+        select(news_item.c.news_id, news_item.c.title, news_item.c.summary)
+        .where(news_item.c.company_id == company_id)
+    ).all()  # fmt: skip
+    bad = {r.news_id for r in rows
+           if not about_company(r.title, r.summary or "", aliases, cfg.mention)}  # fmt: skip
+    return _remove(conn, company_id, bad)
+
+
+def judge_and_prune(
+    conn: Connection,
+    company_id: int,
+    company_name: str,
+    cfg: NewsConfig,
+    llm: tuple[LLMClient, LLMConfig] | None,
+    now: datetime,
+) -> tuple[int, int]:
+    """LLM verdict for articles not judged yet; remove those not kept. (judged, removed)"""
+    rc = cfg.relevance_llm
+    if not rc.enabled or llm is None:
+        return 0, 0
+    todo = conn.execute(
+        select(news_item.c.news_id, news_item.c.title, news_item.c.summary)
+        .where(news_item.c.company_id == company_id, news_item.c.relevance_verdict.is_(None))
+    ).all()  # fmt: skip
+    if todo:
+        client, llm_cfg = llm
+        try:
+            verdicts = judge(
+                [(r.news_id, r.title, r.summary or "") for r in todo], company=company_name,
+                client=client, spec=llm_cfg.extractor, prompt_version=rc.prompt_version,
+                batch_size=rc.batch_size, conn=conn, now=lambda: now,
+            )  # fmt: skip
+        except LLMUnavailableError as exc:
+            log.error("LLM unavailable for news relevance; articles kept unjudged: %s", exc)
+            verdicts = {}
+        for news_id, verdict in verdicts.items():
+            conn.execute(update(news_item).where(news_item.c.news_id == news_id)
+                         .values(relevance_verdict=verdict))  # fmt: skip
+    bad = set(
+        conn.execute(
+            select(news_item.c.news_id).where(
+                news_item.c.company_id == company_id,
+                news_item.c.relevance_verdict.is_not(None),
+                news_item.c.relevance_verdict.not_in(rc.keep),
+            )
+        ).scalars()
+    )
+    return len(todo), _remove(conn, company_id, bad)
+
+
 def run_news_stage(
     companies: Sequence[CompanyConfig],
     av: AlphaVantageClient,
@@ -262,11 +362,17 @@ def run_news_stage(
                     if latest
                     else stamp.replace(tzinfo=None) - timedelta(days=cfg.lookback_days)
                 )
-                fetched, irrelevant = fetch_items(av, company_cfg.ticker, since, cfg)
+                pruned = prune_unrelated(conn, row["company_id"], company_cfg.aliases(), cfg)
+                fetched, irrelevant = fetch_items(av, company_cfg.ticker, since, cfg,
+                                                  company_cfg.aliases())  # fmt: skip
                 stats = dedup_and_store(
                     conn, row["company_id"], row["legal_name"], fetched, cfg, llm=llm, now=stamp
                 )
                 stats.irrelevant = irrelevant
+                stats.judged, removed = judge_and_prune(
+                    conn, row["company_id"], row["legal_name"], cfg, llm, stamp
+                )
+                stats.pruned = pruned + removed
             log.info("%s: news %s", company_cfg.ticker, stats.__dict__)
             detail = f"{stats.new_activities} new activities from {stats.fetched} articles"
             results.append(TaskResult(company_cfg.ticker, "news", ok=True, detail=detail))

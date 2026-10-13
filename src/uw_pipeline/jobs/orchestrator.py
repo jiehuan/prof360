@@ -40,10 +40,13 @@ DEPENDS: dict[str, tuple[str, ...]] = {
     "documents": ("company",),
     "transcripts": ("compute",),
     "news": ("company",),
+    "scores": ("company",),
     "textmetrics": ("compute", "documents"),
     "signals": ("compute", "documents"),
     "insights": ("signals", "textmetrics"),
     "metricdetail": ("compute", "insights"),
+    # Publishes whatever is current, so it runs even when an LLM stage failed.
+    "publish": ("compute",),
     "dq": ("compute",),
 }
 

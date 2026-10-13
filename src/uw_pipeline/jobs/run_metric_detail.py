@@ -3,8 +3,8 @@
 Per company, for every displayed metric with data:
   1. methodology (rules, enrich/metric_detail.py)            -> metric_detail
   2. the filings behind the latest quarter and fiscal year   -> metric_source
-  3. Underwriting Relevance plus the related insights and follow-up questions, in one Claude
-     Opus 5.5 call per company                               -> metric_insight, insight_metric,
+  3. Underwriting Relevance plus the related insights and follow-up questions, in one call
+     per company to the synthesis model                      -> metric_insight, insight_metric,
                                                                 followup_question_metric
 Step 3 runs only when its input (metric values, current insights and questions) changed; the
 links it adds are marked link_source = METRIC_DETAIL and replaced on every new generation.
@@ -290,17 +290,26 @@ def process_company(
     stats = Stats(metrics=len(shown))
 
     details, sources = [], []
+    # updated_at changes only when the content does (it is shown as "Updated At").
+    before = {
+        r.metric_code: r
+        for r in conn.execute(select(metric_detail).where(metric_detail.c.company_id == company_id))
+    }
     for m in shown:
         rows = values[m.code]
         top = latest(rows, "Q") or latest(rows, "FY")
-        details.append({
+        d = {
             "company_id": company_id, "metric_code": m.code,
             "methodology": methodology(m, rows, names, labels),
             "latest_period": period_label(top) if top else None,
             "latest_value_text":
                 fmt_value(top["value"], m.unit, top["value_status"]) if top else None,
-            "updated_at": now,
-        })  # fmt: skip
+        }  # fmt: skip
+        old = before.get(m.code)
+        same = old is not None and all(
+            getattr(old, k) == d[k] for k in ("methodology", "latest_period", "latest_value_text")
+        )
+        details.append(d | {"updated_at": old.updated_at if same and old else now})
         for ptype in ("Q", "FY"):
             r = latest(rows, ptype)
             if r is None:

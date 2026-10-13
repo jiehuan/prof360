@@ -32,11 +32,44 @@ class DedupConfig(BaseModel):
     llm_prompt_version: str = "news_events_v1"
 
 
+class MentionFilter(BaseModel):
+    require_mention: bool = True
+    # Regexes (case-insensitive); "{alias}" is replaced by each company alias. A match means the
+    # company is only the actor (analyst rating, fund holding), not the subject.
+    exclude_patterns: list[str] = []
+
+
+class RelevanceLLM(BaseModel):
+    enabled: bool = True
+    batch_size: int = 100
+    prompt_version: str = "news_relevance_v1"
+    keep: list[str] = ["SUBJECT", "UNCLASSIFIED"]
+
+
 class NewsConfig(BaseModel):
     lookback_days: int = 30
     overlap_days: int = 1
     min_relevance: float = 0.3
+    mention: MentionFilter = MentionFilter()
+    relevance_llm: RelevanceLLM = RelevanceLLM()
     dedup: DedupConfig = DedupConfig()
+
+
+def about_company(title: str, summary: str, aliases: Sequence[str], cfg: MentionFilter) -> bool:
+    """The article is about the company: it names it, and not only as analyst or investor."""
+    text = f"{title}\n{summary}"
+    # Case-sensitive (proper nouns; "Chase" is not "chase"), plus the all-caps form.
+    names = sorted({re.escape(v) for a in aliases if a for v in (a, a.upper())}, key=len,
+                   reverse=True)  # fmt: skip
+    if not names:
+        return True
+    name_re = "(?:" + "|".join(names) + ")"
+    if cfg.require_mention and not re.search(rf"(?<![A-Za-z]){name_re}(?![a-z])", text):
+        return False
+    for pattern in cfg.exclude_patterns:
+        if re.search(pattern.replace("{alias}", name_re), title, re.I):
+            return False
+    return True
 
 
 @dataclass(frozen=True)
@@ -90,8 +123,11 @@ def _float(v: Any) -> float | None:
         return None
 
 
-def parse_feed(payload: dict[str, Any], ticker: str, cfg: NewsConfig) -> tuple[list[NewsItem], int]:
-    """Items relevant to `ticker` (AV relevance >= min_relevance) and the count dropped."""
+def parse_feed(
+    payload: dict[str, Any], ticker: str, cfg: NewsConfig, aliases: Sequence[str] = ()
+) -> tuple[list[NewsItem], int]:
+    """Items relevant to `ticker` (AV relevance >= min_relevance, and about the company per
+    `about_company` when aliases are given) and the count dropped."""
     items, dropped = [], 0
     for raw in payload.get("feed") or []:
         ts = next(
@@ -99,15 +135,20 @@ def parse_feed(payload: dict[str, Any], ticker: str, cfg: NewsConfig) -> tuple[l
             None,
         )
         relevance = _float(ts.get("relevance_score")) if ts else None
-        if relevance is None or relevance < cfg.min_relevance:
+        title, summary = (raw.get("title") or "").strip(), (raw.get("summary") or "").strip()
+        if (
+            relevance is None
+            or relevance < cfg.min_relevance
+            or (aliases and not about_company(title, summary, aliases, cfg.mention))
+        ):
             dropped += 1
             continue
         items.append(
             NewsItem(
                 url=raw["url"],
                 url_hash=url_hash(raw["url"], cfg.dedup.strip_params_prefixes),
-                title=(raw.get("title") or "").strip(),
-                summary=(raw.get("summary") or "").strip(),
+                title=title,
+                summary=summary,
                 source=raw.get("source") or "",
                 source_domain=raw.get("source_domain") or "",
                 published_at=datetime.strptime(raw["time_published"], "%Y%m%dT%H%M%S"),

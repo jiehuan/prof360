@@ -18,6 +18,8 @@ log = logging.getLogger(__name__)
 # Server-side fallback: on a safety decline the API retries on a fallback model it picks by
 # refusal category (Claude API only).
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
+# Models that reject the `fallbacks` parameter with a 400 (no server-side fallback).
+NO_FALLBACK_PREFIXES = ("claude-haiku-",)
 
 
 class LLMError(Exception):
@@ -62,14 +64,17 @@ class ClaudeClient:
     ) -> LLMResult:
         # Plain dicts below; the SDK's TypedDict overloads are too narrow for mypy here.
         create: Any = self._client.beta.messages.create
+        fallback: dict[str, Any] = (
+            {} if model.startswith(NO_FALLBACK_PREFIXES)
+            else {"betas": [FALLBACK_BETA], "fallbacks": "default"}
+        )  # fmt: skip
         response = create(
             model=model,
             max_tokens=max_tokens,
-            betas=[FALLBACK_BETA],
-            fallbacks="default",
             output_config={"effort": effort, "format": {"type": "json_schema", "schema": schema}},
             system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
             messages=[{"role": "user", "content": user}],
+            **fallback,
         )
         if response.stop_reason == "refusal":
             details = getattr(response, "stop_details", None)

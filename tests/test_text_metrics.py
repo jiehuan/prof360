@@ -237,7 +237,7 @@ def test_loan_book_by_class_with_prior_year_end(tmp_path) -> None:
             _loan("Wholesale", "Wholesale", "846,804", "4,191", "2026-06-30", whs),
             _loan("Wholesale", "Wholesale", "792,367", "4,398", "2025-12-31", whs),
         ]  # fmt: skip
-        if "opus" in model:  # disagrees on auto (misread) -> that row is dropped
+        if model == load_llm_config(CONFIG_DIR).tiebreaker.model:  # disagrees on auto -> dropped
             rows[2] = _loan("Auto & other", "Consumer", "65,210", "243", "2026-06-30", auto)
             rows[0]["segment"] = "Residential Real Estate (a)"  # same class, other spelling
         return {"segments": rows}

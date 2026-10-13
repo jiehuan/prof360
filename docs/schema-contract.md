@@ -1,7 +1,42 @@
-# 管线输出 → 前端模块 对照（BFF 对齐草案）
+# 管线输出 → 应用库 对照
 
-> 状态：**草案，待与 BFF 对齐**（PLAN Phase 0 暂缓）。本文列出管线当前写入的表和字段，以及每个前端模块应如何读取。BFF 已有表结构以 BFF 为准；差异在联调时逐项处理。
-> 表定义的唯一来源是 `src/uw_pipeline/schema.py`。dev 环境是 SQLite（`data/uw.db`），目标是 Azure SQL。Schema 迁移由谁负责尚未决定，见 decisions D-003。
+> 状态：**Phase 9 起，BFF 读应用库**（团队数据模型图里的表，见 `src/uw_pipeline/schema_app.py`），由 `publish` 阶段写入；dev 是 `data/app.db`，生产是 Azure SQL（`APP_DATABASE_URL`）。管线自己的表（`data/uw.db`）只供审计和排错，BFF 不需要读。
+> 数据模型图左半部分（`sec_*`、`alpha_*`、`CompanyExternalRef`）由管线取代，不再建；三张评分表（`TranscriptToneAnalysis`、`TranscriptRiskFlag`、`NewsRiskScore`）在 Phase 9.4 由管线写入。
+
+## 对数据模型图的改动（尽量少）
+
+| 改动 | 原因 |
+|---|---|
+| 新表 `ItemLink`（CompanyId, FromType, FromId, ToType, ToId, LinkSource），类型为 KEY_INSIGHT / STRATEGIC_RISK / FOLLOWUP / METRIC | 所有弹窗的 Related tab；一张表代替四张关联表 |
+| 新表 `CompanyMetricDetail`（CompanyId, metric_id, Methodology, DataSources, DataPoints, UnderwritingRelevance, UpdatedAt） | 指标弹窗左侧；Loan Portfolio 弹窗作为伪指标 `loan_portfolio` 也放这里 |
+| `LoanPortfolio` 增加 PeriodEnd, PctOfBook, Nonaccrual, NonaccrualRatio；`LoanTypes` 增加 ParentSegment | 贷款类别、上一年末对比、不良率 |
+| `FollowUpQuestions` 增加 Priority, isActive；`KeyInsights` 增加 isActive | 版本化：新版本是新行，旧行 isActive = 0，用户的 flag 不会指向换了内容的问题 |
+| 所有 sources 类列存 `[{title, url, date}]`，不是纯 URL 列表 | 弹窗要显示可读标题；`KeyInsights.link` 是第一个 URL |
+| `MatrixData.accession`、`filed_date`、`context_or_dimension` 存 JSON 列表 | 图里是 list 类型 |
+
+## 应用表的写入规则
+
+| 应用表 | 来源（管线） | 说明 |
+|---|---|---|
+| SIC_Code / Company | `company` | Company.logo 由应用维护，管线不写；Location = "城市, 州"；NameAbbreviation = ticker |
+| metric_category / metrics / SIC_Preferences | `config/metrics.yaml` + 行业组 | metrics.Formula 是通用定义；分类名在 `config/app_publish.yaml` |
+| MatrixData | `metric_value` | source_class = derivation；confidence 按取值方式（配置） |
+| KeyInsights / KeyInsightsTypes | `insight`（KEY） | evidence = Supporting Evidence（规则生成）；confidence 按来源数（配置） |
+| StrategicRisk / RiskTypes | `insight`（STRATEGIC_RISK、BEHAVIORAL） | Category：governance / risk / event / behavior；RiskType 由 subcategory 按 `config/app_publish.yaml` 的规则映射 |
+| FollowUpQuestions | `followup_question` | title = 问题；Priority = system_priority |
+| ItemLink | `insight_link`、`insight_metric`、`followup_question_insight`、`followup_question_metric` | 只连接当前版本（isActive = 1）的对象；从任一端都可查 |
+| CompanyMetricDetail | `metric_detail`、`metric_source`、`metric_insight`、`loan_portfolio_detail` | — |
+| Trend / TrendTypes | FI 公司 `metric_value` 的财年值（NIM、CET1、Tier 1、LCR、NPL、Fee Income Growth） | 季度值在 MatrixData |
+| LoanPortfolio / LoanTypes | `loan_portfolio_segment` | 当前期和上一年末两期 |
+| Activities / News | `activity` / `news_item` | 只保留与公司本身相关的新闻（规则 + LLM 判断，D-037） |
+
+**id 稳定性**：应用表的 id 由应用库生成。`pipeline_publish_map`（在应用库里）记录每个管线对象对应的应用 id，重跑时更新同一行；内容没变的行不写。
+
+**读取约定**：KeyInsights、StrategicRisk、FollowUpQuestions 只读 `isActive = 1`。Related tab 用 `ItemLink`，例如指标弹窗的 Related Key Insight = `ToType = 'METRIC' AND ToId = <metric_id> AND FromType = 'KEY_INSIGHT'`，Key Insight 弹窗的 Related Metrics = `FromType = 'KEY_INSIGHT' AND FromId = <UniqueID> AND ToType = 'METRIC'`。
+
+---
+
+以下是管线内部表的说明（审计、排错用）。
 
 ## 通用约定
 

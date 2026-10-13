@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     data_dir: Path = Path("data")
     config_dir: Path = Path("config")
     database_url: str = "sqlite:///data/uw.db"
+    # Application database the `publish` stage writes (Phase 9); Azure SQL in production.
+    app_database_url: str = "sqlite:///data/app.db"
 
     alphavantage_api_key: SecretStr | None = None
     # Free plan: 25 calls/day. Premium (75 calls/min): set the rate to 75 and the quota to 0.
