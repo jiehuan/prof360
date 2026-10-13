@@ -161,11 +161,14 @@ def eight_k_signals(
             }
             changes = _leadership(body, rules, own_names) if item == "5.02" and body else []
             if changes:
-                # One signal per role; departure outranks appointment.
+                # One signal per role: departure and appointment together are a succession.
                 by_role: dict[str, tuple[str, str]] = {}
                 for role, kind, sentence in changes:
-                    if role not in by_role or kind == "departure":
+                    if role not in by_role:
                         by_role[role] = (kind, sentence)
+                    elif by_role[role][0] not in (kind, "succession"):
+                        evidence = sentence if kind == "departure" else by_role[role][1]
+                        by_role[role] = ("succession", evidence)
                 for role, (kind, sentence) in sorted(by_role.items()):
                     out.append(
                         _from_spec(

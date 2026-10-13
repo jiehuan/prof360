@@ -6,7 +6,10 @@ gets three possible votes:
   2. the extractor LLM (Claude Sonnet 5.5) reading the section text,
   3. only when 1 and 2 disagree: the tie-breaker LLM (Claude Opus 5.5), asked the same question
      independently.
-The majority answer wins. When all three differ, the topic is DISPUTED and left for a human.
+The tie-breaker sees both claims (unlabelled) with their evidence and rules on the text. The
+majority answer wins. When all three differ, the topic is DISPUTED and left for a human.
+A rule detection that the two LLMs vote down is kept as OVERRULED rather than deleted, so a
+correct rule can't silently disappear when the two models make the same mistake.
 LLM answers count only when their evidence quote is found in the source text.
 """
 
@@ -23,12 +26,24 @@ from sqlalchemy import Connection
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.enrich.grounding import is_grounded
 from uw_pipeline.enrich.llm import LLMConfig, ModelSpec, cached_call
-from uw_pipeline.enrich.schemas import SectionSignals, strict_json_schema
+from uw_pipeline.enrich.schemas import SectionSignals, TieBreak, strict_json_schema
 from uw_pipeline.signals.detect import Detected, Doc
 from uw_pipeline.signals.rules import SignalRules, SignalSpec
 
 NONE = "none"
+INVALID = "invalid"  # tie-break answer that is not allowed for the topic or not grounded
 SCHEMA = strict_json_schema(SectionSignals)
+TIEBREAK_SCHEMA = strict_json_schema(TieBreak)
+
+
+def allowed_answers(topic: str) -> tuple[str, ...]:
+    if topic.startswith("leadership:"):
+        return ("departure", "appointment", "succession", NONE)
+    if topic == "listing":
+        return ("adverse", "voluntary_transfer", NONE)
+    return ("present", NONE)
+
+
 _FINDING_TOPIC = {
     "going_concern": ("going_concern", "present"),
     "material_weakness": ("material_weakness", "present"),
@@ -53,7 +68,7 @@ class VoteRow:
     extractor_value: str | None
     tiebreak_value: str | None
     outcome: str
-    status: str  # UNANIMOUS | MAJORITY | DISPUTED
+    status: str  # UNANIMOUS | MAJORITY | OVERRULED | DISPUTED
     evidence: str | None
 
 
@@ -67,7 +82,7 @@ def rule_answers(detected: Sequence[Detected], topics: Sequence[str]) -> dict[st
         if d.rule_id.startswith("8k_5.02_"):
             role, kind = d.rule_id.split("_")[2:4]
             topic = f"leadership:{role.upper()}"
-            if topic in out and out[topic].value != "departure":
+            if topic in out:
                 out[topic] = Answer(kind, d.snippet)
         elif d.rule_id == "8k_3.01" and "listing" in out:
             value = "voluntary_transfer" if d.subcategory == "Listing Transfer" else "adverse"
@@ -90,9 +105,14 @@ def llm_answers(
         if not is_grounded(lc.evidence, source):
             dropped += 1
             continue
-        if out[topic].value != "departure":
-            detail = ", ".join(x for x in (lc.person, lc.effective_date) if x) or None
-            out[topic] = Answer(lc.change, lc.evidence, detail)
+        detail = ", ".join(x for x in (lc.person, lc.effective_date) if x) or None
+        prev = out[topic]
+        if prev.value in (NONE, lc.change):
+            out[topic] = Answer(lc.change, prev.evidence or lc.evidence, prev.detail or detail)
+        else:  # a departure and an appointment to the same role
+            evidence = lc.evidence if lc.change == "departure" else prev.evidence
+            details = "; ".join(x for x in (prev.detail, detail) if x) or None
+            out[topic] = Answer("succession", evidence, details)
     for f in parsed.findings:
         topic, value = _FINDING_TOPIC[f.topic]
         if topic not in out:
@@ -108,17 +128,30 @@ def llm_answers(
 # -- combining votes ---------------------------------------------------------------------------
 
 
+def _combine(*agreeing: Answer) -> Answer:
+    """One answer from voters that agree: the first quote found, and the first detail found
+    (only LLMs extract details such as the person's name)."""
+    evidence = next((a.evidence for a in agreeing if a.evidence), None)
+    detail = next((a.detail for a in agreeing if a.detail), None)
+    return Answer(agreeing[0].value, evidence, detail)
+
+
 def decide(
     rule: Answer, extractor: Answer, tiebreak: Answer | None
 ) -> tuple[str, str, Answer | None]:
-    """(outcome, status, answer carrying the evidence) from up to three votes."""
+    """(outcome, status, answer carrying the evidence) from up to three votes.
+
+    OVERRULED: the rules found something and both LLMs said none. The outcome is "none", but
+    the rule's answer is returned so the signal is kept for review."""
     if rule.value == extractor.value:
-        return rule.value, "UNANIMOUS", rule if rule.evidence else extractor
+        return rule.value, "UNANIMOUS", _combine(rule, extractor)
     if tiebreak is None:
         raise ValueError("disagreement needs a tie-break vote")
+    if tiebreak.value == extractor.value == NONE and rule.value != NONE:
+        return NONE, "OVERRULED", rule
     for winner in (rule, extractor):
         if tiebreak.value == winner.value:
-            return winner.value, "MAJORITY", winner if winner.evidence else tiebreak
+            return winner.value, "MAJORITY", _combine(winner, tiebreak)
     proposal = rule if rule.value != NONE else extractor
     return "disputed", "DISPUTED", proposal
 
@@ -154,13 +187,15 @@ def signal_for(
     rules: SignalRules,
     section_code: str,
 ) -> Detected | None:
-    if outcome == NONE:
+    if outcome == NONE and status != "OVERRULED":
         return None
-    value = answer.value if (outcome == "disputed" and answer) else outcome
+    value = answer.value if (status in ("DISPUTED", "OVERRULED") and answer) else outcome
     rule_id, spec, title = _spec_for(topic, value, rules)
-    if outcome == "disputed":
-        lead = title if title[:2].isupper() else title[0].lower() + title[1:]  # keep "CFO"
+    lead = title if title[:2].isupper() else title[0].lower() + title[1:]  # keep "CFO"
+    if status == "DISPUTED":
         title = f"Possible {lead} (disputed)"
+    elif status == "OVERRULED":
+        title = f"Possible {lead} (rule match overruled by LLM review)"
     detail = f" ({answer.detail})" if answer and answer.detail else ""
     return Detected(
         rule_id=rule_id,
@@ -199,7 +234,11 @@ class Voter:
         self.conn = conn
         self.now = now
         self.system = config.prompt()
-        self.stats = {"documents": 0, "tiebreaks": 0, "ungrounded": 0, "skipped_long": 0}
+        self.tiebreak_system = config.tiebreak_prompt()
+        self.stats = {
+            "documents": 0, "tiebreaks": 0, "overruled": 0, "disputed": 0,
+            "ungrounded": 0, "skipped_long": 0,
+        }  # fmt: skip
 
     def _ask(self, spec: ModelSpec, user: str) -> SectionSignals | None:
         raw = cached_call(
@@ -213,6 +252,44 @@ class Voter:
             return SectionSignals.model_validate(raw)
         except ValidationError:
             return None
+
+    def _tiebreak(
+        self,
+        user: str,
+        disputes: Mapping[str, tuple[Answer, Answer]],
+        source: str,
+    ) -> dict[str, Answer] | None:
+        """The tie-breaker's ruling per disputed topic, given both claims and their evidence."""
+        lines = ["", "Disagreements:"]
+        for topic, pair in disputes.items():
+            # Neutral, stable order so neither claim is marked as the rules' or a model's.
+            a, b = sorted(pair, key=lambda x: (x.value, x.evidence or ""))
+            lines += [
+                f"- topic: {topic} (allowed answers: {', '.join(allowed_answers(topic))})",
+                f"  Claim A: {a.value}; quote: {a.evidence or '(none)'}",
+                f"  Claim B: {b.value}; quote: {b.evidence or '(none)'}",
+            ]
+        raw = cached_call(
+            self.conn, self.client, self.config.tiebreaker,
+            task="tiebreak", prompt_version=self.config.tiebreak_prompt_version,
+            system=self.tiebreak_system, user=user + "\n".join(lines),
+            schema=TIEBREAK_SCHEMA, now=self.now(),
+        )  # fmt: skip
+        if raw is None:
+            return None
+        try:
+            parsed = TieBreak.model_validate(raw)
+        except ValidationError:
+            return None
+        out = {t: Answer(INVALID) for t in disputes}
+        for r in parsed.rulings:
+            if r.topic not in disputes or r.answer not in allowed_answers(r.topic):
+                continue
+            if r.answer != NONE and not is_grounded(r.evidence, source):
+                self.stats["ungrounded"] += 1
+                continue
+            out[r.topic] = Answer(r.answer, r.evidence or None)
+        return out
 
     def vote_document(
         self,
@@ -246,23 +323,23 @@ class Voter:
         ext, dropped = llm_answers(extracted, topics, source)
         self.stats["ungrounded"] += dropped
 
-        tb: dict[str, Answer] | None = None
-        if any(rule[t].value != ext[t].value for t in topics):
+        tb: dict[str, Answer] = {}
+        disputes = {t: (rule[t], ext[t]) for t in topics if rule[t].value != ext[t].value}
+        if disputes:
             self.stats["tiebreaks"] += 1
-            tie = self._ask(self.config.tiebreaker, user)
-            if tie is None:
+            ruling = self._tiebreak(user, disputes, source)
+            if ruling is None:
                 return None
-            tb, dropped = llm_answers(tie, topics, source)
-            self.stats["ungrounded"] += dropped
+            tb = ruling
 
         signals: list[Detected] = []
         rows: list[VoteRow] = []
         section_of = {t: c for c in in_scope for t in self.config.topics[c]}
         for topic in topics:
-            tb_answer = (
-                tb[topic] if tb is not None and rule[topic].value != ext[topic].value else None
-            )
+            tb_answer = tb.get(topic)
             outcome, status, answer = decide(rule[topic], ext[topic], tb_answer)
+            if status in ("OVERRULED", "DISPUTED"):
+                self.stats[status.lower()] += 1
             votes = {
                 "rules": rule[topic].value,
                 self.config.extractor.model: ext[topic].value,

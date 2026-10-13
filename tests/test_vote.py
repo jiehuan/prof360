@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy import create_engine, func, select
 
 from tests.conftest import CONFIG_DIR
-from tests.fake_llm import NOTHING, REFUSED, FakeLLM, signals
+from tests.fake_llm import NOTHING, REFUSED, FakeLLM, rulings, signals
 from uw_pipeline.enrich.grounding import is_grounded
 from uw_pipeline.enrich.llm import load_llm_config
 from uw_pipeline.enrich.schemas import SectionSignals, strict_json_schema
@@ -55,7 +55,7 @@ def test_agreement_needs_no_tiebreak() -> None:
     ]
 
 
-def test_rule_false_positive_overruled_by_majority() -> None:
+def test_rule_match_voted_down_is_kept_as_overruled() -> None:
     # Real sentence the first rule version misread as a CFO appointment: the CFO is only named
     # as the person a new accounting VP reports to. Simulate that misfire as the rule vote.
     text = ("Prior to the effective date of his appointment, Mr. Crockett will serve as Vice "
@@ -67,14 +67,15 @@ def test_rule_false_positive_overruled_by_majority() -> None:
         description="", event_date="2026-06-18", accession_no="acc-7", doc_id=7,
         snippet=text, key_extra="CFO",
     )  # fmt: skip
-    llm = by({SONNET: NOTHING, OPUS: NOTHING})
+    llm = by({SONNET: NOTHING, OPUS: rulings(("leadership:CFO", "none", ""))})
     out, rows, voter, _ = run(text, llm, rule=[misfire])
     assert llm.calls == [SONNET, OPUS]
     vote = rows["leadership:CFO"]
-    assert (vote.rule_value, vote.outcome, vote.status) == ("appointment", "none", "MAJORITY")
-    # The misread CFO appointment is gone; the filing keeps the generic Item 5.02 fact.
-    assert [(s.rule_id, s.method) for s in out] == [("8k_5.02", "RULE")]
-    assert voter.stats["tiebreaks"] == 1
+    assert (vote.rule_value, vote.outcome, vote.status) == ("appointment", "none", "OVERRULED")
+    # Not deleted: kept, clearly labelled, for review (the two LLMs could share a mistake).
+    assert [(s.rule_id, s.review_status) for s in out] == [("8k_5.02_cfo_appointment", "OVERRULED")]
+    assert "overruled" in out[0].title
+    assert voter.stats["tiebreaks"] == 1 and voter.stats["overruled"] == 1
 
 
 def test_llm_catches_rule_miss_confirmed_by_tiebreak() -> None:
@@ -82,7 +83,7 @@ def test_llm_catches_rule_miss_confirmed_by_tiebreak() -> None:
     quote = "ending his tenure as CFO"
     llm = by({
         SONNET: signals(leadership=[("CFO", "departure", "Mr. Smith", quote)]),
-        OPUS: signals(leadership=[("CFO", "departure", "Mr. Smith", quote)]),
+        OPUS: rulings(("leadership:CFO", "departure", quote)),
     })  # fmt: skip
     out, rows, _, _ = run(text, llm)
     assert rows["leadership:CFO"].rule_value == "none"
@@ -97,7 +98,7 @@ def test_llm_catches_rule_miss_confirmed_by_tiebreak() -> None:
 def test_three_way_split_is_disputed() -> None:
     llm = by({
         SONNET: signals(leadership=[("CFO", "appointment", None, "Chief Financial Officer effective August 15")]),
-        OPUS: NOTHING,
+        OPUS: rulings(("leadership:CFO", "none", "")),
     })  # fmt: skip
     out, rows, _, _ = run(DEPARTURE, llm)  # rules: departure, Sonnet: appointment, Opus: none
     assert rows["leadership:CFO"].status == "DISPUTED"
@@ -158,7 +159,8 @@ def test_unusable_llm_output_keeps_rule_result() -> None:
     ("rule", "ext", "tb", "expected"),
     [
         ("present", "present", None, ("present", "UNANIMOUS")),
-        ("present", "none", "none", ("none", "MAJORITY")),
+        ("present", "none", "none", ("none", "OVERRULED")),
+        ("none", "present", "none", ("none", "MAJORITY")),
         ("none", "present", "present", ("present", "MAJORITY")),
         ("departure", "appointment", "none", ("disputed", "DISPUTED")),
     ],
@@ -182,3 +184,44 @@ def test_schema_is_strict() -> None:
     assert set(schema["required"]) == {"leadership_changes", "findings", "summary"}
     lc = schema["$defs"]["LeadershipChange"]
     assert set(lc["required"]) == set(lc["properties"]) and lc["additionalProperties"] is False
+
+
+def test_tiebreaker_sees_both_claims_without_sources() -> None:
+    seen = {}
+
+    def answer(model, user):
+        if model == SONNET:
+            return NOTHING
+        seen["user"] = user
+        return rulings(("leadership:CFO", "departure", "step down from his current position"))
+
+    _, rows, _, _ = run(DEPARTURE, FakeLLM(answer))
+    user = seen["user"]
+    assert "Claim A: departure; quote:" in user and "Claim B: none; quote: (none)" in user
+    assert "rules" not in user.lower() and SONNET not in user
+    assert (rows["leadership:CFO"].outcome, rows["leadership:CFO"].status) == (
+        "departure", "MAJORITY",
+    )  # fmt: skip
+
+
+def test_tiebreak_answer_outside_allowed_set_is_disputed() -> None:
+    llm = by(
+        {SONNET: NOTHING, OPUS: rulings(("leadership:CFO", "present", "Chief Financial Officer"))}
+    )
+    _, rows, _, _ = run(DEPARTURE, llm)
+    assert rows["leadership:CFO"].status == "DISPUTED"
+
+
+def test_llm_departure_plus_appointment_is_succession() -> None:
+    text = ("John Doe will retire as Chief Financial Officer on March 1. "
+            "The Board appointed Jane Roe as Chief Financial Officer.")  # fmt: skip
+    llm = by({SONNET: signals(leadership=[
+        ("CFO", "appointment", "Jane Roe", "appointed Jane Roe as Chief Financial Officer"),
+        ("CFO", "departure", "John Doe", "John Doe will retire as Chief Financial Officer"),
+    ])})  # fmt: skip
+    out, rows, _, _ = run(text, llm)
+    assert (rows["leadership:CFO"].rule_value, rows["leadership:CFO"].extractor_value) == (
+        "succession", "succession",
+    )  # fmt: skip
+    sig = next(s for s in out if s.rule_id == "8k_5.02_cfo_succession")
+    assert sig.severity == "Warning" and "Jane Roe" in sig.description

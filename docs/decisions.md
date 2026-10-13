@@ -218,3 +218,45 @@ has no exhibit; this is logged.
   (MAR, LUMN).
 - `signal_key` = hash(company, rule, accession, section, extra). Reruns keep `detected_at`
   and delete only that company's signals that are no longer produced.
+
+**D-028 Judgment signals: rules + LLM vote** (user decision, 2026-10-13: "切分完用 LLM 更
+robust，或者都做然后 vote"; extractor Claude Sonnet 5.5, ties decided by Claude Opus 5.5).
+- Scope (`config/llm.yaml` `topics`): judgment questions per section.
+  - 8-K 5.02: CEO / CFO departure or appointment
+  - 8-K 3.01: adverse listing notice vs voluntary transfer
+  - Auditor's report: going concern
+  - 10-K 9A / 10-Q Part I Item 4: material weakness, controls not effective
+
+  Structural facts stay rule-only: 8-K item numbers, auditor name from XBRL, metric signals.
+- Per document × topic:
+  1. Rules vote.
+  2. Sonnet 5.5 (effort low) reads the sections and answers with verbatim evidence.
+  3. Only on disagreement, Opus 5.5 (effort high) rules. It sees both claims with their
+     quotes, unlabelled and in a neutral order, and decides on the text.
+  4. Majority wins. Three different answers → DISPUTED (kept, flagged for a human).
+  5. A rule detection that both LLMs vote down is **kept as OVERRULED**, not deleted. The two
+     models are correlated and could share a mistake, and a silently missing CEO/CFO change is
+     worse for underwriting than an extra flagged item. (User raised this; agreed 2026-10-13.)
+- LLM answers count only if their quote is found in the source text (whitespace, quote style
+  and case ignored). Tie-break answers must also be in the topic's allowed set.
+- Every call is cached in `llm_call` by a hash of (task, prompt version, model, effort, system,
+  user, schema). Reruns on unchanged filings make no calls. Every vote is stored in
+  `signal_vote`. Signals carry `method`, `review_status` and `votes_json`.
+- If the LLM is unavailable (no key, bad credentials, bad request), the stage logs one error
+  and continues with rules only (`review_status = RULE_ONLY`).
+- Server-side refusal fallback (`fallbacks: "default"`) is enabled on both models.
+- The key is a user-level key; `ANTHROPIC_WORKSPACE_ID` is sent as the `anthropic-workspace-id`
+  header when set.
+- **Succession** (added after the first live run): a departure and an appointment to the same
+  role in one filing is answered `succession` (Warning), by the rules and by the LLM parsing.
+  Before this, the code kept a single value per role, so a CFO handover looked like a
+  disagreement between "departure" and "appointment".
+- **Live run, 9 companies, 2 years of filings** (2026-10-13):
+  - 89 documents and 185 topic votes; 179 were unanimous.
+  - 6 went to a tie-break and Opus agreed with Sonnet in all 6:
+    - 5 CFO successions where the rules saw only one side (MAR, LUV, F, PFE, SKYD)
+    - 1 rule miss: Paramount Skydance's 2026-10-01 8-K appointing Ynon Kreiz Co-CEO
+  - 0 OVERRULED, 0 DISPUTED, 0 ungrounded quotes.
+  - Cost: about $0.41 in total. A rerun on unchanged inputs made 0 calls.
+- Prompts: `signals_v1` (extractor), `tiebreak_v2` (adds the succession definition). A changed
+  prompt gets a new version, which also invalidates its cache entries.

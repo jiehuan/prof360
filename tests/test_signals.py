@@ -83,13 +83,14 @@ def test_leadership_changes(text, expected) -> None:
     assert [(s.rule_id, s.severity) for s in run_502(text)] == expected
 
 
-def test_departure_outranks_appointment_per_role() -> None:
+def test_departure_plus_appointment_is_succession() -> None:
     text = ("The Board appointed Jane Roe as Chief Financial Officer. "
             "John Doe will retire as Chief Financial Officer on March 1.")  # fmt: skip
     out = run_502(text)
-    assert [(s.rule_id, s.snippet) for s in out] == [
-        ("8k_5.02_cfo_departure", "John Doe will retire as Chief Financial Officer on March 1.")
-    ]
+    assert [(s.rule_id, s.severity, s.snippet) for s in out] == [
+        ("8k_5.02_cfo_succession", "Warning",
+         "John Doe will retire as Chief Financial Officer on March 1.")
+    ]  # fmt: skip
 
 
 def test_voluntary_listing_transfer_is_downgraded() -> None:

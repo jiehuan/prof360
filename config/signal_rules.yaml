@@ -43,9 +43,10 @@ leadership:
   proximity: 100
   departure: '\b(resign\w*|retire\w*|depart\w*|leav(?:e|es|ing)\b|terminat\w*|step(?:ped|ping|s)? down|will not stand for re-?election|separat\w+ from)\b'
   appointment: '\b(appoint\w*|elect\w*|nam(?:ed|es) .{0,40}as|promot\w*|succeed\w*)\b'
-  # severity by (role found, kind)
+  # severity by kind of change; succession = a departure and an appointment to the same role
   severity:
     departure: Warning
+    succession: Warning
     appointment: Info
 
 # Keyword rules over filing sections. `sections` are section-code prefixes. A match is dropped

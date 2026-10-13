@@ -429,6 +429,7 @@ uw-pipeline dq-report --run-id <id>
 - [x] 8-K item 规则 → 事件信号（§5.4）
 - [x] 治理信号：审计师（dei:AuditorName + 审计报告任期）、4.01 审计师变更、5.02 CEO/CFO 变更
 - [x] 关键词信号：going concern、material weakness、restatement
+- [x] 判断类信号改为 规则 + LLM 投票（Sonnet 5.5 抽取，分歧由 Opus 5.5 裁决；见 decisions D-028）
 
 **验收**：9 家公司最近一份 10-K 的 Item 1A / 3 / 7 切分成功率 ≥ 90%，失败的有日志；最近 2 年 8-K 事件全部入库。
 
@@ -441,12 +442,12 @@ uw-pipeline dq-report --run-id <id>
 **验收**：重复运行不产生重复 activity；每家公司至少有近 30 天新闻（若 AV 有）。
 
 ### Phase 5 — LLM 增强
-- [ ] `LLMClient` 抽象 + Secure GPT / Claude 实现
+- [ ] `LLMClient` 抽象 + Secure GPT / Claude 实现（抽象与 Claude 实现已完成，D-028；Secure GPT 待接入）
 - [ ] `schemas.py`、prompts v1、`grounding.py`（引用 + 数字校验）
 - [ ] Key Insights、Strategic & Risk Insights、Behavioral Insights、Follow-Up Questions、Activity 摘要
 - [ ] 文本指标抽取：酒店 RevPAR/入住率；FI：CET1/NIM/NPL/贷款组合
 - [ ] 财报 8-K（Item 2.02）EX-99.1 抽取核心财务数字 → `derivation = PRELIMINARY`，对应期间 10-Q/10-K 入库后自动被替换（隔夜更新，见 decisions D-022）
-- [ ] input_hash 缓存，`is_current` 版本切换
+- [ ] input_hash 缓存（`llm_call` 已实现，D-028），`is_current` 版本切换
 
 **验收**：
 - 3 家 golden 公司输出全部通过 schema 校验和 grounding 校验

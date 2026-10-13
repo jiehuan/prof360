@@ -34,7 +34,7 @@ class LeadershipRules(BaseModel):
     proximity: int = 100
     departure: str
     appointment: str
-    severity: dict[Literal["departure", "appointment"], Severity]
+    severity: dict[Literal["departure", "appointment", "succession"], Severity]
 
     @field_validator("departure", "appointment", "exclude", "own_entity")
     @classmethod

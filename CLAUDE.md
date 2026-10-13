@@ -37,5 +37,9 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
   `config/industry_groups.yaml`; never generate them at run time.
 - Every metric gap shown by `coverage-report` needs a note in `config/coverage_notes.yaml`.
 - Golden values come from the filing itself (XBRL instance / document), not from estimates.
+- LLM: prompts in `src/uw_pipeline/enrich/prompts/{task}_v{N}.md`; any change gets a new
+  version. Calls go through `enrich/llm.cached_call` (cached by input hash). Outputs are
+  schema-validated and evidence must be grounded in the source text. Tests use
+  `tests/fake_llm.py`, never the real API. `LLM_ENABLED=false` runs rules only.
 - Signal and section rules live in `config/signal_rules.yaml` and `company_overrides/*.yaml`
   (`sections:`); every false positive found becomes a test case in `tests/test_signals.py`.

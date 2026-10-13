@@ -34,5 +34,14 @@ def signals(leadership=(), findings=(), summary="x") -> dict[str, Any]:
     }
 
 
+def rulings(*items) -> dict[str, Any]:
+    """Tie-break output: (topic, answer, evidence)."""
+    return {
+        "rulings": [
+            {"topic": t, "answer": a, "evidence": e, "reason": "per the text"} for t, a, e in items
+        ]
+    }
+
+
 NOTHING = signals()
 REFUSED = LLMError("declined")

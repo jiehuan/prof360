@@ -57,3 +57,25 @@ def strict_json_schema(model: type[BaseModel]) -> dict[str, Any]:
 
     schema: dict[str, Any] = fix(model.model_json_schema())
     return schema
+
+
+TopicAnswer = Literal[
+    "departure", "appointment", "succession", "adverse", "voluntary_transfer", "present", "none"
+]  # fmt: skip
+
+
+class Ruling(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    topic: str
+    answer: TopicAnswer
+    evidence: str = Field(
+        description="Verbatim quote from the excerpt supporting the answer; empty if none"
+    )
+    reason: str = Field(description="One sentence")
+
+
+class TieBreak(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    rulings: list[Ruling]

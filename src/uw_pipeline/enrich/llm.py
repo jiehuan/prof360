@@ -33,11 +33,17 @@ class LLMConfig(BaseModel):
     extractor: ModelSpec
     tiebreaker: ModelSpec
     prompt_version: str
+    tiebreak_prompt_version: str
     max_input_chars: int
     topics: dict[str, list[str]]
 
     def prompt(self) -> str:
         return (PROMPTS_DIR / f"{self.prompt_version}.md").read_text(encoding="utf-8")
+
+    def tiebreak_prompt(self) -> str:
+        """Tie-break instructions followed by the extractor's topic definitions."""
+        head = (PROMPTS_DIR / f"{self.tiebreak_prompt_version}.md").read_text(encoding="utf-8")
+        return f"{head}\n{self.prompt()}"
 
 
 def load_llm_config(config_dir: Path) -> LLMConfig:
