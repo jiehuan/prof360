@@ -33,6 +33,10 @@ class Settings(BaseSettings):
 
     alphavantage_api_key: SecretStr | None = None
     anthropic_api_key: SecretStr | None = None
+    # Needed for user-level API keys that aren't scoped to a workspace.
+    anthropic_workspace_id: str | None = None
+    # Turn LLM voting off (rules only), e.g. when no credentials are available.
+    llm_enabled: bool = True
 
     @field_validator("sec_user_agent")
     @classmethod

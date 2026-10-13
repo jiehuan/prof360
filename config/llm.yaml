@@ -1,0 +1,24 @@
+# LLM settings for rule + LLM voting on judgment signals (decisions D-028).
+# The extractor reads every in-scope section. When it disagrees with the rules, the tie-breaker
+# answers the same question independently and the majority of the three votes wins.
+extractor:
+  model: claude-sonnet-5-5
+  effort: low          # extraction/classification; Sonnet 5.5 guidance: low for extraction
+  max_tokens: 8000
+tiebreaker:
+  model: claude-opus-5-5
+  effort: high
+  max_tokens: 16000
+prompt_version: signals_v1
+# Longer inputs are not sent (never silently truncated); those documents stay rule-only.
+max_input_chars: 120000
+
+# Judgment questions ("topics") asked of each section; only these sections are sent.
+# Answers: leadership:* -> departure | appointment | none; listing -> adverse |
+# voluntary_transfer | none; the rest -> present | none.
+topics:
+  "8K-5.02": ["leadership:CEO", "leadership:CFO"]
+  "8K-3.01": ["listing"]
+  "10K-AUDIT": ["going_concern"]
+  "10K-9A": ["material_weakness", "controls_not_effective"]
+  "10Q-I-4": ["material_weakness", "controls_not_effective"]

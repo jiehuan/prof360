@@ -47,6 +47,9 @@ class Detected:
     section_code: str | None = None
     snippet: str | None = None
     key_extra: str = ""  # disambiguates several signals of one rule from one source
+    method: str = "RULE"  # RULE | VOTE (decisions D-028)
+    review_status: str = "RULE_ONLY"  # RULE_ONLY | UNANIMOUS | MAJORITY | DISPUTED
+    votes_json: str | None = None
 
 
 @dataclass(frozen=True)

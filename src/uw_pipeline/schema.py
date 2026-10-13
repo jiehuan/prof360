@@ -183,5 +183,45 @@ signal = Table(
     Column("accession_no", String(25)),
     Column("section_code", String(20)),
     Column("snippet", String(2000)),
+    # How the signal was decided (decisions D-028): RULE | VOTE
+    Column("method", String(10), nullable=False, server_default="RULE"),
+    # RULE_ONLY | UNANIMOUS | MAJORITY | DISPUTED
+    Column("review_status", String(12), nullable=False, server_default="RULE_ONLY"),
+    Column("votes_json", String(500)),
     Column("detected_at", DateTime(timezone=True), nullable=False),
+)
+
+# Every LLM call, keyed by a hash of (model, prompt version, inputs). Unchanged inputs reuse the
+# stored output, so reruns make no LLM calls.
+llm_call = Table(
+    "llm_call",
+    metadata,
+    Column("input_hash", String(64), primary_key=True),
+    Column("task", String(40), nullable=False),
+    Column("prompt_version", String(40), nullable=False),
+    Column("model", String(60), nullable=False),  # requested model
+    Column("served_model", String(60)),  # differs after a server-side fallback
+    Column("output_json", Text),
+    Column("error", String(500)),
+    Column("input_tokens", Integer),
+    Column("output_tokens", Integer),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+)
+
+# One row per judgment question (document x topic) with each voter's answer (decisions D-028).
+signal_vote = Table(
+    "signal_vote",
+    metadata,
+    Column("vote_id", Integer, primary_key=True, autoincrement=True),
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False, index=True),
+    Column("doc_id", Integer, ForeignKey("source_document.doc_id"), nullable=False),
+    Column("topic", String(40), nullable=False),
+    Column("rule_value", String(30), nullable=False),
+    Column("extractor_value", String(30)),
+    Column("tiebreak_value", String(30)),
+    Column("outcome", String(30), nullable=False),
+    Column("status", String(12), nullable=False),
+    Column("evidence", String(2000)),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+    UniqueConstraint("doc_id", "topic", name="uq_signal_vote"),
 )

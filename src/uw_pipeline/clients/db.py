@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from sqlalchemy import Engine, create_engine, make_url
+from sqlalchemy import Engine, create_engine, inspect, make_url, text
+from sqlalchemy.schema import CreateColumn
 
 from uw_pipeline.schema import metadata
 
@@ -21,7 +22,17 @@ def make_engine(url: str) -> Engine:
 
 
 def ensure_schema(engine: Engine) -> None:
-    """Create missing tables. Only for local SQLite; Azure SQL migrations are owned elsewhere."""
+    """Create missing tables and add missing columns (local SQLite only; Azure SQL migrations
+    are owned elsewhere). New columns must be nullable or have a server default."""
     if engine.dialect.name != "sqlite":
         raise RuntimeError("ensure_schema is only for local SQLite; apply migrations for other DBs")
     metadata.create_all(engine)
+    inspector = inspect(engine)
+    with engine.begin() as conn:
+        for table in metadata.sorted_tables:
+            existing = {c["name"] for c in inspector.get_columns(table.name)}
+            for col in table.columns:
+                if col.name in existing:
+                    continue
+                ddl = CreateColumn(col).compile(dialect=engine.dialect)
+                conn.execute(text(f'ALTER TABLE "{table.name}" ADD COLUMN {ddl}'))

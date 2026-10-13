@@ -1,0 +1,184 @@
+from datetime import UTC, datetime
+
+import pytest
+from sqlalchemy import create_engine, func, select
+
+from tests.conftest import CONFIG_DIR
+from tests.fake_llm import NOTHING, REFUSED, FakeLLM, signals
+from uw_pipeline.enrich.grounding import is_grounded
+from uw_pipeline.enrich.llm import load_llm_config
+from uw_pipeline.enrich.schemas import SectionSignals, strict_json_schema
+from uw_pipeline.schema import llm_call, metadata
+from uw_pipeline.signals.detect import Detected, Doc, eight_k_signals
+from uw_pipeline.signals.rules import load_signal_rules
+from uw_pipeline.signals.vote import Answer, Voter, decide, merge
+
+RULES = load_signal_rules(CONFIG_DIR)
+CONFIG = load_llm_config(CONFIG_DIR)
+SONNET, OPUS = CONFIG.extractor.model, CONFIG.tiebreaker.model
+NOW = datetime(2026, 10, 13, tzinfo=UTC)
+
+DEPARTURE = ("Dave Denton notified the Company that he will step down from his current "
+             "position as Chief Financial Officer effective August 15, 2026.")  # fmt: skip
+SEGMENT_CEO = ("Piepszak, 54, Co-Chief Executive Officer of the Commercial & Investment Bank, "
+               "has been named as a Chief Operating Officer of the Firm.")  # fmt: skip
+
+
+def run(text, llm, item="5.02", rule=None):
+    """Vote on one 8-K. `rule` overrides the rule detections (to simulate a rule misfire)."""
+    engine = create_engine("sqlite://")
+    metadata.create_all(engine)
+    doc = Doc(7, "8-K", "PRIMARY", "acc-7", "2026-06-18", None, f"{item},9.01")
+    sections = {f"8K-{item}": f"Item {item}\n{text}"}
+    if rule is None:
+        rule = eight_k_signals([doc], {7: sections}, RULES, ("Acme",))
+    with engine.begin() as conn:
+        voter = Voter(llm, CONFIG, RULES, conn, lambda: NOW)
+        result = voter.vote_document(doc, "ACME CORP", sections, rule)
+        n_calls = conn.execute(select(func.count()).select_from(llm_call)).scalar_one()
+    assert result is not None
+    voted, rows = result
+    return merge(rule, {7: voted}, RULES), {r.topic: r for r in rows}, voter, n_calls
+
+
+def by(answer_map):
+    return FakeLLM(lambda model, user: answer_map[model])
+
+
+def test_agreement_needs_no_tiebreak() -> None:
+    llm = by({SONNET: signals(leadership=[("CFO", "departure", "Dave Denton", DEPARTURE)])})
+    out, rows, _, _ = run(DEPARTURE, llm)
+    assert llm.calls == [SONNET]
+    assert rows["leadership:CFO"].status == "UNANIMOUS"
+    assert [(s.rule_id, s.review_status, s.method) for s in out] == [
+        ("8k_5.02_cfo_departure", "UNANIMOUS", "VOTE")
+    ]
+
+
+def test_rule_false_positive_overruled_by_majority() -> None:
+    # Real sentence the first rule version misread as a CFO appointment: the CFO is only named
+    # as the person a new accounting VP reports to. Simulate that misfire as the rule vote.
+    text = ("Prior to the effective date of his appointment, Mr. Crockett will serve as Vice "
+            "President, Accounting of the Company reporting to Sherry House, the Company's "
+            "Chief Financial Officer.")  # fmt: skip
+    misfire = Detected(
+        rule_id="8k_5.02_cfo_appointment", category="Governance & Leadership",
+        subcategory="Leadership Change", severity="Info", title="CFO appointment",
+        description="", event_date="2026-06-18", accession_no="acc-7", doc_id=7,
+        snippet=text, key_extra="CFO",
+    )  # fmt: skip
+    llm = by({SONNET: NOTHING, OPUS: NOTHING})
+    out, rows, voter, _ = run(text, llm, rule=[misfire])
+    assert llm.calls == [SONNET, OPUS]
+    vote = rows["leadership:CFO"]
+    assert (vote.rule_value, vote.outcome, vote.status) == ("appointment", "none", "MAJORITY")
+    # The misread CFO appointment is gone; the filing keeps the generic Item 5.02 fact.
+    assert [(s.rule_id, s.method) for s in out] == [("8k_5.02", "RULE")]
+    assert voter.stats["tiebreaks"] == 1
+
+
+def test_llm_catches_rule_miss_confirmed_by_tiebreak() -> None:
+    text = "Mr. Smith has informed the Board that he intends to retire from the Company at year end, ending his tenure as CFO."
+    quote = "ending his tenure as CFO"
+    llm = by({
+        SONNET: signals(leadership=[("CFO", "departure", "Mr. Smith", quote)]),
+        OPUS: signals(leadership=[("CFO", "departure", "Mr. Smith", quote)]),
+    })  # fmt: skip
+    out, rows, _, _ = run(text, llm)
+    assert rows["leadership:CFO"].rule_value == "none"
+    assert (rows["leadership:CFO"].outcome, rows["leadership:CFO"].status) == (
+        "departure", "MAJORITY",
+    )  # fmt: skip
+    sig = next(s for s in out if s.rule_id == "8k_5.02_cfo_departure")
+    assert sig.snippet == quote and "Mr. Smith" in sig.description
+    assert sig.votes_json is not None and '"rules": "none"' in sig.votes_json
+
+
+def test_three_way_split_is_disputed() -> None:
+    llm = by({
+        SONNET: signals(leadership=[("CFO", "appointment", None, "Chief Financial Officer effective August 15")]),
+        OPUS: NOTHING,
+    })  # fmt: skip
+    out, rows, _, _ = run(DEPARTURE, llm)  # rules: departure, Sonnet: appointment, Opus: none
+    assert rows["leadership:CFO"].status == "DISPUTED"
+    sig = next(s for s in out if s.rule_id.startswith("8k_5.02_cfo"))
+    assert sig.review_status == "DISPUTED" and sig.title.startswith("Possible CFO departure")
+
+
+def test_ungrounded_llm_claim_counts_as_none() -> None:
+    llm = by({SONNET: signals(leadership=[("CEO", "departure", "X", "The CEO resigned today.")]),
+              OPUS: NOTHING})  # fmt: skip
+    _, rows, voter, _ = run(SEGMENT_CEO, llm)
+    assert rows["leadership:CEO"].extractor_value == "none"
+    assert voter.stats["ungrounded"] == 1
+    assert llm.calls == [SONNET]  # rules and grounded LLM both say none: no tie-break
+
+
+def test_listing_transfer_vote() -> None:
+    text = "On September 25, 2026, the Company notified the NYSE of its intention to voluntarily de-list its common stock."
+    llm = by(
+        {
+            SONNET: signals(
+                findings=[("listing_voluntary_transfer", "voluntarily de-list its common stock")]
+            )
+        }
+    )
+    out, rows, _, _ = run(text, llm, item="3.01")
+    assert rows["listing"].outcome == "voluntary_transfer"
+    assert [(s.rule_id, s.severity, s.review_status) for s in out] == [
+        ("8k_3.01", "Info", "UNANIMOUS")
+    ]
+
+
+def test_cached_answers_are_reused() -> None:
+    engine = create_engine("sqlite://")
+    metadata.create_all(engine)
+    llm = by({SONNET: signals(leadership=[("CFO", "departure", None, DEPARTURE)])})
+    doc = Doc(7, "8-K", "PRIMARY", "acc-7", "2026-06-18", None, "5.02")
+    sections = {"8K-5.02": DEPARTURE}
+    rule = eight_k_signals([doc], {7: sections}, RULES)
+    for _ in range(2):
+        with engine.begin() as conn:
+            Voter(llm, CONFIG, RULES, conn, lambda: NOW).vote_document(doc, "ACME", sections, rule)
+    assert llm.calls == [SONNET]
+
+
+def test_unusable_llm_output_keeps_rule_result() -> None:
+    engine = create_engine("sqlite://")
+    metadata.create_all(engine)
+    doc = Doc(7, "8-K", "PRIMARY", "acc-7", "2026-06-18", None, "5.02")
+    with engine.begin() as conn:
+        voter = Voter(FakeLLM(lambda m, u: REFUSED), CONFIG, RULES, conn, lambda: NOW)
+        assert voter.vote_document(doc, "ACME", {"8K-5.02": DEPARTURE}, []) is None
+        err = conn.execute(select(llm_call.c.error)).scalar_one()
+    assert err == "declined"
+
+
+@pytest.mark.parametrize(
+    ("rule", "ext", "tb", "expected"),
+    [
+        ("present", "present", None, ("present", "UNANIMOUS")),
+        ("present", "none", "none", ("none", "MAJORITY")),
+        ("none", "present", "present", ("present", "MAJORITY")),
+        ("departure", "appointment", "none", ("disputed", "DISPUTED")),
+    ],
+)
+def test_decide(rule, ext, tb, expected) -> None:
+    outcome, status, _ = decide(Answer(rule), Answer(ext), Answer(tb) if tb else None)
+    assert (outcome, status) == expected
+
+
+def test_grounding_tolerates_formatting_only() -> None:
+    src = "We have served as the Company\u2019s auditor\nsince 2002."
+    assert is_grounded("served as the Company's auditor since 2002", src)
+    assert is_grounded('"We have served as the company\'s auditor since 2002..."', src)
+    assert not is_grounded("served as auditor since 2003", src)
+    assert not is_grounded("since", src)  # too short to mean anything
+
+
+def test_schema_is_strict() -> None:
+    schema = strict_json_schema(SectionSignals)
+    assert schema["additionalProperties"] is False
+    assert set(schema["required"]) == {"leadership_changes", "findings", "summary"}
+    lc = schema["$defs"]["LeadershipChange"]
+    assert set(lc["required"]) == set(lc["properties"]) and lc["additionalProperties"] is False

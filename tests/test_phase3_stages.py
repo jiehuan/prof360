@@ -8,12 +8,21 @@ import respx
 from sqlalchemy import create_engine, func, insert, select
 
 from tests.conftest import CONFIG_DIR
+from tests.fake_llm import NOTHING, FakeLLM, signals
 from uw_pipeline.clients.sec import SEC_DATA, archive_folder_url
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig
+from uw_pipeline.enrich.llm import load_llm_config
 from uw_pipeline.jobs.run_documents import run_documents_stage
 from uw_pipeline.jobs.run_signals import run_signals_stage
-from uw_pipeline.schema import company, filing_section, metadata, signal, source_document
+from uw_pipeline.schema import (
+    company,
+    filing_section,
+    metadata,
+    signal,
+    signal_vote,
+    source_document,
+)
 from uw_pipeline.signals.rules import load_signal_rules
 
 CIK = 42
@@ -108,13 +117,60 @@ def env(make_sec_client):
         yield engine, make_sec_client(day=TODAY), router
 
 
-def _run(engine, sec):
+def _run(engine, sec, llm=None):
     cfg = [CompanyConfig(ticker="ACME", cik=CIK)]
     registry, rules = load_registry(CONFIG_DIR), load_signal_rules(CONFIG_DIR)
     res = run_documents_stage(cfg, sec, registry, rules, engine, today=lambda: TODAY)
-    res += run_signals_stage(cfg, sec, rules, engine)
+    llm_pair = (llm, load_llm_config(CONFIG_DIR)) if llm else None
+    res += run_signals_stage(cfg, sec, rules, engine, llm=llm_pair)
     assert all(r.ok for r in res), res
     return res
+
+
+def _fake_llm():
+    def answer(model, user):
+        if "8K-5.02" in user:
+            return signals(leadership=[("CFO", "departure", "Pat Lee",
+                                        "she will retire as Chief Financial Officer")])  # fmt: skip
+        if "10K-9A" in user:
+            return signals(findings=[("material_weakness", "identified a material weakness")])
+        return NOTHING
+
+    return FakeLLM(answer)
+
+
+def test_signals_with_llm_vote_and_no_calls_on_rerun(env) -> None:
+    engine, sec, _ = env
+    llm = _fake_llm()
+    _run(engine, sec, llm)
+    first_calls = len(llm.calls)
+    with engine.connect() as conn:
+        sigs = {r.rule_id: r for r in conn.execute(select(signal))}
+        votes = {(r.topic, r.status) for r in conn.execute(select(signal_vote))}
+    # 10-K (9A + audit report) and the 5.02 8-K; the 10-Q has no Item 4 in scope. LLM agrees
+    # with the rules everywhere, so there are no tie-breaks.
+    assert first_calls == 2
+    assert sigs["8k_5.02_cfo_departure"].review_status == "UNANIMOUS"
+    assert sigs["material_weakness"].method == "VOTE"
+    assert sigs["auditor"].review_status == "RULE_ONLY"
+    assert ("leadership:CFO", "UNANIMOUS") in votes
+    _run(engine, sec, llm)
+    assert len(llm.calls) == first_calls  # inputs unchanged: every answer comes from the cache
+
+
+def test_llm_auth_failure_falls_back_to_rules(env) -> None:
+    import anthropic
+    import httpx as _httpx
+
+    engine, sec, _ = env
+    req = _httpx.Request("POST", "https://api.anthropic.com/v1/messages")
+    err = anthropic.AuthenticationError(
+        "bad key", response=_httpx.Response(401, request=req), body=None
+    )
+    _run(engine, sec, FakeLLM(lambda m, u: err))
+    with engine.connect() as conn:
+        statuses = {r.review_status for r in conn.execute(select(signal))}
+    assert statuses == {"RULE_ONLY"}
 
 
 def test_documents_and_signals(env) -> None:

@@ -5,19 +5,28 @@ from __future__ import annotations
 import hashlib
 import logging
 from collections.abc import Callable, Sequence
+from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import Connection, Engine, and_, delete, select
 
+from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.clients.sec import SecClient
 from uw_pipeline.config import CompanyConfig
+from uw_pipeline.enrich.llm import LLMConfig, LLMUnavailableError
 from uw_pipeline.extract.filings import instance_name
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.load.upsert import upsert
 from uw_pipeline.normalize.xbrl_facts import text_facts_from_instance
-from uw_pipeline.schema import filing_section, metric_value, signal, source_document
+from uw_pipeline.schema import (
+    filing_section,
+    metric_value,
+    signal,
+    signal_vote,
+    source_document,
+)
 from uw_pipeline.signals.detect import (
     Detected,
     Doc,
@@ -28,6 +37,7 @@ from uw_pipeline.signals.detect import (
     metric_signals,
 )
 from uw_pipeline.signals.rules import SignalRules
+from uw_pipeline.signals.vote import Voter, VoteRow, merge
 
 log = logging.getLogger(__name__)
 
@@ -71,8 +81,12 @@ def _auditor_name(sec: SecClient, cik: str, accn: str, primary_doc: str) -> str 
 
 
 def detect_company(
-    cfg: CompanyConfig, sec: SecClient, rules: SignalRules, conn: Connection
-) -> tuple[int, list[Detected]]:
+    cfg: CompanyConfig,
+    sec: SecClient,
+    rules: SignalRules,
+    conn: Connection,
+    voter: Voter | None = None,
+) -> tuple[int, list[Detected], list[VoteRow]]:
     row = company_row(conn, cfg)
     company_id, cik = row["company_id"], row["cik"]
     docs = _docs(conn, company_id)
@@ -82,6 +96,19 @@ def detect_company(
     own_names = [n.split()[0] for n in (row["name"], row["legal_name"]) if n]
     detected = eight_k_signals(docs, sections, rules, own_names)
     detected += keyword_signals(docs, sections, rules)
+
+    votes: list[VoteRow] = []
+    if voter is not None:
+        voted: dict[int, list[Detected]] = {}
+        for doc in docs:
+            if doc.doc_role != "PRIMARY" or doc.doc_id not in sections:
+                continue
+            mine = [d for d in detected if d.doc_id == doc.doc_id]
+            result = voter.vote_document(doc, row["legal_name"], sections[doc.doc_id], mine)
+            if result is not None:
+                voted[doc.doc_id], doc_votes = result
+                votes += doc_votes
+        detected = merge(detected, voted, rules)
 
     primary_names = dict(
         conn.execute(
@@ -111,8 +138,27 @@ def detect_company(
     ]
     by_accn = {d.accession_no: d.doc_id for d in docs if d.doc_role == "PRIMARY"}
     for s in metric_signals(values, rules):
-        detected.append(Detected(**{**s.__dict__, "doc_id": by_accn.get(s.accession_no or "")}))
-    return company_id, detected
+        detected.append(replace(s, doc_id=by_accn.get(s.accession_no or "")))
+    return company_id, detected, votes
+
+
+def _store_votes(conn: Connection, company_id: int, votes: list[VoteRow], now: datetime) -> None:
+    rows = [
+        {
+            "company_id": company_id,
+            "doc_id": v.doc_id,
+            "topic": v.topic,
+            "rule_value": v.rule_value,
+            "extractor_value": v.extractor_value,
+            "tiebreak_value": v.tiebreak_value,
+            "outcome": v.outcome,
+            "status": v.status,
+            "evidence": v.evidence[:2000] if v.evidence else None,
+            "updated_at": now,
+        }
+        for v in votes
+    ]
+    upsert(conn, signal_vote, rows, key_cols=["doc_id", "topic"])
 
 
 def _row(company_id: int, d: Detected, now: datetime) -> dict[str, Any]:
@@ -133,6 +179,9 @@ def _row(company_id: int, d: Detected, now: datetime) -> dict[str, Any]:
         "accession_no": d.accession_no,
         "section_code": d.section_code,
         "snippet": d.snippet[:2000] if d.snippet else None,
+        "method": d.method,
+        "review_status": d.review_status,
+        "votes_json": d.votes_json,
         "detected_at": now,
     }
 
@@ -143,14 +192,23 @@ def run_signals_stage(
     rules: SignalRules,
     engine: Engine,
     *,
+    llm: tuple[LLMClient, LLMConfig] | None = None,
     now: Callable[[], datetime] = lambda: datetime.now(UTC),
 ) -> list[TaskResult]:
+    """Rule signals, with rule + LLM voting on judgment signals when `llm` is given."""
     results: list[TaskResult] = []
     for cfg in companies:
         try:
             with engine.begin() as conn:
-                company_id, detected = detect_company(cfg, sec, rules, conn)
+                voter = Voter(llm[0], llm[1], rules, conn, now) if llm else None
+                try:
+                    company_id, detected, votes = detect_company(cfg, sec, rules, conn, voter)
+                except LLMUnavailableError as exc:
+                    log.error("LLM unavailable, continuing with rules only: %s", exc)
+                    llm = None
+                    company_id, detected, votes = detect_company(cfg, sec, rules, conn, None)
                 stamp = now()
+                _store_votes(conn, company_id, votes, stamp)
                 rows = list(
                     {
                         r["signal_key"]: r for r in (_row(company_id, d, stamp) for d in detected)
@@ -178,8 +236,9 @@ def run_signals_stage(
             for r in rows:
                 counts[r["severity"]] = counts.get(r["severity"], 0) + 1
             log.info(
-                "%s: %d signals %s (%d stale removed)", cfg.ticker, len(rows), counts, len(stale)
-            )
+                "%s: %d signals %s (%d stale removed)%s", cfg.ticker, len(rows), counts,
+                len(stale), f" llm {voter.stats}" if voter else "",
+            )  # fmt: skip
             results.append(
                 TaskResult(cfg.ticker, "signals", ok=True, detail=f"{len(rows)} signals")
             )

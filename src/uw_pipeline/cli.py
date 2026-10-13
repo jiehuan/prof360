@@ -11,12 +11,14 @@ import typer
 from sqlalchemy import select
 
 from uw_pipeline.clients.db import ensure_schema, make_engine
+from uw_pipeline.clients.llm import ClaudeClient
 from uw_pipeline.clients.ratelimit import TokenBucket
 from uw_pipeline.clients.sec import SecClient
 from uw_pipeline.clients.storage import LocalStorage
 from uw_pipeline.compute.coverage import company_coverage, load_notes, render_markdown
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig, load_companies, load_industry_config
+from uw_pipeline.enrich.llm import LLMConfig, load_llm_config
 from uw_pipeline.jobs.run_company import TaskResult, run_company_stage
 from uw_pipeline.jobs.run_documents import run_documents_stage
 from uw_pipeline.jobs.run_signals import run_signals_stage
@@ -57,6 +59,19 @@ def _select_companies(
     if unknown:
         raise typer.BadParameter(f"not in companies.yaml: {', '.join(sorted(unknown))}")
     return list({by_ticker[t].ticker: by_ticker[t] for t in sorted(wanted)}.values())
+
+
+def _llm(settings: Settings) -> tuple[ClaudeClient, LLMConfig] | None:
+    if not settings.llm_enabled:
+        return None
+    if settings.anthropic_api_key is None:
+        log.warning("ANTHROPIC_API_KEY not set; signals use rules only")
+        return None
+    client = ClaudeClient(
+        settings.anthropic_api_key.get_secret_value(),
+        workspace_id=settings.anthropic_workspace_id,
+    )
+    return client, load_llm_config(settings.config_dir)
 
 
 @app.callback()
@@ -113,7 +128,9 @@ def run(
                     event_lookback_days=settings.event_lookback_days, force=force,
                 )  # fmt: skip
             elif s is Stage.signals:
-                results += run_signals_stage(selected, sec, signal_rules, engine)
+                results += run_signals_stage(
+                    selected, sec, signal_rules, engine, llm=_llm(settings)
+                )
 
     failed = [r for r in results if not r.ok]
     typer.echo(f"{len(results) - len(failed)}/{len(results)} tasks succeeded")
