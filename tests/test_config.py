@@ -58,3 +58,31 @@ def test_unknown_group_reference_rejected() -> None:
                 "sic": {1234: "NOPE"},
             }
         )
+
+
+def test_llm_provider_profiles(monkeypatch) -> None:
+    """One model profile per provider (D-039): SecureGPT on the corporate network, Claude for
+    development off it."""
+    import pytest
+
+    from uw_pipeline.enrich.llm import load_llm_config
+    from uw_pipeline.enrich.package import load_insights_config
+
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    default = load_llm_config(CONFIG_DIR)
+    assert default.provider == "securegpt"
+    assert (default.extractor.model, default.tiebreaker.model) == (
+        "gpt-5-nano-2025-08-07", "gpt-5-mini-2025-08-07")  # fmt: skip
+    assert default.pricing_currency == "EUR"
+
+    claude = load_llm_config(CONFIG_DIR, "anthropic")
+    assert (claude.extractor.model, claude.tiebreaker.model, claude.synthesis.model) == (
+        "claude-haiku-5-5", "claude-sonnet-5-5", "claude-sonnet-5-5")  # fmt: skip
+    assert claude.prompt_version == default.prompt_version  # shared settings stay
+    assert load_insights_config(CONFIG_DIR, "anthropic").synthesis.model == "claude-sonnet-5-5"
+
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic")
+    assert load_llm_config(CONFIG_DIR).provider == "anthropic"
+    assert load_llm_config(CONFIG_DIR, "securegpt").provider == "securegpt"  # explicit wins
+    with pytest.raises(ValueError, match=r"not in config/llm\.yaml"):
+        load_llm_config(CONFIG_DIR, "nope")

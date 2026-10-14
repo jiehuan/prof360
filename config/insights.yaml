@@ -1,11 +1,8 @@
 # LLM insights (Phase 5b, decisions D-033).
 
-# Company-level synthesis (behavioral, strategic & risk, key insights, follow-up questions).
-synthesis:
-  model: gpt-5-mini-2025-08-07   # user decision 2026-10-14 (was claude-sonnet-5-5)
-  effort: high
-  max_tokens: 32000              # includes reasoning tokens on gpt-5 models
-# Per-item work (news activity summaries). The extractor spec from llm.yaml is used.
+# Models: the company-level synthesis (behavioral, strategic & risk, key insights, follow-up
+# questions, metric relevance) uses the active provider's `synthesis` model in llm.yaml; per-item
+# work (news activity summaries) uses its `extractor`.
 
 prompt_versions:
   common: common_v1          # shared rules, prepended to every company-level task

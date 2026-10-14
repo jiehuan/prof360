@@ -2,19 +2,36 @@
 # The extractor reads every in-scope section. When it disagrees with the rules, the tie-breaker
 # answers the same question independently and the majority of the three votes wins.
 #
-# Provider (D-039): securegpt = Azure OpenAI through the AXA XL gateway (config/securegpt.yaml,
-# credentials in SECUREGPT_* env vars); anthropic = Claude API (ANTHROPIC_API_KEY). Changing
-# provider or model changes every cache key, so all LLM tasks run again once.
-provider: securegpt
-# max_tokens includes the model's reasoning tokens on gpt-5 models, hence the higher limits.
-extractor:
-  model: gpt-5-nano-2025-08-07   # user decision 2026-10-14 (was claude-haiku-5-5)
-  effort: low
-  max_tokens: 16000
-tiebreaker:
-  model: gpt-5-mini-2025-08-07   # user decision 2026-10-14 (was claude-sonnet-5-5)
-  effort: high
-  max_tokens: 32000
+# Providers (D-039). One complete model profile per provider; the active one is
+# `default_provider`, or the LLM_PROVIDER environment variable when set (e.g. Claude for
+# development off the corporate network, SecureGPT on it):
+#   securegpt = Azure OpenAI through the AXA XL gateway (config/securegpt.yaml, SECUREGPT_* vars)
+#   anthropic = Claude API (ANTHROPIC_API_KEY)
+# The model is part of every cache key: each profile keeps its own cached results, and switching
+# re-uses them; a new model runs all LLM tasks again once.
+# `synthesis` is the model of the company-level tasks (config/insights.yaml).
+default_provider: securegpt
+providers:
+  securegpt:
+    # max_tokens includes reasoning tokens on gpt-5 models, hence the higher limits.
+    extractor: {model: gpt-5-nano-2025-08-07, effort: low, max_tokens: 16000}
+    tiebreaker: {model: gpt-5-mini-2025-08-07, effort: high, max_tokens: 32000}
+    synthesis: {model: gpt-5-mini-2025-08-07, effort: high, max_tokens: 32000}
+    # SecureGPT price list, per million tokens (input, output); run statistics only.
+    pricing_currency: EUR
+    pricing:
+      gpt-5-nano-2025-08-07: [0.052, 0.378]
+      gpt-5-mini-2025-08-07: [0.240, 1.889]
+  anthropic:
+    extractor: {model: claude-haiku-5-5, effort: low, max_tokens: 8000}
+    tiebreaker: {model: claude-sonnet-5-5, effort: high, max_tokens: 16000}
+    synthesis: {model: claude-sonnet-5-5, effort: high, max_tokens: 16000}
+    pricing_currency: USD
+    pricing:
+      claude-haiku-5-5: [0.1, 0.5]    # prompts <= 100K tokens; longer prompts 0.5 / 2.5
+      claude-sonnet-5-5: [2.0, 10.0]
+      claude-opus-5-5: [4.0, 20.0]
+
 prompt_version: signals_v1
 # The tie-breaker sees both claims and their evidence and rules on the text (D-028).
 tiebreak_prompt_version: tiebreak_v2
@@ -30,11 +47,3 @@ topics:
   "10K-AUDIT": ["going_concern"]
   "10K-9A": ["material_weakness", "controls_not_effective"]
   "10Q-I-4": ["material_weakness", "controls_not_effective"]
-
-# Price per million tokens (input, output), for run statistics only, in `pricing_currency`.
-# SecureGPT price list (EUR). Claude API, if provider is switched back (USD): opus-5-5 4/20,
-# sonnet-5-5 2/10, haiku-5-5 0.1/0.5.
-pricing_currency: EUR
-pricing:
-  gpt-5-nano-2025-08-07: [0.052, 0.378]
-  gpt-5-mini-2025-08-07: [0.240, 1.889]

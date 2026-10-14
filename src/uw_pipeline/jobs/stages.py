@@ -97,7 +97,7 @@ class StageRunner:
         if not self._llm_built:
             self._llm_built = True
             s = self.settings
-            cfg = load_llm_config(s.config_dir)
+            cfg = load_llm_config(s.config_dir, s.llm_provider)
             client: LLMClient | None = None
             if not s.llm_enabled:
                 pass
@@ -178,7 +178,7 @@ class StageRunner:
                 reg,
                 ind,
                 self.llm,
-                load_insights_config(s.config_dir),
+                load_insights_config(s.config_dir, s.llm_provider),
                 load_source_labels(s.config_dir),
                 e,
             )
@@ -202,7 +202,7 @@ class StageRunner:
                 reg,
                 ind,
                 self.llm,
-                load_insights_config(s.config_dir),
+                load_insights_config(s.config_dir, s.llm_provider),
                 load_source_labels(s.config_dir),
                 e,
             )

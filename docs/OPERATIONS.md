@@ -83,10 +83,13 @@
 
 ## 9. LLM：SecureGPT（D-039）
 
-- 模型通过公司的 SecureGPT 网关调用：抽取用 gpt-5-nano，复核和综合用 gpt-5-mini（`config/llm.yaml`、`config/insights.yaml`）。网关地址、api-version、部署名在 `config/securegpt.yaml`。
+- `config/llm.yaml` 里每个提供方有一套完整的模型配置（抽取、复核、综合、价格）。用环境变量 `LLM_PROVIDER` 选择，不设时用 `default_provider`（securegpt）：
+  - **securegpt**（公司网络内）：抽取 gpt-5-nano，复核和综合 gpt-5-mini。网关地址、api-version、部署名在 `config/securegpt.yaml`。
+  - **anthropic**（公司网络外开发和测试）：抽取 Claude Haiku 5.5，复核和综合 Claude Sonnet 5.5，需要 `ANTHROPIC_API_KEY`。
+- 每个提供方的缓存各自保留：切换回来时，输入没变的任务直接用缓存，不产生费用。
 - 凭证只放环境变量：`SECUREGPT_CLIENT_ID`、`SECUREGPT_CLIENT_SECRET`、`SECUREGPT_SUBSCRIPTION_KEY`，环境用 `SECUREGPT_ENV`（dv / pp / pr）。
 - 切换或更换环境前先跑 `python scripts/securegpt_smoke.py`：每个模型调用一次，并测试网关是否接受 `reasoning_effort`；接受的话把 `send_reasoning_effort` 改为 true。
-- 想切回 Claude API：`config/llm.yaml` 里 `provider: anthropic`，把模型名改回 Claude，并设置 `ANTHROPIC_API_KEY`。换模型会让所有 LLM 任务重跑一次。
+- 在公司网络外开发：本地 `.env` 里设 `LLM_PROVIDER=anthropic`。不要在两个提供方之间来回切换同一个部署环境：每次切换，当前版本的洞察会换成另一个提供方的结果。
 
 ## 10. 常见故障
 

@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from sqlalchemy import Connection, desc, or_, select
 
 from uw_pipeline.compute.registry import MetricDef
-from uw_pipeline.enrich.llm import ModelSpec
+from uw_pipeline.enrich.llm import ModelSpec, load_llm_config
 from uw_pipeline.enrich.sources import SourceRef
 from uw_pipeline.schema import (
     activity,
@@ -46,9 +46,12 @@ class InsightsConfig(BaseModel):
     counts: dict[str, tuple[int, int]]
 
 
-def load_insights_config(config_dir: Path) -> InsightsConfig:
+def load_insights_config(config_dir: Path, provider: str | None = None) -> InsightsConfig:
+    """insights.yaml plus the active provider's synthesis model (llm.yaml)."""
     with (config_dir / "insights.yaml").open(encoding="utf-8") as f:
-        return InsightsConfig.model_validate(yaml.safe_load(f))
+        raw = yaml.safe_load(f)
+    synthesis = load_llm_config(config_dir, provider).synthesis
+    return InsightsConfig.model_validate({**raw, "synthesis": synthesis.model_dump()})
 
 
 @dataclass(frozen=True)

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -29,17 +30,29 @@ class ModelSpec(BaseModel):
     max_tokens: int
 
 
-class LLMConfig(BaseModel):
+class ProviderProfile(BaseModel):
+    """The models of one provider (config/llm.yaml `providers`)."""
+
     extractor: ModelSpec
     tiebreaker: ModelSpec
+    synthesis: ModelSpec  # company-level tasks (insights.yaml)
+    pricing: dict[str, tuple[float, float]] = {}  # per million tokens (input, output)
+    pricing_currency: str = "USD"
+
+
+class LLMConfig(BaseModel):
+    """llm.yaml with the active provider's profile filled in."""
+
+    provider: str  # anthropic (Claude API) | securegpt (gateway, D-039)
+    extractor: ModelSpec
+    tiebreaker: ModelSpec
+    synthesis: ModelSpec
+    pricing: dict[str, tuple[float, float]] = {}
+    pricing_currency: str = "USD"
     prompt_version: str
     tiebreak_prompt_version: str
     max_input_chars: int
     topics: dict[str, list[str]]
-    # Which API serves the models: anthropic (Claude API) or securegpt (gateway, D-039).
-    provider: str = "anthropic"
-    pricing: dict[str, tuple[float, float]] = {}  # per million tokens (input, output)
-    pricing_currency: str = "USD"
 
     def prompt(self) -> str:
         return (PROMPTS_DIR / f"{self.prompt_version}.md").read_text(encoding="utf-8")
@@ -50,9 +63,21 @@ class LLMConfig(BaseModel):
         return f"{head}\n{self.prompt()}"
 
 
-def load_llm_config(config_dir: Path) -> LLMConfig:
+def active_provider(raw: dict[str, Any], provider: str | None) -> str:
+    """`provider` if given, else the LLM_PROVIDER environment variable, else the default."""
+    return provider or os.environ.get("LLM_PROVIDER") or str(raw["default_provider"])
+
+
+def load_llm_config(config_dir: Path, provider: str | None = None) -> LLMConfig:
     with (config_dir / "llm.yaml").open(encoding="utf-8") as f:
-        return LLMConfig.model_validate(yaml.safe_load(f))
+        raw = yaml.safe_load(f)
+    name = active_provider(raw, provider)
+    profiles = raw.get("providers") or {}
+    if name not in profiles:
+        raise ValueError(f"LLM provider {name!r} is not in config/llm.yaml ({sorted(profiles)})")
+    profile = ProviderProfile.model_validate(profiles[name])
+    rest = {k: v for k, v in raw.items() if k not in ("default_provider", "providers")}
+    return LLMConfig.model_validate({**rest, **profile.model_dump(), "provider": name})
 
 
 class LLMUnavailableError(Exception):

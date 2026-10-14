@@ -42,7 +42,7 @@ def main() -> int:
         return 2
     cfg = load_securegpt_config(CONFIG)
     env = os.environ.get("SECUREGPT_ENV", cfg.default_env)
-    llm, ins = load_llm_config(CONFIG), load_insights_config(CONFIG)
+    llm, ins = load_llm_config(CONFIG, "securegpt"), load_insights_config(CONFIG, "securegpt")
     models = sorted({llm.extractor.model, llm.tiebreaker.model, ins.synthesis.model})
     schema = strict_json_schema(Verdicts)
     print(f"environment {env}, api-version {cfg.api_version}, models {models}\n")

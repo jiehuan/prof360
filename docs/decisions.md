@@ -634,3 +634,9 @@ second model of the dual check, synthesis).
   D-038. gpt-5-nano is expected to need a higher effort (or gpt-5-mini) for text extraction.
 - Security note: the team repository's `config/utils.yaml` holds what look like plaintext APIM
   subscription keys; they should be rotated and moved to a secret store. None were copied here.
+- **Both providers stay usable** (user decision, 2026-10-14): `config/llm.yaml` keeps one
+  complete profile per provider (extractor, tie-breaker, synthesis, prices); `LLM_PROVIDER`
+  selects it, default `securegpt`. Development and tests off the corporate network use
+  `anthropic` (set in the local `.env`); each profile keeps its own cached results, so
+  switching back re-uses them without new calls. The synthesis model moved from insights.yaml
+  into the profiles.

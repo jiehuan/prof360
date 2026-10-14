@@ -51,8 +51,8 @@ def main() -> None:
     assert s.anthropic_api_key is not None, "ANTHROPIC_API_KEY is not set"
     client = ClaudeClient(s.anthropic_api_key.get_secret_value(),
                           workspace_id=s.anthropic_workspace_id)  # fmt: skip
-    icfg = load_insights_config(s.config_dir)
-    llm_cfg = load_llm_config(s.config_dir)
+    icfg = load_insights_config(s.config_dir, s.llm_provider)
+    llm_cfg = load_llm_config(s.config_dir, s.llm_provider)
     registry, industry = load_registry(s.config_dir), load_industry_config(s.config_dir)
     companies = {c.ticker: c for c in load_companies(s.config_dir)}
     cand = ModelSpec(model=args.model, effort=args.effort, max_tokens=icfg.synthesis.max_tokens)
