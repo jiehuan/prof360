@@ -21,7 +21,7 @@ from typing import Any
 
 import yaml
 from pydantic import BaseModel
-from sqlalchemy import Connection, Engine, desc, select
+from sqlalchemy import Connection, Engine, desc, select, true
 
 from uw_pipeline.compute.registry import MetricDef, Registry
 from uw_pipeline.config import CompanyConfig, IndustryConfig
@@ -238,9 +238,15 @@ class Publisher:
         return self.cfg.confidence.derivation.get(d, 0.5)
 
     def matrix(self) -> None:
-        rows = self.src.execute(
-            select(metric_value).where(metric_value.c.company_id == self.company_id)
-        ).mappings()
+        # Results are read fully before the loop issues more queries (SQL Server allows one
+        # active result per connection).
+        rows = (
+            self.src.execute(
+                select(metric_value).where(metric_value.c.company_id == self.company_id)
+            )
+            .mappings()
+            .all()
+        )
         keep = []
         for r in rows:
             mid = self.metric_ids.get(r["metric_code"])
@@ -307,7 +313,7 @@ class Publisher:
         """Publish current insights; return pipeline insight_id -> (ItemLink type, app id)."""
         rows = self.src.execute(
             select(insight).where(insight.c.company_id == self.company_id,
-                                  insight.c.is_current.is_(True))
+                                  insight.c.is_current == true())
             .order_by(insight.c.kind, insight.c.ordinal)
         ).mappings().all()  # fmt: skip
         out: dict[int, tuple[str, int]] = {}
@@ -353,7 +359,7 @@ class Publisher:
     def questions(self) -> dict[int, int]:
         rows = self.src.execute(
             select(followup_question).where(followup_question.c.company_id == self.company_id,
-                                            followup_question.c.is_current.is_(True))
+                                            followup_question.c.is_current == true())
             .order_by(followup_question.c.ordinal)
         ).mappings().all()  # fmt: skip
         out, keep = {}, []
@@ -426,7 +432,7 @@ class Publisher:
             for r in self.src.execute(
                 select(metric_insight.c.metric_code, metric_insight.c.uw_relevance)
                 .where(metric_insight.c.company_id == self.company_id,
-                       metric_insight.c.is_current.is_(True))
+                       metric_insight.c.is_current == true())
             )
         }  # fmt: skip
         values: dict[str, list[dict[str, Any]]] = {}
@@ -494,7 +500,7 @@ class Publisher:
                     select(metric_value).where(metric_value.c.company_id == self.company_id,
                                                metric_value.c.metric_code == code,
                                                metric_value.c.period_type == "FY")
-                ).mappings()  # fmt: skip
+                ).mappings().all()  # fmt: skip
                 for r in rows:
                     ref = value_source(self.src, self.resolver, m.display_name, dict(r))
                     shown = fmt_value(r["value"], m.unit, r["value_status"])
@@ -541,9 +547,11 @@ class Publisher:
     def news(self) -> None:
         c = self.cfg.confidence.activity
         keep_a: list[str] = []
-        for a in self.src.execute(
-            select(activity).where(activity.c.company_id == self.company_id)
-        ).mappings():
+        for a in (
+            self.src.execute(select(activity).where(activity.c.company_id == self.company_id))
+            .mappings()
+            .all()
+        ):
             articles = self.src.execute(
                 select(news_item.c.source, news_item.c.title, news_item.c.url,
                        news_item.c.published_at)
@@ -614,7 +622,7 @@ class Publisher:
             select(transcript_tone, source_document.c.accession_no)
             .join(source_document, source_document.c.doc_id == transcript_tone.c.doc_id)
             .where(transcript_tone.c.company_id == self.company_id)
-        ).mappings():  # fmt: skip
+        ).mappings().all():  # fmt: skip
             run = t["run_id"] or 0
             key = f"{self.p}{t['doc_id']}"
             self.w.put(TranscriptToneAnalysis, key, {

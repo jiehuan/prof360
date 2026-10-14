@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 
 import pytest
-from sqlalchemy import create_engine, func, insert, select
+from sqlalchemy import create_engine, func, insert, select, true
 
 from tests.conftest import CONFIG_DIR
 from tests.fake_llm import FakeLLM
@@ -228,7 +228,7 @@ def test_changed_input_creates_new_current_version(env) -> None:
     _run(env, llm)
     with env.connect() as c:
         current = c.execute(
-            select(insight.c.kind, func.count()).where(insight.c.is_current.is_(True))
+            select(insight.c.kind, func.count()).where(insight.c.is_current == true())
             .group_by(insight.c.kind)).all()  # fmt: skip
         total = c.execute(select(func.count()).select_from(insight)).scalar_one()
     assert dict(current) == {"BEHAVIORAL": 1, "STRATEGIC_RISK": 2, "KEY": 1}

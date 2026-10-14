@@ -8,23 +8,34 @@ WORKDIR /build
 COPY pyproject.toml ./
 COPY src ./src
 RUN pip install --no-cache-dir --upgrade pip \
- && pip wheel --no-cache-dir --wheel-dir /wheels ".[mssql]"
+ && pip wheel --no-cache-dir --wheel-dir /wheels ".[azure]"
 
-FROM ${BASE_IMAGE}
+FROM ${BASE_IMAGE} AS odbc
 # Microsoft ODBC Driver 18 for Azure SQL (pyodbc). PLACEHOLDER: point these at the Artifactory
 # apt mirror of packages.microsoft.com if the cluster has no internet egress.
 ARG MS_REPO=https://packages.microsoft.com
+# packages-microsoft-prod.deb carries the repository definition and its current signing key
+# (Debian 13 is signed with a newer key than the old microsoft.asc). libgssapi-krb5-2 is a
+# dependency of the driver library that --no-install-recommends would otherwise leave out.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends curl gnupg ca-certificates unixodbc \
- && curl -fsSL ${MS_REPO}/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft.gpg \
+ && apt-get install -y --no-install-recommends curl ca-certificates unixodbc \
  && . /etc/os-release \
- && echo "deb [signed-by=/usr/share/keyrings/microsoft.gpg] ${MS_REPO}/debian/${VERSION_ID}/prod ${VERSION_CODENAME} main" \
-    > /etc/apt/sources.list.d/mssql-release.list \
+ && curl -fsSL -o /tmp/packages-microsoft-prod.deb \
+      ${MS_REPO}/config/debian/${VERSION_ID%%.*}/packages-microsoft-prod.deb \
+ && dpkg -i /tmp/packages-microsoft-prod.deb && rm /tmp/packages-microsoft-prod.deb \
  && apt-get update \
- && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 \
- && apt-get purge -y curl gnupg && apt-get autoremove -y \
+ && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 libgssapi-krb5-2 \
+ && apt-get purge -y curl && apt-get autoremove -y \
  && rm -rf /var/lib/apt/lists/*
 
+# Test image with the same ODBC driver (scripts/test_mssql.sh): docker build --target test .
+FROM odbc AS test
+WORKDIR /src
+COPY pyproject.toml ./
+COPY src ./src
+RUN pip install --no-cache-dir -e ".[dev,azure]"
+
+FROM odbc
 COPY --from=build /wheels /wheels
 RUN pip install --no-cache-dir /wheels/* && rm -rf /wheels
 

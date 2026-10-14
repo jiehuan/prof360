@@ -21,7 +21,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel, ValidationError
-from sqlalchemy import Connection, Engine, and_, delete, insert, select, tuple_
+from sqlalchemy import Connection, Engine, insert, select
 
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.clients.storage import Storage
@@ -44,7 +44,7 @@ from uw_pipeline.enrich.text_metrics import (
 )
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import RULE_DERIVATIONS, company_row, read_facts
-from uw_pipeline.load.upsert import upsert
+from uw_pipeline.load.upsert import delete_keys, upsert
 from uw_pipeline.normalize.html_text import html_to_text
 from uw_pipeline.normalize.periods import FiscalCalendar, learn_calendar
 from uw_pipeline.normalize.sections import chunk
@@ -354,13 +354,9 @@ def process_company(
     ).all()
     stale = [tuple(e) for e in existing if tuple(e) not in produced]
     if stale:
-        conn.execute(
-            delete(metric_value).where(
-                metric_value.c.company_id == company_id,
-                metric_value.c.derivation.in_(LLM_DERIVATIONS),
-                tuple_(*(metric_value.c[k] for k in keys[1:])).in_(stale),
-            )
-        )
+        delete_keys(conn, metric_value, keys[1:], stale,
+                    metric_value.c.company_id == company_id,
+                    metric_value.c.derivation.in_(LLM_DERIVATIONS))  # fmt: skip
 
     if group.code in text_cfg.loan_portfolio.groups:
         resolver = SourceResolver(conn, row, labels) if labels else None
@@ -446,15 +442,8 @@ def _loan_book(
         if (pe, seg) not in current
     ]
     if stale:
-        conn.execute(
-            delete(loan_portfolio_segment).where(
-                and_(
-                    loan_portfolio_segment.c.company_id == company_id,
-                    tuple_(loan_portfolio_segment.c.period_end,
-                           loan_portfolio_segment.c.segment).in_(stale),
-                )
-            )
-        )  # fmt: skip
+        delete_keys(conn, loan_portfolio_segment, ["period_end", "segment"], stale,
+                    loan_portfolio_segment.c.company_id == company_id)  # fmt: skip
     if resolver is not None:
         detail = loan_detail(rows, latest, prior, doc, resolver)
         old_d = conn.execute(

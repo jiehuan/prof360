@@ -6,7 +6,7 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass, field
 
-from sqlalchemy import Connection, func, select
+from sqlalchemy import Connection, false, func, select, true
 
 from uw_pipeline.enrich.grounding import is_grounded
 from uw_pipeline.schema import (
@@ -75,7 +75,7 @@ def audit(conn: Connection, sample: int = 20, seed: int = 7) -> AuditReport:
     rep = AuditReport()
     current = conn.execute(
         select(insight.c.insight_id, insight.c.title, insight.c.subcategory).where(
-            insight.c.is_current.is_(True)
+            insight.c.is_current == true()
         )
     ).all()
     with_evidence = []
@@ -112,7 +112,7 @@ def audit(conn: Connection, sample: int = 20, seed: int = 7) -> AuditReport:
     questions = conn.execute(
         select(fq.question_id, func.count(fs.source_row_id))
         .outerjoin(followup_question_source, fs.question_id == fq.question_id)
-        .where(fq.is_current.is_(True))
+        .where(fq.is_current == true())
         .group_by(fq.question_id)
     ).all()  # fmt: skip
     rep.questions = len(questions)
@@ -127,10 +127,10 @@ def audit(conn: Connection, sample: int = 20, seed: int = 7) -> AuditReport:
             rep.failures.append(f"loan row {r['segment']} {r['period_end']}: {r['evidence'][:80]}")
     rep.metric_details = conn.execute(select(func.count()).select_from(metric_detail)).scalar_one()
     rep.metric_relevance = conn.execute(
-        select(func.count()).where(metric_insight.c.is_current.is_(True))
+        select(func.count()).where(metric_insight.c.is_current == true())
     ).scalar_one()
 
-    non_fi = select(company.c.company_id).where(company.c.is_financial.is_(False))
+    non_fi = select(company.c.company_id).where(company.c.is_financial == false())
     fi_codes = ("cet1_ratio", "tier1_ratio", "lcr", "nim", "npl_ratio")
     rep.fi_rows_for_non_fi = (
         conn.execute(

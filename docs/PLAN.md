@@ -551,6 +551,17 @@ uw-pipeline dq-report --run-id <id>
 
 ---
 
+### Phase 12 — Azure SQL 和 ADLS（2026-10-14）
+
+- [x] Azure SQL 连接（服务主体，证书校验），管线表和应用表分两个 schema；配置在 `config/azure.yaml`（占位值，待填写）
+- [x] ADLS 存储（与本地存储同一套 key，原子写入）
+- [x] SQL Server 兼容性：本地 Docker SQL Server 上跑通全部 220 个测试；修复镜像里的 ODBC 驱动安装
+- [x] 两个 schema 的建表脚本（`deploy/sql/`），在 SQL Server 上验证可执行、可重复执行
+- [ ] 填写 `config/azure.yaml` 的真实服务器、数据库、schema、存储账户、容器
+- [ ] 工程师执行建表脚本；在公司网络跑 `scripts/azure_smoke.py`，然后第一次正式运行
+
+---
+
 ### Phase 10 — 扩展到约 4,000 家公司：分层与并行处理（2026-10-13 计划，未开始）
 
 **已定**：分层处理，约 800 家全量（Tier 1），约 3,200 家轻量（Tier 2，洞察按需生成）。本阶段先只做设计，不抓取、不抽取；实现前用模拟客户端做压测。

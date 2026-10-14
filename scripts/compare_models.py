@@ -15,9 +15,9 @@ import argparse
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, true
 
-from uw_pipeline.clients.db import make_engine
+from uw_pipeline.clients.db import pipeline_engine
 from uw_pipeline.clients.llm import ClaudeClient
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import load_companies, load_industry_config
@@ -61,7 +61,7 @@ def main() -> None:
     lines = [f"# {args.model} ({args.effort}) vs {icfg.synthesis.model} "
              f"({icfg.synthesis.effort})", ""]  # fmt: skip
     summary = ["| Company | Task | Current kept | Candidate kept/generated |", "|---|---|---|---|"]
-    engine = make_engine(s.database_url)
+    engine = pipeline_engine(s)
     with engine.begin() as conn:
         common = (PROMPTS_DIR / f"{v['common']}.md").read_text(encoding="utf-8")
         runner = TaskRunner(client, conn, lambda: datetime.now(UTC), common)
@@ -121,7 +121,7 @@ def main() -> None:
             cur_q = conn.execute(
                 select(followup_question.c.question)
                 .where(followup_question.c.company_id == row["company_id"],
-                       followup_question.c.is_current.is_(True))
+                       followup_question.c.is_current == true())
                 .order_by(followup_question.c.ordinal)
             ).scalars().all()  # fmt: skip
             n_q = len(out_q.questions) if out_q else 0

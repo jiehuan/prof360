@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import Connection, Engine, and_, delete, insert, select, update
+from sqlalchemy import Connection, Engine, and_, delete, insert, select, true, update
 
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.compute.registry import MetricDef, Registry
@@ -147,7 +147,7 @@ def _current_items(
         rows = conn.execute(
             select(insight)
             .where(insight.c.company_id == company_id, insight.c.kind == kind,
-                   insight.c.is_current.is_(True))
+                   insight.c.is_current == true())
             .order_by(insight.c.ordinal)
         ).mappings().all()  # fmt: skip
         for n, r in enumerate(rows, start=1):
@@ -162,7 +162,7 @@ def _current_items(
     qs = conn.execute(
         select(followup_question)
         .where(followup_question.c.company_id == company_id,
-               followup_question.c.is_current.is_(True))
+               followup_question.c.is_current == true())
         .order_by(followup_question.c.ordinal)
     ).mappings().all()  # fmt: skip
     for n, q in enumerate(qs, start=1):
@@ -224,7 +224,7 @@ def relevance(
     input_hash = _hash(version, icfg.prompt_versions["common"], spec.model, user, ids)
     current = conn.execute(
         select(metric_insight.c.input_hash).where(metric_insight.c.company_id == company_id,
-                                                  metric_insight.c.is_current.is_(True)).limit(1)
+                                                  metric_insight.c.is_current == true()).limit(1)
     ).scalar()  # fmt: skip
     if current == input_hash:
         stats.relevance = "unchanged"

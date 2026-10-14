@@ -640,3 +640,36 @@ second model of the dual check, synthesis).
   `anthropic` (set in the local `.env`); each profile keeps its own cached results, so
   switching back re-uses them without new calls. The synthesis model moved from insights.yaml
   into the profiles.
+
+**D-040 Azure SQL and ADLS (Phase 12, 2026-10-14).** Same approach as the team's
+professional-databricks code (pyodbc with a service principal; azure-identity +
+DataLakeServiceClient), configured for the pipeline.
+- **Settings.** `config/azure.yaml` holds the non-secret server, database, schemas, storage
+  account, container and root per environment (dv / pp / pr, `AZURE_ENV`). The values are
+  placeholders copied from the loss-run project, marked TO EDIT (user decision: fill in later).
+  Credentials only from the environment (`AZURE_SQL_CLIENT_ID/SECRET`, `ADLS_CLIENT_ID/SECRET`).
+  `DATABASE_BACKEND=azure_sql` and `STORAGE_BACKEND=adls` switch the deployment over; off the
+  network the defaults stay SQLite + local files, like `LLM_PROVIDER` (D-039).
+- **Server certificate verified** (`Encrypt=yes`, `TrustServerCertificate=no`), unlike the
+  team code's `TrustServerCertificate=yes`.
+- **Two schemas.** Pipeline tables and application tables are in separate schemas
+  (`pipeline_schema`, `app_schema`); the table definitions have no schema and each engine maps
+  them (`schema_translate_map`). Required, not only tidy: SQL Server names are case-insensitive,
+  so the app's `Company` and the pipeline's `company` would be the same table.
+- **Verified on a real SQL Server** (2022, local Docker, `scripts/test_mssql.sh`): the whole
+  unit-test suite (220 tests) runs unchanged against it, plus SQL Server-specific tests (MERGE,
+  large deletes, Unicode). Found and fixed:
+  - the production image could not install ODBC Driver 18 on Debian 13 (repository signing
+    key) and the driver missed `libgssapi-krb5-2`;
+  - `IS 1` for boolean filters (now `= 1`), multi-column `IN` (now chunked OR/AND, within the
+    2,100-parameter limit), a boolean `ORDER BY`;
+  - nested queries while a result was still open ("connection is busy", no MARS);
+  - pyodbc `fast_executemany` truncating NVARCHAR(max) values (long-text rows go without it);
+  - all strings are NVARCHAR now (curly quotes, non-ASCII names).
+- **DDL** for both schemas is generated (`scripts/export_app_ddl.py` → `deploy/sql/`), runs
+  cleanly on SQL Server and is idempotent; the engineer applies it, the pipeline does not create
+  tables in shared environments.
+- **ADLS** (`AdlsStorage`): same keys as local storage under a root prefix, so `raw_path`
+  values stay valid; writes go to a temporary name and are renamed into place.
+- `scripts/azure_smoke.py` checks connections, schemas, tables, permissions and ADLS read/write
+  on the corporate network before the first run.

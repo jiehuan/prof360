@@ -12,9 +12,9 @@ import json
 import sys
 from pathlib import Path
 
-from sqlalchemy import select
+from sqlalchemy import select, true
 
-from uw_pipeline.clients.db import make_engine
+from uw_pipeline.clients.db import pipeline_engine
 from uw_pipeline.schema import (
     company,
     followup_question,
@@ -30,7 +30,7 @@ OUT = Path(__file__).resolve().parents[1] / "tests" / "golden"
 
 
 def main() -> None:
-    engine = make_engine(Settings().database_url)
+    engine = pipeline_engine(Settings())
     OUT.mkdir(parents=True, exist_ok=True)
     with engine.connect() as conn:
         for ticker in GOLDEN:
@@ -41,7 +41,7 @@ def main() -> None:
                 sys.exit(f"{ticker} not loaded")
             rows = conn.execute(
                 select(insight)
-                .where(insight.c.company_id == company_id, insight.c.is_current.is_(True))
+                .where(insight.c.company_id == company_id, insight.c.is_current == true())
                 .order_by(insight.c.kind, insight.c.ordinal)
             ).mappings()
             insights = []
@@ -63,7 +63,7 @@ def main() -> None:
                 for q in conn.execute(
                     select(followup_question)
                     .where(followup_question.c.company_id == company_id,
-                           followup_question.c.is_current.is_(True))
+                           followup_question.c.is_current == true())
                     .order_by(followup_question.c.ordinal)
                 ).mappings()
             ]  # fmt: skip
@@ -72,7 +72,7 @@ def main() -> None:
                 for r in conn.execute(
                     select(metric_insight.c.metric_code, metric_insight.c.uw_relevance)
                     .where(metric_insight.c.company_id == company_id,
-                           metric_insight.c.is_current.is_(True))
+                           metric_insight.c.is_current == true())
                     .order_by(metric_insight.c.metric_code)
                 )
             }  # fmt: skip

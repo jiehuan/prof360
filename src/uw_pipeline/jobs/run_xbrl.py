@@ -10,7 +10,7 @@ from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 import pandas as pd
-from sqlalchemy import Connection, Engine, and_, delete, select, tuple_
+from sqlalchemy import Connection, Engine, and_, select
 
 from uw_pipeline.clients.sec import SecClient, pad_cik
 from uw_pipeline.compute.metrics import compute_metrics
@@ -19,7 +19,7 @@ from uw_pipeline.config import CompanyConfig, IndustryConfig
 from uw_pipeline.extract.filings import Filing, instance_name, periodic_filings
 from uw_pipeline.frames import records
 from uw_pipeline.jobs.run_company import TaskResult
-from uw_pipeline.load.upsert import upsert
+from uw_pipeline.load.upsert import delete_keys, upsert
 from uw_pipeline.normalize.periods import learn_calendar, standardize
 from uw_pipeline.normalize.xbrl_facts import (
     FACT_COLUMNS,
@@ -343,12 +343,8 @@ def run_compute_stage(
                 ).all()
                 stale = [tuple(e) for e in existing if tuple(e) not in produced]
                 if stale:
-                    conn.execute(
-                        delete(metric_value).where(
-                            metric_value.c.company_id == row["company_id"],
-                            tuple_(*(metric_value.c[k] for k in keys[1:])).in_(stale),
-                        )
-                    )
+                    delete_keys(conn, metric_value, keys[1:], stale,
+                                metric_value.c.company_id == row["company_id"])  # fmt: skip
             log.info("%s: %d metric values (%d stale removed)", cfg.ticker, len(out), len(stale))
             results.append(TaskResult(cfg.ticker, "compute", ok=True, detail=f"{len(out)} values"))
         except Exception as exc:

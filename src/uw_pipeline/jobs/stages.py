@@ -10,12 +10,12 @@ from typing import Any
 from sqlalchemy import Engine, func, select
 
 from uw_pipeline.clients.alphavantage import AlphaVantageClient
-from uw_pipeline.clients.db import ensure_schema, make_engine
+from uw_pipeline.clients.db import app_engine, ensure_schema
 from uw_pipeline.clients.llm import ClaudeClient, LLMClient
 from uw_pipeline.clients.ratelimit import TokenBucket
 from uw_pipeline.clients.sec import SecClient
 from uw_pipeline.clients.securegpt import SecureGPTClient, load_securegpt_config
-from uw_pipeline.clients.storage import LocalStorage
+from uw_pipeline.clients.storage import make_storage
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig, load_companies, load_industry_config
 from uw_pipeline.enrich.llm import LLMConfig, load_llm_config
@@ -58,7 +58,7 @@ class StageRunner:
         self.registry = load_registry(cfg_dir)
         self.registry.check_groups(self.industry.groups.values())
         self.signal_rules = load_signal_rules(cfg_dir)
-        self.storage = LocalStorage(settings.raw_dir)
+        self.storage = make_storage(settings)
         self._sec: SecClient | None = None
         self._av: AlphaVantageClient | None = None
         self._av_calls_at_start: int | None = None
@@ -122,8 +122,7 @@ class StageRunner:
     @property
     def app_engine(self) -> Engine:
         if self._app_engine is None:
-            url = self.settings.app_database_url
-            self._app_engine = make_engine(url)
+            self._app_engine = app_engine(self.settings)
             if self._app_engine.dialect.name == "sqlite":  # dev stand-in for the app database
                 ensure_schema(self._app_engine, app_metadata)
         return self._app_engine

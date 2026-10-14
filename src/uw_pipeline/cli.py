@@ -12,7 +12,7 @@ from typing import Annotated
 import typer
 from sqlalchemy import select
 
-from uw_pipeline.clients.db import ensure_schema, make_engine
+from uw_pipeline.clients.db import app_engine, ensure_schema, pipeline_engine
 from uw_pipeline.compute.coverage import company_coverage, load_notes, render_markdown
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig, load_companies, load_industry_config
@@ -105,7 +105,7 @@ def run(
     else:
         stages = [s.value for s in (stage or STAGE_ORDER)]
     selected = _select_companies(load_companies(settings.config_dir), all_, ticker or [])
-    engine = make_engine(settings.database_url)
+    engine = pipeline_engine(settings)
     if engine.dialect.name == "sqlite":
         ensure_schema(engine)
 
@@ -151,7 +151,7 @@ def run(
 def runs(limit: Annotated[int, typer.Option(help="Runs to show")] = 10) -> None:
     """Recent runs, and the tasks that did not succeed in the latest one."""
     settings = Settings()
-    engine = make_engine(settings.database_url)
+    engine = pipeline_engine(settings)
     if engine.dialect.name == "sqlite":
         ensure_schema(engine)
     with engine.connect() as conn:
@@ -194,7 +194,7 @@ def coverage_report(
     industry = load_industry_config(settings.config_dir)
     registry = load_registry(settings.config_dir)
     notes = load_notes(settings.config_dir)
-    engine = make_engine(settings.database_url)
+    engine = pipeline_engine(settings)
     reports = []
     with engine.connect() as conn:
         for cfg in selected:
@@ -225,7 +225,7 @@ def coverage_report(
 def audit_insights(sample: Annotated[int, typer.Option(help="Insights to sample")] = 20) -> None:
     """Re-check stored evidence against the sources and the detail-modal data (Phases 5, 8)."""
     settings = Settings()
-    with make_engine(settings.database_url).connect() as conn:
+    with pipeline_engine(settings).connect() as conn:
         rep = audit(conn, sample=sample)
     pct = 100 * rep.snippets_found / rep.snippets if rep.snippets else 100.0
     typer.echo(f"sampled insights:            {rep.sampled_insights}")
@@ -250,7 +250,7 @@ def dq_report(
 ) -> None:
     """Data-quality findings of a run (data/reports/dq-run<id>.md)."""
     settings = Settings()
-    engine = make_engine(settings.database_url)
+    engine = pipeline_engine(settings)
     if engine.dialect.name == "sqlite":
         ensure_schema(engine)
     with engine.connect() as conn:
@@ -300,11 +300,11 @@ def dq_report(
 def init_db() -> None:
     """Create tables in the local SQLite databases (pipeline and dev app database)."""
     settings = Settings()
-    ensure_schema(make_engine(settings.database_url))
+    ensure_schema(pipeline_engine(settings))
     typer.echo(f"schema ready at {settings.database_url}")
-    app_engine = make_engine(settings.app_database_url)
-    if app_engine.dialect.name == "sqlite":
-        ensure_schema(app_engine, app_metadata)
+    app_eng = app_engine(settings)
+    if app_eng.dialect.name == "sqlite":
+        ensure_schema(app_eng, app_metadata)
         typer.echo(f"app schema ready at {settings.app_database_url}")
 
 

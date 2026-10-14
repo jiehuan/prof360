@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import Connection, Engine, and_, desc, insert, select, update
+from sqlalchemy import Connection, Engine, and_, case, desc, insert, select, true, update
 
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.compute.registry import Registry
@@ -129,7 +129,7 @@ def summarise_activities(
 
 def _current_hash(conn: Connection, company_id: int, kind: str) -> str | None:
     table = followup_question if kind == "FOLLOWUP" else insight
-    cond = [table.c.company_id == company_id, table.c.is_current.is_(True)]
+    cond = [table.c.company_id == company_id, table.c.is_current == true()]
     if kind != "FOLLOWUP":
         cond.append(insight.c.kind == kind)
     return conn.execute(select(table.c.input_hash).where(and_(*cond)).limit(1)).scalar()
@@ -263,7 +263,7 @@ def _stored_set(conn: Connection, company_id: int, kind: str) -> list[dict[str, 
         for r in conn.execute(
             select(insight)
             .where(insight.c.company_id == company_id, insight.c.kind == kind,
-                   insight.c.is_current.is_(True))
+                   insight.c.is_current == true())
             .order_by(insight.c.ordinal)
         ).mappings()
     ]  # fmt: skip
@@ -304,12 +304,20 @@ def latest_metric_refs(
     out: dict[str, SourceRef] = {}
     for code in codes:
         r = conn.execute(
-            select(metric_value.c.period_type, metric_value.c.fiscal_year,
-                   metric_value.c.fiscal_quarter, metric_value.c.source_accn)
+            select(
+                metric_value.c.period_type,
+                metric_value.c.fiscal_year,
+                metric_value.c.fiscal_quarter,
+                metric_value.c.source_accn,
+            )
             .where(metric_value.c.company_id == company_id, metric_value.c.metric_code == code)
-            .order_by(desc(metric_value.c.period_end), desc(metric_value.c.period_type == "Q"))
+            # quarter before fiscal year on the same period end (no boolean ORDER BY: SQL Server)
+            .order_by(
+                desc(metric_value.c.period_end),
+                case((metric_value.c.period_type == "Q", 0), else_=1),
+            )
             .limit(1)
-        ).first()  # fmt: skip
+        ).first()
         if r is None:
             continue
         period = f"FY{r.fiscal_year}" + (f" Q{r.fiscal_quarter}" if r.period_type == "Q" else "")

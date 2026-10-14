@@ -14,7 +14,7 @@ from collections.abc import Iterable, Mapping
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Column, Connection, Table, and_, delete, insert, select, update
+from sqlalchemy import Column, Connection, Table, and_, delete, insert, select, true, update
 
 from uw_pipeline.schema_app import pipeline_publish_map as pmap
 
@@ -111,7 +111,7 @@ class AppWriter:
         if not stale:
             return 0
         res = self.conn.execute(
-            update(table).where(_pk(table).in_(list(stale.values())), table.c.isActive.is_(True))
+            update(table).where(_pk(table).in_(list(stale.values())), table.c.isActive == true())
             .values(isActive=False)
         )  # fmt: skip
         # Forget the content hash, so a later put of the same key rewrites the row.

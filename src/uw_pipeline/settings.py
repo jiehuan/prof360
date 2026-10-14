@@ -32,6 +32,20 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///data/uw.db"
     # Application database the `publish` stage writes (Phase 9); Azure SQL in production.
     app_database_url: str = "sqlite:///data/app.db"
+    # Phase 12 (D-040): `url` uses the URLs above (SQLite off the network, or any SQLAlchemy URL);
+    # `azure_sql` builds the URL from config/azure.yaml with a service principal.
+    database_backend: str = "url"
+    # Schema of the pipeline / application tables (default: from config/azure.yaml for
+    # azure_sql, none otherwise).
+    database_schema: str | None = None
+    app_database_schema: str | None = None
+    azure_env: str | None = None  # dv | pp | pr; default from config/azure.yaml
+    azure_sql_client_id: str | None = None
+    azure_sql_client_secret: SecretStr | None = None
+    # Raw landing zone: `local` (data/raw) or `adls` (config/azure.yaml).
+    storage_backend: str = "local"
+    adls_client_id: str | None = None
+    adls_client_secret: SecretStr | None = None
 
     alphavantage_api_key: SecretStr | None = None
     # Free plan: 25 calls/day. Premium (75 calls/min): set the rate to 75 and the quota to 0.

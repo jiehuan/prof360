@@ -11,7 +11,7 @@ from typing import Any
 
 import yaml
 from pydantic import BaseModel
-from sqlalchemy import Connection, desc, func, or_, select
+from sqlalchemy import Connection, desc, false, func, or_, select, true
 
 from uw_pipeline.compute.coverage import company_coverage
 from uw_pipeline.compute.registry import MetricDef
@@ -249,7 +249,7 @@ def release_vs_xbrl(
     rows = conn.execute(
         select(release_check).where(
             release_check.c.company_id == company_id,
-            release_check.c.agrees.is_(False),
+            release_check.c.agrees == false(),
             release_check.c.checked_at >= now - timedelta(days=cfg.days),
         )
     ).mappings()
@@ -344,7 +344,7 @@ def detail_coverage(
         metric_source.c.company_id == company_id))  # fmt: skip
     mi = metric_insight.c
     relevance = _set(conn, select(mi.metric_code).where(mi.company_id == company_id,
-                                                        mi.is_current.is_(True)))  # fmt: skip
+                                                        mi.is_current == true()))  # fmt: skip
     out = [
         Finding("detail_coverage", cfg.severity,
                 f"{code}: no methodology or data sources (run the metricdetail stage)", code)
@@ -367,7 +367,7 @@ def source_coverage(conn: Connection, company_id: int, cfg: _Rule) -> list[Findi
         select(insight.c.kind, insight.c.title, func.count(ev.source_title),
                func.count(ev.source_url))
         .outerjoin(insight_evidence, ev.insight_id == insight.c.insight_id)
-        .where(insight.c.company_id == company_id, insight.c.is_current.is_(True),
+        .where(insight.c.company_id == company_id, insight.c.is_current == true(),
                or_(insight.c.subcategory.is_(None), insight.c.subcategory != "No signal"))
         .group_by(insight.c.insight_id, insight.c.kind, insight.c.title)
     ).all()  # fmt: skip
@@ -383,7 +383,7 @@ def source_coverage(conn: Connection, company_id: int, cfg: _Rule) -> list[Findi
     qs = conn.execute(
         select(fq.question, func.count(fs.source_row_id))
         .outerjoin(followup_question_source, fs.question_id == fq.question_id)
-        .where(fq.company_id == company_id, fq.is_current.is_(True))
+        .where(fq.company_id == company_id, fq.is_current == true())
         .group_by(fq.question_id, fq.question)
     ).all()  # fmt: skip
     out += [Finding("source_coverage", cfg.severity, f"question '{q[:80]}' has no source")
@@ -396,10 +396,10 @@ def link_integrity(conn: Connection, company_id: int, cfg: _Rule) -> list[Findin
     exists only for financial institutions."""
     out = []
     current = _set(conn, select(insight.c.insight_id).where(
-        insight.c.company_id == company_id, insight.c.is_current.is_(True)))  # fmt: skip
+        insight.c.company_id == company_id, insight.c.is_current == true()))  # fmt: skip
     fq = followup_question.c
     questions = _set(conn, select(fq.question_id).where(fq.company_id == company_id,
-                                                        fq.is_current.is_(True)))  # fmt: skip
+                                                        fq.is_current == true()))  # fmt: skip
     il, qi = insight_link.c, followup_question_insight.c
     pairs = [("insight", a, b) for a, b in conn.execute(
         select(il.insight_id, il.linked_insight_id).where(il.insight_id.in_(current)))]  # fmt: skip
