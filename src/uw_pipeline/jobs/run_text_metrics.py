@@ -1,7 +1,12 @@
 """Phase 5a `textmetrics` stage (decisions D-032).
 
-- Text metrics (`kind: text` in metrics.yaml: RevPAR, CET1, ...) from MD&A chunks and earnings
-  releases -> metric_value, derivation LLM_EXTRACTED.
+- Text metrics (`kind: text` in metrics.yaml: RevPAR, NIM, ...) from MD&A chunks and earnings
+  releases -> metric_value, derivation LLM_EXTRACTED. Formula metrics with an `extraction`
+  (bank capital ratios, D-042) are extracted too, but kept only for periods XBRL does not cover;
+  elsewhere they are cross-checked against XBRL (release_check).
+- Identities (config/dq_rules.yaml, D-042): text values that break one (RevPAR = ADR x
+  occupancy, CET1 <= Tier 1 <= total) are dropped, and a loan book adding up to more than total
+  loans is not stored.
 - Preliminary results from earnings releases (decisions D-022) -> metric_value, derivation
   PRELIMINARY, only for periods without an XBRL value. Where XBRL exists, the release value is
   cross-checked against it instead.
@@ -48,6 +53,7 @@ from uw_pipeline.load.upsert import delete_keys, upsert
 from uw_pipeline.normalize.html_text import html_to_text
 from uw_pipeline.normalize.periods import FiscalCalendar, learn_calendar
 from uw_pipeline.normalize.sections import chunk
+from uw_pipeline.quality.identities import IDENTITY_TASK, Identities
 from uw_pipeline.schema import (
     filing_section,
     llm_task_stat,
@@ -78,6 +84,8 @@ class Stats:
     crosscheck_ok: int = 0
     crosscheck_mismatch: int = 0
     loan_segments: int = 0
+    identity_checked: int = 0
+    identity_dropped: int = 0
     mismatches: list[str] = field(default_factory=list)
 
 
@@ -246,12 +254,14 @@ def process_company(
     conn: Connection,
     now: datetime,
     labels: SourceLabels | None = None,
+    identities: Identities | None = None,
 ) -> Stats:
+    identities = identities or Identities()
     row = company_row(conn, cfg)
     company_id = row["company_id"]
     group = industry.groups[row["industry_group"]]
     creg = registry.for_company(cfg.ticker, group)
-    text_metrics: dict[str, MetricDef] = {m.code: m for m in creg.metrics if m.kind == "text"}
+    text_metrics: dict[str, MetricDef] = {m.code: m for m in creg.metrics if m.extraction}
     listed = {m.code: m for m in creg.metrics}
     prelim = {c: d for c, d in text_cfg.preliminary.items() if c in listed}
     cal: FiscalCalendar = learn_calendar(
@@ -312,8 +322,9 @@ def process_company(
     checks: list[dict[str, Any]] = []
     for (code, key), (doc, c) in chosen.items():
         derivation = "LLM_EXTRACTED"
-        if code in prelim:
-            if doc.doc_role != "EX-99.1":
+        # XBRL-backed: preliminary release figures, and formula metrics with a text fallback.
+        if code in prelim or listed[code].kind != "text":
+            if code in prelim and doc.doc_role != "EX-99.1":
                 continue
             if (code, *key) in xbrl:
                 reported = xbrl[(code, *key)]
@@ -331,11 +342,12 @@ def process_company(
                 else:
                     stats.crosscheck_mismatch += 1
                     stats.mismatches.append(
-                        f"{code} {key}: release {c.value:,.0f} vs XBRL {reported:,.0f}"
+                        f"{code} {key}: text {c.value:,.4g} vs XBRL {reported:,.4g}"
                     )
                 continue
-            derivation = "PRELIMINARY"
-            stats.preliminary += 1
+            if doc.doc_role == "EX-99.1":
+                derivation = "PRELIMINARY"
+                stats.preliminary += 1
         stats.extracted += 1
         out.append(
             {
@@ -348,6 +360,12 @@ def process_company(
                 "computed_at": now,
             }
         )  # fmt: skip
+    out = _identity_gate(out, xbrl, identities, stats, cfg.ticker)
+    stats.extracted = len(out)
+    if stats.identity_checked:
+        conn.execute(insert(llm_task_stat).values(
+            company_id=company_id, task=IDENTITY_TASK, generated=stats.identity_checked,
+            kept=stats.identity_checked - stats.identity_dropped, created_at=now))  # fmt: skip
     keys = ["company_id", "metric_code", "period_type", "fiscal_year", "fiscal_quarter"]
     upsert(conn, metric_value, out, key_cols=keys)
     upsert(conn, release_check, checks,
@@ -379,8 +397,41 @@ def process_company(
     if group.code in text_cfg.loan_portfolio.groups:
         resolver = SourceResolver(conn, row, labels) if labels else None
         stats.loan_segments = _loan_book(conn, ex, company_id, company, text_cfg, docs, now,
-                                         resolver)  # fmt: skip
+                                         resolver, identities)  # fmt: skip
     return stats
+
+
+def _identity_gate(
+    rows: list[dict[str, Any]],
+    xbrl: dict[tuple[str, str, int, int], float | None],
+    identities: Identities,
+    stats: Stats,
+    ticker: str,
+) -> list[dict[str, Any]]:
+    """Drop text values of a period where they, with the XBRL values, break an identity."""
+    text: dict[tuple[str, int, int], dict[str, float]] = {}
+    for r in rows:
+        text.setdefault((r["period_type"], r["fiscal_year"], r["fiscal_quarter"]), {})[
+            r["metric_code"]] = r["value"]  # fmt: skip
+    drop: set[tuple[str, str, int, int]] = set()
+    for key, mine in text.items():
+        for ident in identities.checks:
+            involved = ident.metrics()
+            if not involved & mine.keys():
+                continue
+            values = {code: v for (code, *k), v in xbrl.items()
+                      if tuple(k) == key and code in involved and v is not None}  # fmt: skip
+            values |= {code: v for code, v in mine.items() if code in involved}
+            if not involved <= values.keys():
+                continue
+            stats.identity_checked += 1
+            problem = ident.check(values)
+            if problem:
+                stats.identity_dropped += 1
+                log.warning("%s %s %s: %s; text values dropped", ticker, ident.name, key, problem)
+                drop |= {(code, *key) for code in involved & mine.keys()}
+    return [r for r in rows if (r["metric_code"], r["period_type"], r["fiscal_year"],
+                                r["fiscal_quarter"]) not in drop]  # fmt: skip
 
 
 def _loan_book(
@@ -392,6 +443,7 @@ def _loan_book(
     docs: Sequence[DocText],
     now: datetime,
     resolver: SourceResolver | None,
+    identities: Identities | None = None,
 ) -> int:
     """Loan book by class from the latest periodic report's MD&A, for the latest period and the
     prior year-end shown with it; both models must agree on each row."""
@@ -419,6 +471,20 @@ def _loan_book(
     prior = periods[1] if len(periods) > 1 else None
     keep = [r for r in agreed.values() if r.period_end in (latest, prior)]
     totals = {p: sum(r.outstanding for r in keep if r.period_end == p) for p in (latest, prior)}
+    check = (identities or Identities()).loan_book
+    for p, total in totals.items():
+        reported = conn.execute(
+            select(metric_value.c.value).where(
+                metric_value.c.company_id == company_id, metric_value.c.metric_code == check.total,
+                metric_value.c.period_end == p, metric_value.c.derivation.in_(RULE_DERIVATIONS))
+        ).scalar()  # fmt: skip
+        if reported and total > reported * (1 + check.max_over):
+            log.warning("loan book %s: classes add up to %s, more than total loans %s; "
+                        "not stored", p, f"{total:,.0f}", f"{reported:,.0f}")  # fmt: skip
+            conn.execute(insert(llm_task_stat).values(
+                company_id=company_id, task=IDENTITY_TASK, generated=1, kept=0,
+                created_at=now))  # fmt: skip
+            return 0
     rows = [
         {
             "company_id": company_id,
@@ -548,6 +614,7 @@ def run_text_metrics_stage(
     engine: Engine,
     *,
     labels: SourceLabels | None = None,
+    identities: Identities | None = None,
     now: Callable[[], datetime] = lambda: datetime.now(UTC),
 ) -> list[TaskResult]:
     if llm is None:
@@ -568,6 +635,7 @@ def run_text_metrics_stage(
                     conn,
                     now(),
                     labels,
+                    identities,
                 )
             for m in stats.mismatches:
                 log.warning("%s: earnings release vs XBRL mismatch: %s", cfg.ticker, m)

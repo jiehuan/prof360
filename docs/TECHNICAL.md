@@ -1,6 +1,6 @@
 # uw-pipeline: technical overview
 
-For engineers who run, deploy or change the pipeline. As of 2026-10-14 (Phases 1–9, 11 and 12
+For engineers who run, deploy or change the pipeline. As of 2026-10-14 (Phases 1–9 and 11–13
 done; Phase 10 planned, on hold). Related documents:
 
 | Document | Holds |
@@ -90,13 +90,13 @@ flowchart LR
 | Stage | Module | Does | Writes | External |
 |---|---|---|---|---|
 | company | `run_company` | Company metadata; pinned CIK, ticker check (D-006) | `company` | SEC |
-| facts | `run_xbrl` | XBRL facts for the tags in the registry, from companyfacts plus filing instances for recent or dimensional facts (D-013, D-014) | `xbrl_fact`, `ingest_state` | SEC |
+| facts | `run_xbrl` | XBRL facts for the tags in the registry, from companyfacts plus filing instances for recent or dimensional facts (D-013, D-014), and pay versus performance from the latest two proxy statements (D-042) | `xbrl_fact`, `ingest_state` | SEC |
 | compute | `run_xbrl` | Metrics per period from `config/metrics.yaml`; Q4 = FY − 9M; N/M handling (D-019) | `metric_definition`, `metric_value` | – |
 | documents | `run_documents` | Registers 10-K/10-Q/8-K; downloads and splits text documents and EX-99.1 releases (D-023…D-026) | `source_document`, `filing_section`, `section_chunk` | SEC |
 | transcripts | `run_transcripts` | Last 4 fiscal quarters of earnings-call transcripts (D-030) | `source_document`, sections, chunks | AV |
 | news | `run_news` | 30-day news, mention filter, 3-tier de-duplication, LLM relevance verdict (D-029, D-037) | `news_item`, `activity` | AV, LLM |
 | scores | `run_scores` | News risk scores per activity; transcript tone and risk flags (D-037) | `news_risk_score`, `transcript_tone`, `transcript_flag` | LLM |
-| textmetrics | `run_text_metrics` | Figures from MD&A and releases (RevPAR, CET1, NIM, …), loan book; press release vs XBRL check (D-022, D-032) | `metric_value` (LLM_EXTRACTED, PRELIMINARY), `loan_portfolio_*`, `release_check` | LLM |
+| textmetrics | `run_text_metrics` | Figures from MD&A and releases (RevPAR, NIM, …), loan book; values XBRL covers (capital ratios, release figures) only cross-checked; identity gate (D-022, D-032, D-042) | `metric_value` (LLM_EXTRACTED, PRELIMINARY), `loan_portfolio_*`, `release_check` | LLM |
 | signals | `run_signals` | 8-K, keyword, auditor and metric signals; LLM vote on judgment topics (D-027, D-028) | `signal`, `signal_vote` | LLM |
 | insights | `run_insights` | Activity summaries, behavioral, strategic & risk, key insights, follow-up questions (D-033) | `insight*`, `followup_question*`, `activity` | LLM |
 | metricdetail | `run_metric_detail` | Methodology and sources by rules; underwriting relevance by LLM (D-036) | `metric_detail`, `metric_source`, `metric_insight` | LLM |
@@ -197,7 +197,7 @@ versioned with the code.
 | `azure.yaml` | Azure SQL server, database, schemas; ADLS account, container, root (placeholders) |
 | `app_publish.yaml` | Metric categories, RiskTypes regex rules, confidence rules, trend and loan metrics |
 | `source_labels.yaml` | Readable names for sections and concepts |
-| `dq_rules.yaml` | Data-quality thresholds |
+| `dq_rules.yaml` | Data-quality thresholds; `metric_identities` (also the textmetrics gate) |
 | `jobs.yaml` | Jobs and orchestrator settings (§5) |
 
 ## 8. LLM layer
@@ -243,6 +243,12 @@ which also invalidates the cache; then run `scripts/export_golden.py` and review
 - Failing items are dropped and logged; drop rates go to `llm_task_stat` (DQ alerts above 20%).
 - `GROUNDING_VERSION` (`jobs/run_insights.py`, now 6) is part of the insight input hash: bump
   it when grounding rules change, and cached outputs are re-checked without new LLM calls.
+
+**Structured first, identities** (D-042). A value XBRL tags is never taken from text: capital
+ratios come from the instances (concepts with `unit: pure` refuse regulatory-floor tags), and
+their text extraction only fills periods without XBRL or cross-checks them. Identities in
+`config/dq_rules.yaml` (RevPAR = ADR × occupancy; CET1 ≤ Tier 1 ≤ total capital; loan book ≤
+total loans) drop text values that break them; the dq stage reports stored values that do.
 
 **Agreement checks.** Judgment signals: rules vote, the extractor votes with a verbatim quote,
 and only on disagreement the tie-breaker rules on both claims; a rule hit voted down by both

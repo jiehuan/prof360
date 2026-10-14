@@ -251,3 +251,26 @@ def test_number_grounding_does_not_match_inside_decimals() -> None:
     assert (
         ungrounded_numbers("an impairment of $27.5 million", ["charges of 27.5 million"], []) == []
     )
+
+
+def test_numbers_in_metric_names_are_input() -> None:
+    """'$100' in "value of $100 invested" (TSR, D-042) is part of the input, not made up."""
+    from uw_pipeline.enrich.insights import Cited, GroundingStats, numbers_ok
+    from uw_pipeline.enrich.package import Package, Source
+
+    pkg = Package("Acme", "Retail", False)
+    pay = Source(
+        id="M1",
+        kind="METRIC",
+        label="CEO Total Compensation FY2025",
+        text="CEO Total Compensation | FY2025 | $26.0M | REPORTED",
+        values=(26e6,),
+    )
+    pkg.add(pay)
+    pkg.add(Source(id="M2", kind="METRIC", label="Company TSR (value of $100 invested) FY2025",
+                   text="Company TSR (value of $100 invested) | FY2025 | $120 | REPORTED",
+                   values=(120.0,)))  # fmt: skip
+    text = ["CEO pay rose to $26.0M while $100 invested fell to $120."]
+    assert numbers_ok(text, [Cited(pay, "$26.0M")], pkg, GroundingStats(), "t")
+    assert not numbers_ok(["CEO pay rose to $31M."], [Cited(pay, "$26.0M")], pkg,
+                          GroundingStats(), "t")  # fmt: skip

@@ -61,9 +61,14 @@ class BuybackRule(SignalSpec):
     min_buybacks_ttm: float = 0
 
 
+class PayRule(SignalSpec):
+    min_pay_growth: float = 0.25  # CEO total compensation, year on year
+
+
 class MetricRules(BaseModel):
     negative_equity: SignalSpec
     buybacks_with_negative_equity: BuybackRule
+    pay_vs_performance: PayRule | None = None
 
 
 class SignalRules(BaseModel):

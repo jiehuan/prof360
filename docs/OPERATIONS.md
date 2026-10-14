@@ -102,6 +102,12 @@
 - `uw-pipeline init-db` 只用于本地 SQLite；在 Azure SQL 上它会提示改用 `deploy/sql/` 的脚本。
 - 改了涉及数据库的代码后，在本机跑 `scripts/test_mssql.sh --all`：用本地 Docker 的 SQL Server 运行全部测试（不需要公司网络）。用完 `scripts/test_mssql.sh --stop`。
 
+## 10a. 结构化数据优先和恒等式（Phase 13，D-042）
+
+- 银行资本比率从 XBRL 取，候选在 `company_overrides/<TICKER>.yaml` 的 `concepts`（成员名各家银行不同）。新增银行时先在它的 10-K instance 里找 `RiskWeightedAssetsCalculationMethodologyAxis` 下标准法、集团合并的事实，再配置；没配置就继续用文本抽取。
+- 恒等式在 `config/dq_rules.yaml` 的 `metric_identities`。DQ 报 `metric_identity` 时：Error 表示库里的值不满足（XBRL 来源也会报），Warning 表示文本抽取的值因不满足被丢弃，看 textmetrics 日志里的 `text values dropped`。
+- 委托书（DEF 14A）的薪酬数据只进洞察输入，不在指标页显示。某公司没有数据时，先看它的 DEF 14A 是否带 `ecd` 标签；同一年两任 CEO 的年份不出数（不相加）。
+
 ## 11. 常见故障
 
 | 现象 | 原因与处理 |

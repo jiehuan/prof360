@@ -41,18 +41,18 @@ def concept_values(
     periods: pd.DataFrame, registry: CompanyRegistry
 ) -> dict[str, dict[PeriodKey, Value]]:
     """Per concept and period, the value of the first candidate tag that has one."""
-    index: dict[tuple[str, str], dict[PeriodKey, dict[str, Any]]] = {}
-    usd = periods[periods["unit"] == MONETARY_UNIT]
-    for row in records(usd):
+    index: dict[tuple[str, str, str], dict[PeriodKey, dict[str, Any]]] = {}
+    for row in records(periods):
         tag = f"{row['taxonomy']}:{row['tag']}"
         key: PeriodKey = (row["period_type"], int(row["fiscal_year"]), int(row["fiscal_quarter"]))
-        index.setdefault((tag, row["dims"]), {})[key] = row
+        index.setdefault((tag, row["dims"], row["unit"]), {})[key] = row
 
     out: dict[str, dict[PeriodKey, Value]] = {}
     for concept, candidates in registry.concepts.items():
+        unit = registry.units.get(concept, MONETARY_UNIT)
         chosen: dict[PeriodKey, Value] = {}
         for ref in candidates:
-            for key, row in index.get((ref.tag, ref.dims_key), {}).items():
+            for key, row in index.get((ref.tag, ref.dims_key, unit), {}).items():
                 if key in chosen:
                     continue
                 chosen[key] = Value(

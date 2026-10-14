@@ -194,7 +194,9 @@ def _loan(seg, parent, out, na, end, evidence):
             "scale": "millions", "period_end": end, "evidence": evidence}  # fmt: skip
 
 
-def test_loan_book_by_class_with_prior_year_end(tmp_path) -> None:
+@pytest.mark.parametrize("total_loans", [None, 1_397_344e6, 1_000_000e6])
+def test_loan_book_by_class_with_prior_year_end(tmp_path, total_loans) -> None:
+    """With total loans from XBRL, classes adding up to more than it are not stored (D-042)."""
     from uw_pipeline.enrich.sources import load_source_labels
     from uw_pipeline.schema import (
         filing_section,
@@ -220,6 +222,12 @@ def test_loan_book_by_class_with_prior_year_end(tmp_path) -> None:
         c.execute(insert(section_chunk).values(
             section_id=1, chunk_index=0, start_offset=0, end_offset=len(LOAN_TABLE),
             text=LOAN_TABLE))  # fmt: skip
+        if total_loans is not None:
+            c.execute(insert(metric_value).values(
+                company_id=1, metric_code="total_loans", period_type="Q", fiscal_year=2026,
+                fiscal_quarter=2, period_end="2026-06-30", value=total_loans, value_status="OK",
+                unit="USD", derivation="REPORTED", formula="f", source_tags="{}",
+                source_accn="x", computed_at=NOW))  # fmt: skip
 
     rre = "Residential real estate(a)\n$ 300,664 $ 303,531 $ 3,615 $ 3,632"
     auto = "66,464 65,210 228 243"
@@ -250,6 +258,9 @@ def test_loan_book_by_class_with_prior_year_end(tmp_path) -> None:
     assert res[0].ok, res
     with engine.connect() as c:
         rows = {(r.period_end, r.segment): r for r in c.execute(select(loan_portfolio_segment))}
+        if total_loans == 1_000_000e6:  # classes add up to 1,397,344M: double counting
+            assert rows == {}
+            return
         detail = c.execute(select(loan_portfolio_detail)).mappings().one()
     assert set(rows) == {
         ("2026-06-30", "Residential real estate"), ("2026-06-30", "Credit card"),

@@ -9,6 +9,9 @@
 # kind: text -> extracted from filing text by the LLM (Phase 5a, decisions D-032). `extraction`
 #         gives the exact scope (`definition`), the words that locate it (`keywords`), and
 #         whether two models must agree (`dual_check`, used for bank capital/liquidity metrics).
+#       A formula metric with `extraction` is text-extracted only for periods XBRL does not
+#         cover (e.g. an earnings release before the 10-Q); elsewhere the text value is only
+#         cross-checked against XBRL (release_check). Decisions D-042.
 # kind: formula (default) -> `formula` is one expression or an ordered list of alternatives.
 #         The first alternative that evaluates wins. Names are concepts (concept_map.yaml)
 #         or earlier metric codes. Supported operators: + - * / and parentheses.
@@ -18,6 +21,7 @@
 # nm_when: condition that makes the value "not meaningful" (stored as N/M, no number).
 # units: USD, ratio (x), fraction (0.05 = 5%).
 # display: false hides helper metrics from the front end (they are still stored for audit).
+# insight_input: true puts a hidden metric into the insight input anyway (e.g. CEO pay).
 
 metric_sets:
   COMMERCIAL_CORE:
@@ -43,18 +47,28 @@ metric_sets:
     - free_cash_flow
     - buybacks
     - buyback_intensity
-  # Bank-specific metrics (NIM, CET1, NPL, loan book) are text-extracted in Phase 5. Only the
-  # XBRL metrics that make sense for a bank are here.
   HOTEL_OPERATING:
     - revpar
     - occupancy
     - adr
+  # Capital ratios come from XBRL where the bank tags them, otherwise from the text (D-042);
+  # LCR, NIM and NPL are text-extracted. total_capital_ratio and total_loans are checks only.
   BANK_REGULATORY:
     - cet1_ratio
     - tier1_ratio
+    - total_capital_ratio
     - lcr
     - nim
     - npl_ratio
+    - total_loans
+  # Pay versus performance from the proxy statement (D-042): input to insights, follow-up
+  # questions and the pay/performance signal; not shown as metric rows.
+  GOVERNANCE:
+    - ceo_total_comp
+    - ceo_comp_actually_paid
+    - neo_avg_total_comp
+    - tsr_value_100
+    - peer_tsr_value_100
   BANK_CORE:
     - revenue
     - revenue_growth_qoq
@@ -269,7 +283,7 @@ metrics:
     display_name: CET1 Ratio
     section: fi_performance
     unit: fraction
-    kind: text
+    formula: cet1_ratio
     extraction:
       definition: >-
         Firm-wide Common Equity Tier 1 (CET1) capital ratio at period end under the
@@ -281,13 +295,31 @@ metrics:
     display_name: Tier 1 Capital Ratio
     section: fi_performance
     unit: fraction
-    kind: text
+    formula: tier1_ratio
     extraction:
       definition: >-
         Firm-wide Tier 1 capital ratio at period end under the Standardized approach. Not a
         bank subsidiary, not the Advanced approach, not a minimum or target.
       keywords: [Tier 1 capital ratio, Tier 1 ratio]
       dual_check: true
+  - code: total_capital_ratio
+    display_name: Total Capital Ratio
+    section: fi_performance
+    unit: fraction
+    formula: total_capital_ratio
+    display: false
+    extraction:
+      definition: >-
+        Firm-wide total capital ratio (total risk-based capital ratio) at period end under the
+        Standardized approach. Not a bank subsidiary, not the Advanced approach, not a minimum.
+      keywords: [Total capital ratio]
+      dual_check: true
+  - code: total_loans
+    display_name: Total Loans (retained)
+    section: fi_performance
+    unit: USD
+    formula: total_loans
+    display: false
   - code: lcr
     display_name: Liquidity Coverage Ratio
     section: fi_performance
@@ -323,3 +355,45 @@ metrics:
         only when the filing states this ratio directly.
       keywords: [nonaccrual loans to total loans, nonperforming loans to total loans, nonaccrual]
       dual_check: true
+
+  # -- Pay versus performance (DEF 14A; not displayed, insight input, decisions D-042) ------------
+  - code: ceo_total_comp
+    display_name: CEO Total Compensation (Summary Compensation Table)
+    section: governance
+    unit: USD
+    formula: ceo_total_comp
+    period_types: [FY]
+    display: false
+    insight_input: true
+  - code: ceo_comp_actually_paid
+    display_name: CEO Compensation Actually Paid
+    section: governance
+    unit: USD
+    formula: ceo_comp_actually_paid
+    period_types: [FY]
+    display: false
+    insight_input: true
+  - code: neo_avg_total_comp
+    display_name: Other Named Executives' Average Total Compensation
+    section: governance
+    unit: USD
+    formula: neo_avg_total_comp
+    period_types: [FY]
+    display: false
+    insight_input: true
+  - code: tsr_value_100
+    display_name: Company TSR (value of $100 invested)
+    section: governance
+    unit: USD
+    formula: tsr_value_100
+    period_types: [FY]
+    display: false
+    insight_input: true
+  - code: peer_tsr_value_100
+    display_name: Peer Group TSR (value of $100 invested)
+    section: governance
+    unit: USD
+    formula: peer_tsr_value_100
+    period_types: [FY]
+    display: false
+    insight_input: true

@@ -15,6 +15,7 @@ from sqlalchemy import Connection, desc, false, func, or_, select, true
 
 from uw_pipeline.compute.coverage import company_coverage
 from uw_pipeline.compute.registry import MetricDef
+from uw_pipeline.quality.identities import IDENTITY_TASK, Identities
 from uw_pipeline.schema import (
     company,
     followup_question,
@@ -94,6 +95,7 @@ class DqConfig(BaseModel):
     detail_coverage: DetailCoverage
     source_coverage: _Rule
     link_integrity: _Rule
+    metric_identities: Identities = Identities()
 
 
 def load_dq_config(config_dir: Path) -> DqConfig:
@@ -260,13 +262,49 @@ def release_vs_xbrl(
             Finding(
                 "release_vs_xbrl",
                 cfg.severity,
-                f"{r['metric_code']} {period}: earnings release "
-                f"{r['release_value'] / 1e6:,.0f}M vs XBRL {r['xbrl_value'] / 1e6:,.0f}M "
+                f"{r['metric_code']} {period}: filing text "
+                f"{_amount(r['release_value'])} vs XBRL {_amount(r['xbrl_value'])} "
                 f"(accession {r['accession_no']})",
                 r["metric_code"],
                 period,
             )
         )
+    return out
+
+
+def _amount(v: float) -> str:
+    """Amounts in millions; ratios (capital ratios, cross-checked since D-042) as written."""
+    return f"{v / 1e6:,.0f}M" if abs(v) >= 1e4 else f"{v:.4g}"
+
+
+def metric_identities(
+    conn: Connection, company_id: int, values: list[dict[str, Any]], cfg: Identities,
+    now: datetime, days: int,
+) -> list[Finding]:  # fmt: skip
+    """Stored values that break a configured identity (XBRL values included), and text values
+    the textmetrics stage dropped for breaking one."""
+    by_period: dict[tuple[str, int, int], dict[str, float]] = {}
+    for v in values:
+        if v["value"] is not None:
+            key = (v["period_type"], v["fiscal_year"], v["fiscal_quarter"])
+            by_period.setdefault(key, {})[v["metric_code"]] = v["value"]
+    out = []
+    for key in sorted(by_period, key=lambda k: (k[1], k[2]), reverse=True)[: cfg.periods]:
+        for ident in cfg.checks:
+            problem = ident.check(by_period[key])
+            if problem:
+                label = _label(*key)
+                out.append(Finding("metric_identity", cfg.severity,
+                                   f"{ident.name} {label}: {problem}", period=label))  # fmt: skip
+    dropped = conn.execute(
+        select(func.sum(llm_task_stat.c.generated - llm_task_stat.c.kept))
+        .where(llm_task_stat.c.company_id == company_id, llm_task_stat.c.task == IDENTITY_TASK,
+               llm_task_stat.c.created_at >= now - timedelta(days=days))
+    ).scalar()  # fmt: skip
+    if dropped:
+        out.append(Finding("metric_identity", "Warning",
+                           f"{dropped} text-extracted period(s) dropped by identity checks in "
+                           f"the last {days} days (see the textmetrics log)"))  # fmt: skip
     return out
 
 
@@ -277,6 +315,7 @@ def llm_drop_rate(
         select(llm_task_stat.c.task, func.sum(llm_task_stat.c.generated),
                func.sum(llm_task_stat.c.kept))
         .where(llm_task_stat.c.company_id == company_id,
+               llm_task_stat.c.task != IDENTITY_TASK,  # reported by metric_identities
                llm_task_stat.c.created_at >= now - timedelta(days=cfg.days))
         .group_by(llm_task_stat.c.task)
     ).all()  # fmt: skip
@@ -391,7 +430,11 @@ def source_coverage(conn: Connection, company_id: int, cfg: _Rule) -> list[Findi
     return out
 
 
-def link_integrity(conn: Connection, company_id: int, cfg: _Rule) -> list[Finding]:
+def link_integrity(
+    conn: Connection, company_id: int, cfg: _Rule, inputs: frozenset[str] = frozenset()
+) -> list[Finding]:
+    """`inputs`: hidden metrics that are insight input (pay versus performance, D-042); links
+    to them are expected and simply not published."""
     """Links from current objects reach current objects and displayed metrics; FI-only data
     exists only for financial institutions."""
     out = []
@@ -418,7 +461,7 @@ def link_integrity(conn: Connection, company_id: int, cfg: _Rule) -> list[Findin
         out += [Finding("link_integrity", "Warning",
                         f"{code} is linked from an insight or question but is not a displayed "
                         "metric with data", code)
-                for code in sorted(linked - detailed)]  # fmt: skip
+                for code in sorted(linked - detailed - inputs)]  # fmt: skip
     is_fi = conn.execute(
         select(company.c.is_financial).where(company.c.company_id == company_id)
     ).scalar()
@@ -453,10 +496,18 @@ def run_rules(
         *negative_value(values, cfg.negative_value),
         *quarters_vs_year(values, cfg.quarters_vs_year),
         *release_vs_xbrl(conn, company_id, cfg.release_vs_xbrl, stamp),
+        *metric_identities(
+            conn, company_id, values, cfg.metric_identities, stamp, cfg.llm_drop_rate.days
+        ),
         *llm_drop_rate(conn, company_id, cfg.llm_drop_rate, stamp),
         *stale_filings(conn, company_id, cfg.stale_filings, stamp),
         *review_queue(conn, company_id, cfg.review_queue),
         *detail_coverage(conn, company_id, shown, cfg.detail_coverage),
         *source_coverage(conn, company_id, cfg.source_coverage),
-        *link_integrity(conn, company_id, cfg.link_integrity),
+        *link_integrity(
+            conn,
+            company_id,
+            cfg.link_integrity,
+            frozenset(m.code for m in metrics if m.insight_input),
+        ),
     ]

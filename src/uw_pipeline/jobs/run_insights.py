@@ -59,7 +59,7 @@ log = logging.getLogger(__name__)
 
 # Part of every stored set's input hash: bump when grounding rules change so that unchanged
 # inputs are re-grounded (the LLM output itself still comes from the cache).
-GROUNDING_VERSION = "6"
+GROUNDING_VERSION = "7"
 
 
 @dataclass

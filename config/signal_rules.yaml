@@ -97,3 +97,11 @@ metrics:
     title: Share repurchases continue while equity is negative
     # trailing four quarters of buybacks must exceed this (USD)
     min_buybacks_ttm: 0
+  # Pay versus performance from the proxy statement (decisions D-042): say-on-pay and
+  # compensation litigation risk.
+  pay_vs_performance:
+    category: Governance & Leadership
+    subcategory: Executive Compensation
+    severity: Warning
+    title: CEO pay rose while shareholder return fell
+    min_pay_growth: 0.25   # CEO total compensation, year on year

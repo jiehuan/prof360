@@ -10,58 +10,58 @@ groups:
   UNCLASSIFIED:
     label: Unclassified
     is_financial: false
-    metric_sets: []
+    metric_sets: [GOVERNANCE]
   HOTELS:
     label: Hotels & Lodging
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE, HOTEL_OPERATING]
+    metric_sets: [COMMERCIAL_CORE, HOTEL_OPERATING, GOVERNANCE]
   AIRLINES:
     label: Airlines
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, GOVERNANCE]
   AUTOMOTIVE:
     label: Automotive Manufacturing
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, GOVERNANCE]
   PHARMA:
     label: Pharmaceuticals
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, GOVERNANCE]
   BANKS:
     label: Banks
     is_financial: true
-    metric_sets: [BANK_CORE, BANK_REGULATORY]
+    metric_sets: [BANK_CORE, BANK_REGULATORY, GOVERNANCE]
     mdna_history_years: 5   # Performance Trends: 5 years of NIM / CET1 / NPL (Phase 8)
   # Groups with no metric set get one when their first company is onboarded.
   CREDIT:
     label: Non-depository Credit
     is_financial: true
-    metric_sets: []
+    metric_sets: [GOVERNANCE]
   BROKER_DEALERS:
     label: Securities & Brokerage
     is_financial: true
-    metric_sets: []
+    metric_sets: [GOVERNANCE]
   # Bank-style FI modules (CET1, NIM, loan book) don't fit insurers. See decisions D-008.
   INSURANCE:
     label: Insurance
     is_financial: false
-    metric_sets: []
+    metric_sets: [GOVERNANCE]
   RETAIL:
     label: Retail
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, GOVERNANCE]
   TELECOM:
     label: Telecommunications
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, GOVERNANCE]
   MEDIA:
     label: Media & Broadcasting
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, GOVERNANCE]
   SEMICONDUCTORS:
     label: Semiconductors & Related Devices
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, GOVERNANCE]
 
 # Exact SIC codes (MVP companies).
 sic:

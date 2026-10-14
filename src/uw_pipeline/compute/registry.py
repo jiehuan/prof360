@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import re
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, Literal
@@ -69,9 +70,24 @@ def _tag_refs(raw: list[Any]) -> list[TagRef]:
     return [TagRef(tag=x) if isinstance(x, str) else TagRef.model_validate(x) for x in raw]
 
 
+# Regulatory floors and buffers are tagged with the same unit, period and dimensions as the
+# actual capital ratios; a concept must never pick one up (decisions D-042).
+_THRESHOLD = re.compile(r"Minimum|Required|WellCapitalized|Buffer|Surcharge")
+
+
 class ConceptDef(BaseModel):
     tags: list[TagRef]
     by_group: dict[str, list[TagRef]] = Field(default_factory=dict)
+    unit: str = "USD"  # unit of the facts to use: USD, or pure for ratios
+
+    @model_validator(mode="after")
+    def _no_thresholds(self) -> ConceptDef:
+        if self.unit == "pure":
+            refs = [*self.tags, *(r for rs in self.by_group.values() for r in rs)]
+            bad = [r.tag for r in refs if _THRESHOLD.search(r.name)]
+            if bad:
+                raise ValueError(f"regulatory threshold tags are not actual ratios: {bad}")
+        return self
 
     @field_validator("tags", mode="before")
     @classmethod
@@ -106,6 +122,7 @@ class MetricDef(BaseModel):
     compare: Literal["prior_quarter", "prior_year"] | None = None
     period_types: list[PeriodType] = Field(default_factory=lambda: list(ALL_PERIOD_TYPES))
     display: bool = True
+    insight_input: bool = False  # not displayed, but part of the insight input (e.g. CEO pay)
     company_specific: bool = False
     extraction: TextExtraction | None = None
 
@@ -200,8 +217,10 @@ class Registry(BaseModel):
     def for_company(self, ticker: str, group: IndustryGroup) -> CompanyRegistry:
         override = self.overrides.get(ticker, CompanyOverride())
         concepts: dict[str, list[TagRef]] = {}
+        units: dict[str, str] = {}
         for code, c in (self.concepts | override.concepts).items():
             concepts[code] = c.by_group.get(group.code, c.tags)
+            units[code] = c.unit
 
         catalog = self._catalog(ticker)
         by_code = {m.code: m for m in catalog}
@@ -215,13 +234,14 @@ class Registry(BaseModel):
                     wanted.add(dep)
                     stack.append(dep)
         metrics = [m for m in catalog if m.code in wanted]  # catalog order = dependency order
-        return CompanyRegistry(concepts=concepts, metrics=metrics)
+        return CompanyRegistry(concepts=concepts, units=units, metrics=metrics)
 
 
 class CompanyRegistry(BaseModel):
     """Effective concepts (tag candidates) and applicable metrics for one company."""
 
     concepts: dict[str, list[TagRef]]
+    units: dict[str, str] = Field(default_factory=dict)  # concept -> fact unit (default USD)
     metrics: list[MetricDef]
 
     def tag_refs(self) -> set[TagRef]:

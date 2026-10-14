@@ -386,3 +386,41 @@ def metric_signals(values: Sequence[Mapping[str, Any]], rules: SignalRules) -> l
             )
         )
     return out
+
+
+def pay_signals(values: Sequence[Mapping[str, Any]], rules: SignalRules) -> list[Detected]:
+    """CEO pay up while shareholder return fell, in the latest proxy year (decisions D-042).
+
+    `values`: the company's fiscal-year metric_value rows. TSR is the value of a fixed $100
+    investment, so a lower value than the year before means a negative return that year."""
+    spec = rules.metrics.pay_vs_performance
+    if spec is None:
+        return []
+    by_key = {(v["metric_code"], v["fiscal_year"]): v for v in values
+              if v["period_type"] == "FY" and v["value"] is not None}  # fmt: skip
+    years = sorted(fy for code, fy in by_key if code == "ceo_total_comp")
+    if not years:
+        return []
+    fy = years[-1]
+    pay, pay0 = by_key.get(("ceo_total_comp", fy)), by_key.get(("ceo_total_comp", fy - 1))
+    tsr, tsr0 = by_key.get(("tsr_value_100", fy)), by_key.get(("tsr_value_100", fy - 1))
+    if not (pay and pay0 and tsr and tsr0) or pay0["value"] <= 0:
+        return []
+    growth = pay["value"] / pay0["value"] - 1
+    if growth < spec.min_pay_growth or tsr["value"] >= tsr0["value"]:
+        return []
+    return [
+        _from_spec(
+            spec,
+            "pay_vs_performance",
+            description=(
+                f"CEO total compensation rose {growth:.0%} in FY{fy} "
+                f"({pay0['value'] / 1e6:,.1f}M to {pay['value'] / 1e6:,.1f}M USD) while the value "
+                f"of $100 invested in the stock fell from {tsr0['value']:,.2f} to "
+                f"{tsr['value']:,.2f} (pay-versus-performance table, proxy statement)."
+            ),
+            event_date=pay["period_end"],
+            accession_no=pay["source_accn"],
+            key_extra=f"FY{fy}",
+        )
+    ]

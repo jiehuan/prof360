@@ -747,3 +747,55 @@ entry). Grouped by what they affected:
   - SEC data is fetched again for every company on every nightly run. Fine for the 9 current
     companies; part of the scale-out plan (Phase 10).
   - One finding was judged not reachable with the inputs the pipeline produces.
+
+## Phase 13 (2026-10-14)
+
+User: after comparing with the team's SEC_metrics repo, adopt three of its ideas: structured data
+before text, identities between metrics, pay versus performance. Decisions: text values that
+break an identity are dropped (XBRL values only reported); pay data feeds insights, follow-ups
+and a signal but is not shown as metric rows; add the pay/performance signal.
+
+**D-042 Structured first, identities, pay versus performance.**
+- **Capital ratios from XBRL.** CET1 and Tier 1 (plus total capital, not displayed) come from the
+  10-K/10-Q XBRL instances: the firm (parent company, consolidated) under the Standardized
+  approach, unit `pure`. Banks name the methodology members themselves, so the candidates are in
+  `company_overrides/JPM.yaml`; a bank without them keeps the text extraction.
+  - Banks also tag the regulatory floors and buffers (e.g. CET1 minimum 11.4%) with the same
+    unit, period and dimensions as the actual ratios. A `pure` concept refuses any candidate
+    whose name contains Minimum / Required / WellCapitalized / Buffer / Surcharge, and a test
+    on the real 10-K excerpt checks the actual ratios win (0.146 / 0.155 / 0.174, FY2025).
+  - A formula metric with an `extraction` is still read from the text, but stored only for
+    periods XBRL does not cover (an earnings release before the 10-Q: PRELIMINARY);
+    elsewhere it is cross-checked against XBRL in `release_check` (DQ `release_vs_xbrl`).
+  - LCR, NIM and NPL have no usable XBRL tag and stay text-extracted.
+- **Identities** (`config/dq_rules.yaml`, `metric_identities`): RevPAR = ADR x occupancy (5%);
+  CET1 <= Tier 1 <= total capital; the loan book by class may not add up to more than total
+  loans (`total_loans`, XBRL, 1%). The textmetrics stage drops text values that break one and
+  does not store such a loan book; the dq stage reports stored values that break one (Error)
+  and the drops (Warning). The JPM loan classes add up exactly to total retained loans
+  (1,463,808M at 2026-06-30), and all MAR periods hold the RevPAR identity within 0.06%.
+- **Pay versus performance** (proxy statement DEF 14A, `ecd` taxonomy): CEO total and
+  actually-paid compensation, other executives' average, company and peer TSR (value of $100),
+  per fiscal year, from the latest two proxies (each covers five years).
+  - PEO amounts are tagged without dimensions (JPM, Ford) or per person on `ecd:IndividualAxis`
+    (Marriott). One person in the year counts; two or more (a mid-year CEO change) give no
+    value, since adding them up would be wrong. (SEC_metrics marked Marriott as having no
+    `ecd` data; its PEO amounts are tagged per person.)
+  - Not displayed (`display: false`), but `insight_input: true` puts them in the insight
+    package, so insights and follow-ups can cite CEO pay (before, such figures failed
+    grounding: JPM CEO pay in Phase 5).
+  - Signal `pay_vs_performance` (Warning, `config/signal_rules.yaml`): CEO total compensation
+    up at least 25% year on year while TSR fell.
+- **Found in the live run (2026-10-14) and fixed:**
+  - Southwest lists both CEOs every year, the one not in office with 0: a person with 0 is not
+    counted as a second PEO. Its 2022 (a real mid-year change) still has no value.
+  - Insights quoting "value of $100 invested" failed number grounding ($100 is in the metric's
+    name, not its value): metric names now count as input (`GROUNDING_VERSION` 7).
+  - `link_integrity` warned about links to the pay metrics; links to `insight_input` metrics are
+    expected (they are not published).
+  - Skydance has no pay data: no DEF 14A in three years, and its 10-K/A Part III has no `ecd`
+    tags (newly public successor).
+- No table changes. Insights regenerate once for companies whose input changed (live run:
+  $5.86 + $0.40 + $0.64 with Claude).
+- Not adopted (for now): axis-anchored matching of other banks' members (wait for a second
+  bank), the status vocabulary (needs a BFF contract change), cross-CIK 8-K retrieval.

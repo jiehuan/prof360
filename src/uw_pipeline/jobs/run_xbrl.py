@@ -16,7 +16,7 @@ from uw_pipeline.clients.sec import SecClient, pad_cik
 from uw_pipeline.compute.metrics import compute_metrics
 from uw_pipeline.compute.registry import CompanyRegistry, Registry
 from uw_pipeline.config import CompanyConfig, IndustryConfig
-from uw_pipeline.extract.filings import Filing, instance_name, periodic_filings
+from uw_pipeline.extract.filings import Filing, filings_since, instance_name, periodic_filings
 from uw_pipeline.frames import records
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.load.upsert import delete_keys, upsert
@@ -25,6 +25,7 @@ from uw_pipeline.normalize.xbrl_facts import (
     FACT_COLUMNS,
     facts_from_companyfacts,
     facts_from_instance,
+    pay_versus_performance,
 )
 from uw_pipeline.schema import company, ingest_state, metric_definition, metric_value, xbrl_fact
 
@@ -36,6 +37,10 @@ RULE_DERIVATIONS = ("REPORTED", "DERIVED", "COMPUTED")
 # companyfacts can lag or miss filings (Ford's Q2 2026 10-Q was still missing 2.5 months after
 # filing), so recent filings absent from companyfacts are read from their own XBRL instance.
 GAP_LOOKBACK_DAYS = 400
+# Pay-versus-performance comes from proxy statements (DEF 14A, `ecd` taxonomy, decisions
+# D-042). Each covers five fiscal years; the latest two are read, the newer one winning.
+PROXY_FORMS = ("DEF 14A",)
+PROXIES_READ = 2
 
 
 class CompanyNotLoadedError(Exception):
@@ -104,8 +109,9 @@ def load_company_facts(
 ) -> tuple[pd.DataFrame, str]:
     """All facts the company's metrics need, plus a fingerprint of the inputs."""
     refs = creg.tag_refs()
+    proxy_refs = {r for r in refs if r.taxonomy == "ecd"}
     std_refs = {r for r in refs if not r.needs_instance}
-    inst_refs = refs - std_refs
+    inst_refs = refs - std_refs - proxy_refs
 
     cf = sec.companyfacts(cik, force=force)
     frames = [facts_from_companyfacts(cf.payload, std_refs)]
@@ -127,6 +133,14 @@ def load_company_facts(
         if frame is not None:
             frames.append(frame)
             fingerprint.append(filing.accn)
+    if proxy_refs:
+        proxies = filings_since(sec, cik, subs, today - timedelta(days=365 * 3), PROXY_FORMS,
+                                force=force)[-PROXIES_READ:]  # fmt: skip
+        for filing in proxies:
+            frame = _instance_facts(sec, cik, filing, proxy_refs, proxy=True)
+            if frame is not None:
+                frames.append(frame)
+                fingerprint.append(filing.accn)
     facts = pd.concat([f for f in frames if not f.empty], ignore_index=True)
     if facts.empty:
         facts = pd.DataFrame(columns=FACT_COLUMNS)
@@ -135,16 +149,15 @@ def load_company_facts(
 
 
 def _instance_facts(
-    sec: SecClient, cik: str, filing: Filing, refs: set[Any]
+    sec: SecClient, cik: str, filing: Filing, refs: set[Any], *, proxy: bool = False
 ) -> pd.DataFrame | None:
     name = instance_name(sec.filing_index(cik, filing.accn), filing.primary_doc)
     if name is None:
         log.warning("CIK %s %s: no XBRL instance found", cik, filing.accn)
         return None
     doc = sec.filing_document(cik, filing.accn, name)
-    return facts_from_instance(
-        doc.payload, refs, accn=filing.accn, form=filing.form, filed=filing.filed
-    )
+    parse = pay_versus_performance if proxy else facts_from_instance
+    return parse(doc.payload, refs, accn=filing.accn, form=filing.form, filed=filing.filed)
 
 
 def _fact_rows(cik: str, company_id: int, facts: pd.DataFrame) -> list[dict[str, Any]]:

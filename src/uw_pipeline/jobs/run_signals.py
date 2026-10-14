@@ -9,7 +9,7 @@ from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import Connection, Engine, and_, select
+from sqlalchemy import Connection, Engine, select
 
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.clients.sec import SecClient
@@ -35,6 +35,7 @@ from uw_pipeline.signals.detect import (
     eight_k_signals,
     keyword_signals,
     metric_signals,
+    pay_signals,
 )
 from uw_pipeline.signals.rules import SignalRules
 from uw_pipeline.signals.vote import Voter, VoteRow, merge
@@ -131,13 +132,12 @@ def detect_company(
     values = [
         dict(r)
         for r in conn.execute(
-            select(metric_value).where(
-                and_(metric_value.c.company_id == company_id, metric_value.c.period_type == "Q")
-            )
+            select(metric_value).where(metric_value.c.company_id == company_id)
         ).mappings()
     ]
+    quarterly = [v for v in values if v["period_type"] == "Q"]
     by_accn = {d.accession_no: d.doc_id for d in docs if d.doc_role == "PRIMARY"}
-    for s in metric_signals(values, rules):
+    for s in [*metric_signals(quarterly, rules), *pay_signals(values, rules)]:
         detected.append(replace(s, doc_id=by_accn.get(s.accession_no or "")))
     return company_id, detected, votes
 

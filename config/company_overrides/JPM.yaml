@@ -1,3 +1,23 @@
+# Regulatory capital ratios from XBRL (decisions D-042): the firm (parent company, consolidated)
+# under the Standardized approach, the basis the metrics' definitions use. Not the bank
+# subsidiary (LegalEntityAxis) and not the Advanced approach.
+concepts:
+  cet1_ratio:
+    unit: pure
+    tags:
+      - tag: jpm:CommonEquityTier1CapitaltoRiskWeightedAssets
+        dims: &firm_standardized
+          srt:ConsolidatedEntitiesAxis: srt:ParentCompanyMember
+          us-gaap:RiskWeightedAssetsCalculationMethodologyAxis: jpm:BaselIIIStandardizedMember
+  tier1_ratio:
+    unit: pure
+    tags:
+      - {tag: us-gaap:TierOneRiskBasedCapitalToRiskWeightedAssets, dims: *firm_standardized}
+  total_capital_ratio:
+    unit: pure
+    tags:
+      - {tag: us-gaap:CapitalToRiskWeightedAssets, dims: *firm_standardized}
+
 # JPMorgan's 10-K/10-Q body uses its own headings. The "Item" index at the back only gives page
 # numbers, so item-based splitting finds just a cross-reference for the MD&A. These rules locate
 # the sections by their own headings: from the first `start` line to the first `end` line after

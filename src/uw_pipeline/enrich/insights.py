@@ -69,6 +69,9 @@ def numbers_ok(
 ) -> bool:
     values = [v for s in pkg.of("METRIC") for v in s.values]
     quotes = [c.quote for c in cited] + [c.source.text for c in cited if c.source.kind != "METRIC"]
+    # Metric names are input too: "value of $100 invested" (TSR, D-042) is a definition, not a
+    # figure the model made up.
+    quotes += [s.label for s in pkg.of("METRIC")]
     missing = ungrounded_numbers(" ".join(texts), quotes, values)
     if missing:
         stats.bad_numbers += 1

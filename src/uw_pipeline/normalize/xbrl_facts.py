@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import io
 import xml.etree.ElementTree as ET
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from typing import Any
 
 import pandas as pd
@@ -74,6 +74,53 @@ def facts_from_instance(
 ) -> pd.DataFrame:
     """Parse an XBRL instance document, keeping facts that match `refs` exactly (incl. dims)."""
     wanted = {(r.tag, r.dims_key) for r in refs}
+    return _instance_facts(xml, lambda tag, dims: (tag, dims) in wanted,
+                           accn=accn, form=form, filed=filed)  # fmt: skip
+
+
+# Pay-versus-performance (DEF 14A, `ecd` taxonomy): amounts for the principal executive officer
+# are tagged either without dimensions or per person on this axis (Marriott does the latter).
+PEO_AXIS = "ecd:IndividualAxis"
+
+
+def pay_versus_performance(
+    xml: bytes, refs: Iterable[TagRef], *, accn: str, form: str, filed: str
+) -> pd.DataFrame:
+    """The proxy statement's pay-versus-performance facts for `refs` (non-dimensional tags).
+
+    A PEO amount tagged only per person counts when one person held the role that year; with
+    two or more (a mid-year change) the year has no value, since adding them up is wrong.
+    A person shown with 0 for a year did not hold the role then (Southwest lists both CEOs every
+    year)."""
+    wanted = {r.tag for r in refs if not r.dims}
+    peo_dims = f"{PEO_AXIS}="
+    raw = _instance_facts(
+        xml,
+        lambda tag, dims: tag in wanted and (dims == "" or (dims.startswith(peo_dims)
+                                                            and "|" not in dims)),
+        accn=accn, form=form, filed=filed,
+    )  # fmt: skip
+    if raw.empty:
+        return raw
+    keep = []
+    for _, group in raw.groupby(["taxonomy", "tag", "start", "end", "unit"], dropna=False):
+        plain = group[group["dims"] == ""]
+        people = group[(group["dims"] != "") & (group["val"] != 0)]
+        if not plain.empty:
+            keep.append(plain.iloc[[0]])
+        elif people["dims"].nunique() == 1:
+            keep.append(people.iloc[[0]].assign(dims=""))
+    return pd.concat(keep, ignore_index=True) if keep else _empty()
+
+
+def _instance_facts(
+    xml: bytes,
+    keep: Callable[[str, str], bool],
+    *,
+    accn: str,
+    form: str,
+    filed: str,
+) -> pd.DataFrame:
     ns_prefix: dict[str, str] = {}
     root: ET.Element | None = None
     for event, item in ET.iterparse(io.BytesIO(xml), events=("start-ns", "start")):
@@ -116,7 +163,7 @@ def facts_from_instance(
         uri, local = el.tag[1:].split("}", 1)
         tag = f"{ns_prefix.get(uri, uri)}:{local}"
         ctx = contexts.get(ctx_ref)
-        if ctx is None or (tag, ctx[2]) not in wanted:
+        if ctx is None or not keep(tag, ctx[2]):
             continue
         try:
             val = float((el.text or "").strip())

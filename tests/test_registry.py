@@ -25,9 +25,23 @@ def test_metric_list_comes_from_group_config(reg, industry) -> None:
     assert {m.code for m in jpm.metrics} == {
         "revenue", "revenue_growth_qoq", "revenue_growth_yoy", "net_income", "equity",
         "buybacks", "buyback_intensity", "noninterest_income", "fee_income_growth_yoy",
-        "cet1_ratio", "tier1_ratio", "lcr", "nim", "npl_ratio",  # text-extracted (BANK_REGULATORY)
+        "cet1_ratio", "tier1_ratio", "total_capital_ratio", "lcr", "nim", "npl_ratio",
+        "total_loans",  # BANK_REGULATORY
+        "ceo_total_comp", "ceo_comp_actually_paid", "neo_avg_total_comp", "tsr_value_100",
+        "peer_tsr_value_100",  # GOVERNANCE (every group)
     }  # fmt: skip
     assert jpm.concepts["revenue"] == [TagRef(tag="us-gaap:RevenuesNetOfInterestExpense")]
+    # Capital ratios: JPM's override tags, firm-wide Standardized, unit pure (D-042).
+    assert jpm.units["cet1_ratio"] == "pure" and jpm.concepts["cet1_ratio"][0].needs_instance
+
+
+def test_regulatory_thresholds_cannot_be_ratio_candidates() -> None:
+    from uw_pipeline.compute.registry import ConceptDef
+
+    with pytest.raises(ValidationError, match="threshold"):
+        ConceptDef.model_validate({"unit": "pure", "tags": [
+            "us-gaap:BankingRegulationCommonEquityTierOneRiskBasedCapitalRatioCapitalAdequacyMinimum"
+        ]})  # fmt: skip
 
 
 def test_helper_dependencies_and_company_override(reg, industry) -> None:

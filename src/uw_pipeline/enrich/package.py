@@ -154,7 +154,7 @@ def build_package(
     company_id = row["company_id"]
     pkg = Package(row["legal_name"], group_label, bool(row["is_financial"]))
 
-    defs = {m.code: m for m in metrics if m.display}
+    defs = {m.code: m for m in metrics if m.display or m.insight_input}
     rows = conn.execute(
         select(metric_value)
         .where(metric_value.c.company_id == company_id)

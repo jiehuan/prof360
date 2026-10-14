@@ -143,7 +143,7 @@ def test_loan_book_stage(pipe: Engine, tmp_path) -> None:
         with pipe.begin() as c:
             metadata.drop_all(c)
         create_tables(pipe, metadata)
-        tt.test_loan_book_by_class_with_prior_year_end(tmp_path)
+        tt.test_loan_book_by_class_with_prior_year_end(tmp_path, 1_397_344e6)
     finally:
         from sqlalchemy import create_engine
 

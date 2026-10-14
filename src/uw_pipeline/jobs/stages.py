@@ -164,6 +164,7 @@ class StageRunner:
                 self.storage,
                 e,
                 labels=load_source_labels(s.config_dir),
+                identities=load_dq_config(s.config_dir).metric_identities,
             )
         if stage == "signals":
             return lambda c: run_signals_stage(c, self.sec, self.signal_rules, e, llm=self.llm)

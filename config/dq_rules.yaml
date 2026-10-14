@@ -25,7 +25,8 @@ quarters_vs_year:    # four quarters must add up to the fiscal year
   tolerance: 0.005
   years: 3
 
-release_vs_xbrl:     # earnings release value disagrees with the later XBRL value
+release_vs_xbrl:     # a value read from filing text (earnings release, or MD&A for capital
+                     # ratios, D-042) disagrees with the XBRL value
   severity: Error
   days: 180
 
@@ -54,3 +55,21 @@ source_coverage:     # every current insight and follow-up question shows at lea
 
 link_integrity:      # links between current objects point to current objects; FI data only for FI
   severity: Error
+
+# Identities (decisions D-042) ----------------------------------------------------------------
+
+metric_identities:   # relations between metrics of the same period
+  severity: Error    # stored values (XBRL included) that break one
+  periods: 8
+  # The textmetrics stage also uses these: text-extracted values that break one are dropped
+  # (a wrong number is worse than a missing one) and reported here as a Warning.
+  checks:
+    - name: revpar_identity        # RevPAR = ADR x occupancy
+      left: revpar
+      right: adr * occupancy
+      tolerance: 0.05
+    - name: capital_ratio_order    # CET1 <= Tier 1 <= total capital
+      ascending: [cet1_ratio, tier1_ratio, total_capital_ratio]
+  loan_book:                       # loan classes may not add up to more than total loans
+    total: total_loans
+    max_over: 0.01
