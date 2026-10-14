@@ -25,8 +25,11 @@ def test_metric_list_comes_from_group_config(reg, industry) -> None:
     assert {m.code for m in jpm.metrics} == {
         "revenue", "revenue_growth_qoq", "revenue_growth_yoy", "net_income", "equity",
         "buybacks", "buyback_intensity", "noninterest_income", "fee_income_growth_yoy",
+        "roa", "roe", "loan_loss_reserve_ratio", "net_interest_income",
+        "fee_to_net_interest_income",  # D-043
         "cet1_ratio", "tier1_ratio", "total_capital_ratio", "lcr", "nim", "npl_ratio",
-        "total_loans",  # BANK_REGULATORY
+        "total_loans", "avg_interest_earning_assets", "aum", "var_total_avg",
+        "international_revenue",  # BANK_REGULATORY
         "ceo_total_comp", "ceo_comp_actually_paid", "neo_avg_total_comp", "tsr_value_100",
         "peer_tsr_value_100",  # GOVERNANCE (every group)
     }  # fmt: skip

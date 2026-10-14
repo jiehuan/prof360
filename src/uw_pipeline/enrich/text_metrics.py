@@ -34,6 +34,7 @@ class LoanPortfolioConfig(BaseModel):
 
 class TextConfig(BaseModel):
     prompt_version: str
+    table_prompt_version: str = "table_reader_v1"  # metrics read by cell (D-044)
     # Effort for the extractor model on this task only (None = llm.yaml's).
     extractor_effort: str | None = None
     sections: list[str]

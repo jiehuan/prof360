@@ -799,3 +799,84 @@ and a signal but is not shown as metric rows; add the pay/performance signal.
   $5.86 + $0.40 + $0.64 with Claude).
 - Not adopted (for now): axis-anchored matching of other banks' members (wait for a second
   bank), the status vocabulary (needs a BFF contract change), cross-CIK 8-K retrieval.
+
+## Phase 14 (2026-10-14)
+
+User, after a second look at the team's SEC_metrics repo: do all of it. Decisions: show ROA,
+ROE and the loan-loss reserve ratio; AUM, VaR, international revenue, capacity utilization, RPO
+and board composition are insight input only; review by command line with a decision table;
+holdout answers taken from the filings themselves; daily LLM budget $25; board signals for a
+CEO-chair without a lead independent director and for independence below two-thirds. No live
+LLM runs until the end, then one comparison.
+
+**D-043 Coverage from XBRL, traits, budget.**
+- Bank metrics from XBRL formulas: ROA and ROE on average assets / equity (`x_py` in a formula
+  is x a year earlier), allowance for loan losses / loans, noninterest / net interest income.
+  JPM FY2025: ROA 1.35%, ROE 16.1% (total equity, preferred included), reserve ratio 1.83%.
+- RPO (`us-gaap:RevenueRemainingPerformanceObligation`) for groups with the contract_revenue
+  trait (telecom, semiconductors; Lumen and Enphase tag it).
+- Traits (`industry_groups.yaml`): a group names its business-model traits (bank, lodging,
+  contract_revenue, manufacturing, captive_finance) and gets their metric sets; governance
+  applies to every group. Scales to new groups better than listing sets.
+- Daily LLM budget (`LLM_DAILY_BUDGET`, default 25 in the profile's currency): over it, each
+  new call fails as an item and waits for the next day; cached results are still served.
+  Single-flight calls wait for Phase 10: the global run lock means no concurrent calls today.
+
+**D-044 Tables read by cell; source text is data.**
+- `normalize/table_grid.py` turns filing tables into grids (spans expanded, hidden content
+  dropped). For metrics with `extraction.table`, the model answers with table, row and column;
+  `enrich/table_reader.check_cell` accepts the answer only if the cell holds the number, the
+  metric is named in the column header or row label, the column is not a change column, the
+  lowest dated header line shows exactly the claimed year, the month and period length match,
+  the row is in scope and not a subset (`exclude_rows`), and the table does not call itself
+  illustrative or pro forma. A rejected answer is withheld, never repaired from other cells.
+- Moved to this path: RevPAR, occupancy, ADR (prompt `table_reader_v1`) and the loan book
+  (`loan_table_v1`; the balance and nonaccrual columns are checked separately). New: average
+  interest-earning assets, AUM, average total VaR, international revenue (firm-wide note),
+  capacity utilization (no data for Ford, whose filings have no such table).
+- Holdout: Hilton and Hyatt filings (layouts the rules were not written for) plus Marriott and
+  JPM: 14 right cells accepted, 18 plausible wrong ones withheld (regions, company-operated
+  subsets, change columns, six months, prior year, other metrics, minimum VaR, segment
+  revenue, decoy table). Found on the way and fixed: Hilton puts metrics in rows; Hyatt names
+  the whole system "system-wide", not "worldwide"; JPM's note groups years as rows.
+- Loan book: `loan_table_v2` also reads tables with classes as columns (JPM wholesale). The
+  two models may read a segment at different levels (Sonnet: the wholesale "Loans retained"
+  line, 846.8B; Haiku: its classes). Where one gives a single line and the other classes that
+  add up to it, the single line is kept, since both models confirm its value; the classes,
+  confirmed by one model only, are not stored. JPM total 1,463.8B as before the change.
+- NIM relation: NIM = net interest income / average interest-earning assets, quarters
+  annualized (x4), within 5% (JPM Q2 2026: 2.38% vs 2.40% reported, managed basis).
+- Prompt injection: every user prompt has invisible characters made visible ("[U+200B]"); each
+  source sits in a named block whose own closing tag is escaped inside it; list fields are one
+  line; `prompts/untrusted_data_v1.md` is appended to every system prompt and its version is
+  part of each stored prompt version. A quote-path answer for a table metric is ignored, so the
+  cell check cannot be bypassed. Adversarial tests: hidden characters, a closing-tag breakout,
+  an embedded instruction to report 999, a decoy table.
+- Cost: the data rule changes every cache key, so the first run after this asks every task
+  again (Claude); SecureGPT would have asked again anyway (other models).
+
+**D-045 Board composition, review.**
+- The documents stage downloads the latest proxy (DEF 14A). The new `governance` stage (after
+  textmetrics; signals do not wait for it) has both models read the board passages; a fact is
+  kept when its quote is in the proxy, its number (digits or words) or name is in the quote,
+  and both models give the same value. Stored in `board_composition` (new pipeline table).
+- Signals: CEO is also chair with no lead independent director; independent directors below
+  two-thirds. Unknown facts never raise a signal. The facts enter the insight package as a
+  source with the proxy's own words.
+- `uw-pipeline review`: lists DISPUTED / OVERRULED signals and the latest identity errors with
+  evidence and source link; `approve` / `reject` need `--reviewer`; a wrong or stale id gives
+  the next step, not a traceback. Decisions in `review_decision` (new pipeline table); a
+  rejected signal leaves the insight input and the DQ review queue.
+
+**D-046 Debt, restatements, stability.**
+- Total debt adds finance lease liabilities to the LongTermDebt family only (the
+  ...AndCapitalLeaseObligations family already includes them). DQ: total debt >= long-term
+  debt; Warning when total debt is the non-current-only fallback (Macy's has no current tag).
+- Restatements (D-035): a quarter or year-to-date value restated after its fiscal year was
+  reported keeps the year's basis until a filing restates the year as well; the quarters then
+  add up to the year. Logged by the compute stage.
+- `scripts/stability_check.py`: N live runs on a database copy with an empty cache, compared
+  (Jira T2); `--faults` runs timeout, rate-limit and invalid-schema clients: all three failed
+  closed (no exception, nothing stored, earlier values kept).
+- Not done: tables in the pipeline schema only, no app tables changed; deploy/sql/
+  pipeline_schema_full.sql gains board_composition and review_decision.

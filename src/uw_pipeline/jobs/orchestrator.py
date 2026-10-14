@@ -49,6 +49,9 @@ DEPENDS: dict[str, tuple[str, ...]] = {
     "news": ("company",),
     "scores": ("company",),
     "textmetrics": ("compute", "documents"),
+    # Board composition from the proxy (D-045). Signals read it when present but do not wait
+    # for it: a failed LLM call must not cost the rule signals.
+    "governance": ("documents",),
     "signals": ("compute", "documents"),
     "insights": ("signals", "textmetrics"),
     "metricdetail": ("compute", "insights"),

@@ -46,6 +46,7 @@ log = logging.getLogger(__name__)
 
 TEXT_FORMS = ("10-K", "10-Q")
 EVENT_FORMS = ("10-K", "10-K/A", "10-Q", "10-Q/A", "8-K", "8-K/A")
+PROXY_FORMS = ("DEF 14A",)
 # Sections that must be found; a miss is logged (PLAN Phase 3 acceptance).
 HISTORY_SECTIONS = ("10K-7",)
 REQUIRED_SECTIONS = {"10-K": ("10K-1A", "10K-3", "10K-7"), "10-Q": ("10Q-I-2",)}
@@ -237,6 +238,16 @@ def process_company(
             _, data = _download(conn, sec, cik, f.accn, name, force=force, now=now)
             if data is not None:
                 stats["downloaded"] += 1
+    # The latest proxy statement, for board composition (governance stage, D-045). Registered
+    # and downloaded whole; its text is read by keyword, not split into items.
+    proxies = filings_since(sec, cik, subs, since_events, PROXY_FORMS, force=force)
+    if proxies:
+        p = proxies[-1]
+        insert_missing(conn, source_document,
+                       [_doc_row(company_id, cik, p, p.primary_doc, "PRIMARY")],
+                       key_cols=["accession_no", "doc_name"])  # fmt: skip
+        _, data = _download(conn, sec, cik, p.accn, p.primary_doc, force=force, now=now)
+        stats["proxy"] = 1 if data is not None else 0
     if history_years:
         stats["history_10k"] = _mdna_history(
             conn, sec, cfg, company_id, cik, subs, today - timedelta(days=366 * history_years),

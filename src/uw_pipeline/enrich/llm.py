@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import functools
 import hashlib
 import json
 import logging
 import os
 from collections.abc import Callable
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +18,7 @@ from pydantic import BaseModel
 from sqlalchemy import Connection, select
 
 from uw_pipeline.clients.llm import LLMClient, LLMError, LLMSetupError
+from uw_pipeline.enrich.untrusted import GUARD_PROMPT, neutralize
 from uw_pipeline.load.upsert import upsert
 from uw_pipeline.schema import llm_call
 
@@ -101,6 +103,53 @@ def _store(conn: Connection, row: dict[str, Any]) -> None:
         upsert(own, llm_call, [row], key_cols=["input_hash"])
 
 
+@functools.cache
+def _guard() -> str:
+    return (PROMPTS_DIR / f"{GUARD_PROMPT}.md").read_text(encoding="utf-8").strip()
+
+
+class BudgetExceededError(Exception):
+    """Today's new LLM calls have reached the daily budget (D-043)."""
+
+
+class DailyBudget:
+    """Spend cap for new LLM calls per UTC day; cached results never count against it.
+
+    Today's spend is read once from `llm_call` (tokens x `pricing`), then kept up to date as
+    calls are made. Over the cap, each further call fails as an item (like a refusal): the
+    stage records it and goes on, and the next day's run picks the item up again."""
+
+    def __init__(self, limit: float, pricing: dict[str, tuple[float, float]], currency: str):
+        self.limit, self.pricing, self.currency = limit, pricing, currency
+        self.spent: float | None = None
+        self.day: str | None = None
+
+    def cost(self, model: str, input_tokens: int | None, output_tokens: int | None) -> float:
+        price_in, price_out = self.pricing.get(model, (0.0, 0.0))
+        return ((input_tokens or 0) * price_in + (output_tokens or 0) * price_out) / 1e6
+
+    def check(self, conn: Connection, now: datetime) -> None:
+        if self.limit <= 0:
+            return
+        day = now.astimezone(UTC).strftime("%Y-%m-%d")
+        if self.spent is None or self.day != day:
+            start = datetime.strptime(day, "%Y-%m-%d").replace(tzinfo=UTC)
+            rows = conn.execute(
+                select(llm_call.c.model, llm_call.c.input_tokens, llm_call.c.output_tokens)
+                .where(llm_call.c.created_at >= start)
+            ).all()  # fmt: skip
+            self.spent, self.day = sum(self.cost(*r) for r in rows), day
+        if self.spent >= self.limit:
+            raise BudgetExceededError(
+                f"daily LLM budget of {self.limit:g} {self.currency} reached "
+                f"({self.spent:.2f} spent today)"
+            )
+
+    def add(self, model: str, input_tokens: int | None, output_tokens: int | None) -> None:
+        if self.spent is not None:
+            self.spent += self.cost(model, input_tokens, output_tokens)
+
+
 def cached_call(
     conn: Connection,
     client: LLMClient,
@@ -119,6 +168,11 @@ def cached_call(
     Returns None when the model gave no usable output (refusal, truncation, bad JSON, or output
     that fails `validate`, usually the output model's `model_validate`); the error is stored and
     the call is retried on the next run instead of the bad output being reused."""
+    # Source text is data (D-044): invisible characters made visible, and the data rule
+    # appended to the system prompt; its version is part of the stored prompt version.
+    user = neutralize(user)
+    system = f"{system.rstrip()}\n{_guard()}"
+    prompt_version = f"{prompt_version}+{GUARD_PROMPT}"
     key_src = json.dumps(
         [task, prompt_version, spec.model, spec.effort, system, user, schema], sort_keys=True
     )
@@ -141,6 +195,13 @@ def cached_call(
         _store(conn, row | {"output_json": None, "error": "output failed schema validation"})
         return None
 
+    budget: DailyBudget | None = getattr(client, "budget", None)
+    if budget is not None:
+        try:
+            budget.check(conn, now)
+        except BudgetExceededError as exc:
+            log.warning("%s on %s: %s", task, spec.model, exc)
+            return None  # not stored: tomorrow's run asks again
     try:
         result = client.complete_json(
             model=spec.model, effort=spec.effort, max_tokens=spec.max_tokens,
@@ -162,6 +223,8 @@ def cached_call(
         raise LLMUnavailableError(str(exc)) from exc
     usage = {"served_model": result.model, "input_tokens": result.input_tokens,
              "output_tokens": result.output_tokens}  # fmt: skip
+    if budget is not None:
+        budget.add(spec.model, result.input_tokens, result.output_tokens)
     if validate is not None and not _valid(validate, result.output):
         log.warning("%s on %s: output failed schema validation", task, spec.model)
         _store(conn, row | usage | {"output_json": None,

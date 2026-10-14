@@ -27,6 +27,7 @@ from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.enrich.grounding import is_grounded
 from uw_pipeline.enrich.llm import LLMConfig, ModelSpec, cached_call
 from uw_pipeline.enrich.schemas import SectionSignals, TieBreak, strict_json_schema
+from uw_pipeline.enrich.untrusted import data_block
 from uw_pipeline.signals.detect import Detected, Doc
 from uw_pipeline.signals.rules import SignalRules, SignalSpec
 
@@ -312,9 +313,7 @@ class Voter:
         user = (
             f"Company: {company_name}\nFiling: {doc.form_type} filed {doc.filed_at} "
             f"(accession {doc.accession_no})\n\n"
-            + "\n\n".join(
-                f'<excerpt section="{c}">\n{in_scope[c]}\n</excerpt>' for c in sorted(in_scope)
-            )
+            + "\n\n".join(data_block("excerpt", in_scope[c], section=c) for c in sorted(in_scope))
         )
         extracted = self._ask(self.config.extractor, user)
         if extracted is None:

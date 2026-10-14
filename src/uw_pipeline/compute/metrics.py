@@ -164,12 +164,23 @@ def _combine(parts: list[Value], value: float | None, status: str, formula: str)
     )
 
 
+PRIOR_YEAR = "_py"  # `assets_py`: assets for the same period a year earlier (averages, D-043)
+
+
+def _lookup(
+    name: str, key: PeriodKey, known: Mapping[str, Mapping[PeriodKey, Value]]
+) -> Value | None:
+    if name.endswith(PRIOR_YEAR):
+        return known.get(name[: -len(PRIOR_YEAR)], {}).get((key[0], key[1] - 1, key[2]))
+    return known.get(name, {}).get(key)
+
+
 def _formula_value(
     metric: MetricDef, key: PeriodKey, known: Mapping[str, Mapping[PeriodKey, Value]]
 ) -> Value | None:
     for expr in metric.formula:
         names = _names(expr)
-        present = {n: known[n][key] for n in names if key in known.get(n, {})}
+        present = {n: v for n in names if (v := _lookup(n, key, known)) is not None}
         required = [n for n in names if n not in metric.optional]
         if not required or any(n not in present for n in required):
             continue

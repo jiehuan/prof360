@@ -1,6 +1,6 @@
 # uw-pipeline: technical overview
 
-For engineers who run, deploy or change the pipeline. As of 2026-10-14 (Phases 1–9 and 11–13
+For engineers who run, deploy or change the pipeline. As of 2026-10-14 (Phases 1–9 and 11–14
 done; Phase 10 planned, on hold). Related documents:
 
 | Document | Holds |
@@ -48,7 +48,7 @@ swap them for fakes.
 
 | Package / module | Responsibility |
 |---|---|
-| `cli.py` | Typer CLI: `run`, `runs`, `dq-report`, `coverage-report`, `audit-insights`, `init-db` |
+| `cli.py` | Typer CLI: `run`, `runs`, `dq-report`, `coverage-report`, `audit-insights`, `review`, `init-db` |
 | `settings.py` | Settings from environment / `.env` (pydantic-settings), §13 |
 | `config.py` | Loads companies and industry groups |
 | `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing), `alphavantage.py` (quota, key masking), `llm.py` (Claude), `securegpt.py` (Azure OpenAI gateway), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py` |
@@ -79,6 +79,7 @@ flowchart LR
   documents --> textmetrics
   compute --> signals
   documents --> signals
+  documents --> governance
   signals --> insights
   textmetrics --> insights
   insights --> metricdetail
@@ -97,6 +98,7 @@ flowchart LR
 | news | `run_news` | 30-day news, mention filter, 3-tier de-duplication, LLM relevance verdict (D-029, D-037) | `news_item`, `activity` | AV, LLM |
 | scores | `run_scores` | News risk scores per activity; transcript tone and risk flags (D-037) | `news_risk_score`, `transcript_tone`, `transcript_flag` | LLM |
 | textmetrics | `run_text_metrics` | Figures from MD&A and releases (RevPAR, NIM, …), loan book; values XBRL covers (capital ratios, release figures) only cross-checked; identity gate (D-022, D-032, D-042) | `metric_value` (LLM_EXTRACTED, PRELIMINARY), `loan_portfolio_*`, `release_check` | LLM |
+| governance | `run_governance` | Board composition from the latest proxy, both models, facts kept only when quoted and agreed (D-045) | `board_composition` | LLM |
 | signals | `run_signals` | 8-K, keyword, auditor and metric signals; LLM vote on judgment topics (D-027, D-028) | `signal`, `signal_vote` | LLM |
 | insights | `run_insights` | Activity summaries, behavioral, strategic & risk, key insights, follow-up questions (D-033) | `insight*`, `followup_question*`, `activity` | LLM |
 | metricdetail | `run_metric_detail` | Methodology and sources by rules; underwriting relevance by LLM (D-036) | `metric_detail`, `metric_source`, `metric_insight` | LLM |
@@ -125,7 +127,7 @@ America/New_York, `concurrencyPolicy: Forbid`):
 
 | Job | Schedule (ET) | Stages |
 |---|---|---|
-| `nightly` | 23:30 | company, facts, compute, documents, transcripts, scores, textmetrics, signals, insights, metricdetail, publish, dq |
+| `nightly` | 23:30 | company, facts, compute, documents, transcripts, scores, textmetrics, governance, signals, insights, metricdetail, publish, dq |
 | `morning` | 05:30 | same as nightly (catch-up) |
 | `news` | 03:00, 09:00, 15:00, 21:00 | news, scores, publish |
 
@@ -138,7 +140,7 @@ requests, Alpha Vantage calls, LLM calls, tokens and estimated cost per model.
 
 ## 6. Data model
 
-### Pipeline database (`schema.py`, 34 tables)
+### Pipeline database (`schema.py`, 36 tables)
 
 | Area | Tables |
 |---|---|
@@ -151,7 +153,8 @@ requests, Alpha Vantage calls, LLM calls, tokens and estimated cost per model.
 | Insights | `insight`, `insight_evidence`, `insight_link`, `insight_metric`, `followup_question`, `followup_question_insight`, `followup_question_metric`, `followup_question_source` |
 | Metric detail | `metric_detail`, `metric_source`, `metric_insight` |
 | LLM | `llm_call` (cache), `llm_task_stat` (grounding drop rates) |
-| Runs and quality | `pipeline_run`, `pipeline_task`, `dq_finding` |
+| Runs and quality | `pipeline_run`, `pipeline_task`, `dq_finding`, `review_decision` |
+| Governance | `board_composition` |
 
 Conventions:
 
@@ -249,6 +252,14 @@ ratios come from the instances (concepts with `unit: pure` refuse regulatory-flo
 their text extraction only fills periods without XBRL or cross-checks them. Identities in
 `config/dq_rules.yaml` (RevPAR = ADR × occupancy; CET1 ≤ Tier 1 ≤ total capital; loan book ≤
 total loans) drop text values that break them; the dq stage reports stored values that do.
+
+**Tables by cell, untrusted text** (D-044). Metrics with `extraction.table` are read from table
+grids (`normalize/table_grid.py`): the model names table, row and column, and
+`enrich/table_reader.check_cell` / `check_loan` verify the cell's number, its column header
+(metric, period, not a change column) and its row (scope, not a subset) without repairing a
+wrong answer. Every prompt passes through `enrich/untrusted.py`: invisible characters made
+visible, sources in escaped blocks, the data rule (`prompts/untrusted_data_v1.md`) appended to
+the system prompt. `LLM_DAILY_BUDGET` caps new calls per day (D-043).
 
 **Agreement checks.** Judgment signals: rules vote, the extractor votes with a verbatim quote,
 and only on disagreement the tie-breaker rules on both claims; a rule hit voted down by both

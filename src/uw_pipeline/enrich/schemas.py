@@ -108,6 +108,58 @@ class ExtractedValue(BaseModel):
     evidence: str = Field(description="Verbatim quote (<= 300 chars) that contains the value")
 
 
+class TableCell(BaseModel):
+    """A value read from a table by its coordinates (decisions D-044)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    metric_code: str
+    table: str = Field(description="Table id as shown, e.g. T13")
+    row: int = Field(description="Row number as shown, e.g. 21 for r21")
+    col: int = Field(description="Column number of the cell holding the number, e.g. 7 for c7")
+    value: str = Field(description="The number exactly as written in that cell")
+    unit: Literal["percent", "basis_points", "usd"]
+    scale: Scale = Field(description="From the table header or title, e.g. 'in millions'")
+    period_start: str | None = Field(
+        description="First day of the period, YYYY-MM-DD; null for point_in_time"
+    )
+    period_end: str = Field(description="Last day of the period or the as-of date, YYYY-MM-DD")
+    period: Literal["quarter", "year_to_date", "year", "point_in_time"]
+
+
+class LoanCell(BaseModel):
+    """One loan class at one date, read from a credit-portfolio table by cell (D-044)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    segment: str = Field(description="Loan class as named in the table, e.g. Auto and other")
+    parent_segment: str = Field(description="The firm's top-level segment it belongs to")
+    table: str = Field(description="Table id, e.g. T70")
+    row: int = Field(description="Row of the class, e.g. 6 for r6")
+    outstanding_col: int = Field(description="Column of the cell with the loan balance")
+    nonaccrual_col: int | None = Field(
+        description="Column of the cell with nonaccrual loans for the same date; null if none"
+    )
+    nonaccrual_row: int | None = Field(
+        description="When classes are columns: the row with nonaccrual loans (same column as "
+        "the balance); null otherwise"
+    )
+    scale: Scale
+    period_end: str = Field(description="YYYY-MM-DD")
+
+
+class LoanTable(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    segments: list[LoanCell]
+
+
+class TableValues(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    values: list[TableCell]
+
+
 class TextValues(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -314,3 +366,31 @@ class ChunkScores(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     chunks: list[ChunkScore]
+
+
+# -- Board composition from the proxy statement (decisions D-045) --------------------------------
+
+
+class Committee(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(description="Standing committee of the board, e.g. Audit Committee")
+    chair: str | None = Field(description="Its chair's name as written; null if not stated")
+    quote: str = Field(description="Verbatim quote (<= 300 chars) naming the chair")
+
+
+class BoardFacts(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    board_size: int | None = Field(description="Directors on the board (or nominees) now")
+    board_size_quote: str = Field(description="Verbatim quote stating it; empty if none")
+    independent_directors: int | None = Field(description="How many of them are independent")
+    independent_quote: str = Field(description="Verbatim quote stating it; empty if none")
+    ceo_is_chair: bool | None = Field(description="The CEO is also chair of the board")
+    ceo_chair_quote: str = Field(description="Verbatim quote showing it; empty if none")
+    lead_independent_director: str | None = Field(
+        description="Name of the lead independent director; 'none' if the proxy says there is "
+        "none or the chair is independent; null if not stated"
+    )
+    lead_quote: str = Field(description="Verbatim quote showing it; empty if none")
+    committees: list[Committee]

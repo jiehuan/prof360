@@ -20,6 +20,7 @@
 # optional: names treated as 0 when missing, as long as one non-optional input is present.
 # nm_when: condition that makes the value "not meaningful" (stored as N/M, no number).
 # units: USD, ratio (x), fraction (0.05 = 5%).
+# `x_py` in a formula is x for the same period a year earlier (averages such as ROA, D-043).
 # display: false hides helper metrics from the front end (they are still stored for audit).
 # insight_input: true puts a hidden metric into the insight input anyway (e.g. CEO pay).
 
@@ -61,6 +62,10 @@ metric_sets:
     - nim
     - npl_ratio
     - total_loans
+    - avg_interest_earning_assets
+    - aum
+    - var_total_avg
+    - international_revenue
   # Pay versus performance from the proxy statement (D-042): input to insights, follow-up
   # questions and the pay/performance signal; not shown as metric rows.
   GOVERNANCE:
@@ -79,6 +84,14 @@ metric_sets:
     - equity
     - buybacks
     - buyback_intensity
+    - roa
+    - roe
+    - loan_loss_reserve_ratio
+    - fee_to_net_interest_income
+  CONTRACT_REVENUE:
+    - rpo
+  MANUFACTURING_OPERATING:
+    - capacity_utilization
 
 metrics:
   # -- Financial -------------------------------------------------------------------------
@@ -160,17 +173,19 @@ metrics:
     display_name: Total Debt
     description: >-
       Reported total debt. Otherwise a same-family current + non-current pair (families are
-      never mixed), plus short-term borrowings / commercial paper.
+      never mixed), plus short-term borrowings / commercial paper, plus finance lease
+      liabilities for the LongTermDebt family, which excludes them (D-046).
     section: leverage
     unit: USD
     formula:
       - debt_total_reported
       - ltdcl_noncurrent + ltdcl_current + short_term_borrowings
-      - ltd_noncurrent + ltd_current + short_term_borrowings
-      # Non-current only, used when the family has no current sibling. Understates debt.
+      - ltd_noncurrent + ltd_current + short_term_borrowings + finance_lease_liabilities
+      # Non-current only, used when the family has no current sibling. Understates debt;
+      # dq_rules.yaml debt_completeness reports it.
       - ltdcl_noncurrent + short_term_borrowings
-      - ltd_noncurrent + short_term_borrowings
-    optional: [short_term_borrowings]
+      - ltd_noncurrent + short_term_borrowings + finance_lease_liabilities
+    optional: [short_term_borrowings, finance_lease_liabilities]
   - code: long_term_debt
     display_name: Long-term Debt
     section: leverage
@@ -257,6 +272,12 @@ metrics:
         US dollars. Use the worldwide (or total) comparable systemwide figure; not a region,
         brand, or owned/leased subset, and not a percentage change.
       keywords: [RevPAR]
+      table:   # read by cell, checked mechanically (D-044)
+        column: [RevPAR]
+        scope: [[systemwide, system-wide]]
+        exclude_rows: &hotel_subsets [international, "u.s.", united states, us & canada,
+          americas, europe, asia, china, middle east, africa, caribbean, latin america, luxury,
+          premium, select, owned, leased, managed, franchised, all-inclusive, resorts]
   - code: occupancy
     display_name: Occupancy Rate
     section: operational
@@ -267,6 +288,10 @@ metrics:
         Comparable systemwide worldwide occupancy rate for the period (a percentage level such
         as 69.3%, not a change in percentage points).
       keywords: [occupancy]
+      table:   # read by cell, checked mechanically (D-044)
+        column: [Occupancy]
+        scope: [[systemwide, system-wide]]
+        exclude_rows: *hotel_subsets
   - code: adr
     display_name: Average Daily Rate
     section: operational
@@ -277,6 +302,10 @@ metrics:
         Comparable systemwide worldwide average daily rate for the period, in US dollars (a
         level, not a percentage change).
       keywords: [average daily rate, ADR]
+      table:   # read by cell, checked mechanically (D-044)
+        column: [Average Daily Rate, ADR]
+        scope: [[systemwide, system-wide]]
+        exclude_rows: *hotel_subsets
 
   # -- Text-extracted bank metrics (FI only) -----------------------------------------------
   - code: cet1_ratio
@@ -302,6 +331,38 @@ metrics:
         bank subsidiary, not the Advanced approach, not a minimum or target.
       keywords: [Tier 1 capital ratio, Tier 1 ratio]
       dual_check: true
+  # -- Bank profitability and credit (XBRL, decisions D-043) --------------------------------------
+  - code: roa
+    display_name: Return on Average Assets (ROA)
+    section: fi_performance
+    unit: fraction
+    formula: net_income / ((total_assets + total_assets_py) / 2)
+    period_types: [FY]
+  - code: roe
+    display_name: Return on Average Equity (ROE)
+    section: fi_performance
+    unit: fraction
+    formula: net_income / ((equity + equity_py) / 2)
+    period_types: [FY]
+    nm_when: equity <= 0
+  - code: loan_loss_reserve_ratio
+    display_name: Allowance for Loan Losses / Loans
+    section: fi_performance
+    unit: fraction
+    formula: allowance_for_loan_losses / total_loans
+  - code: net_interest_income
+    display_name: Net Interest Income
+    section: fi_performance
+    unit: USD
+    formula: net_interest_income
+    display: false
+  - code: fee_to_net_interest_income
+    display_name: Noninterest Income / Net Interest Income
+    section: fi_performance
+    unit: ratio
+    formula: noninterest_income / net_interest_income
+    display: false
+    insight_input: true
   - code: total_capital_ratio
     display_name: Total Capital Ratio
     section: fi_performance
@@ -397,3 +458,90 @@ metrics:
     period_types: [FY]
     display: false
     insight_input: true
+  - code: rpo
+    display_name: Remaining Performance Obligations (contracted revenue)
+    section: financial
+    unit: USD
+    formula: rpo
+    display: false
+    insight_input: true
+
+  # -- Read from tables by cell (D-044); not displayed, insight input ---------------------------
+  - code: avg_interest_earning_assets
+    display_name: Average Interest-Earning Assets
+    section: fi_performance
+    unit: USD
+    kind: text
+    display: false   # checks NIM (dq_rules.yaml nim_relation)
+    extraction:
+      definition: >-
+        Firm-wide average interest-earning assets for the period, in US dollars (not excluding
+        Markets or any business).
+      keywords: [average interest-earning assets]
+      table:
+        column: [average interest-earning assets]
+        exclude_rows: [markets, excluding]
+  - code: aum
+    display_name: Assets Under Management
+    section: fi_performance
+    unit: USD
+    kind: text
+    display: false
+    insight_input: true
+    extraction:
+      definition: >-
+        Total assets under management of the firm at period end, in US dollars (the total,
+        not client assets, a region or an asset class).
+      keywords: [assets under management]
+      table:
+        column: [total assets under management]
+  - code: var_total_avg
+    display_name: Average Total VaR (95%)
+    section: fi_performance
+    unit: USD
+    kind: text
+    display: false
+    insight_input: true
+    extraction:
+      definition: >-
+        Firm-wide total value-at-risk, average for the quarter, in US dollars (the total, not a
+        business or risk type; the average, not the minimum or maximum).
+      keywords: [Total VaR]
+      table:
+        column: [total var]
+        exclude: [min, max, "vs.", change]
+  - code: international_revenue
+    display_name: International Revenue (outside North America)
+    section: financial
+    unit: USD
+    kind: text
+    display: false
+    insight_input: true
+    extraction:
+      definition: >-
+        The firm's total revenue from international operations (outside North America) for the
+        fiscal year: the row named "Total international" in the notes' table of international
+        operations (revenue, expense, income before tax, net income and total assets by
+        region). Not a business segment's "Total international net revenue" table.
+      keywords: [total international]
+      table:
+        column: [revenue]
+        find: [total international]
+        scope: [[total international]]
+        # Business-segment tables ("International metrics" of CIB / AWM) label their row
+        # "Total international net revenue"; the firm-wide note says "Total international".
+        exclude_rows: [net revenue]
+  - code: capacity_utilization
+    display_name: Capacity Utilization
+    section: operational
+    unit: fraction
+    kind: text
+    display: false
+    insight_input: true
+    extraction:
+      definition: >-
+        Company-wide manufacturing capacity utilization for the period, as a percentage (a
+        level, not a change).
+      keywords: [capacity utilization]
+      table:
+        column: [capacity utilization, capacity utilisation]

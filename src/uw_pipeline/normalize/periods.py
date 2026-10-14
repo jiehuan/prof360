@@ -118,18 +118,46 @@ def _latest(group: pd.DataFrame) -> dict[str, Any]:
     return records(group.sort_values(["filed", "accn"]).tail(1))[0]
 
 
-def standardize(facts: pd.DataFrame, cal: FiscalCalendar) -> pd.DataFrame:
+RESTATED = 0.005  # relative difference that counts as a restatement
+
+
+def standardize(
+    facts: pd.DataFrame, cal: FiscalCalendar, restated: list[str] | None = None
+) -> pd.DataFrame:
+    """`restated`, when given, collects the values held at their year's basis (D-046)."""
+    restated = [] if restated is None else restated
     if facts.empty:
         return pd.DataFrame(columns=PERIOD_COLUMNS)
     classified = _classify(facts, cal)
     if classified.empty:
         return pd.DataFrame(columns=PERIOD_COLUMNS)
 
-    # Restatements: one value per (series, fiscal period, span), latest filing wins.
+    # Restatements: one value per (series, fiscal period, span), latest filing wins ...
     keys = ["taxonomy", "tag", "dims", "unit", "fiscal_year", "fiscal_quarter", "span"]
-    latest: dict[tuple[Any, ...], dict[str, Any]] = {
-        tuple(k): _latest(g) for k, g in classified.groupby(keys, sort=False)
+    groups: dict[tuple[Any, ...], pd.DataFrame] = {
+        tuple(k): g for k, g in classified.groupby(keys, sort=False)
     }
+    latest: dict[tuple[Any, ...], dict[str, Any]] = {k: _latest(g) for k, g in groups.items()}
+    # ... except that a quarter or year-to-date value restated after its fiscal year was
+    # reported keeps the basis of that year's figure until a filing restates the year too
+    # (the next 10-K's comparative). Mixing bases made the quarters disagree with the year
+    # (LUV capex, D-035); decisions D-046.
+    year_filed = {k[:5]: row["filed"] for k, row in latest.items() if int(k[6]) == 4}
+    for k, g in groups.items():
+        cutoff = year_filed.get(k[:5])
+        row = latest[k]
+        if int(k[6]) in (0, 4) or cutoff is None or row["filed"] <= cutoff:
+            continue
+        earlier = g[g["filed"] <= cutoff]
+        if earlier.empty:
+            continue
+        before = _latest(earlier)
+        if abs(row["val"] - before["val"]) > RESTATED * max(abs(before["val"]), 1.0):
+            latest[k] = before
+            restated.append(
+                f"{k[1]} FY{k[4]} span {k[6]} q{k[5]}: {before['val']:,.0f} as "
+                f"reported with the year, {row['val']:,.0f} restated {row['filed']}"
+            )
 
     rows: list[dict[str, Any]] = []
 

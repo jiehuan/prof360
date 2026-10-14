@@ -70,6 +70,16 @@ metric_identities:   # relations between metrics of the same period
       tolerance: 0.05
     - name: capital_ratio_order    # CET1 <= Tier 1 <= total capital
       ascending: [cet1_ratio, tier1_ratio, total_capital_ratio]
+    - name: debt_completeness      # total debt includes long-term debt (D-046)
+      ascending: [long_term_debt, total_debt]
+    - name: nim_relation           # NIM = net interest income / average interest-earning assets
+      left: nim                    # (reported vs managed basis and day counts: within 5%)
+      right: net_interest_income / avg_interest_earning_assets
+      annualize: [net_interest_income]
+      tolerance: 0.05
   loan_book:                       # loan classes may not add up to more than total loans
     total: total_loans
     max_over: 0.01
+
+debt_current_portion:  # total debt from the non-current-only fallback understates debt (D-046)
+  severity: Warning

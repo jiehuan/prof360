@@ -29,6 +29,7 @@ from uw_pipeline.config import CompanyConfig
 from uw_pipeline.enrich.grounding import is_grounded, ungrounded_numbers
 from uw_pipeline.enrich.llm import PROMPTS_DIR, LLMConfig, cached_call
 from uw_pipeline.enrich.schemas import ChunkScores, NewsScores, strict_json_schema
+from uw_pipeline.enrich.untrusted import data_block, one_line
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.load.upsert import upsert
@@ -137,7 +138,7 @@ def score_news(
         .where(activity.c.company_id == company_id)
         .order_by(activity.c.published_at)
     ):  # fmt: skip
-        text = f"{a.published_at:%Y-%m-%d} | {a.title} | {a.av_summary or ''}"
+        text = f"{a.published_at:%Y-%m-%d} | {one_line(a.title)} | {one_line(a.av_summary or '')}"
         if have.get(a.activity_id) == _hash(cfg.prompt_version, text):
             stats.news_unchanged += 1
         else:
@@ -208,7 +209,7 @@ def score_transcripts(
         for start in range(0, len(chunks), cfg.chunks_per_call):
             batch = chunks[start : start + cfg.chunks_per_call]
             user = f"Company: {company}\nEarnings call {quarter}\n\n" + "\n\n".join(
-                f'<chunk id="C{c.chunk_index}">\n{c.text}\n</chunk>' for c in batch
+                data_block("chunk", c.text, id=f"C{c.chunk_index}") for c in batch
             )
             out = _call(conn, client, llm, "transcript_tone", cfg.prompt_version, user,
                         ChunkScores, now)  # fmt: skip

@@ -424,3 +424,30 @@ def pay_signals(values: Sequence[Mapping[str, Any]], rules: SignalRules) -> list
             key_extra=f"FY{fy}",
         )
     ]
+
+
+def board_signals(board: Mapping[str, Any] | None, proxy_date: str, accession_no: str | None,
+                  rules: SignalRules) -> list[Detected]:  # fmt: skip
+    """Board composition signals from the latest proxy (D-045). Only facts both models agreed
+    on are present; an unknown fact (None) never raises a signal."""
+    if board is None:
+        return []
+    out = []
+    spec = rules.metrics.ceo_chair_without_lead_director
+    if spec and board["ceo_is_chair"] is True and board["lead_independent_director"] == "":
+        out.append(_from_spec(
+            spec, "ceo_chair_without_lead_director",
+            description="The CEO is also chair of the board and the proxy names no lead "
+                        "independent director.",
+            event_date=proxy_date, accession_no=accession_no, key_extra=proxy_date,
+        ))  # fmt: skip
+    ind = rules.metrics.board_independence
+    size, independent = board["board_size"], board["independent_directors"]
+    if ind and size and independent is not None and independent / size < ind.min_ratio:
+        out.append(_from_spec(
+            ind, "board_independence",
+            description=f"{independent} of {size} directors are independent "
+                        f"({independent / size:.0%}, below {ind.min_ratio:.0%}).",
+            event_date=proxy_date, accession_no=accession_no, key_extra=proxy_date,
+        ))  # fmt: skip
+    return out

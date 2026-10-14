@@ -17,6 +17,7 @@ from sqlalchemy import Connection
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.enrich.llm import PROMPTS_DIR, ModelSpec, cached_call
 from uw_pipeline.enrich.schemas import strict_json_schema
+from uw_pipeline.enrich.untrusted import one_line
 
 Verdict = Literal["SUBJECT", "PASSING", "ANALYST", "HOLDING", "MARKET"]
 
@@ -54,7 +55,7 @@ def judge(
     ordered = sorted(items)
     for start in range(0, len(ordered), batch_size):
         batch = ordered[start : start + batch_size]
-        lines = [f"N{i} | {t} | {(s or '')[:300]}" for i, t, s in batch]
+        lines = [f"N{i} | {one_line(t)} | {one_line((s or '')[:300])}" for i, t, s in batch]
         raw = cached_call(
             conn, client, spec,
             task="news_relevance", prompt_version=prompt_version, system=system,

@@ -34,8 +34,22 @@ from uw_pipeline.compute.registry import MetricDef, Registry
 from uw_pipeline.config import CompanyConfig, IndustryConfig
 from uw_pipeline.enrich.llm import PROMPTS_DIR, LLMConfig, ModelSpec, cached_call
 from uw_pipeline.enrich.package import fmt_value
-from uw_pipeline.enrich.schemas import LoanBook, TextValues, strict_json_schema
+from uw_pipeline.enrich.schemas import (
+    ExtractedValue,
+    LoanBook,
+    LoanTable,
+    TableValues,
+    TextValues,
+    strict_json_schema,
+)
 from uw_pipeline.enrich.sources import SourceLabels, SourceResolver
+from uw_pipeline.enrich.table_reader import (
+    NONACCRUAL_HEADERS,
+    check_cell,
+    check_loan,
+    could_pass,
+    relevant,
+)
 from uw_pipeline.enrich.text_metrics import (
     Candidate,
     LoanRow,
@@ -44,15 +58,16 @@ from uw_pipeline.enrich.text_metrics import (
     candidates,
     dual_checked,
     loan_key,
-    loan_rows,
     select_chunks,
 )
+from uw_pipeline.enrich.untrusted import data_block
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import RULE_DERIVATIONS, company_row, read_facts
 from uw_pipeline.load.upsert import delete_keys, upsert
 from uw_pipeline.normalize.html_text import html_to_text
 from uw_pipeline.normalize.periods import FiscalCalendar, learn_calendar
 from uw_pipeline.normalize.sections import chunk
+from uw_pipeline.normalize.table_grid import tables
 from uw_pipeline.quality.identities import IDENTITY_TASK, Identities
 from uw_pipeline.schema import (
     filing_section,
@@ -71,6 +86,8 @@ LLM_DERIVATIONS = ("LLM_EXTRACTED", "PRELIMINARY")
 PRELIMINARY_KEYWORDS = ["revenue", "net income", "operating income", "net revenue"]
 VALUES_SCHEMA = strict_json_schema(TextValues)
 LOAN_SCHEMA = strict_json_schema(LoanBook)
+TABLE_SCHEMA = strict_json_schema(TableValues)
+LOAN_TABLE_SCHEMA = strict_json_schema(LoanTable)
 
 
 @dataclass
@@ -84,6 +101,8 @@ class Stats:
     crosscheck_ok: int = 0
     crosscheck_mismatch: int = 0
     loan_segments: int = 0
+    table_rejected: int = 0  # cells that failed the mechanical check (D-044)
+    table_failed: bool = False
     identity_checked: int = 0
     identity_dropped: int = 0
     mismatches: list[str] = field(default_factory=list)
@@ -98,6 +117,7 @@ class DocText:
     filed_at: str
     label: str  # e.g. "10-Q filed 2026-08-03, MD&A"
     chunks: list[str]
+    raw_path: str | None = None  # the document's HTML, for metrics read from tables (D-044)
 
 
 def _mdna_docs(conn: Connection, company_id: int, codes: Sequence[str]) -> list[DocText]:
@@ -105,7 +125,7 @@ def _mdna_docs(conn: Connection, company_id: int, codes: Sequence[str]) -> list[
         select(
             source_document.c.doc_id, source_document.c.accession_no, source_document.c.form_type,
             source_document.c.filed_at, filing_section.c.section_id,
-            filing_section.c.section_code,
+            filing_section.c.section_code, source_document.c.raw_path,
         )
         .join(filing_section, filing_section.c.doc_id == source_document.c.doc_id)
         .where(
@@ -123,7 +143,8 @@ def _mdna_docs(conn: Connection, company_id: int, codes: Sequence[str]) -> list[
         ).scalars()
         docs.append(
             DocText(r.doc_id, r.accession_no, r.form_type, "PRIMARY", r.filed_at,
-                    f"{r.form_type} filed {r.filed_at}, section {r.section_code}", list(texts))
+                    f"{r.form_type} filed {r.filed_at}, section {r.section_code}", list(texts),
+                    r.raw_path)
         )  # fmt: skip
     return docs
 
@@ -142,7 +163,7 @@ def _release_docs(conn: Connection, company_id: int, storage: Storage) -> list[D
         docs.append(
             DocText(r["doc_id"], r["accession_no"], r["form_type"], "EX-99.1", r["filed_at"],
                     f"earnings release (8-K EX-99.1) filed {r['filed_at']}",
-                    [c.text for c in chunk(text)])
+                    [c.text for c in chunk(text)], r["raw_path"])
         )  # fmt: skip
     return docs
 
@@ -158,6 +179,8 @@ class Extractor:
             else llm.extractor
         )
         self.system = (PROMPTS_DIR / f"{cfg.prompt_version}.md").read_text(encoding="utf-8")
+        self.table_version = cfg.table_prompt_version
+        self.table_system = (PROMPTS_DIR / f"{self.table_version}.md").read_text(encoding="utf-8")
         self.loan_version = cfg.loan_portfolio.prompt_version
         self.loan_system = (PROMPTS_DIR / f"{self.loan_version}.md").read_text(encoding="utf-8")
 
@@ -196,7 +219,7 @@ class Extractor:
         metrics = "\n".join(f"- {code}: {d}" for code, d in sorted(wanted.items()))
         user = (
             f"Company: {company}\nDocument: {doc.label} (accession {doc.accession_no})\n\n"
-            f"Metrics to extract:\n{metrics}\n\n<excerpt>\n{source}\n</excerpt>"
+            f"Metrics to extract:\n{metrics}\n\n{data_block('excerpt', source)}"
         )
         first = self._call(self.first, "text_metrics", self.system, user,
                            VALUES_SCHEMA, TextValues)  # fmt: skip
@@ -209,24 +232,95 @@ class Extractor:
         )
         return source, first, second
 
-    def loan_book(
-        self, doc: DocText, company: str, keywords: list[str], definition: str
-    ) -> tuple[str, LoanBook | None, LoanBook | None]:
-        idx = select_chunks(doc.chunks, [keywords], self.cfg.max_chars, per_group=6)
-        if not idx:
-            return "", None, None
-        source = "\n".join(doc.chunks[i] for i in idx)
+    def table_values(
+        self,
+        doc: DocText,
+        company: str,
+        metrics: dict[str, MetricDef],
+        storage: Storage,
+        dual: bool,
+    ) -> tuple[bool, list[ExtractedValue] | None, list[ExtractedValue] | None, int]:
+        """Metrics read from the document's tables by cell (D-044): (tables sent, extractor's
+        accepted values, tie-breaker's if `dual`, rejected cells). None: the call failed."""
+        if doc.raw_path is None:
+            return False, [], [], 0
+        specs = [sp for m in metrics.values() if m.extraction and (sp := m.extraction.table)]
+        terms = sorted({t for sp in specs for t in (sp.find or sp.column)})
+        grid = [t for t in tables(storage.read_bytes(doc.raw_path))
+                if any(could_pass(t, sp) for sp in specs)]  # fmt: skip
+        chosen = relevant(grid, terms, self.cfg.max_chars)
+        if not chosen:
+            return False, [], [], 0
+        by_id = {f"T{t.index}": t for t in chosen}
+        defs = "\n".join(f"- {c}: {m.extraction.definition}"
+                         for c, m in sorted(metrics.items()) if m.extraction)  # fmt: skip
+        listing = "\n\n".join(t.render() for t in chosen)
         user = (
             f"Company: {company}\nDocument: {doc.label} (accession {doc.accession_no})\n\n"
-            f"Definition: {definition}\n\n<excerpt>\n{source}\n</excerpt>"
+            f"Metrics to read:\n{defs}\n\n{data_block('tables', listing)}"
         )
-        out = [
-            self._call(
-                spec, "loan_book", self.loan_system, user, LOAN_SCHEMA, LoanBook, self.loan_version
-            )
-            for spec in (self.first, self.llm.tiebreaker)
-        ]
-        return source, out[0], out[1]
+        rejected = 0
+
+        def read(spec: ModelSpec) -> list[ExtractedValue] | None:
+            nonlocal rejected
+            out = self._call(spec, "table_metrics", self.table_system, user, TABLE_SCHEMA,
+                             TableValues, self.table_version)  # fmt: skip
+            if out is None:
+                return None
+            kept = []
+            for cell in out.values:
+                m = metrics.get(cell.metric_code)
+                table_spec = m.extraction.table if m and m.extraction else None
+                checked = check_cell(by_id, cell, table_spec) if table_spec else None
+                if checked is None or checked.value is None:
+                    rejected += 1
+                    log.info("%s %s %s r%s c%s withheld: %s", doc.label, cell.metric_code,
+                             cell.table, cell.row, cell.col,
+                             checked.reason if checked else "not requested")  # fmt: skip
+                    continue
+                kept.append(checked.value)
+            return kept
+
+        first = read(self.first)
+        second = read(self.llm.tiebreaker) if dual else []
+        return True, first, second, rejected
+
+    def loan_book(
+        self, doc: DocText, company: str, keywords: list[str], definition: str, storage: Storage
+    ) -> tuple[list[LoanRow] | None, list[LoanRow] | None]:
+        """Loan classes read by cell from the credit-portfolio tables (D-044), by both models;
+        None where a model's call failed or the document has no such table."""
+        if doc.raw_path is None:
+            return None, None
+        # Credit-portfolio tables: loans and, in the same table, nonaccrual / nonperforming.
+        grid = [t for t in tables(storage.read_bytes(doc.raw_path))
+                if any(w in t.render().lower() for w in NONACCRUAL_HEADERS)]  # fmt: skip
+        chosen = relevant(grid, keywords, self.cfg.max_chars)
+        if not chosen:
+            return None, None
+        by_id = {f"T{t.index}": t for t in chosen}
+        listing = "\n\n".join(t.render() for t in chosen)
+        user = (
+            f"Company: {company}\nDocument: {doc.label} (accession {doc.accession_no})\n\n"
+            f"Definition: {definition}\n\n{data_block('tables', listing)}"
+        )
+
+        def read(spec: ModelSpec) -> list[LoanRow] | None:
+            out = self._call(spec, "loan_book", self.loan_system, user, LOAN_TABLE_SCHEMA,
+                             LoanTable, self.loan_version)  # fmt: skip
+            if out is None:
+                return None
+            rows = []
+            for cell in out.segments:
+                row, reason = check_loan(by_id, cell)
+                if row is None:
+                    log.info("%s loan %r %s r%s withheld: %s", doc.label, cell.segment,
+                             cell.table, cell.row, reason)  # fmt: skip
+                else:
+                    rows.append(row)
+            return rows
+
+        return read(self.first), read(self.llm.tiebreaker)
 
 
 def _xbrl_values(
@@ -280,16 +374,22 @@ def process_company(
     # A document whose LLM call failed this run (not one without relevant text) must not make
     # its earlier values look stale: they would vanish from the app until a later run succeeds.
     incomplete = False
+    table_metrics = {c: m for c, m in text_metrics.items() if m.extraction and m.extraction.table}
+    quote_metrics = {c: m for c, m in text_metrics.items() if c not in table_metrics}
     for doc in sorted(docs, key=lambda d: (d.filed_at, d.accession_no)):
-        wanted = {c: m.extraction.definition for c, m in text_metrics.items() if m.extraction}
-        groups = [m.extraction.keywords for m in text_metrics.values() if m.extraction]
+        if table_metrics:
+            found += _table_candidates(doc, company, table_metrics, ex, storage, cal, stats,
+                                       start)  # fmt: skip
+            incomplete = incomplete or stats.table_failed
+        wanted = {c: m.extraction.definition for c, m in quote_metrics.items() if m.extraction}
+        groups = [m.extraction.keywords for m in quote_metrics.values() if m.extraction]
         if doc.doc_role == "EX-99.1":
             wanted |= prelim
             groups.append(PRELIMINARY_KEYWORDS)
         if not wanted:
             continue
         dual_codes = {
-            c for c, m in text_metrics.items() if m.extraction and m.extraction.dual_check
+            c for c, m in quote_metrics.items() if m.extraction and m.extraction.dual_check
         }
         source, first, second = ex.values(doc, company, wanted, groups, bool(dual_codes))
         if source and (first is None or (dual_codes and second is None)):
@@ -297,7 +397,9 @@ def process_company(
         if first is None:
             continue
         stats.documents += 1
-        convert = text_metrics | {c: listed[c] for c in prelim}
+        # Only what this path asked for: a table metric answered from a quote would skip
+        # its cell check (D-044).
+        convert = quote_metrics | {c: listed[c] for c in prelim}
         got, rejected = candidates(first.values, convert, source, cal)
         stats.rejected += rejected
         if dual_codes:
@@ -397,8 +499,32 @@ def process_company(
     if group.code in text_cfg.loan_portfolio.groups:
         resolver = SourceResolver(conn, row, labels) if labels else None
         stats.loan_segments = _loan_book(conn, ex, company_id, company, text_cfg, docs, now,
-                                         resolver, identities)  # fmt: skip
+                                         resolver, identities, storage)  # fmt: skip
     return stats
+
+
+def _table_candidates(
+    doc: DocText, company: str, metrics: dict[str, MetricDef], ex: Extractor, storage: Storage,
+    cal: FiscalCalendar, stats: Stats, start: str,
+) -> list[tuple[DocText, Candidate]]:  # fmt: skip
+    dual = any(m.extraction and m.extraction.dual_check for m in metrics.values())
+    sent, first, second, rejected = ex.table_values(doc, company, metrics, storage, dual)
+    stats.table_rejected += rejected
+    stats.table_failed = sent and (first is None or (dual and second is None))
+    if not first:
+        return []
+    stats.documents += 1
+    got, bad = candidates(first, metrics, "\n".join(v.evidence for v in first), cal)
+    stats.rejected += bad
+    if dual:
+        other = candidates(second or [], metrics, "\n".join(v.evidence for v in second or []),
+                           cal)[0]  # fmt: skip
+        dual_codes = {c for c, m in metrics.items() if m.extraction and m.extraction.dual_check}
+        single = [c for c in got if c.metric_code not in dual_codes]
+        checked, dropped = dual_checked([c for c in got if c.metric_code in dual_codes], other)
+        stats.dual_dropped += dropped
+        got = single + checked
+    return [(doc, c) for c in got if c.period_end >= start]
 
 
 def _identity_gate(
@@ -425,13 +551,40 @@ def _identity_gate(
             if not involved <= values.keys():
                 continue
             stats.identity_checked += 1
-            problem = ident.check(values)
+            problem = ident.check(values, key[0])
             if problem:
                 stats.identity_dropped += 1
                 log.warning("%s %s %s: %s; text values dropped", ticker, ident.name, key, problem)
                 drop |= {(code, *key) for code in involved & mine.keys()}
     return [r for r in rows if (r["metric_code"], r["period_type"], r["fiscal_year"],
                                 r["fiscal_quarter"]) not in drop]  # fmt: skip
+
+
+def _rolled_up(
+    rows_a: list[LoanRow], rows_b: list[LoanRow], agreed: dict[tuple[str, str], LoanRow]
+) -> dict[tuple[str, str], LoanRow]:
+    """Where the models read a segment at different levels (one gives the segment's single
+    retained-loan line, the other its classes) and both add up to the same amount, the single
+    line: its value is confirmed by both models; the classes only by one."""
+
+    def groups(rows: list[LoanRow]) -> dict[tuple[str, str], list[LoanRow]]:
+        out: dict[tuple[str, str], list[LoanRow]] = {}
+        for r in rows:
+            if (loan_key(r.segment), r.period_end) not in agreed and r.parent_segment:
+                out.setdefault((loan_key(r.parent_segment), r.period_end), []).append(r)
+        return out
+
+    ga, gb = groups(rows_a), groups(rows_b)
+    kept: dict[tuple[str, str], LoanRow] = {}
+    for key in ga.keys() & gb.keys():
+        one, many = sorted((ga[key], gb[key]), key=len)
+        if (
+            len(one) == 1
+            and len(many) > 1
+            and agree(one[0].outstanding, sum(r.outstanding for r in many))
+        ):
+            kept[(loan_key(one[0].segment), one[0].period_end)] = one[0]
+    return kept
 
 
 def _loan_book(
@@ -444,25 +597,25 @@ def _loan_book(
     now: datetime,
     resolver: SourceResolver | None,
     identities: Identities | None = None,
+    storage: Storage | None = None,
 ) -> int:
     """Loan book by class from the latest periodic report's MD&A, for the latest period and the
     prior year-end shown with it; both models must agree on each row."""
     periodic = [d for d in docs if d.doc_role == "PRIMARY"]
-    if not periodic:
+    if not periodic or storage is None:
         return 0
     doc = max(periodic, key=lambda d: (d.filed_at, d.accession_no))
     lp = text_cfg.loan_portfolio
-    source, first, second = ex.loan_book(doc, company, lp.keywords, lp.definition)
-    if first is None or second is None:
+    rows_a, rows_b = ex.loan_book(doc, company, lp.keywords, lp.definition, storage)
+    if rows_a is None or rows_b is None:
         return 0
-    rows_a, _ = loan_rows(first.segments, source)
-    rows_b, _ = loan_rows(second.segments, source)
     other = {(loan_key(r.segment), r.period_end): r for r in rows_b}
     agreed: dict[tuple[str, str], LoanRow] = {}
     for r in rows_a:
         m = other.get((loan_key(r.segment), r.period_end))
         if m is not None and agree(r.outstanding, m.outstanding):
             agreed.setdefault((loan_key(r.segment), r.period_end), r)
+    agreed |= _rolled_up(rows_a, rows_b, agreed)
     if not agreed:
         return 0
     periods = sorted({p for _, p in agreed}, reverse=True)
@@ -561,9 +714,10 @@ def loan_detail(
     methodology = (
         f"Retained loans by loan class as of {latest}{compare}, from the credit portfolio "
         f"tables in the {where}. Loans held-for-sale and loans at fair value are excluded. "
-        "Each balance and nonaccrual amount is read from the filing by two models "
-        "independently and kept only where both agree and the number appears in the quoted "
-        "table row. Share of book = class balance / sum of the classes shown; nonaccrual "
+        "Each balance and nonaccrual amount is read from the table by two models "
+        "independently, by cell; a cell is kept only where its row names the loan class, its "
+        "column header the balance or nonaccrual amount and the date, and both models agree. "
+        "Share of book = class balance / sum of the classes shown; nonaccrual "
         "ratio = nonaccrual loans / class balance (credit card loans are generally exempt from "
         "nonaccrual status, so no ratio is shown for them)."
     )

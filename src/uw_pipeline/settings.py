@@ -64,6 +64,8 @@ class Settings(BaseSettings):
     securegpt_env: str | None = None  # dv | pp | pr; default from config/securegpt.yaml
     # Turn LLM voting off (rules only), e.g. when no credentials are available.
     llm_enabled: bool = True
+    # New LLM calls per UTC day, in the active profile's currency (D-043); 0 = unlimited.
+    llm_daily_budget: float = Field(default=25.0, ge=0)
 
     @field_validator("sec_user_agent")
     @classmethod

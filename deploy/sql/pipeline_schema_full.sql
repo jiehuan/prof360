@@ -338,6 +338,20 @@ CREATE TABLE uw_pipeline.release_check (
 );
 GO
 
+IF OBJECT_ID(N'uw_pipeline.review_decision', N'U') IS NULL
+CREATE TABLE uw_pipeline.review_decision (
+	item_type NVARCHAR(20) NOT NULL, 
+	item_key NVARCHAR(100) NOT NULL, 
+	company_id INTEGER NOT NULL, 
+	decision NVARCHAR(10) NOT NULL, 
+	reviewer NVARCHAR(100) NOT NULL, 
+	note NVARCHAR(1000) NULL, 
+	decided_at DATETIMEOFFSET NOT NULL, 
+	PRIMARY KEY (item_type, item_key), 
+	FOREIGN KEY(company_id) REFERENCES uw_pipeline.company (company_id)
+);
+GO
+
 IF OBJECT_ID(N'uw_pipeline.source_document', N'U') IS NULL
 CREATE TABLE uw_pipeline.source_document (
 	doc_id INTEGER NOT NULL IDENTITY, 
@@ -389,6 +403,26 @@ CREATE TABLE uw_pipeline.xbrl_fact (
 GO
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_xbrl_fact_company_id' AND object_id = OBJECT_ID(N'uw_pipeline.xbrl_fact'))
     CREATE INDEX ix_xbrl_fact_company_id ON uw_pipeline.xbrl_fact (company_id);
+GO
+
+IF OBJECT_ID(N'uw_pipeline.board_composition', N'U') IS NULL
+CREATE TABLE uw_pipeline.board_composition (
+	company_id INTEGER NOT NULL, 
+	doc_id INTEGER NOT NULL, 
+	board_size INTEGER NULL, 
+	independent_directors INTEGER NULL, 
+	ceo_is_chair BIT NULL, 
+	lead_independent_director NVARCHAR(200) NULL, 
+	committees_json NVARCHAR(max) NOT NULL, 
+	evidence_json NVARCHAR(max) NOT NULL, 
+	model NVARCHAR(60) NOT NULL, 
+	prompt_version NVARCHAR(40) NOT NULL, 
+	input_hash NVARCHAR(64) NOT NULL, 
+	updated_at DATETIMEOFFSET NOT NULL, 
+	PRIMARY KEY (company_id), 
+	FOREIGN KEY(company_id) REFERENCES uw_pipeline.company (company_id), 
+	FOREIGN KEY(doc_id) REFERENCES uw_pipeline.source_document (doc_id)
+);
 GO
 
 IF OBJECT_ID(N'uw_pipeline.filing_section', N'U') IS NULL

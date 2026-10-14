@@ -108,6 +108,13 @@
 - 恒等式在 `config/dq_rules.yaml` 的 `metric_identities`。DQ 报 `metric_identity` 时：Error 表示库里的值不满足（XBRL 来源也会报），Warning 表示文本抽取的值因不满足被丢弃，看 textmetrics 日志里的 `text values dropped`。
 - 委托书（DEF 14A）的薪酬数据只进洞察输入，不在指标页显示。某公司没有数据时，先看它的 DEF 14A 是否带 `ecd` 标签；同一年两任 CEO 的年份不出数（不相加）。
 
+## 10b. 读表、复核、预算（Phase 14，D-043–D-046）
+
+- 表格类指标（RevPAR、贷款分类、AUM、VaR 等）由模型给出单元格坐标，程序核对后才采用；被拒绝的会在 textmetrics 日志里记 `withheld` 和原因。新公司版式不同时，先看这些原因，再调整 `metrics.yaml` 里该指标的 `table`（`column`、`scope`、`exclude_rows`）。
+- 人工复核：`uw-pipeline review` 列出待复核的项；`uw-pipeline review approve|reject <id> --reviewer '姓名' [--note '理由']`。被驳回的信号不再进入洞察。
+- 每日模型费用上限：`LLM_DAILY_BUDGET`（默认 25，按当前提供方的币种）。超过后新调用逐项失败，次日运行再补，日志有 `daily LLM budget`。
+- 稳定性检查：`python scripts/stability_check.py --runs 3 MAR JPM`（真实调用，有费用）；`--faults` 检查超时、限流、无效输出是否安全失败（无费用）。记录在 `data/reports/stability-*.json`。
+
 ## 11. 常见故障
 
 | 现象 | 原因与处理 |

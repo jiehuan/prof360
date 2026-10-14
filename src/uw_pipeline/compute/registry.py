@@ -100,12 +100,29 @@ class ConceptDef(BaseModel):
         return {k: _tag_refs(x) for k, x in v.items()}
 
 
+class TableSpec(BaseModel):
+    """Read from a table by cell coordinates and checked mechanically (decisions D-044)."""
+
+    column: list[str]  # the metric: in the column's header or the row's label, e.g. [RevPAR]
+    find: list[str] = Field(default_factory=list)  # words that pick the tables sent (default:
+    #   `column`); narrower when `column` is a common word such as Revenue
+    scope: list[list[str]] = Field(default_factory=list)  # each group: one word in the row's
+    #   label, the group heading above it or the table title, e.g. [[systemwide]]
+    exclude: list[str] = Field(default_factory=lambda: ["vs.", "vs ", "change", "variance"])
+    exclude_rows: list[str] = Field(default_factory=list)  # a subset (region, brand, ...) in
+    #   the row's label or its group heading
+    exclude_tables: list[str] = Field(  # not reported figures, wherever the table says so
+        default_factory=lambda: ["illustrative", "hypothetical", "example", "pro forma",
+                                 "sensitivity", "not reported"])  # fmt: skip
+
+
 class TextExtraction(BaseModel):
     """How an LLM finds a `kind: text` metric in filing text (Phase 5a)."""
 
     definition: str  # exact scope, e.g. "comparable systemwide worldwide RevPAR"
     keywords: list[str]  # used to pick the relevant text chunks
     dual_check: bool = False  # extractor and tie-breaker models must agree
+    table: TableSpec | None = None  # read from tables by cell coordinates instead of quotes
 
 
 class MetricDef(BaseModel):
@@ -152,7 +169,7 @@ class MetricDef(BaseModel):
             return {self.base} if self.base else set()
         exprs = [*self.formula, *([self.nm_when] if self.nm_when else [])]
         return {
-            n.id
+            n.id.removesuffix("_py")  # `x_py` = x a year earlier (compute/metrics.PRIOR_YEAR)
             for e in exprs
             for n in ast.walk(ast.parse(e, mode="eval"))
             if isinstance(n, ast.Name)

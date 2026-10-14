@@ -81,6 +81,9 @@ class IndustryGroup(BaseModel):
     # Curated metric list for this group: named sets from metrics.yaml plus extra codes.
     metric_sets: list[str] = Field(default_factory=list)
     metrics: list[str] = Field(default_factory=list)
+    # Business-model traits (D-043, e.g. lodging, bank); each adds the metric sets that
+    # `trait_metric_sets` lists for it, so a new group names its traits instead of its sets.
+    traits: list[str] = Field(default_factory=list)
     # Years of older 10-Ks whose MD&A is kept for text-metric history (Phase 8, e.g. 5 years of
     # NIM / CET1 / NPL for banks). 0 = only the documents in the normal text window.
     mdna_history_years: int = 0
@@ -97,11 +100,19 @@ class IndustryConfig(BaseModel):
     groups: dict[str, IndustryGroup]
     sic: dict[int, str] = Field(default_factory=dict)
     sic_ranges: list[SicRange] = Field(default_factory=list)
+    trait_metric_sets: dict[str, list[str]] = Field(default_factory=dict)
+    common_metric_sets: list[str] = Field(default_factory=list)  # every group (governance)
 
     @model_validator(mode="after")
     def _check_refs(self) -> IndustryConfig:
         for code, group in self.groups.items():
             group.code = code
+            unknown_traits = set(group.traits) - self.trait_metric_sets.keys()
+            if unknown_traits:
+                raise ValueError(f"group {code}: unknown traits {sorted(unknown_traits)}")
+            extra = [*self.common_metric_sets,
+                     *(s for t in group.traits for s in self.trait_metric_sets[t])]  # fmt: skip
+            group.metric_sets = list(dict.fromkeys([*group.metric_sets, *extra]))
         referenced = {self.default_group, *self.sic.values(), *(r.group for r in self.sic_ranges)}
         unknown = referenced - self.groups.keys()
         if unknown:

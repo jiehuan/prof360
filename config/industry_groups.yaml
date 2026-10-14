@@ -6,62 +6,77 @@
 
 default_group: UNCLASSIFIED
 
+# Traits (decisions D-043): business-model properties that decide metric sets. A group's sets
+# are its `metric_sets`, plus `common_metric_sets`, plus the sets of each of its `traits`.
+common_metric_sets: [GOVERNANCE]
+trait_metric_sets:
+  bank: [BANK_CORE, BANK_REGULATORY]
+  lodging: [HOTEL_OPERATING]
+  contract_revenue: [CONTRACT_REVENUE]   # remaining performance obligations (RPO)
+  manufacturing: [MANUFACTURING_OPERATING]
+  captive_finance: []                    # debt includes a finance arm (Ford Credit): see coverage
+
 groups:
   UNCLASSIFIED:
     label: Unclassified
     is_financial: false
-    metric_sets: [GOVERNANCE]
+    metric_sets: []
   HOTELS:
     label: Hotels & Lodging
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE, HOTEL_OPERATING, GOVERNANCE]
+    metric_sets: [COMMERCIAL_CORE]
+    traits: [lodging]
   AIRLINES:
     label: Airlines
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE, GOVERNANCE]
+    metric_sets: [COMMERCIAL_CORE]
   AUTOMOTIVE:
     label: Automotive Manufacturing
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE, GOVERNANCE]
+    metric_sets: [COMMERCIAL_CORE]
+    traits: [manufacturing, captive_finance]
   PHARMA:
     label: Pharmaceuticals
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE, GOVERNANCE]
+    metric_sets: [COMMERCIAL_CORE]
   BANKS:
     label: Banks
     is_financial: true
-    metric_sets: [BANK_CORE, BANK_REGULATORY, GOVERNANCE]
+    metric_sets: []
+    traits: [bank]
     mdna_history_years: 5   # Performance Trends: 5 years of NIM / CET1 / NPL (Phase 8)
   # Groups with no metric set get one when their first company is onboarded.
   CREDIT:
     label: Non-depository Credit
     is_financial: true
-    metric_sets: [GOVERNANCE]
+    metric_sets: []
   BROKER_DEALERS:
     label: Securities & Brokerage
     is_financial: true
-    metric_sets: [GOVERNANCE]
+    metric_sets: []
   # Bank-style FI modules (CET1, NIM, loan book) don't fit insurers. See decisions D-008.
   INSURANCE:
     label: Insurance
     is_financial: false
-    metric_sets: [GOVERNANCE]
+    metric_sets: []
   RETAIL:
     label: Retail
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE, GOVERNANCE]
+    metric_sets: [COMMERCIAL_CORE]
   TELECOM:
     label: Telecommunications
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE, GOVERNANCE]
+    metric_sets: [COMMERCIAL_CORE]
+    traits: [contract_revenue]
   MEDIA:
     label: Media & Broadcasting
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE, GOVERNANCE]
+    metric_sets: [COMMERCIAL_CORE]
   SEMICONDUCTORS:
     label: Semiconductors & Related Devices
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE, GOVERNANCE]
+    metric_sets: [COMMERCIAL_CORE]
+    traits: [contract_revenue]
 
 # Exact SIC codes (MVP companies).
 sic:

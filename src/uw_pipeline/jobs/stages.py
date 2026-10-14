@@ -18,13 +18,14 @@ from uw_pipeline.clients.securegpt import SecureGPTClient, load_securegpt_config
 from uw_pipeline.clients.storage import make_storage
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig, load_companies, load_industry_config
-from uw_pipeline.enrich.llm import LLMConfig, load_llm_config
+from uw_pipeline.enrich.llm import DailyBudget, LLMConfig, load_llm_config
 from uw_pipeline.enrich.package import load_insights_config
 from uw_pipeline.enrich.sources import load_source_labels
 from uw_pipeline.enrich.text_metrics import load_text_config
 from uw_pipeline.jobs.run_company import TaskResult, run_company_stage
 from uw_pipeline.jobs.run_documents import run_documents_stage
 from uw_pipeline.jobs.run_dq import run_dq_stage
+from uw_pipeline.jobs.run_governance import run_governance_stage
 from uw_pipeline.jobs.run_insights import run_insights_stage
 from uw_pipeline.jobs.run_metric_detail import run_metric_detail_stage
 from uw_pipeline.jobs.run_news import load_news_config, run_news_stage
@@ -116,6 +117,9 @@ class StageRunner:
                     s.anthropic_api_key.get_secret_value(), workspace_id=s.anthropic_workspace_id
                 )
             if client is not None:
+                # Daily spend cap in the profile's currency (D-043); 0 = unlimited.
+                client.budget = DailyBudget(s.llm_daily_budget, cfg.pricing,  # type: ignore[attr-defined]
+                                            cfg.pricing_currency)  # fmt: skip
                 self._llm = (client, cfg)
         return self._llm
 
@@ -166,6 +170,8 @@ class StageRunner:
                 labels=load_source_labels(s.config_dir),
                 identities=load_dq_config(s.config_dir).metric_identities,
             )
+        if stage == "governance":
+            return lambda c: run_governance_stage(c, self.llm, self.storage, e)
         if stage == "signals":
             return lambda c: run_signals_stage(c, self.sec, self.signal_rules, e, llm=self.llm)
         if stage == "dq":

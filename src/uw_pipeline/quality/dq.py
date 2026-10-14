@@ -33,6 +33,7 @@ from uw_pipeline.schema import (
     metric_source,
     metric_value,
     release_check,
+    review_decision,
     signal,
     source_document,
 )
@@ -96,6 +97,7 @@ class DqConfig(BaseModel):
     source_coverage: _Rule
     link_integrity: _Rule
     metric_identities: Identities = Identities()
+    debt_current_portion: _Rule = _Rule(severity="Warning")
 
 
 def load_dq_config(config_dir: Path) -> DqConfig:
@@ -272,6 +274,22 @@ def release_vs_xbrl(
     return out
 
 
+def debt_current_portion(values: list[dict[str, Any]], cfg: _Rule) -> list[Finding]:
+    """Latest total debt computed without a current portion (no current tag): understated."""
+    debt = [v for v in values if v["metric_code"] == "total_debt" and v["value"] is not None]
+    if not debt:
+        return []
+    latest = max(debt, key=lambda v: (v["fiscal_year"], v["fiscal_quarter"], v["period_type"]))
+    formula = latest.get("formula") or ""
+    if "noncurrent + short_term_borrowings" not in formula or "_current" in formula:
+        return []
+    label = _label(latest["period_type"], latest["fiscal_year"], latest["fiscal_quarter"])
+    return [Finding("debt_current_portion", cfg.severity,
+                    f"total debt {label} ({latest['value'] / 1e6:,.0f}M) has no current portion: "
+                    "the filing tags none, so debt due within a year is missing", "total_debt",
+                    label)]  # fmt: skip
+
+
 def _amount(v: float) -> str:
     """Amounts in millions; ratios (capital ratios, cross-checked since D-042) as written."""
     return f"{v / 1e6:,.0f}M" if abs(v) >= 1e4 else f"{v:.4g}"
@@ -291,7 +309,7 @@ def metric_identities(
     out = []
     for key in sorted(by_period, key=lambda k: (k[1], k[2]), reverse=True)[: cfg.periods]:
         for ident in cfg.checks:
-            problem = ident.check(by_period[key])
+            problem = ident.check(by_period[key], key[0])
             if problem:
                 label = _label(*key)
                 out.append(Finding("metric_identity", cfg.severity,
@@ -357,7 +375,10 @@ def stale_filings(
 def review_queue(conn: Connection, company_id: int, cfg: ReviewQueue) -> list[Finding]:
     rows = conn.execute(
         select(signal.c.title, signal.c.event_date, signal.c.review_status)
-        .where(signal.c.company_id == company_id, signal.c.review_status.in_(cfg.statuses))
+        .where(signal.c.company_id == company_id, signal.c.review_status.in_(cfg.statuses),
+               signal.c.signal_key.not_in(  # decided by a reviewer (D-045)
+                   select(review_decision.c.item_key)
+                   .where(review_decision.c.item_type == "SIGNAL")))
         .order_by(desc(signal.c.event_date))
     ).all()  # fmt: skip
     return [
@@ -496,6 +517,7 @@ def run_rules(
         *negative_value(values, cfg.negative_value),
         *quarters_vs_year(values, cfg.quarters_vs_year),
         *release_vs_xbrl(conn, company_id, cfg.release_vs_xbrl, stamp),
+        *debt_current_portion(values, cfg.debt_current_portion),
         *metric_identities(
             conn, company_id, values, cfg.metric_identities, stamp, cfg.llm_drop_rate.days
         ),

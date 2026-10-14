@@ -26,7 +26,9 @@ preliminary:
 
 # Loan book by loan class (BANKS only; Phase 8, decisions D-036). Both models must agree.
 loan_portfolio:
-  prompt_version: loan_book_v2
+  # Read by cell from the credit-portfolio tables (D-044); loan_book_v2 read quotes. v2 adds
+  # tables with classes as columns (JPM wholesale).
+  prompt_version: loan_table_v2
   groups: [BANKS]
   keywords: [loans retained, retained loans, residential real estate, nonaccrual loans,
              credit portfolio, loan portfolio]

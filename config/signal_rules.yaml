@@ -105,3 +105,15 @@ metrics:
     severity: Warning
     title: CEO pay rose while shareholder return fell
     min_pay_growth: 0.25   # CEO total compensation, year on year
+  # Board composition from the proxy statement (D-045); facts both models agreed on only.
+  ceo_chair_without_lead_director:
+    category: Governance & Leadership
+    subcategory: Board Structure
+    severity: Warning
+    title: CEO is also chair, with no lead independent director
+  board_independence:
+    category: Governance & Leadership
+    subcategory: Board Structure
+    severity: Warning
+    title: Less than two-thirds of the board is independent
+    min_ratio: 0.667

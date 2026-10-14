@@ -65,10 +65,17 @@ class PayRule(SignalSpec):
     min_pay_growth: float = 0.25  # CEO total compensation, year on year
 
 
+class IndependenceRule(SignalSpec):
+    min_ratio: float = 2 / 3  # independent directors / board size
+
+
 class MetricRules(BaseModel):
     negative_equity: SignalSpec
     buybacks_with_negative_equity: BuybackRule
     pay_vs_performance: PayRule | None = None
+    # Board composition from the proxy (D-045).
+    ceo_chair_without_lead_director: SignalSpec | None = None
+    board_independence: IndependenceRule | None = None
 
 
 class SignalRules(BaseModel):

@@ -12,6 +12,7 @@ from sqlalchemy import Connection
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.enrich.llm import PROMPTS_DIR, ModelSpec, cached_call
 from uw_pipeline.enrich.schemas import strict_json_schema
+from uw_pipeline.enrich.untrusted import one_line
 from uw_pipeline.normalize.news import Doc
 
 
@@ -59,7 +60,8 @@ def event_pairs(
         if len(batch) < 2:
             break
         lines = [
-            f"{d.key} | {d.published_at:%Y-%m-%d} | {sources.get(d.key, '')} | {d.title}"
+            f"{d.key} | {d.published_at:%Y-%m-%d} | {one_line(sources.get(d.key, ''))} | "
+            f"{one_line(d.title)}"
             for d in batch
         ]
         raw = cached_call(

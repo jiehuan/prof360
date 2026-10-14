@@ -21,6 +21,7 @@ from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.load.upsert import delete_keys, upsert
 from uw_pipeline.normalize.xbrl_facts import text_facts_from_instance
 from uw_pipeline.schema import (
+    board_composition,
     filing_section,
     metric_value,
     signal,
@@ -32,6 +33,7 @@ from uw_pipeline.signals.detect import (
     Doc,
     auditor_info,
     auditor_signals,
+    board_signals,
     eight_k_signals,
     keyword_signals,
     metric_signals,
@@ -137,8 +139,16 @@ def detect_company(
     ]
     quarterly = [v for v in values if v["period_type"] == "Q"]
     by_accn = {d.accession_no: d.doc_id for d in docs if d.doc_role == "PRIMARY"}
+    board = conn.execute(
+        select(board_composition, source_document.c.filed_at, source_document.c.accession_no)
+        .join(source_document, source_document.c.doc_id == board_composition.c.doc_id)
+        .where(board_composition.c.company_id == company_id)
+    ).mappings().first()  # fmt: skip
+    governance = (board_signals(dict(board), board["filed_at"], board["accession_no"], rules)
+                  if board else [])  # fmt: skip
     for s in [*metric_signals(quarterly, rules), *pay_signals(values, rules)]:
         detected.append(replace(s, doc_id=by_accn.get(s.accession_no or "")))
+    detected += [replace(s, doc_id=board["doc_id"]) for s in governance] if board else []
     return company_id, detected, votes
 
 

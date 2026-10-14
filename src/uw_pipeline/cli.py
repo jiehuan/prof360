@@ -10,7 +10,7 @@ from enum import StrEnum
 from typing import Annotated
 
 import typer
-from sqlalchemy import select
+from sqlalchemy import Engine, select
 
 from uw_pipeline.clients.db import app_engine, ensure_schema, pipeline_engine
 from uw_pipeline.compute.coverage import company_coverage, load_notes, render_markdown
@@ -37,6 +37,7 @@ class Stage(StrEnum):
     transcripts = "transcripts"
     news = "news"
     textmetrics = "textmetrics"
+    governance = "governance"
     signals = "signals"
     insights = "insights"
     metricdetail = "metricdetail"
@@ -48,7 +49,8 @@ class Stage(StrEnum):
 # Default order for manual runs (scheduled jobs list their stages in config/jobs.yaml).
 STAGE_ORDER = [
     Stage.company, Stage.facts, Stage.compute, Stage.documents,
-    Stage.transcripts, Stage.news, Stage.scores, Stage.textmetrics, Stage.signals,
+    Stage.transcripts, Stage.news, Stage.scores, Stage.textmetrics, Stage.governance,
+    Stage.signals,
     Stage.insights,
     Stage.metricdetail, Stage.publish, Stage.dq,
 ]  # fmt: skip
@@ -296,6 +298,73 @@ def dq_report(
         if r.severity != "Info":
             typer.echo(f"  {r.severity:<7} {r.ticker:<5} {r.rule_id:<17} {r.message}")
     typer.echo(f"{counts.get('Info', 0)} items in the review queue (Info), see the report")
+
+
+review_app = typer.Typer(
+    no_args_is_help=False,
+    add_completion=False,
+    help="Human review of disputed signals and identity breaks (D-045).",
+)
+app.add_typer(review_app, name="review")
+
+
+def _review_engine() -> Engine:
+    engine = pipeline_engine(Settings())
+    if engine.dialect.name == "sqlite":
+        ensure_schema(engine)
+    return engine
+
+
+@review_app.callback(invoke_without_command=True)
+def review_list(ctx: typer.Context) -> None:
+    """List the open items, with evidence and source; decide with approve / reject."""
+    if ctx.invoked_subcommand is not None:
+        return
+    from uw_pipeline.jobs.run_review import pending
+
+    with _review_engine().connect() as conn:
+        items = pending(conn)
+    if not items:
+        typer.echo("Nothing to review.")
+        return
+    for i in items:
+        typer.echo(f"{i.short}  {i.ticker:<5} {i.status:<9} {i.title}")
+        typer.echo(f"      evidence: {i.evidence}")
+        typer.echo(f"      source:   {i.source}")
+    typer.echo(f"\n{len(items)} open. Decide with: uw-pipeline review approve|reject <id> "
+               "--reviewer 'First Last' [--note '...']")  # fmt: skip
+
+
+def _decide(item_id: str, decision: str, reviewer: str, note: str | None) -> None:
+    from uw_pipeline.jobs.run_review import ReviewError, decide
+
+    try:
+        with _review_engine().begin() as conn:
+            item = decide(conn, item_id, decision, reviewer, note, datetime.now(UTC))
+    except ReviewError as exc:
+        typer.echo(f"Not recorded: {exc}", err=True)
+        raise typer.Exit(1) from None
+    typer.echo(f"{decision.lower()} {item.short} ({item.ticker}: {item.title}) by {reviewer}")
+
+
+@review_app.command("approve")
+def review_approve(
+    item_id: Annotated[str, typer.Argument(help="Id from `uw-pipeline review`")],
+    reviewer: Annotated[str, typer.Option(help="Your name; required")],
+    note: Annotated[str | None, typer.Option(help="Why")] = None,
+) -> None:
+    """Keep the item as the pipeline has it."""
+    _decide(item_id, "APPROVED", reviewer, note)
+
+
+@review_app.command("reject")
+def review_reject(
+    item_id: Annotated[str, typer.Argument(help="Id from `uw-pipeline review`")],
+    reviewer: Annotated[str, typer.Option(help="Your name; required")],
+    note: Annotated[str | None, typer.Option(help="Why")] = None,
+) -> None:
+    """Reject it: a rejected signal leaves the insight input and the review queue."""
+    _decide(item_id, "REJECTED", reviewer, note)
 
 
 @app.command("init-db")

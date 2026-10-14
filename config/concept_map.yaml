@@ -63,6 +63,10 @@ concepts:
     tags: [us-gaap:LongTermDebtCurrent]
   short_term_borrowings:
     tags: [us-gaap:ShortTermBorrowings, us-gaap:CommercialPaper]
+  # Finance lease liabilities, added only to the LongTermDebt family, which excludes them
+  # (the ...AndCapitalLeaseObligations family already includes them). Decisions D-046.
+  finance_lease_liabilities:
+    tags: [us-gaap:FinanceLeaseLiability]
   equity:
     tags:
       - us-gaap:StockholdersEquity
@@ -104,3 +108,13 @@ concepts:
   neo_avg_total_comp: {tags: [ecd:NonPeoNeoAvgTotalCompAmt]}
   tsr_value_100: {tags: [ecd:TotalShareholderRtnAmt]}
   peer_tsr_value_100: {tags: [ecd:PeerGroupTotalShareholderRtnAmt]}
+
+  # -- Bank profitability and credit (decisions D-043) --------------------------------------------
+  total_assets: {tags: [us-gaap:Assets]}
+  net_interest_income: {tags: [us-gaap:InterestIncomeExpenseNet]}
+  allowance_for_loan_losses:
+    tags:
+      - us-gaap:FinancingReceivableAllowanceForCreditLossExcludingAccruedInterest
+      - us-gaap:FinancingReceivableAllowanceForCreditLosses
+  # Remaining performance obligations (ASC 606): contracted revenue not yet recognised.
+  rpo: {tags: [us-gaap:RevenueRemainingPerformanceObligation]}

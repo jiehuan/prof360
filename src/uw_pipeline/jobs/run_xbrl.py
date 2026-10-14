@@ -277,7 +277,10 @@ def compute_company(
     # The fiscal-year label offset is learned from all facts, then pre-history is dropped.
     cal = learn_calendar(facts, fye_mmdd)
     facts = drop_before(facts, history_start)
-    periods = standardize(facts, cal)
+    restated: list[str] = []
+    periods = standardize(facts, cal, restated)
+    for note in restated:  # held at the basis of their fiscal year (D-046)
+        log.info("restated after its year was reported, year's basis kept: %s", note)
     return periods, compute_metrics(periods, creg)
 
 

@@ -39,6 +39,7 @@ from uw_pipeline.enrich.schemas import (
     StrategicInsights,
 )
 from uw_pipeline.enrich.sources import SourceLabels, SourceRef, SourceResolver
+from uw_pipeline.enrich.untrusted import one_line
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.schema import (
@@ -94,7 +95,7 @@ def summarise_activities(
     ).all()  # fmt: skip
     todo = []
     for r in rows:
-        text = f"{r.published_at:%Y-%m-%d} | {r.title} | {r.av_summary or ''}"
+        text = f"{r.published_at:%Y-%m-%d} | {one_line(r.title)} | {one_line(r.av_summary or '')}"
         if r.summary_input_hash != _hash(version, text):
             todo.append((r.activity_id, text))
     done = 0

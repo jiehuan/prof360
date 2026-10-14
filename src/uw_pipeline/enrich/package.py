@@ -7,6 +7,7 @@ quote against exactly that item.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -18,11 +19,14 @@ from sqlalchemy import Connection, desc, or_, select
 from uw_pipeline.compute.registry import MetricDef
 from uw_pipeline.enrich.llm import ModelSpec, load_llm_config
 from uw_pipeline.enrich.sources import SourceRef
+from uw_pipeline.enrich.untrusted import data_block, one_line
 from uw_pipeline.schema import (
     activity,
+    board_composition,
     filing_section,
     metric_value,
     news_risk_score,
+    review_decision,
     signal,
     source_document,
 )
@@ -105,9 +109,9 @@ class Package:
             parts.append(f"\n## {title}")
             for s in items:
                 if kind in ("DOCUMENT", "TRANSCRIPT"):
-                    parts.append(f'<item id="{s.id}" source="{s.label}">\n{s.text}\n</item>')
+                    parts.append(data_block("item", s.text, id=s.id, source=one_line(s.label)))
                 else:
-                    parts.append(f"{s.id} | {s.text}")
+                    parts.append(f"{s.id} | {one_line(s.text)}")
         return "\n".join(parts)
 
 
@@ -140,6 +144,24 @@ def _cut(text: str, limit: int) -> str:
 
 
 # -- building ----------------------------------------------------------------------------------
+
+
+def board_text(board: Any) -> str:
+    """Board facts (D-045) with the proxy's own words, so insights can quote them."""
+    evidence = json.loads(board["evidence_json"])
+    lines = []
+    for key, label in (("board_size", "Directors"), ("independent_directors", "Independent"),
+                       ("ceo_is_chair", "CEO is also chair"),
+                       ("lead_independent_director", "Lead independent director")):  # fmt: skip
+        value = board[key]
+        if value is None:
+            continue
+        shown = {True: "yes", False: "no", "": "none"}.get(value, value) \
+            if isinstance(value, bool | str) else value  # fmt: skip
+        lines.append(f'{label}: {shown}. "{evidence.get(key, "")}"')
+    for c in json.loads(board["committees_json"]):
+        lines.append(f"{c['name']} chair: {c['chair']}")
+    return "\n".join(lines)
 
 
 def build_package(
@@ -186,10 +208,15 @@ def build_package(
             )
         )  # fmt: skip
 
+    rejected = select(review_decision.c.item_key).where(
+        review_decision.c.item_type == "SIGNAL", review_decision.c.decision == "REJECTED"
+    )
     for i, s in enumerate(
         conn.execute(
             select(signal)
-            .where(signal.c.company_id == company_id)
+            .where(
+                signal.c.company_id == company_id, signal.c.signal_key.not_in(rejected)
+            )  # a reviewer rejected it (D-045)
             .order_by(desc(signal.c.event_date), signal.c.signal_id)
         ).mappings(),
         start=1,
@@ -227,6 +254,19 @@ def build_package(
                 text=_cut(hit.text, limit), doc_id=hit.doc_id, section_code=code,
             )
         )  # fmt: skip
+
+    board = conn.execute(
+        select(board_composition, source_document.c.filed_at)
+        .join(source_document, source_document.c.doc_id == board_composition.c.doc_id)
+        .where(board_composition.c.company_id == company_id)
+    ).mappings().first()  # fmt: skip
+    if board is not None:
+        text = board_text(board)
+        if text:
+            e += 1
+            pkg.add(Source(id=f"E{e}", kind="DOCUMENT",
+                           label=f"DEF 14A filed {board['filed_at']}, board composition",
+                           text=text, doc_id=board["doc_id"]))  # fmt: skip
 
     transcripts = conn.execute(
         select(filing_section.c.text, source_document.c.doc_id, source_document.c.accession_no,

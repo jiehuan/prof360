@@ -630,3 +630,38 @@ news_risk_score = Table(
     Column("run_id", Integer),
     Column("created_at", DateTime(timezone=True), nullable=False),
 )
+
+# Board composition from the latest proxy statement (DEF 14A), one row per company (decisions
+# D-045). Each fact holds only where both models read it the same way and its quote is found in
+# the proxy; otherwise it is NULL. `evidence_json`: {fact: quote}.
+board_composition = Table(
+    "board_composition",
+    metadata,
+    Column("company_id", Integer, ForeignKey("company.company_id"), primary_key=True),
+    Column("doc_id", Integer, ForeignKey("source_document.doc_id"), nullable=False),
+    Column("board_size", Integer),
+    Column("independent_directors", Integer),
+    Column("ceo_is_chair", Boolean),
+    Column("lead_independent_director", Unicode(200)),  # name; NULL when there is none
+    Column("committees_json", UnicodeText, nullable=False),  # [{"name", "chair"}]
+    Column("evidence_json", UnicodeText, nullable=False),
+    Column("model", Unicode(60), nullable=False),
+    Column("prompt_version", Unicode(40), nullable=False),
+    Column("input_hash", Unicode(64), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+)
+
+# Human decisions on items the pipeline could not settle (`uw-pipeline review`, decisions D-045):
+# DISPUTED / OVERRULED signals and identity breaks. Only a named reviewer decides; a rejected
+# signal is left out of insights and the review queue.
+review_decision = Table(
+    "review_decision",
+    metadata,
+    Column("item_type", Unicode(20), primary_key=True),  # SIGNAL | IDENTITY
+    Column("item_key", Unicode(100), primary_key=True),  # signal_key, or dq rule + period
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False),
+    Column("decision", Unicode(10), nullable=False),  # APPROVED | REJECTED
+    Column("reviewer", Unicode(100), nullable=False),
+    Column("note", Unicode(1000)),
+    Column("decided_at", DateTime(timezone=True), nullable=False),
+)

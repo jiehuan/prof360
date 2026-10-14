@@ -93,6 +93,28 @@ def test_restatement_latest_filing_wins() -> None:
     assert out.iloc[0]["accn"] == "q1-2026"
 
 
+def test_a_quarter_restated_after_its_year_keeps_the_years_basis() -> None:
+    """LUV capex (D-035, D-046): the 2026 10-Qs restate 2025 Q1 while FY2025 stays as reported.
+    Q1 keeps the basis of the year, so the quarters still add up to it; the next 10-K, which
+    restates the year, moves the whole year to the new basis."""
+    q1 = fact("Capex", "2025-01-01", "2025-03-31", 501, filed="2025-04-24", accn="q1")
+    q2 = fact("Capex", "2025-01-01", "2025-06-30", 1136, filed="2025-07-24", accn="q2")  # YTD
+    q3 = fact("Capex", "2025-01-01", "2025-09-30", 1800, filed="2025-10-23", accn="q3")  # YTD
+    fy = fact("Capex", "2025-01-01", "2025-12-31", 2673, form="10-K", filed="2026-02-05",
+              accn="k")  # fmt: skip
+    restated = fact("Capex", "2025-01-01", "2025-03-31", 527, filed="2026-04-24", accn="q1-26")
+    found: list[str] = []
+    out = values(standardize(frame(q1, q2, q3, fy, restated), DEC, found), "Q")
+    assert out[(2025, 1)] == (501, "REPORTED")
+    assert sum(v for (fy_, _), (v, _) in out.items() if fy_ == 2025) == 2673
+    assert found and "527" in found[0]
+    # The next 10-K restates FY2025 (comparative): the restated quarter now matches its year.
+    fy_new = fact("Capex", "2025-01-01", "2025-12-31", 2699, form="10-K", filed="2027-02-04",
+                  accn="k2")  # fmt: skip
+    out = values(standardize(frame(q1, q2, q3, fy, restated, fy_new), DEC), "Q")
+    assert out[(2025, 1)] == (527, "REPORTED")
+
+
 def test_instants_map_to_quarter_and_fy() -> None:
     facts = frame(
         fact("Cash", None, "2025-09-30", 5),

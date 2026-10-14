@@ -33,6 +33,7 @@ class Identity(BaseModel):
     right: str | None = None  # an expression of metric codes: + - * / and parentheses
     tolerance: float = 0.05
     ascending: list[str] = Field(default_factory=list)
+    annualize: list[str] = Field(default_factory=list)  # flows x4 in a quarter (NIM, D-044)
 
     @model_validator(mode="after")
     def _shape(self) -> Identity:
@@ -50,10 +51,12 @@ class Identity(BaseModel):
                  if isinstance(n, ast.Name)}  # fmt: skip
         return {self.left} | names
 
-    def check(self, values: Mapping[str, float]) -> str | None:
+    def check(self, values: Mapping[str, float], period_type: str = "FY") -> str | None:
         """None when it holds or a value is missing; otherwise what is wrong."""
         if not self.metrics() <= values.keys():
             return None
+        if period_type == "Q" and self.annualize:
+            values = {k: v * 4 if k in self.annualize else v for k, v in values.items()}
         if self.ascending:
             pairs = zip(self.ascending, self.ascending[1:], strict=False)
             for a, b in pairs:
