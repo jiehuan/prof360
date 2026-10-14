@@ -10,7 +10,7 @@
 - 删外键：所有指向 alpha_Transcripts、alpha_run、alpha_NewsArticle 的外键
 
 新列都允许 NULL；两个 isActive 是 NOT NULL DEFAULT 1，现有行都算当前版本。alpha_* 表由管线取代，以后没有程序写它们。引用它们的列（TranscriptsId、runId、News.ArticleId）现在存管线自己的 id，外键不删的话写入会失败。旧表删不删由你决定。
-管线自己的表（pipeline_schema_full.sql）：34 张，全部是新表。
+管线自己的表（pipeline_schema_full.sql）：36 张，全部是新表。
 
 【需要你做的】按顺序做，五步都完成后管线就可以第一次运行。
 1. 确认配置值（dv/pp/pr 各一套，config/azure.yaml 里现在是占位值）：
@@ -34,3 +34,9 @@
 - 请不要手动修改或删除管线写入的行。被删的行下次发布时会以新的 id 重新插入，用户对旧 id 做的标记（比如追问问题的 flag）会对不上。
 - 管线不碰用户相关的表（收藏、浏览记录、偏好），也不写 Company.logo。
 - 请转告 BFF：KeyInsights、StrategicRisk、FollowUpQuestions 只读 isActive = 1 的行；来源类字段存 JSON 列表 [{"title","url","date"}]；字段对照见 docs/schema-contract.md。
+
+【更新 2026-10-14（Phase 14）】
+- 管线表新增 2 张：board_composition（董事会构成，从委托书读出）和 review_decision（人工复核记录）。共 36 张。
+- 应用表没有改动，app_schema_changes.sql 和 app_schema_full.sql 不变。
+- 如果已经执行过 pipeline_schema_full.sql：重新执行一次即可。脚本只创建不存在的表，已有的表和数据不受影响。权限沿用第 2 步，不需要新的授权。
+- 应用库里 metrics 会多 3 行（ROA、ROE、贷款损失准备率），由管线发布时写入，不需要你处理。

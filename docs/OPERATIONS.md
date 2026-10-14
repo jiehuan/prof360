@@ -111,9 +111,11 @@
 ## 10b. 读表、复核、预算（Phase 14，D-043–D-046）
 
 - 表格类指标（RevPAR、贷款分类、AUM、VaR 等）由模型给出单元格坐标，程序核对后才采用；被拒绝的会在 textmetrics 日志里记 `withheld` 和原因。新公司版式不同时，先看这些原因，再调整 `metrics.yaml` 里该指标的 `table`（`column`、`scope`、`exclude_rows`）。
+- 董事会构成：`governance` 阶段（在 textmetrics 之后）读最新的委托书（DEF 14A），两个模型一致且引文能在原文找到的才保存，否则为空。没有委托书的公司（例如 SKYD）显示 `no proxy statement`，属于正常。单独重跑：`run --ticker MAR --stage governance`，之后跑 `--stage signals` 更新董事会信号。
 - 人工复核：`uw-pipeline review` 列出待复核的项；`uw-pipeline review approve|reject <id> --reviewer '姓名' [--note '理由']`。被驳回的信号不再进入洞察。
 - 每日模型费用上限：`LLM_DAILY_BUDGET`（默认 25，按当前提供方的币种）。超过后新调用逐项失败，次日运行再补，日志有 `daily LLM budget`。
-- 稳定性检查：`python scripts/stability_check.py --runs 3 MAR JPM`（真实调用，有费用）；`--faults` 检查超时、限流、无效输出是否安全失败（无费用）。记录在 `data/reports/stability-*.json`。
+- 稳定性检查：`python scripts/stability_check.py --runs 3 MAR JPM`（真实调用，有费用）；`--faults` 检查超时、限流、无效输出是否安全失败（无费用）。记录在 `data/reports/stability-*.json`。结果里同一个值数字不同才是问题；某个值在一次运行里有、另一次没有，是校验没通过被扣下，属于覆盖率波动。
+- 贷款分类：两个模型都要读出同一个数才保存。两个模型读的层级不同（一个给整个批发贷款一行，另一个给分类）时，只要分类加起来等于那一行，就保存那一行（JPM 显示为 Wholesale / Loans retained）。
 
 ## 11. 常见故障
 
@@ -130,6 +132,9 @@
 | `coverage-report` 列出 UNEXPLAINED | 要么修正 tag 映射，要么在 `coverage_notes.yaml` 里写明原因 |
 | DQ 报出 `detail_coverage` | 没跑 `metricdetail`，或模型输出的数字没通过校验被丢弃。重跑 `--stage metricdetail`；仍然缺失时看日志里的 `metric relevance dropped` |
 | DQ 报出 `link_integrity` | 关联指向了已经被替换的洞察。重跑 `--stage insights --stage metricdetail`（输出来自缓存，不产生费用） |
+| DQ 报出 `metric_identity`（Error） | 存下的值违反了指标关系（例如 CET1 > Tier 1）。核对原始文件；确认后用 `uw-pipeline review` 记下结论 |
+| DQ 报出 `debt_current_portion`（Warning） | 公司没有标注一年内到期的债务，总债务只含长期部分（例如 Macy's）。属于数据缺口，不需要处理 |
+| 日志里出现 `daily LLM budget` | 当天新调用超过 `LLM_DAILY_BUDGET`。未完成的项目第二天会自动补上；需要当天补完时临时调高该变量 |
 | DQ 报出 `source_coverage`（Info） | 洞察只引用了电话会议记录，没有公开链接，属于预期情况 |
 
 ## 12. 密钥和费用

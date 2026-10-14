@@ -6,7 +6,7 @@ done; Phase 10 planned, on hold). Related documents:
 | Document | Holds |
 |---|---|
 | `docs/PLAN.md` | Plan of record, phase checklists, open questions |
-| `docs/decisions.md` | Every design decision with its reason (D-001 … D-041), cited below as D-xxx |
+| `docs/decisions.md` | Every design decision with its reason (D-001 … D-046), cited below as D-xxx |
 | `docs/OPERATIONS.md` | Day-to-day operations, troubleshooting (Chinese) |
 | `docs/schema-contract.md` | Application tables as the BFF reads them |
 | `CLAUDE.md` | Commands and coding conventions |
@@ -20,8 +20,9 @@ designed in and tested:
 
 - **Traceable.** Every value and insight links to a document (accession, URL, section) or
   metric row. LLM output is stored only after schema validation and grounding (§8).
-- **Industry-aware.** Metric sets are curated per industry group in `config/`; bank modules
-  (NIM, CET1, NPL, loan book) never appear for non-banks.
+- **Industry-aware.** Metric sets are curated per industry group in `config/`, plus trait
+  sets (bank, lodging, contract revenue, manufacturing, captive finance) a group opts into;
+  bank modules (NIM, CET1, NPL, loan book) never appear for non-banks.
 - **Idempotent.** Natural-key upserts; a rerun on unchanged input writes nothing and calls no
   LLM.
 - **Incremental.** Raw responses are cached; LLM calls are cached by input hash; insights are
@@ -48,19 +49,19 @@ swap them for fakes.
 
 | Package / module | Responsibility |
 |---|---|
-| `cli.py` | Typer CLI: `run`, `runs`, `dq-report`, `coverage-report`, `audit-insights`, `review`, `init-db` |
+| `cli.py` | Typer CLI: `run`, `runs`, `dq-report`, `coverage-report`, `audit-insights`, `review` (list / approve / reject), `init-db` |
 | `settings.py` | Settings from environment / `.env` (pydantic-settings), §13 |
-| `config.py` | Loads companies and industry groups |
+| `config.py` | Loads companies and industry groups (traits merged into each group's metric sets) |
 | `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing), `alphavantage.py` (quota, key masking), `llm.py` (Claude), `securegpt.py` (Azure OpenAI gateway), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py` |
 | `extract/` | Company metadata, filing lists from submissions |
-| `normalize/` | XBRL facts, fiscal periods, HTML to text, section splitting, news normalisation |
+| `normalize/` | XBRL facts, fiscal periods (restatement basis), HTML to text, table grids (`table_grid.py`), section splitting, news normalisation |
 | `compute/` | Metric registry (from `config/metrics.yaml`), formulas, coverage |
 | `signals/` | Rule detection, rule loading, rules + LLM vote |
-| `enrich/` | LLM tasks: text metrics, insights, news events and relevance, metric detail; `llm.py` (cache, validation), `grounding.py`, `schemas.py`, `package.py` (insight input), `sources.py` (source titles), `audit.py`, `prompts/` |
-| `jobs/` | One module per stage (`run_*.py`), `stages.py` (stage dispatch), `orchestrator.py` (runs, tasks, lock, resume) |
+| `enrich/` | LLM tasks: text metrics, insights, news events and relevance, metric detail; `llm.py` (cache, validation), `grounding.py`, `schemas.py`, `package.py` (insight input), `sources.py` (source titles), `table_reader.py` (cell checks), `untrusted.py` (prompt-injection defense), `audit.py`, `prompts/` |
+| `jobs/` | One module per stage (`run_*.py`), `run_review.py` (human review queue), `stages.py` (stage dispatch), `orchestrator.py` (runs, tasks, lock, resume) |
 | `load/` | `upsert.py` (SQLite / SQL Server upsert, chunked deletes), `app_writer.py` (app ids and versions) |
-| `quality/dq.py` | Data-quality rules |
-| `schema.py`, `schema_app.py` | Pipeline tables (34), application tables (23) |
+| `quality/dq.py`, `quality/identities.py` | Data-quality rules; metric identities (also the textmetrics gate) |
+| `schema.py`, `schema_app.py` | Pipeline tables (36), application tables (23) |
 | `logs.py`, `frames.py` | JSON logging with run context; pandas helpers |
 
 ## 4. Stages
@@ -93,13 +94,13 @@ flowchart LR
 | company | `run_company` | Company metadata; pinned CIK, ticker check (D-006) | `company` | SEC |
 | facts | `run_xbrl` | XBRL facts for the tags in the registry, from companyfacts plus filing instances for recent or dimensional facts (D-013, D-014), and pay versus performance from the latest two proxy statements (D-042) | `xbrl_fact`, `ingest_state` | SEC |
 | compute | `run_xbrl` | Metrics per period from `config/metrics.yaml`; Q4 = FY − 9M; N/M handling (D-019) | `metric_definition`, `metric_value` | – |
-| documents | `run_documents` | Registers 10-K/10-Q/8-K; downloads and splits text documents and EX-99.1 releases (D-023…D-026) | `source_document`, `filing_section`, `section_chunk` | SEC |
+| documents | `run_documents` | Registers 10-K/10-Q/8-K; downloads and splits text documents and EX-99.1 releases (D-023…D-026); downloads the latest proxy (DEF 14A, D-045) | `source_document`, `filing_section`, `section_chunk` | SEC |
 | transcripts | `run_transcripts` | Last 4 fiscal quarters of earnings-call transcripts (D-030) | `source_document`, sections, chunks | AV |
 | news | `run_news` | 30-day news, mention filter, 3-tier de-duplication, LLM relevance verdict (D-029, D-037) | `news_item`, `activity` | AV, LLM |
 | scores | `run_scores` | News risk scores per activity; transcript tone and risk flags (D-037) | `news_risk_score`, `transcript_tone`, `transcript_flag` | LLM |
-| textmetrics | `run_text_metrics` | Figures from MD&A and releases (RevPAR, NIM, …), loan book; values XBRL covers (capital ratios, release figures) only cross-checked; identity gate (D-022, D-032, D-042) | `metric_value` (LLM_EXTRACTED, PRELIMINARY), `loan_portfolio_*`, `release_check` | LLM |
+| textmetrics | `run_text_metrics` | Figures from MD&A and releases (NIM, LCR, …); table metrics read by cell (RevPAR, occupancy, ADR, AUM, VaR, international revenue, average interest-earning assets, capacity utilization) and the loan book; values XBRL covers (capital ratios, release figures) only cross-checked; identity gate (D-022, D-032, D-042, D-044) | `metric_value` (LLM_EXTRACTED, PRELIMINARY), `loan_portfolio_*`, `release_check` | LLM |
 | governance | `run_governance` | Board composition from the latest proxy, both models, facts kept only when quoted and agreed (D-045) | `board_composition` | LLM |
-| signals | `run_signals` | 8-K, keyword, auditor and metric signals; LLM vote on judgment topics (D-027, D-028) | `signal`, `signal_vote` | LLM |
+| signals | `run_signals` | 8-K, keyword, auditor, metric and board signals; LLM vote on judgment topics (D-027, D-028, D-045) | `signal`, `signal_vote` | LLM |
 | insights | `run_insights` | Activity summaries, behavioral, strategic & risk, key insights, follow-up questions (D-033) | `insight*`, `followup_question*`, `activity` | LLM |
 | metricdetail | `run_metric_detail` | Methodology and sources by rules; underwriting relevance by LLM (D-036) | `metric_detail`, `metric_source`, `metric_insight` | LLM |
 | publish | `run_publish` | Writes the app database (§11) | app tables | – |
@@ -186,11 +187,11 @@ versioned with the code.
 |---|---|
 | `companies.yaml` | Companies: pinned CIK, display ticker, former tickers, `history_start`, `news_aliases`, `av_symbols` |
 | `company_overrides/*.yaml` | Company metrics and `sections:` rules (JPM, MAR) |
-| `industry_groups.yaml` | SIC → industry group, metric sets, `is_financial`, `mdna_history_years` |
-| `metrics.yaml` | Metric definitions, formulas, text-metric extraction specs, `metric_sets` |
+| `industry_groups.yaml` | SIC → industry group, metric sets, `traits`, `trait_metric_sets`, `common_metric_sets` (governance), `is_financial`, `mdna_history_years` |
+| `metrics.yaml` | Metric definitions, formulas (`x_py` = a year earlier), text and table extraction specs (`table:` column, scope, excluded rows), `insight_input`, `metric_sets` |
 | `concept_map.yaml` | Concept → candidate XBRL tags (with dimensions) |
 | `coverage_notes.yaml` | Reason for every metric gap `coverage-report` shows |
-| `signal_rules.yaml` | 8-K item mapping, keyword and role rules, `fetch_body_items` |
+| `signal_rules.yaml` | 8-K item mapping, keyword and role rules, board rules, `fetch_body_items` |
 | `text_extraction.yaml` | Text-metric chunk budget, effort, loan portfolio settings |
 | `insights.yaml` | Insight tasks, package limits, `news_materiality` gate |
 | `news.yaml` | De-duplication thresholds, mention filter, relevance verdict |
@@ -200,7 +201,7 @@ versioned with the code.
 | `azure.yaml` | Azure SQL server, database, schemas; ADLS account, container, root (placeholders) |
 | `app_publish.yaml` | Metric categories, RiskTypes regex rules, confidence rules, trend and loan metrics |
 | `source_labels.yaml` | Readable names for sections and concepts |
-| `dq_rules.yaml` | Data-quality thresholds; `metric_identities` (also the textmetrics gate) |
+| `dq_rules.yaml` | Data-quality thresholds; `metric_identities` (also the textmetrics gate: RevPAR, capital ratios, loan book, debt completeness, NIM relation) |
 | `jobs.yaml` | Jobs and orchestrator settings (§5) |
 
 ## 8. LLM layer
@@ -244,7 +245,7 @@ which also invalidates the cache; then run `scripts/export_golden.py` and review
 - Text-metric values are kept only if the quote is in the source, the number is in the quote,
   the unit fits and the period length fits (quarter 75–105 days, year 350–380).
 - Failing items are dropped and logged; drop rates go to `llm_task_stat` (DQ alerts above 20%).
-- `GROUNDING_VERSION` (`jobs/run_insights.py`, now 6) is part of the insight input hash: bump
+- `GROUNDING_VERSION` (`jobs/run_insights.py`, now 7) is part of the insight input hash: bump
   it when grounding rules change, and cached outputs are re-checked without new LLM calls.
 
 **Structured first, identities** (D-042). A value XBRL tags is never taken from text: capital
@@ -259,12 +260,19 @@ grids (`normalize/table_grid.py`): the model names table, row and column, and
 (metric, period, not a change column) and its row (scope, not a subset) without repairing a
 wrong answer. Every prompt passes through `enrich/untrusted.py`: invisible characters made
 visible, sources in escaped blocks, the data rule (`prompts/untrusted_data_v1.md`) appended to
-the system prompt. `LLM_DAILY_BUDGET` caps new calls per day (D-043).
+the system prompt. `LLM_DAILY_BUDGET` caps new calls per day (D-043): over it, an item fails
+(`BudgetExceededError`), nothing is stored, and the next run continues.
 
 **Agreement checks.** Judgment signals: rules vote, the extractor votes with a verbatim quote,
 and only on disagreement the tie-breaker rules on both claims; a rule hit voted down by both
 models is kept as OVERRULED, three different answers as DISPUTED (D-028). Bank metrics and the
-loan book need extractor and tie-breaker to agree within 0.5% (D-032).
+loan book need extractor and tie-breaker to agree within 0.5% (D-032). Where the two models read
+a loan segment at different levels (one line vs. its classes) and the classes add up to the
+line, the line is kept (D-044). Board facts need both models to give the same value (D-045).
+
+**Human review** (`uw-pipeline review`, D-045). DISPUTED / OVERRULED signals and identity
+breaks are listed with evidence and source link; a named reviewer approves or rejects
+(`review_decision`). A rejected signal leaves the insight input and the dq review queue.
 
 ## 9. Raw storage
 
@@ -333,8 +341,9 @@ team's diagram), `app_schema_full.sql` and `pipeline_schema_full.sql`, schema-qu
 The `dq` stage runs last in `nightly` and `morning` and writes `dq_finding`; findings never fail
 the task. Rules (`config/dq_rules.yaml`, D-035, D-036): missing core metric, quarter jump
 (> 500% vs prior quarter and vs a year earlier), negative positive-only metric, four quarters ≠
-fiscal year (> 0.5%), press release ≠ XBRL, grounding drop rate > 20% in 30 days, no 10-K/10-Q
-for 120 days, review queue (DISPUTED / OVERRULED signals), detail and source coverage, link
+fiscal year (> 0.5%), press release ≠ XBRL, metric identities (Error), total debt without a
+current portion (Warning), grounding drop rate > 20% in 30 days, no 10-K/10-Q for 120 days,
+review queue (undecided DISPUTED / OVERRULED signals), detail and source coverage, link
 integrity.
 
 | Command | Checks |
@@ -363,6 +372,7 @@ because the service echoes the key.
 | `SECUREGPT_CLIENT_ID`, `SECUREGPT_CLIENT_SECRET`, `SECUREGPT_SUBSCRIPTION_KEY`, `SECUREGPT_ENV` | – | SecureGPT gateway |
 | `ANTHROPIC_API_KEY` | – | Claude (development) |
 | `ALPHAVANTAGE_API_KEY` | – | Alpha Vantage |
+| `LLM_DAILY_BUDGET` | 25 | New LLM spend per day in the profile's currency; 0 = unlimited |
 | `ALPHAVANTAGE_CALLS_PER_MINUTE`, `ALPHAVANTAGE_DAILY_QUOTA` | 5, 25 | Paid plan: 75 and 0 (unlimited) |
 | `LLM_ENABLED` | true | `false` runs rules only |
 | `LOG_FORMAT` | text | `json`: one object per line with run, job, ticker and stage |
@@ -385,16 +395,20 @@ because the service echoes the key.
 ## 15. Testing
 
 ```bash
-.venv/bin/pytest -q                       # 232 passed, 4 skipped (SQL Server only), 2026-10-14
+.venv/bin/pytest -q                       # 298 passed, 4 skipped (SQL Server only), 2026-10-14
 .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy   # mypy strict
-scripts/test_mssql.sh --all               # whole suite on SQL Server 2022 in Docker: 236 passed
+scripts/test_mssql.sh --all               # whole suite on SQL Server 2022 in Docker: 302 passed
+.venv/bin/python scripts/stability_check.py --faults MAR   # timeout / rate limit / bad output fail closed
+.venv/bin/python scripts/stability_check.py --runs 3 MAR JPM   # live: same input, same results? (costs)
 ```
 
 - Unit tests cannot reach the network: `tests/conftest.py` blocks sockets. HTTP is mocked with
   respx; recorded SEC and Alpha Vantage responses are in `tests/fixtures/`
   (`scripts/refresh_sec_fixtures.py` rebuilds the SEC ones).
 - LLM calls use `tests/fake_llm.py`, never a real API.
-- Golden values come from the filings themselves (D-020). `tests/golden/` holds MAR, JPM and ENPH
+- Golden values come from the filings themselves (D-020). Table reading has a holdout set
+  (`tests/fixtures/sec/holdout/`: Hilton, Hyatt, Marriott release, JPM) with right cells and
+  plausible wrong ones, plus prompt-injection cases (D-044). `tests/golden/` holds MAR, JPM and ENPH
   insight outputs as the baseline for prompt changes.
 - `scripts/test_mssql.sh` starts a throwaway SQL Server container; with `--all`
   (`UW_TEST_ON_MSSQL=1`) every in-memory SQLite engine in the tests becomes a SQL Server engine
@@ -406,7 +420,8 @@ scripts/test_mssql.sh --all               # whole suite on SQL Server 2022 in Do
 
 | Limitation | Effect | Where it is tracked |
 |---|---|---|
-| Restatements: the latest filing wins per period, and Q4 = FY − 9M | A restated 9M with an unrestated FY gives a wrong Q4; DQ flags quarters ≠ year | D-035 |
+| Restatements: a quarter restated after its year keeps the year's basis until the year is restated too | Old quarters show the basis they were first reported on; DQ flags quarters ≠ year | D-035, D-046 |
+| Live stability: values never differed across runs, but some are withheld in one run and stored in another | Coverage of rarely-tabled figures (AUM, LCR, VaR quarters) can vary when a new filing arrives | D-046 |
 | One database transaction per company and stage includes the network and LLM calls | Fine for one process; must be split before parallel workers | PLAN 10.E |
 | SQLite allows one writer | Jobs are serialised by the global run lock | D-034, D-041 |
 | SEC data is fetched per company on every scheduled run | Fine for 9 companies; daily index and bulk files needed at scale | PLAN Phase 10 |

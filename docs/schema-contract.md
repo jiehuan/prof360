@@ -21,7 +21,7 @@
 | 应用表 | 来源（管线） | 说明 |
 |---|---|---|
 | SIC_Code / Company | `company` | Company.logo 由应用维护，管线不写；Location = "城市, 州"；NameAbbreviation = ticker |
-| metric_category / metrics / SIC_Preferences | `config/metrics.yaml` + 行业组 | metrics.Formula 是通用定义；分类名在 `config/app_publish.yaml` |
+| metric_category / metrics / SIC_Preferences | `config/metrics.yaml` + 行业组 | metrics.Formula 是通用定义；分类名在 `config/app_publish.yaml`。Phase 14 新增显示指标：银行 ROA、ROE、贷款损失准备率；AUM、VaR、国际收入、RPO 等只作为洞察输入，不进 metrics（D-043） |
 | MatrixData | `metric_value` | source_class = derivation；confidence 按取值方式（配置） |
 | KeyInsights / KeyInsightsTypes | `insight`（KEY） | evidence = Supporting Evidence（规则生成）；confidence 按来源数（配置） |
 | StrategicRisk / RiskTypes | `insight`（STRATEGIC_RISK、BEHAVIORAL） | Category：governance / risk / event / behavior；RiskType 由 subcategory 按 `config/app_publish.yaml` 的规则映射 |
@@ -29,7 +29,7 @@
 | ItemLink | `insight_link`、`insight_metric`、`followup_question_insight`、`followup_question_metric` | 只连接当前版本（isActive = 1）的对象；从任一端都可查 |
 | CompanyMetricDetail | `metric_detail`、`metric_source`、`metric_insight`、`loan_portfolio_detail` | — |
 | Trend / TrendTypes | FI 公司 `metric_value` 的财年值（NIM、CET1、Tier 1、LCR、NPL、Fee Income Growth） | 季度值在 MatrixData |
-| LoanPortfolio / LoanTypes | `loan_portfolio_segment` | 当前期和上一年末两期 |
+| LoanPortfolio / LoanTypes | `loan_portfolio_segment` | 当前期和上一年末两期；两个模型读的层级不同时只保存部门总行（JPM：Wholesale / Loans retained），见 D-044 |
 | Activities / News | `activity` / `news_item` | 只保留与公司本身相关的新闻（规则 + LLM 判断，D-037） |
 
 **id 稳定性**：应用表的 id 由应用库生成。`pipeline_publish_map`（在应用库里）记录每个管线对象对应的应用 id，重跑时更新同一行；内容没变的行不写。

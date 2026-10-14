@@ -878,5 +878,10 @@ LLM runs until the end, then one comparison.
 - `scripts/stability_check.py`: N live runs on a database copy with an empty cache, compared
   (Jira T2); `--faults` runs timeout, rate-limit and invalid-schema clients: all three failed
   closed (no exception, nothing stored, earlier values kept).
+- Live result (Claude, MAR + JPM, 3 runs, about $0.93 each, 2026-10-14): board facts and all MAR
+  values identical; no value ever differed in amount; 96 of 107 values stored in all three runs,
+  11 (JPM AUM, LCR, VaR quarters, international revenue) withheld in some runs. The loan book's
+  wholesale line was stored only when both models read it at the same level, which led to the
+  roll-up rule in D-044. The SecureGPT run is still open (PLAN Phase 14).
 - Not done: tables in the pipeline schema only, no app tables changed; deploy/sql/
   pipeline_schema_full.sql gains board_composition and review_decision.
