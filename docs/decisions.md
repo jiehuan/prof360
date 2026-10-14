@@ -735,6 +735,10 @@ entry). Grouped by what they affected:
   - `azure_smoke.py`: ALTER on the pipeline schema is a warning, like CREATE TABLE (runs use
     `#temp` tables only). `init-db` on Azure SQL points to `deploy/sql/` instead of a traceback.
   - `test_mssql.sh` waits for a working login; the log line it waited for survives a restart.
+  - `export_app_ddl.py` compiles the original table definitions, so a rerun gives the same files
+    (copies listed constraints in random order). Automatic index names in
+    `pipeline_schema_full.sql` are now `ix_<table>_<column>`, as `create_tables` makes them
+    (were `ix_uw_pipeline_<table>_<column>`); no shared environment had applied the scripts.
 - **Left as they are.**
   - Q4 = FY − 9M can combine a restated full year with nine months as first reported (D-035).
     The `quarters_vs_year` DQ rule shows such cases; they usually resolve with the next 10-K.
