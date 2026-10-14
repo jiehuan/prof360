@@ -14,6 +14,7 @@ from uw_pipeline.clients.db import ensure_schema, make_engine
 from uw_pipeline.clients.llm import ClaudeClient, LLMClient
 from uw_pipeline.clients.ratelimit import TokenBucket
 from uw_pipeline.clients.sec import SecClient
+from uw_pipeline.clients.securegpt import SecureGPTClient, load_securegpt_config
 from uw_pipeline.clients.storage import LocalStorage
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig, load_companies, load_industry_config
@@ -96,11 +97,26 @@ class StageRunner:
         if not self._llm_built:
             self._llm_built = True
             s = self.settings
-            if s.llm_enabled and s.anthropic_api_key is not None:
+            cfg = load_llm_config(s.config_dir)
+            client: LLMClient | None = None
+            if not s.llm_enabled:
+                pass
+            elif cfg.provider == "securegpt":
+                if s.securegpt_client_id and s.securegpt_client_secret and \
+                        s.securegpt_subscription_key:  # fmt: skip
+                    gcfg = load_securegpt_config(s.config_dir)
+                    client = SecureGPTClient(
+                        gcfg, env=s.securegpt_env or gcfg.default_env,
+                        client_id=s.securegpt_client_id,
+                        client_secret=s.securegpt_client_secret.get_secret_value(),
+                        subscription_key=s.securegpt_subscription_key.get_secret_value(),
+                    )  # fmt: skip
+            elif s.anthropic_api_key is not None:
                 client = ClaudeClient(
                     s.anthropic_api_key.get_secret_value(), workspace_id=s.anthropic_workspace_id
                 )
-                self._llm = (client, load_llm_config(s.config_dir))
+            if client is not None:
+                self._llm = (client, cfg)
         return self._llm
 
     @property
@@ -214,12 +230,13 @@ class StageRunner:
                 .group_by(llm_call.c.model)
             ).all()  # fmt: skip
         pricing = self.llm[1].pricing if self.llm else {}
+        currency = self.llm[1].pricing_currency if self.llm else "USD"
         llm: dict[str, Any] = {}
         cost = 0.0
         for model, calls, tin, tout in rows:
             price_in, price_out = pricing.get(model, (0.0, 0.0))
-            usd = ((tin or 0) * price_in + (tout or 0) * price_out) / 1e6
-            cost += usd
+            amount = ((tin or 0) * price_in + (tout or 0) * price_out) / 1e6
+            cost += amount
             llm[model] = {"calls": calls, "input_tokens": tin or 0, "output_tokens": tout or 0}
         av_calls = None
         if self._av is not None and self._av_calls_at_start is not None:
@@ -228,7 +245,8 @@ class StageRunner:
             "sec_requests": self._sec.requests if self._sec else 0,
             "alphavantage_calls": av_calls,
             "llm": llm,
-            "llm_cost_usd_estimate": round(cost, 2),
+            "llm_cost_estimate": round(cost, 2),
+            "llm_cost_currency": currency,
         }
 
     def __enter__(self) -> StageRunner:

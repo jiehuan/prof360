@@ -162,12 +162,14 @@ def runs(limit: Annotated[int, typer.Option(help="Runs to show")] = 10) -> None:
         )
         for r in rows:
             stats = json.loads(r["stats_json"] or "{}")
-            cost = stats.get("usage_last_start", {}).get("llm_cost_usd_estimate", 0)
+            usage = stats.get("usage_last_start", {})
+            cost = usage.get("llm_cost_estimate", usage.get("llm_cost_usd_estimate", 0))
+            symbol = {"USD": "$", "EUR": "€"}.get(usage.get("llm_cost_currency", "USD"), "")
             ended = f"{r['finished_at']:%H:%M}" if r["finished_at"] else "running"
             typer.echo(
                 f"{r['run_id']:>5} {r['job']:<8} {r['status']:<9} starts={r['starts']} "
                 f"{r['started_at']:%Y-%m-%d %H:%M} -> {ended} "
-                f"tasks={stats.get('tasks', {})} llm=${cost}"
+                f"tasks={stats.get('tasks', {})} llm={symbol}{cost}"
             )
         if rows:
             bad = conn.execute(

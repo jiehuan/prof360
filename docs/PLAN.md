@@ -541,6 +541,16 @@ uw-pipeline dq-report --run-id <id>
 
 ---
 
+### Phase 11 — 改用 SecureGPT（2026-10-14）
+
+- [x] SecureGPT 客户端（token、结构化输出、重试、错误分类），与现有接口一致；模型改为 gpt-5-nano / gpt-5-mini（D-039）
+- [x] 凭证只用环境变量；网关配置 `config/securegpt.yaml`；费用按 EUR 统计
+- [x] 单元测试（模拟网关）和所有输出 schema 的 strict-mode 检查
+- [ ] 在工作网络跑 `scripts/securegpt_smoke.py`，确认 `reasoning_effort` 是否可用
+- [ ] 全量重跑并与当前结果对比质量（文本指标、信号、洞察丢弃率），按结果调整 effort 或模型
+
+---
+
 ### Phase 10 — 扩展到约 4,000 家公司：分层与并行处理（2026-10-13 计划，未开始）
 
 **已定**：分层处理，约 800 家全量（Tier 1），约 3,200 家轻量（Tier 2，洞察按需生成）。本阶段先只做设计，不抓取、不抽取；实现前用模拟客户端做压测。

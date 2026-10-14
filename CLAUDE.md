@@ -21,6 +21,7 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 .venv/bin/pytest -q
 .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy
 .venv/bin/python scripts/refresh_sec_fixtures.py   # rebuild SEC fixtures from data/raw
+.venv/bin/python scripts/securegpt_smoke.py         # SecureGPT gateway check (work network)
 .venv/bin/python scripts/compare_models.py --model claude-sonnet-5-5 MAR JPM ENPH  # model A/B
 ```
 

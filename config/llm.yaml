@@ -1,14 +1,20 @@
 # LLM settings for rule + LLM voting on judgment signals (decisions D-028).
 # The extractor reads every in-scope section. When it disagrees with the rules, the tie-breaker
 # answers the same question independently and the majority of the three votes wins.
+#
+# Provider (D-039): securegpt = Azure OpenAI through the AXA XL gateway (config/securegpt.yaml,
+# credentials in SECUREGPT_* env vars); anthropic = Claude API (ANTHROPIC_API_KEY). Changing
+# provider or model changes every cache key, so all LLM tasks run again once.
+provider: securegpt
+# max_tokens includes the model's reasoning tokens on gpt-5 models, hence the higher limits.
 extractor:
-  model: claude-haiku-5-5
-  effort: low          # extraction/classification (user decision 2026-10-13: Haiku, was Sonnet)
-  max_tokens: 8000
-tiebreaker:
-  model: claude-sonnet-5-5   # user decision 2026-10-13: Sonnet, was Opus
-  effort: high
+  model: gpt-5-nano-2025-08-07   # user decision 2026-10-14 (was claude-haiku-5-5)
+  effort: low
   max_tokens: 16000
+tiebreaker:
+  model: gpt-5-mini-2025-08-07   # user decision 2026-10-14 (was claude-sonnet-5-5)
+  effort: high
+  max_tokens: 32000
 prompt_version: signals_v1
 # The tie-breaker sees both claims and their evidence and rules on the text (D-028).
 tiebreak_prompt_version: tiebreak_v2
@@ -25,8 +31,10 @@ topics:
   "10K-9A": ["material_weakness", "controls_not_effective"]
   "10Q-I-4": ["material_weakness", "controls_not_effective"]
 
-# USD per million tokens (input, output), for run statistics only.
+# Price per million tokens (input, output), for run statistics only, in `pricing_currency`.
+# SecureGPT price list (EUR). Claude API, if provider is switched back (USD): opus-5-5 4/20,
+# sonnet-5-5 2/10, haiku-5-5 0.1/0.5.
+pricing_currency: EUR
 pricing:
-  claude-opus-5-5: [4.0, 20.0]
-  claude-sonnet-5-5: [2.0, 10.0]
-  claude-haiku-5-5: [0.1, 0.5]     # prompts <= 100K tokens; longer prompts cost 0.5 / 2.5
+  gpt-5-nano-2025-08-07: [0.052, 0.378]
+  gpt-5-mini-2025-08-07: [0.240, 1.889]

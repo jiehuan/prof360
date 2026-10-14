@@ -14,7 +14,7 @@ import yaml
 from pydantic import BaseModel
 from sqlalchemy import Connection, select
 
-from uw_pipeline.clients.llm import LLMClient, LLMError
+from uw_pipeline.clients.llm import LLMClient, LLMError, LLMSetupError
 from uw_pipeline.load.upsert import upsert
 from uw_pipeline.schema import llm_call
 
@@ -36,7 +36,10 @@ class LLMConfig(BaseModel):
     tiebreak_prompt_version: str
     max_input_chars: int
     topics: dict[str, list[str]]
-    pricing: dict[str, tuple[float, float]] = {}
+    # Which API serves the models: anthropic (Claude API) or securegpt (gateway, D-039).
+    provider: str = "anthropic"
+    pricing: dict[str, tuple[float, float]] = {}  # per million tokens (input, output)
+    pricing_currency: str = "USD"
 
     def prompt(self) -> str:
         return (PROMPTS_DIR / f"{self.prompt_version}.md").read_text(encoding="utf-8")
@@ -99,6 +102,8 @@ def cached_call(
         log.warning("%s on %s: %s", task, spec.model, exc)
         upsert(conn, llm_call, [row | {"error": str(exc)[:500]}], key_cols=["input_hash"])
         return None
+    except LLMSetupError as exc:
+        raise LLMUnavailableError(str(exc)) from exc
     except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as exc:
         raise LLMUnavailableError(str(exc)) from exc
     except anthropic.BadRequestError as exc:

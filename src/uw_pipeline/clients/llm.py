@@ -26,6 +26,11 @@ class LLMError(Exception):
     """The model produced no usable output (refusal, truncation, invalid JSON)."""
 
 
+class LLMSetupError(Exception):
+    """Credentials, permissions or the request itself are wrong for every call (not one item);
+    callers stop using the LLM for the run."""
+
+
 @dataclass(frozen=True)
 class LLMResult:
     output: dict[str, Any]

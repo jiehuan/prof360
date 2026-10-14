@@ -2,9 +2,9 @@
 
 # Company-level synthesis (behavioral, strategic & risk, key insights, follow-up questions).
 synthesis:
-  model: claude-sonnet-5-5   # user decision 2026-10-13: Sonnet, was Opus
+  model: gpt-5-mini-2025-08-07   # user decision 2026-10-14 (was claude-sonnet-5-5)
   effort: high
-  max_tokens: 16000
+  max_tokens: 32000              # includes reasoning tokens on gpt-5 models
 # Per-item work (news activity summaries). The extractor spec from llm.yaml is used.
 
 prompt_versions:

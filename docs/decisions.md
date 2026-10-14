@@ -604,3 +604,33 @@ follow-ups, metric relevance). Config only (`llm.yaml`, `insights.yaml`).
     Every company still has 6-10 key insights. If the drop rate stays near the 20% DQ
     threshold, a stricter prompt version is the next step.
   - Cost of the full re-run: about $6.
+
+**D-039 SecureGPT instead of the Claude API (user decision, 2026-10-14).** LLM calls go through
+the company's SecureGPT gateway (Azure OpenAI behind the AXA XL API gateway). gpt-5-nano
+replaces Claude Haiku 5.5 (extractor) and gpt-5-mini replaces Claude Sonnet 5.5 (tie-breaker,
+second model of the dual check, synthesis).
+- `clients/securegpt.py` implements the same `complete_json` interface, so no stage changed.
+  Protocol as in the team's working client (professional-databricks `utils/secure_gpt.py`):
+  OAuth token from `token_url` (Client_Id / Client_Secret / scope / subscription key headers),
+  then `{base_url}/{deployment}/chat/completions?api-version=2024-10-21`. Differences on
+  purpose: TLS is verified (theirs uses `verify=False`), the token is refreshed before expiry
+  and after a 401, 408/429/5xx are retried with Retry-After, and failures raise instead of
+  printing.
+- Output: OpenAI structured outputs (`json_schema`, strict). All output schemas are checked
+  against strict-mode rules in a test.
+- Errors: refusals, truncation and content-filter blocks are per-item (`LLMError`, recorded,
+  skipped); rejected credentials, unknown deployments and other 400/403/404 stop LLM use for
+  the run (`LLMSetupError`).
+- `reasoning_effort` is off for api-version 2024-10-21 until the smoke test
+  (`scripts/securegpt_smoke.py`) shows the gateway accepts it. `max_tokens` limits were raised
+  because gpt-5 counts reasoning tokens in them.
+- Credentials only in environment variables (`SECUREGPT_*`); non-secret settings in
+  `config/securegpt.yaml`. The production gateway URLs are assumed from the dv/pp pattern and
+  must be confirmed.
+- Cost statistics in EUR (SecureGPT price list: nano 0.052 / 0.378, mini 0.240 / 1.889 per
+  million tokens). The Claude client stays available (`provider: anthropic`).
+- The development machine cannot reach the gateway, so the switch is verified from the work
+  environment: smoke test first, then a full re-run compared with the current outputs, as for
+  D-038. gpt-5-nano is expected to need a higher effort (or gpt-5-mini) for text extraction.
+- Security note: the team repository's `config/utils.yaml` holds what look like plaintext APIM
+  subscription keys; they should be rotated and moved to a secret store. None were copied here.

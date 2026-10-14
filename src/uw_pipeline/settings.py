@@ -40,6 +40,11 @@ class Settings(BaseSettings):
     anthropic_api_key: SecretStr | None = None
     # Needed for user-level API keys that aren't scoped to a workspace.
     anthropic_workspace_id: str | None = None
+    # SecureGPT gateway (config/llm.yaml provider: securegpt; D-039).
+    securegpt_client_id: str | None = None
+    securegpt_client_secret: SecretStr | None = None
+    securegpt_subscription_key: SecretStr | None = None
+    securegpt_env: str | None = None  # dv | pp | pr; default from config/securegpt.yaml
     # Turn LLM voting off (rules only), e.g. when no credentials are available.
     llm_enabled: bool = True
 
