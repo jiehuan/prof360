@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from sqlalchemy import Connection, String, Table, Text, Unicode, UnicodeText, text
+from sqlalchemy import Connection, DateTime, String, Table, text
 from sqlalchemy.dialects import sqlite
 from sqlalchemy.sql.compiler import IdentifierPreparer
 
@@ -28,6 +28,9 @@ def upsert(
     missing = set(key_cols) - set(cols)
     if missing:
         raise ValueError(f"rows lack key column(s) {sorted(missing)}")
+    # One row per key, the last one winning: SQLite's ON CONFLICT accepts repeats, but a SQL
+    # Server MERGE fails when the source has the same key twice (e.g. a model repeating an id).
+    rows = list({tuple(r[k] for k in key_cols): r for r in rows}.values())
     dialect = conn.dialect.name
     if dialect == "sqlite":
         stmt = sqlite.insert(table)
@@ -52,6 +55,7 @@ def insert_missing(
     """Insert rows whose key is not present yet; existing rows are left untouched."""
     if not rows:
         return 0
+    rows = list({tuple(r[k] for k in key_cols): r for r in rows}.values())  # see upsert()
     dialect = conn.dialect.name
     if dialect == "sqlite":
         stmt = sqlite.insert(table).on_conflict_do_nothing(index_elements=list(key_cols))
@@ -87,6 +91,24 @@ def build_merge_sql(
     )
 
 
+def _input_sizes(table: Table, cols: Sequence[str]) -> list[Any]:
+    """Parameter types for the staging insert. pyodbc cannot describe the parameters of a
+    #temp table, so fast_executemany would size each one from the first row: a longer string
+    later fails ("String data, right truncation") and datetimes lose their microseconds."""
+    import pyodbc  # SQL Server only
+
+    sizes: list[Any] = []
+    for c in cols:
+        t = table.c[c].type
+        if isinstance(t, String):  # Unicode, Text and UnicodeText too
+            sizes.append((pyodbc.SQL_WVARCHAR, t.length or 0, 0))  # 0: NVARCHAR(max)
+        elif isinstance(t, DateTime):
+            sizes.append((pyodbc.SQL_TYPE_TIMESTAMP, 27, 7))  # DATETIME2(7) precision
+        else:
+            sizes.append(None)  # numbers, booleans, dates: pyodbc's own binding is exact
+    return sizes
+
+
 def _mssql_merge(
     conn: Connection,
     table: Table,
@@ -105,31 +127,17 @@ def _mssql_merge(
     conn.execute(text(f"DROP TABLE IF EXISTS {staging}"))
     # SELECT TOP 0 ... INTO copies column types without the IDENTITY property of omitted columns.
     conn.execute(text(f"SELECT TOP 0 {col_list} INTO {staging} FROM {tgt}"))
-    params = ", ".join(f":{c}" for c in cols)
-    insert_sql = f"INSERT INTO {staging} ({col_list}) VALUES ({params})"
-    long_text = any(
-        isinstance(table.c[c].type, UnicodeText | Text)
-        or (
-            getattr(table.c[c].type, "length", 0) is None
-            and isinstance(table.c[c].type, Unicode | String)
-        )
-        for c in cols
-    )
-    if long_text:
-        # pyodbc's fast_executemany sizes NVARCHAR(max) parameters too small ("String data,
-        # right truncation"); send these rows with fast mode off on the same connection.
-        raw = conn.connection.dbapi_connection
-        assert raw is not None
-        cursor: Any = raw.cursor()
-        try:
-            cursor.fast_executemany = False
-            marks = ", ".join("?" for _ in cols)
-            cursor.executemany(f"INSERT INTO {staging} ({col_list}) VALUES ({marks})",
-                               [tuple(r[c] for c in cols) for r in rows])  # fmt: skip
-        finally:
-            cursor.close()
-    else:
-        conn.execute(text(insert_sql), list(rows))
+    raw = conn.connection.dbapi_connection
+    assert raw is not None
+    cursor: Any = raw.cursor()
+    try:
+        cursor.fast_executemany = True
+        cursor.setinputsizes(_input_sizes(table, cols))
+        marks = ", ".join("?" for _ in cols)
+        cursor.executemany(f"INSERT INTO {staging} ({col_list}) VALUES ({marks})",
+                           [tuple(r[c] for c in cols) for r in rows])  # fmt: skip
+    finally:
+        cursor.close()
     conn.execute(text(build_merge_sql(preparer, table, staging, cols, key_cols, update=update,
                                       schema=schema)))  # fmt: skip
     conn.execute(text(f"DROP TABLE {staging}"))

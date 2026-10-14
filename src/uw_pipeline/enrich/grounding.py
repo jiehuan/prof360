@@ -24,7 +24,9 @@ MIN_PIECE = 8
 
 # Footnote markers glued to a word ("capital3", "estate(a)"); models often leave them out
 # when quoting, so a second comparison ignores them on both sides.
-_FOOTNOTE = re.compile(r"(?<=[a-z])(?:\d{1,2}|\([a-z0-9]{1,2}\))+(?=[\s,.;:)]|$)")
+# Digits count as a footnote only after a word of 3+ letters ("capital3"), so period labels such
+# as "q3" or "fy24" are never stripped (they would become interchangeable).
+_FOOTNOTE = re.compile(r"(?:(?<=[a-z]{3})\d{1,2}|(?<=[a-z)])\([a-z0-9]{1,2}\))+(?=[\s,.;:)]|$)")
 
 
 def is_grounded(quote: str, source: str, *, min_chars: int = 12) -> bool:
@@ -122,8 +124,8 @@ def ungrounded_numbers(text: str, quotes: Iterable[str], values: Iterable[float]
     missing = []
     for n in numbers_in(text):
         # The number as written appears in a cited source ("$27M" vs "$27 million" both
-        # contain 27), bounded so that 27 does not match inside 2027 or 1.27.
-        if re.search(rf"(?<![\d.]){re.escape(n.literal)}(?![\d])", quote_text):
+        # contain 27), bounded so that 27 does not match inside 2027, 1.27 or 27.5.
+        if re.search(rf"(?<![\d.]){re.escape(n.literal)}(?!\.?\d)", quote_text):
             continue
         if any(_matches_value(n, v) for v in vals):
             continue

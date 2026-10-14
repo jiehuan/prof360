@@ -7,8 +7,8 @@
 Checks, without changing any pipeline or application table:
 - both databases connect (service principal), and the configured schemas exist;
 - which pipeline / application tables are present (were the deploy/sql scripts applied?);
-- SELECT / INSERT / UPDATE / DELETE permission on each schema (and CREATE TABLE for the
-  pipeline schema);
+- SELECT / INSERT / UPDATE / DELETE permission on each schema (ALTER and CREATE TABLE are
+  reported as warnings: only `uw-pipeline init-db`-style table creation needs them);
 - ADLS: write, read and delete one small file under the configured root.
 Credentials are never printed. Exit code 0 when everything needed is in place.
 """
@@ -45,17 +45,20 @@ def check_db(label: str, engine, expected: set[str], create: bool) -> bool:  # t
                       f"{', '.join(missing[:5])} (apply deploy/sql/*.sql)")  # fmt: skip
             else:
                 print(f"OK    {label}: all {len(expected)} tables present")
-            perms = ["SELECT", "INSERT", "UPDATE", "DELETE"] + (["ALTER"] if create else [])
-            for perm in perms:
+            for perm in ["SELECT", "INSERT", "UPDATE", "DELETE"]:
                 has = c.execute(text("SELECT HAS_PERMS_BY_NAME(:s, 'SCHEMA', :p)"),
                                 {"s": schema, "p": perm}).scalar()  # fmt: skip
                 print(f"{'OK  ' if has else 'FAIL'}  {label}: {perm} on [{schema}]")
                 ok = ok and bool(has)
-            if create:
-                has = c.execute(text("SELECT HAS_PERMS_BY_NAME(DB_NAME(), 'DATABASE', "
-                                     "'CREATE TABLE')")).scalar()  # fmt: skip
-                print(f"{'OK  ' if has else 'WARN'}  {label}: CREATE TABLE (only needed if the "
-                      "pipeline creates its own tables)")  # fmt: skip
+            if create:  # runs use #temp tables only; creating the tables themselves needs these
+                has_alter = c.execute(text("SELECT HAS_PERMS_BY_NAME(:s, 'SCHEMA', 'ALTER')"),
+                                      {"s": schema}).scalar()  # fmt: skip
+                has_create = c.execute(text("SELECT HAS_PERMS_BY_NAME(DB_NAME(), 'DATABASE', "
+                                            "'CREATE TABLE')")).scalar()  # fmt: skip
+                for perm, has in ((f"ALTER on [{schema}]", has_alter),
+                                  ("CREATE TABLE", has_create)):  # fmt: skip
+                    print(f"{'OK  ' if has else 'WARN'}  {label}: {perm} (only needed if the "
+                          "pipeline creates its own tables)")  # fmt: skip
     except Exception as exc:  # report and continue with the other checks
         print(f"FAIL  {label}: {type(exc).__name__}: {str(exc)[:300]}")
         return False
@@ -68,10 +71,8 @@ def check_adls(settings: Settings) -> bool:
         key = f"_smoke/{datetime.now(UTC):%Y%m%dT%H%M%S}.txt"
         locator = storage.write_bytes(key, b"uw-pipeline smoke test")
         ok = storage.exists(key) and storage.read_bytes(key) == b"uw-pipeline smoke test"
-        fs = getattr(storage, "fs", None)
-        root = getattr(storage, "root", "")
-        if fs is not None:
-            fs.get_file_client(f"{root}/{key}" if root else key).delete_file()
+        storage.delete(key)
+        ok = ok and not storage.exists(key)
         print(f"{'OK  ' if ok else 'FAIL'}  ADLS: write/read/delete {locator}")
         return ok
     except Exception as exc:

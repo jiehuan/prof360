@@ -2,7 +2,8 @@
 
 Every generated item must cite input items; each quote must be found in the item it cites,
 and every number in the text must match a metric value in the package or appear in a cited
-quote. Items that fail are dropped and counted.
+item (the quote or the cited item's text, decisions D-033). Items that fail are dropped and
+counted.
 """
 
 from __future__ import annotations
@@ -101,6 +102,7 @@ class TaskRunner:
         raw = cached_call(
             self.conn, self.client, spec, task=task, prompt_version=prompt_version,
             system=system, user=user, schema=strict_json_schema(model), now=self.now(),
+            validate=model.model_validate,
         )  # fmt: skip
         if raw is None:
             return None

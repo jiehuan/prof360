@@ -83,12 +83,15 @@ def azure_sql_url(cfg: AzureSqlConfig, env: str, client_id: str, client_secret: 
     return URL.create(
         "mssql+pyodbc", username=client_id, password=client_secret, host=e.server,
         port=e.port, database=e.database,
+        # MARS: a loop may read one result while issuing another query on the connection;
+        # without it SQL Server answers "connection is busy" (call sites read fully as well).
         query={"driver": cfg.driver, "authentication": cfg.authentication, "Encrypt": "yes",
-               "TrustServerCertificate": "no"},
+               "TrustServerCertificate": "no", "MARS_Connection": "yes"},
     )  # fmt: skip
 
 
-def _azure(settings: Settings) -> tuple[AzureConfig, str]:
+def azure_config(settings: Settings) -> tuple[AzureConfig, str]:
+    """config/azure.yaml and the environment in use (AZURE_ENV, else the config default)."""
     cfg = load_azure_config(settings.config_dir)
     return cfg, settings.azure_env or cfg.default_env
 
@@ -97,7 +100,7 @@ def _sql_engine(settings: Settings, app: bool) -> Engine:
     url = settings.app_database_url if app else settings.database_url
     schema = settings.app_database_schema if app else settings.database_schema
     if settings.database_backend == "azure_sql":
-        cfg, env = _azure(settings)
+        cfg, env = azure_config(settings)
         if not (settings.azure_sql_client_id and settings.azure_sql_client_secret):
             raise RuntimeError("DATABASE_BACKEND=azure_sql needs AZURE_SQL_CLIENT_ID and "
                                "AZURE_SQL_CLIENT_SECRET")  # fmt: skip

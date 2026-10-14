@@ -258,3 +258,11 @@ def test_grounding_ignores_footnote_markers_left_out() -> None:
                        "ratio of 13.9%", src)  # fmt: skip
     assert is_grounded("Residential real estate $ 300,664", "Residential real estate(a)\n$ 300,664")
     assert not is_grounded("Standardized ratio of 13.8%", src)
+
+
+def test_footnote_rule_keeps_period_labels_apart() -> None:
+    """Review 2026-10-14: stripping digits glued to letters made 'q3' and 'q4' the same."""
+    src = "Q4 net revenue increased 12% on higher fees"
+    assert not is_grounded("Q3 net revenue increased 12% on higher fees", src)
+    assert not is_grounded("FY24 net revenue increased 12%", "FY25 net revenue increased 12%")
+    assert is_grounded("Q4 net revenue increased 12%", src)

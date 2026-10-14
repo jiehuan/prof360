@@ -195,3 +195,14 @@ def test_negative_equity_and_buybacks() -> None:
     assert [s.rule_id for s in out] == ["negative_equity", "buybacks_with_negative_equity"]
     assert "-4,525M" in out[0].description and "4,000M" in out[1].description
     assert metric_signals([q("equity", 2026, 2, 10e9)], RULES) == []
+
+
+def test_negative_equity_survives_a_preliminary_quarter() -> None:
+    """Review 2026-10-14: a PRELIMINARY revenue row for the next quarter (earnings release
+    before the 10-Q) made the latest quarter one without equity, and the signal flapped."""
+    values = [q("equity", 2026, 2, -4525e6)] + [
+        q("buybacks", fy, fq, 1e9) for fy, fq in [(2025, 3), (2025, 4), (2026, 1), (2026, 2)]
+    ] + [q("revenue", 2026, 3, 7.3e9, end="2026-09-30")]  # fmt: skip
+    out = metric_signals(values, RULES)
+    assert [s.rule_id for s in out] == ["negative_equity", "buybacks_with_negative_equity"]
+    assert "FY2026 Q2" in out[0].description

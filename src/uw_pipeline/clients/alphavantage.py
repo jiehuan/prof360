@@ -124,7 +124,9 @@ class AlphaVantageClient:
         self._count_call()
         if response.status_code == 429 or response.status_code >= 500:
             raise TransientError(f"HTTP {response.status_code}")
-        response.raise_for_status()
+        if response.status_code >= 400:
+            # Not raise_for_status(): its message contains the request URL, and with it the key.
+            raise AlphaVantageError(f"Alpha Vantage returned HTTP {response.status_code}")
         return response.content
 
     def fetch(

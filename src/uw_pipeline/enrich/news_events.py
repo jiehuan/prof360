@@ -66,7 +66,7 @@ def event_pairs(
             conn, client, spec,
             task="news_events", prompt_version=prompt_version, system=system,
             user=f"Company: {company}\n\nid | date | source | headline\n" + "\n".join(lines),
-            schema=SCHEMA, now=now(),
+            schema=SCHEMA, now=now(), validate=EventGroups.model_validate,
         )  # fmt: skip
         if raw is None:
             continue

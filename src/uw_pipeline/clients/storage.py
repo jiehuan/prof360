@@ -4,6 +4,7 @@ backends without rewriting the database."""
 
 from __future__ import annotations
 
+import contextlib
 import os
 import tempfile
 import uuid
@@ -19,6 +20,10 @@ class Storage(Protocol):
     def read_bytes(self, key: str) -> bytes: ...
     def write_bytes(self, key: str, data: bytes) -> str:
         """Write `data` under `key` and return a locator (path/URI) recorded for lineage."""
+        ...
+
+    def delete(self, key: str) -> None:
+        """Remove `key` if present."""
         ...
 
 
@@ -54,6 +59,9 @@ class LocalStorage:
             raise
         return str(path)
 
+    def delete(self, key: str) -> None:
+        self._path(key).unlink(missing_ok=True)
+
 
 class AdlsStorage:
     """Stores objects in an ADLS Gen2 container under `root` (Phase 12, D-040).
@@ -85,31 +93,36 @@ class AdlsStorage:
         head, _, name = path.rpartition("/")
         tmp = f"{head}/.tmp-{uuid.uuid4().hex}-{name}" if head else f".tmp-{uuid.uuid4().hex}"
         tmp_client = self.fs.get_file_client(tmp)
-        tmp_client.upload_data(data, overwrite=True)
         try:
+            tmp_client.upload_data(data, overwrite=True)
             # rename_file takes "<file system>/<path>"
             tmp_client.rename_file(f"{self.fs.file_system_name}/{path}")
         except BaseException:
-            tmp_client.delete_file()
+            # Best effort: when the service is unreachable this fails too, and the error that
+            # matters is the original one.
+            with contextlib.suppress(Exception):
+                tmp_client.delete_file()
             raise
         return f"{self.locator_prefix}/{path}" if self.locator_prefix else path
+
+    def delete(self, key: str) -> None:
+        client = self.fs.get_file_client(self._path(key))
+        if client.exists():
+            client.delete_file()
 
 
 def make_storage(settings: Settings) -> Storage:
     """Local files (data/raw) off the corporate network; ADLS on it (STORAGE_BACKEND=adls)."""
     if settings.storage_backend == "local":
         return LocalStorage(settings.raw_dir)
-    if settings.storage_backend != "adls":
-        raise ValueError(f"STORAGE_BACKEND={settings.storage_backend!r}: use local or adls")
     if not (settings.adls_client_id and settings.adls_client_secret):
         raise RuntimeError("STORAGE_BACKEND=adls needs ADLS_CLIENT_ID and ADLS_CLIENT_SECRET")
     from azure.identity import ClientSecretCredential  # optional dependency: ".[azure]"
     from azure.storage.filedatalake import DataLakeServiceClient
 
-    from uw_pipeline.clients.db import load_azure_config
+    from uw_pipeline.clients.db import azure_config
 
-    cfg = load_azure_config(settings.config_dir)
-    env = settings.azure_env or cfg.default_env
+    cfg, env = azure_config(settings)
     if env not in cfg.adls.environments:
         raise ValueError(f"AZURE_ENV={env!r} is not in config/azure.yaml")
     e = cfg.adls.environments[env]

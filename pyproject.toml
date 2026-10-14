@@ -75,8 +75,8 @@ mypy_path = "src"
 packages = ["uw_pipeline"]
 
 [[tool.mypy.overrides]]
-# Optional dependency (".[azure]"), imported only when STORAGE_BACKEND=adls.
-module = ["azure.*"]
+# Optional dependencies (".[azure]"), imported only for ADLS storage / SQL Server.
+module = ["azure.*", "pyodbc"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

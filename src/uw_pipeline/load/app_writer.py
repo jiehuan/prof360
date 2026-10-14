@@ -28,16 +28,27 @@ def _hash(values: Mapping[str, Any]) -> str:
 
 
 class AppWriter:
-    def __init__(self, conn: Connection, now: datetime) -> None:
-        self.conn, self.now = conn, now
+    def __init__(self, conn: Connection, now: datetime, *, scope: str = "") -> None:
+        """`scope`: the key prefix of the objects this writer publishes (one company), so
+        existence checks read only that company's rows, not whole tables."""
+        self.conn, self.now, self.scope = conn, now, scope
         self.written = 0
         self.unchanged = 0
-        self._existing: dict[str, set[int]] = {}  # app ids present, loaded once per table
+        self._existing: dict[tuple[str, bool], set[int]] = {}  # app ids present, loaded once
 
-    def _exists(self, table: Table, app_id: int) -> bool:
-        if table.name not in self._existing:
-            self._existing[table.name] = set(self.conn.execute(select(_pk(table))).scalars())
-        return app_id in self._existing[table.name]
+    def _exists(self, table: Table, app_id: int, key: str) -> bool:
+        scoped = bool(self.scope) and key.startswith(self.scope)
+        cache = (table.name, scoped)
+        if cache not in self._existing:
+            ids = select(_pk(table))
+            if scoped:  # this company's mapped rows only
+                mine = select(pmap.c.app_id).where(
+                    pmap.c.entity == table.name,
+                    pmap.c.pipeline_key.startswith(self.scope, autoescape=True),
+                )
+                ids = ids.where(_pk(table).in_(mine))
+            self._existing[cache] = set(self.conn.execute(ids).scalars())
+        return app_id in self._existing[cache]
 
     def lookup(self, table: Table, key: str) -> int | None:
         return self.conn.execute(
@@ -53,7 +64,7 @@ class AppWriter:
         ).first()  # fmt: skip
         pk = _pk(table)
         if known is not None:
-            if known.row_hash == h and self._exists(table, int(known.app_id)):
+            if known.row_hash == h and self._exists(table, int(known.app_id), key):
                 self.unchanged += 1
                 return int(known.app_id)
             res = self.conn.execute(update(table).where(pk == known.app_id).values(**values))
@@ -72,7 +83,9 @@ class AppWriter:
         new = self.conn.execute(insert(table).values(**values)).inserted_primary_key
         assert new is not None
         app_id = int(new[0])
-        self._existing.setdefault(table.name, set()).add(app_id)
+        self._existing.setdefault(
+            (table.name, bool(self.scope) and key.startswith(self.scope)), set()
+        ).add(app_id)
         self.conn.execute(insert(pmap).values(entity=table.name, pipeline_key=key, app_id=app_id,
                                               row_hash=h, published_at=self.now))  # fmt: skip
         self.written += 1
@@ -105,19 +118,31 @@ class AppWriter:
         return len(stale)
 
     def deactivate_except(self, table: Table, prefix: str, keep: Iterable[str]) -> int:
-        """Set isActive = 0 on this prefix's rows not in `keep` (retired versions are kept)."""
+        """Set isActive = 0 on this prefix's rows not in `keep` (retired versions are kept).
+
+        Rows retired earlier have an empty row_hash and are not looked at again, so the work
+        (and the IN lists) stay small however many old versions accumulate."""
         keep = set(keep)
-        stale = {k: a for k, a in self.keys(table, prefix).items() if k not in keep}
-        if not stale:
-            return 0
-        res = self.conn.execute(
-            update(table).where(_pk(table).in_(list(stale.values())), table.c.isActive == true())
-            .values(isActive=False)
-        )  # fmt: skip
-        # Forget the content hash, so a later put of the same key rewrites the row.
-        self.conn.execute(
-            update(pmap)
-            .where(pmap.c.entity == table.name, pmap.c.pipeline_key.in_(list(stale)))
-            .values(row_hash="")
-        )  # fmt: skip
-        return int(res.rowcount or 0)
+        active = self.conn.execute(
+            select(pmap.c.pipeline_key, pmap.c.app_id).where(
+                pmap.c.entity == table.name,
+                pmap.c.pipeline_key.startswith(prefix, autoescape=True),
+                pmap.c.row_hash != "",
+            )
+        ).all()
+        stale = {k: int(a) for k, a in active if k not in keep}
+        changed = 0
+        ids, keys = list(stale.values()), list(stale)
+        for i in range(0, len(ids), 500):
+            res = self.conn.execute(
+                update(table).where(_pk(table).in_(ids[i : i + 500]), table.c.isActive == true())
+                .values(isActive=False)
+            )  # fmt: skip
+            changed += int(res.rowcount or 0)
+            # Forget the content hash, so a later put of the same key rewrites the row.
+            self.conn.execute(
+                update(pmap)
+                .where(pmap.c.entity == table.name, pmap.c.pipeline_key.in_(keys[i : i + 500]))
+                .values(row_hash="")
+            )  # fmt: skip
+        return changed

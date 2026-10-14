@@ -240,3 +240,14 @@ def test_fmt_value() -> None:
     assert fmt_value(0.0485, "fraction") == "4.9%"
     assert fmt_value(5.5611, "ratio") == "5.56x"
     assert fmt_value(None, "ratio", "NM") == "N/M"
+
+
+def test_number_grounding_does_not_match_inside_decimals() -> None:
+    from uw_pipeline.enrich.grounding import ungrounded_numbers
+
+    assert ungrounded_numbers("an impairment of $27 million", ["charges of 27.5 million"], []) == [
+        "$27 million"
+    ]
+    assert (
+        ungrounded_numbers("an impairment of $27.5 million", ["charges of 27.5 million"], []) == []
+    )

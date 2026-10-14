@@ -245,6 +245,7 @@ class Voter:
             self.conn, self.client, spec,
             task="signals", prompt_version=self.config.prompt_version,
             system=self.system, user=user, schema=SCHEMA, now=self.now(),
+            validate=SectionSignals.model_validate,
         )  # fmt: skip
         if raw is None:
             return None
@@ -273,7 +274,7 @@ class Voter:
             self.conn, self.client, self.config.tiebreaker,
             task="tiebreak", prompt_version=self.config.tiebreak_prompt_version,
             system=self.tiebreak_system, user=user + "\n".join(lines),
-            schema=TIEBREAK_SCHEMA, now=self.now(),
+            schema=TIEBREAK_SCHEMA, now=self.now(), validate=TieBreak.model_validate,
         )  # fmt: skip
         if raw is None:
             return None

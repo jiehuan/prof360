@@ -2,7 +2,7 @@
 
 import json
 
-from sqlalchemy import create_engine, func, insert, select, update
+from sqlalchemy import create_engine, delete, event, func, insert, select, update
 
 from tests import test_insights as ti
 from tests import test_metric_detail as tm
@@ -12,7 +12,13 @@ from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig, load_industry_config
 from uw_pipeline.enrich.sources import load_source_labels
 from uw_pipeline.jobs.run_publish import load_publish_config, run_publish_stage
-from uw_pipeline.schema import followup_question, signal
+from uw_pipeline.schema import (
+    followup_question,
+    signal,
+    source_document,
+    transcript_flag,
+    transcript_tone,
+)
 from uw_pipeline.schema_app import (
     Company,
     CompanyMetricDetail,
@@ -22,6 +28,7 @@ from uw_pipeline.schema_app import (
     MatrixData,
     RiskTypes,
     StrategicRisk,
+    TranscriptRiskFlag,
     app_metadata,
     metrics,
 )
@@ -155,3 +162,45 @@ def test_question_flag_target_is_stable() -> None:
             .one()
         )
     assert row["title"] == text and not row["isActive"]
+
+
+def test_transcript_flags_are_rewritten_only_when_they_change() -> None:
+    engine, app, _ = _env()
+    with engine.begin() as c:
+        c.execute(insert(source_document).values(
+            doc_id=900, company_id=1, source_type="TRANSCRIPT", form_type="EARNINGS_CALL",
+            doc_role="PRIMARY", accession_no="AV-MAR-2026Q2", doc_name="t", filed_at="2026-08-01",
+            url="u", content_hash="h"))  # fmt: skip
+        c.execute(insert(transcript_tone).values(
+            doc_id=900, company_id=1, overall_tone=0.1, n_chunks=2, n_chunks_attempted=2, model="m",
+            prompt_version="v1", input_hash="i", run_id=5, created_at=ti.NOW))  # fmt: skip
+        c.execute(insert(transcript_flag), [
+            {"doc_id": 900, "flag_index": i, "category": "litigation", "flag_text": f"flag {i}",
+             "chunk_index": 0} for i in range(2)])  # fmt: skip
+    writes: list[str] = []
+
+    @event.listens_for(app, "before_cursor_execute")
+    def _record(conn, cursor, statement, *args) -> None:
+        if "TranscriptRiskFlag" in statement and not statement.startswith("SELECT"):
+            writes.append(statement)
+
+    def flags():
+        with app.connect() as c:
+            return c.execute(select(TranscriptRiskFlag.c.runId, TranscriptRiskFlag.c.FlagIndex,
+                                    TranscriptRiskFlag.c.FlagText)).all()  # fmt: skip
+
+    _publish(engine, app)
+    assert sorted(flags()) == [(5, 0, "flag 0"), (5, 1, "flag 1")]
+    writes.clear()
+    _publish(engine, app)
+    assert writes == []  # unchanged: nothing deleted or rewritten
+    with engine.begin() as c:  # rescored in run 6 with one flag
+        c.execute(update(transcript_tone).values(run_id=6))
+        c.execute(delete(transcript_flag).where(transcript_flag.c.flag_index == 1))
+    _publish(engine, app)
+    assert flags() == [(6, 0, "flag 0")]
+    with engine.begin() as c:  # transcript no longer scored
+        c.execute(delete(transcript_flag))
+        c.execute(delete(transcript_tone))
+    _publish(engine, app)
+    assert flags() == []

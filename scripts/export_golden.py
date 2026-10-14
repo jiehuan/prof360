@@ -39,11 +39,15 @@ def main() -> None:
             ).scalar()
             if company_id is None:
                 sys.exit(f"{ticker} not loaded")
-            rows = conn.execute(
-                select(insight)
-                .where(insight.c.company_id == company_id, insight.c.is_current == true())
-                .order_by(insight.c.kind, insight.c.ordinal)
-            ).mappings()
+            rows = (
+                conn.execute(
+                    select(insight)
+                    .where(insight.c.company_id == company_id, insight.c.is_current == true())
+                    .order_by(insight.c.kind, insight.c.ordinal)
+                )
+                .mappings()
+                .all()
+            )  # read fully: the loop queries again (SQL Server)
             insights = []
             for r in rows:
                 evidence = conn.execute(

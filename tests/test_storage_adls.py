@@ -31,6 +31,8 @@ class FakeFile:
         self.fs.files[target] = self.fs.files.pop(self.path)
 
     def delete_file(self) -> None:
+        if self.fs.fail_delete:
+            raise ConnectionError("service unreachable")
         self.fs.files.pop(self.path, None)
 
 
@@ -40,6 +42,7 @@ class FakeFs:
     def __init__(self) -> None:
         self.files: dict[str, bytes] = {}
         self.fail_rename = False
+        self.fail_delete = False
 
     def get_file_client(self, path: str) -> FakeFile:
         return FakeFile(self, path)
@@ -67,6 +70,21 @@ def test_failed_rename_leaves_no_partial_file() -> None:
     assert fs.files == {}
 
 
+def test_failed_cleanup_keeps_the_original_error() -> None:
+    fs = FakeFs()
+    fs.fail_rename = fs.fail_delete = True
+    with pytest.raises(OSError, match="rename failed"):  # not the cleanup's ConnectionError
+        AdlsStorage(fs, "raw").write_bytes("a/b.json", b"x")
+
+
+def test_delete() -> None:
+    st = AdlsStorage(FakeFs(), "raw")
+    st.write_bytes("a/b.json", b"x")
+    st.delete("a/b.json")
+    st.delete("a/b.json")  # absent: no error
+    assert not st.exists("a/b.json")
+
+
 @pytest.mark.parametrize("key", ["../x", "/abs", "a//b", "a/./b"])
 def test_keys_cannot_escape_the_root(key: str) -> None:
     with pytest.raises(ValueError):
@@ -78,5 +96,9 @@ def test_backend_selection(tmp_path) -> None:
     assert type(make_storage(Settings(**base))).__name__ == "LocalStorage"
     with pytest.raises(RuntimeError, match="ADLS_CLIENT_ID"):
         make_storage(Settings(**base, storage_backend="adls"))
-    with pytest.raises(ValueError, match="use local or adls"):
-        make_storage(Settings(**base, storage_backend="s3"))
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):  # a typo fails at startup, never falls back silently
+        Settings(**base, storage_backend="s3")
+    with pytest.raises(ValidationError):
+        Settings(**base, database_backend="azure-sql")

@@ -119,6 +119,21 @@ def _store_sections(conn: Connection, doc_id: int, sections: list[Section]) -> N
                 section_chunk.c.chunk_index >= len(chunks),
             )
         )
+    # Sections the new split no longer finds (e.g. after a `sections:` override fixed a false
+    # match) go too, or their old text would keep feeding signals and insights.
+    stale = (
+        conn.execute(
+            select(filing_section.c.section_id).where(
+                filing_section.c.doc_id == doc_id,
+                filing_section.c.section_code.not_in([s.code for s in sections]),
+            )
+        )
+        .scalars()
+        .all()
+    )
+    if stale:
+        conn.execute(delete(section_chunk).where(section_chunk.c.section_id.in_(stale)))
+        conn.execute(delete(filing_section).where(filing_section.c.section_id.in_(stale)))
 
 
 def _download(

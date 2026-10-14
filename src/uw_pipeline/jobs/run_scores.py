@@ -108,6 +108,7 @@ def _call(conn: Connection, client: LLMClient, llm: LLMConfig, task: str, versio
     raw = cached_call(
         conn, client, llm.extractor, task=task, prompt_version=version, system=system,
         user=user, schema=strict_json_schema(model), now=now,
+        validate=model.model_validate,
     )  # fmt: skip
     if raw is None:
         return None
@@ -227,7 +228,10 @@ def score_transcripts(
             **{dim: weighted_mean(scores, weights, dim) for dim in TONE_DIMS},
             "n_chunks": len(scores), "n_chunks_attempted": len(chunks),
             "model": llm.extractor.model, "prompt_version": cfg.prompt_version,
-            "input_hash": input_hash, "run_id": run_id, "created_at": now,
+            # Only a complete scoring is final; otherwise the next run tries again (chunk calls
+            # that succeeded come back from the LLM cache).
+            "input_hash": input_hash if len(scores) == len(chunks) else "",
+            "run_id": run_id, "created_at": now,
         }], key_cols=["doc_id"])  # fmt: skip
         # Flags: verbatim quotes only, from the chunks with the most liability cues first.
         flags = []

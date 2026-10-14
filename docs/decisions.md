@@ -673,3 +673,73 @@ DataLakeServiceClient), configured for the pipeline.
   values stay valid; writes go to a temporary name and are renamed into place.
 - `scripts/azure_smoke.py` checks connections, schemas, tables, permissions and ADLS read/write
   on the corporate network before the first run.
+
+**D-041 Code review fixes (2026-10-14).** A review of the whole repository (after Phase 12)
+found 38 issues. 34 are fixed, most with a regression test; 4 are left as they are (end of this
+entry). Grouped by what they affected:
+- **Runs** (`jobs/orchestrator.py`, `config/jobs.yaml`).
+  - **One run at a time, across jobs.** A live run of any job (fresh heartbeat) blocks a new
+    start (exit code 2). Before, only the same job was blocked, so the 4x/day news job could run
+    alongside nightly and both wrote news, scores and the app tables.
+  - **Bounded resume.** A dead run is resumed only by the same job with the same stages and
+    companies, and only within `resume_within_hours` (12) of its start. Older or different dead
+    runs are closed (FAILED, `"abandoned": true` in stats) and the new run starts fresh, instead
+    of continuing a days-old run with stale inputs.
+  - **Heartbeat during a task.** A background thread refreshes `heartbeat_at` every
+    `heartbeat_minutes` (5). A single long task (insights for all companies) took longer than
+    `stale_after_minutes`, so a second start could take the live run for dead and run it twice.
+- **LLM calls** (`enrich/llm.cached_call`).
+  - Outputs are schema-validated before they are cached. An invalid output was cached and
+    re-served on every run; it is now recorded as an error and asked again next time.
+  - On SQL Server the cache row is written in its own transaction, so a stage that fails and
+    rolls back keeps the calls it already paid for.
+  - A request too large for the model (one very long document) fails that item only; it used
+    to switch the LLM off for the rest of the run. Same for SecureGPT's context-length 400.
+- **Grounding** (`GROUNDING_VERSION` 6; stored insights are re-checked once, without LLM cost).
+  - Footnote markers are stripped only when glued to a word or in parentheses: a period label
+    such as "2025" could be taken for a footnote.
+  - Numbers match only whole numbers: "5" no longer matches inside "2.5" or "15", in insight
+    checks and in text-metric quotes.
+- **Data.**
+  - Negative-equity signal: used the latest quarter even when that quarter only had preliminary
+    results without equity, so negative equity went unreported. Now the latest quarter that has
+    an equity value.
+  - Text metrics: when one model's answer is missing for a source, the earlier values are kept
+    instead of deleted; the fiscal calendar uses the company's fiscal year end (was always
+    December); a period XBRL reports as not meaningful (N/M) is not filled from text.
+  - Transcript tone scored on only some chunks is not cached as complete, so the rest are
+    scored next run.
+  - A re-split document drops the sections it no longer finds (and their chunks). After a
+    `sections:` override fixed a false match, the old section kept feeding signals.
+- **Database writes.**
+  - Upserts drop repeated keys within one batch (a SQL Server MERGE fails on them).
+  - Deletes follow foreign keys: news risk scores before their activities (pipeline) and
+    before the News rows they point to (app).
+  - Publish: `NewsRiskScore.ActivityId` holds the app's `Activities.ActivityId` (it held the
+    pipeline's id). `TranscriptRiskFlag` rows are written only when they change (they were
+    deleted and re-inserted on every publish), and flags of transcripts no longer scored go.
+  - The app writer checks existence against the company's own rows, not whole tables, and does
+    not re-examine retired versions (`isActive = 0`) on every publish.
+  - SQL Server staging inserts use `fast_executemany` with explicit parameter types. Long text
+    no longer needs the slow path, and timestamps keep their microseconds (fast mode dropped
+    them).
+  - Result sets are read in full before the next query (audit, golden export), and Azure SQL
+    connections enable MARS, against "connection is busy".
+- **Security and operations.**
+  - Alpha Vantage HTTP errors no longer carry the request URL, which contains the API key and
+    could reach logs and `pipeline_task.error`.
+  - A misspelt `DATABASE_BACKEND` / `STORAGE_BACKEND` fails at startup instead of silently
+    using SQLite / local files.
+  - ADLS: a failed clean-up of a temporary file no longer hides the original error;
+    `Storage.delete` replaces the smoke test's reach into the client.
+  - `azure_smoke.py`: ALTER on the pipeline schema is a warning, like CREATE TABLE (runs use
+    `#temp` tables only). `init-db` on Azure SQL points to `deploy/sql/` instead of a traceback.
+  - `test_mssql.sh` waits for a working login; the log line it waited for survives a restart.
+- **Left as they are.**
+  - Q4 = FY − 9M can combine a restated full year with nine months as first reported (D-035).
+    The `quarters_vs_year` DQ rule shows such cases; they usually resolve with the next 10-K.
+  - An insight number may come from the cited item's text, not only the quoted sentence: by
+    design (D-033); the docstring now says so.
+  - SEC data is fetched again for every company on every nightly run. Fine for the 9 current
+    companies; part of the scale-out plan (Phase 10).
+  - One finding was judged not reachable with the inputs the pipeline produces.

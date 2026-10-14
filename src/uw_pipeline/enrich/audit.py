@@ -90,9 +90,14 @@ def audit(conn: Connection, sample: int = 20, seed: int = 7) -> AuditReport:
     picked = random.Random(seed).sample(with_evidence, min(sample, len(with_evidence)))
     rep.sampled_insights = len(picked)
     for i in picked:
-        for ev in conn.execute(
-            select(insight_evidence).where(insight_evidence.c.insight_id == i.insight_id)
-        ).mappings():
+        # Read fully first: the loop queries again (one active result per SQL Server connection).
+        for ev in (
+            conn.execute(
+                select(insight_evidence).where(insight_evidence.c.insight_id == i.insight_id)
+            )
+            .mappings()
+            .all()
+        ):
             if ev["source_kind"] == "METRIC":
                 continue  # metric rows are rendered from metric_value; checked at generation
             rep.snippets += 1
@@ -117,7 +122,7 @@ def audit(conn: Connection, sample: int = 20, seed: int = 7) -> AuditReport:
     ).all()  # fmt: skip
     rep.questions = len(questions)
     rep.questions_without_sources = sum(1 for _, n in questions if not n)
-    for r in conn.execute(select(loan_portfolio_segment)).mappings():
+    for r in conn.execute(select(loan_portfolio_segment)).mappings().all():
         rep.loan_rows += 1
         text = " ".join(conn.execute(select(filing_section.c.text).where(
             filing_section.c.doc_id == r["source_doc_id"])).scalars())  # fmt: skip

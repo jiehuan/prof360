@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -34,7 +35,7 @@ class Settings(BaseSettings):
     app_database_url: str = "sqlite:///data/app.db"
     # Phase 12 (D-040): `url` uses the URLs above (SQLite off the network, or any SQLAlchemy URL);
     # `azure_sql` builds the URL from config/azure.yaml with a service principal.
-    database_backend: str = "url"
+    database_backend: Literal["url", "azure_sql"] = "url"  # anything else fails at startup
     # Schema of the pipeline / application tables (default: from config/azure.yaml for
     # azure_sql, none otherwise).
     database_schema: str | None = None
@@ -43,7 +44,7 @@ class Settings(BaseSettings):
     azure_sql_client_id: str | None = None
     azure_sql_client_secret: SecretStr | None = None
     # Raw landing zone: `local` (data/raw) or `adls` (config/azure.yaml).
-    storage_backend: str = "local"
+    storage_backend: Literal["local", "adls"] = "local"
     adls_client_id: str | None = None
     adls_client_secret: SecretStr | None = None
 

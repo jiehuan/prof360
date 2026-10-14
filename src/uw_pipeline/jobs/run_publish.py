@@ -32,7 +32,7 @@ from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_metric_detail import value_source
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.load.app_writer import AppWriter
-from uw_pipeline.load.upsert import upsert
+from uw_pipeline.load.upsert import delete_keys, upsert
 from uw_pipeline.schema import (
     activity,
     followup_question,
@@ -582,7 +582,14 @@ class Publisher:
             })  # fmt: skip
         self.stats.add("Activities", len(keep_a))
         self.stats.add("News", len(keep_n))
-        # Articles the news stage pruned as unrelated (Phase 9) leave the app too.
+        # Articles the news stage pruned as unrelated (Phase 9) leave the app too. Their scores
+        # reference News (FK, enforced on SQL Server), so they go first.
+        kept = set(keep_n)
+        gone = [a for k, a in self.w.keys(News, self.p).items() if k not in kept]
+        for i in range(0, len(gone), 500):
+            self.w.conn.execute(
+                NewsRiskScore.delete().where(NewsRiskScore.c.NewsId.in_(gone[i : i + 500]))
+            )
         self.w.drop_except(Activities, self.p, keep_a)
         self.w.drop_except(News, self.p, keep_n)
 
@@ -603,7 +610,9 @@ class Publisher:
                 continue
             out.append({
                 "NewsId": news_id, "runId": r["run_id"] or 0, "CompanyId": self.app_company,
-                "ActivityId": r["activity_id"], "litigationEO": r["litigation"],
+                # the app's Activities.ActivityId, not the pipeline's activity id
+                "ActivityId": self.w.lookup(Activities, f"{self.p}{r['activity_id']}"),
+                "litigationEO": r["litigation"],
                 "regulatory": r["regulatory"], "financialDistress": r["financial_distress"],
                 "governance": r["governance"], "operational": r["operational"],
                 "overallRiskScore": r["overall"], "rationale": r["rationale"],
@@ -635,20 +644,36 @@ class Publisher:
                 "modelVersion": f"{t['model']}/{t['prompt_version']}", "createdAt": t["created_at"],
             })  # fmt: skip
             keep.append(key)
-            flags = [
-                {"TranscriptsId": t["doc_id"], "runId": run, "FlagIndex": f.flag_index,
-                 "FlagText": f.flag_text, "Category": f.category}
-                for f in self.src.execute(
-                    select(transcript_flag).where(transcript_flag.c.doc_id == t["doc_id"])
-                )
-            ]  # fmt: skip
-            dst.execute(TranscriptRiskFlag.delete().where(
-                TranscriptRiskFlag.c.TranscriptsId == t["doc_id"]))  # fmt: skip
-            if flags:
-                dst.execute(TranscriptRiskFlag.insert(), flags)
-            self.stats.add("TranscriptRiskFlag", len(flags))
+            self._flags(t["doc_id"], run)
         self.stats.add("TranscriptToneAnalysis", len(keep))
+        kept = set(keep)  # flags of transcripts no longer scored go with their tone row
+        gone = [(int(k[len(self.p) :]),) for k in self.w.keys(TranscriptToneAnalysis, self.p)
+                if k not in kept]  # fmt: skip
+        delete_keys(dst, TranscriptRiskFlag, ["TranscriptsId"], gone)
         self.w.drop_except(TranscriptToneAnalysis, self.p, keep)
+
+    def _flags(self, doc_id: int, run: int) -> None:
+        """A transcript's risk flags: written only when they changed, stale ones removed."""
+        flags = {
+            (run, f.flag_index): {"TranscriptsId": doc_id, "runId": run, "FlagIndex": f.flag_index,
+                                  "FlagText": f.flag_text, "Category": f.category}
+            for f in self.src.execute(
+                select(transcript_flag).where(transcript_flag.c.doc_id == doc_id)
+            ).all()
+        }  # fmt: skip
+        trf, key = TranscriptRiskFlag.c, ["TranscriptsId", "runId", "FlagIndex"]
+        old = {
+            (r["runId"], r["FlagIndex"]): dict(r)
+            for r in self.w.conn.execute(
+                select(TranscriptRiskFlag).where(trf.TranscriptsId == doc_id)
+            ).mappings().all()
+        }  # fmt: skip
+        self.stats.add("TranscriptRiskFlag", len(flags))
+        if old == flags:
+            return
+        delete_keys(self.w.conn, TranscriptRiskFlag, key,
+                    [(doc_id, *k) for k in old if k not in flags])  # fmt: skip
+        upsert(self.w.conn, TranscriptRiskFlag, list(flags.values()), key_cols=key)
 
 
 def publish_company(
@@ -665,7 +690,7 @@ def publish_company(
     group = industry.groups[row["industry_group"]]
     defs = registry.for_company(cfg.ticker, group).metrics
     names = {m.code: m.display_name for m in defs} | labels.concepts
-    w = AppWriter(dst, now)
+    w = AppWriter(dst, now, scope=f"{row['cik']}:")
     p = Publisher(src, w, pcfg, labels, row, defs, names)
     p.company()
     p.metrics()

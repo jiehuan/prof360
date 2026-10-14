@@ -9,7 +9,7 @@ from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import Connection, Engine, and_, delete, select
+from sqlalchemy import Connection, Engine, and_, select
 
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.clients.sec import SecClient
@@ -18,7 +18,7 @@ from uw_pipeline.enrich.llm import LLMConfig, LLMUnavailableError
 from uw_pipeline.extract.filings import instance_name
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import company_row
-from uw_pipeline.load.upsert import upsert
+from uw_pipeline.load.upsert import delete_keys, upsert
 from uw_pipeline.normalize.xbrl_facts import text_facts_from_instance
 from uw_pipeline.schema import (
     filing_section,
@@ -226,12 +226,9 @@ def run_signals_stage(
                     r["detected_at"] = existing.get(r["signal_key"], r["detected_at"])
                 upsert(conn, signal, rows, key_cols=["signal_key"])
                 stale = set(existing) - {r["signal_key"] for r in rows}
-                if stale:
-                    conn.execute(
-                        delete(signal).where(
-                            signal.c.company_id == company_id, signal.c.signal_key.in_(stale)
-                        )
-                    )
+                if stale:  # chunked: SQL Server allows 2,100 parameters per statement
+                    delete_keys(conn, signal, ["signal_key"], [(k,) for k in sorted(stale)],
+                                signal.c.company_id == company_id)  # fmt: skip
             counts: dict[str, int] = {}
             for r in rows:
                 counts[r["severity"]] = counts.get(r["severity"], 0) + 1

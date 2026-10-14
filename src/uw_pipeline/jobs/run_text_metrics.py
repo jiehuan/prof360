@@ -161,6 +161,7 @@ class Extractor:
             self.conn, self.client, spec, task=task,
             prompt_version=prompt_version or self.cfg.prompt_version,
             system=system, user=user, schema=schema, now=self.now,
+            validate=model.model_validate,
         )  # fmt: skip
         if raw is None:
             return None
@@ -220,14 +221,18 @@ class Extractor:
         return source, out[0], out[1]
 
 
-def _xbrl_values(conn: Connection, company_id: int) -> dict[tuple[str, str, int, int], float]:
+def _xbrl_values(
+    conn: Connection, company_id: int
+) -> dict[tuple[str, str, int, int], float | None]:
+    """Rule-derived values by key, including N/M rows (value None): a period that XBRL already
+    covers never gets a PRELIMINARY value, which would alternate with compute's row."""
     rows = conn.execute(
         select(metric_value.c.metric_code, metric_value.c.period_type,
                metric_value.c.fiscal_year, metric_value.c.fiscal_quarter, metric_value.c.value)
         .where(metric_value.c.company_id == company_id,
                metric_value.c.derivation.in_(RULE_DERIVATIONS))
     )  # fmt: skip
-    return {(c, p, fy, fq): v for c, p, fy, fq, v in rows if v is not None}
+    return {(c, p, fy, fq): v for c, p, fy, fq, v in rows}
 
 
 def process_company(
@@ -249,7 +254,9 @@ def process_company(
     text_metrics: dict[str, MetricDef] = {m.code: m for m in creg.metrics if m.kind == "text"}
     listed = {m.code: m for m in creg.metrics}
     prelim = {c: d for c, d in text_cfg.preliminary.items() if c in listed}
-    cal: FiscalCalendar = learn_calendar(read_facts(conn, company_id), row["fiscal_year_end"])
+    cal: FiscalCalendar = learn_calendar(
+        read_facts(conn, company_id), row["fiscal_year_end"] or "1231"
+    )  # same fallback as the compute stage
     stats = Stats()
     ex = Extractor(client, llm, text_cfg, conn, now)
     company = row["legal_name"]
@@ -260,6 +267,9 @@ def process_company(
     start = cfg.history_start.isoformat() if cfg.history_start else ""
 
     found: list[tuple[DocText, Candidate]] = []
+    # A document whose LLM call failed this run (not one without relevant text) must not make
+    # its earlier values look stale: they would vanish from the app until a later run succeeds.
+    incomplete = False
     for doc in sorted(docs, key=lambda d: (d.filed_at, d.accession_no)):
         wanted = {c: m.extraction.definition for c, m in text_metrics.items() if m.extraction}
         groups = [m.extraction.keywords for m in text_metrics.values() if m.extraction]
@@ -272,6 +282,8 @@ def process_company(
             c for c, m in text_metrics.items() if m.extraction and m.extraction.dual_check
         }
         source, first, second = ex.values(doc, company, wanted, groups, bool(dual_codes))
+        if source and (first is None or (dual_codes and second is None)):
+            incomplete = True
         if first is None:
             continue
         stats.documents += 1
@@ -303,8 +315,10 @@ def process_company(
         if code in prelim:
             if doc.doc_role != "EX-99.1":
                 continue
-            reported = xbrl.get((code, *key))
-            if reported is not None:
+            if (code, *key) in xbrl:
+                reported = xbrl[(code, *key)]
+                if reported is None:
+                    continue  # XBRL has the period as N/M: nothing to compare, nothing to add
                 checks.append(
                     {"company_id": company_id, "accession_no": doc.accession_no,
                      "metric_code": code, "period_type": key[0], "fiscal_year": key[1],
@@ -353,6 +367,10 @@ def process_company(
         )
     ).all()
     stale = [tuple(e) for e in existing if tuple(e) not in produced]
+    if stale and incomplete:
+        log.warning("%s: an extraction failed this run; %d earlier values kept", cfg.ticker,
+                    len(stale))  # fmt: skip
+        stale = []
     if stale:
         delete_keys(conn, metric_value, keys[1:], stale,
                     metric_value.c.company_id == company_id,

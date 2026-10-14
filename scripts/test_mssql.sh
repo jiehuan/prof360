@@ -27,21 +27,34 @@ if ! docker inspect "$DB" >/dev/null 2>&1; then
 fi
 docker network inspect "$NET" | grep -q "\"Name\": \"$DB\"" || docker network connect "$NET" "$DB"
 docker start "$DB" >/dev/null
-echo "waiting for SQL Server..."
-until docker logs "$DB" 2>&1 | grep -q "ready for client connections"; do sleep 3; done
-
 docker build -q --target test -t "$IMAGE" . >/dev/null
+
+# Ready means a login works (the log line "ready for client connections" is still there from an
+# earlier start after a restart, so it says nothing about this one).
+echo "waiting for SQL Server..."
+docker run --rm -i --network "$NET" -e MSSQL_SA_PASSWORD="$SA_PASSWORD" "$IMAGE" python - <<'PY'
+import os, sys, time
+
+import pyodbc
+
+conn_str = ("DRIVER={ODBC Driver 18 for SQL Server};SERVER=uw-mssql;UID=sa;Encrypt=no;PWD="
+            + os.environ["MSSQL_SA_PASSWORD"])
+deadline = time.monotonic() + 300
+while True:
+    try:
+        c = pyodbc.connect(conn_str, autocommit=True, timeout=5)
+        c.execute("IF DB_ID(N'uwtest') IS NULL CREATE DATABASE uwtest")
+        break
+    except pyodbc.Error as exc:
+        if time.monotonic() > deadline:
+            sys.exit(f"SQL Server is not accepting logins after 5 minutes: {exc}")
+        time.sleep(3)
+PY
+
 TESTS="-m mssql tests/test_mssql.py"
 ALL=""
 if [[ "${1:-}" == "--all" ]]; then TESTS="tests"; ALL=1; fi
 URL="mssql+pyodbc://sa:${SA_PASSWORD}@${DB}:1433/uwtest?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=no"
 docker run --rm --network "$NET" -v "$PWD/tests:/src/tests:ro" -v "$PWD/config:/src/config:ro" \
-  -e MSSQL_TEST_URL="$URL" -e MSSQL_SA_PASSWORD="$SA_PASSWORD" -e UW_TEST_ON_MSSQL="$ALL" \
-  -e TESTS="$TESTS" "$IMAGE" \
-  sh -c 'python - <<PY
-import os, pyodbc
-c = pyodbc.connect("DRIVER={ODBC Driver 18 for SQL Server};SERVER=uw-mssql;UID=sa;PWD="
-                   + os.environ["MSSQL_SA_PASSWORD"] + ";Encrypt=no", autocommit=True)
-c.execute("IF DB_ID(N\x27uwtest\x27) IS NULL CREATE DATABASE uwtest")
-PY
-cd /src && python -m pytest -q $TESTS -p no:cacheprovider'
+  -e MSSQL_TEST_URL="$URL" -e UW_TEST_ON_MSSQL="$ALL" "$IMAGE" \
+  sh -c "cd /src && python -m pytest -q $TESTS -p no:cacheprovider"

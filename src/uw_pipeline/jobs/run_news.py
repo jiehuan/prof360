@@ -34,7 +34,7 @@ from uw_pipeline.normalize.news import (
     near_duplicates,
     parse_feed,
 )
-from uw_pipeline.schema import activity, ingest_state, news_item
+from uw_pipeline.schema import activity, ingest_state, news_item, news_risk_score
 
 log = logging.getLogger(__name__)
 
@@ -272,7 +272,10 @@ def _remove(conn: Connection, company_id: int, bad_ids: set[int]) -> int:
     ).all()  # fmt: skip
     empty = [a.activity_id for a in acts if a.activity_id not in counts]
     for i in range(0, len(empty), 500):
-        conn.execute(delete(activity).where(activity.c.activity_id.in_(empty[i : i + 500])))
+        chunk = empty[i : i + 500]
+        # Scores reference the activity (FK, enforced on SQL Server): remove them first.
+        conn.execute(delete(news_risk_score).where(news_risk_score.c.activity_id.in_(chunk)))
+        conn.execute(delete(activity).where(activity.c.activity_id.in_(chunk)))
     for a in acts:
         n = counts.get(a.activity_id)
         if n is not None and n != a.source_count:

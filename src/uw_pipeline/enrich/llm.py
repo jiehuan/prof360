@@ -6,6 +6,7 @@ import hashlib
 import json
 import logging
 import os
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -84,6 +85,22 @@ class LLMUnavailableError(Exception):
     """Credentials or request setup are wrong; stop using the LLM for this run."""
 
 
+# Context-window or output-size errors concern one request, not the setup (review 2026-10-14).
+_REQUEST_TOO_LARGE = ("prompt is too long", "context length", "context_length", "too many tokens",
+                      "maximum context", "string_above_max_length")  # fmt: skip
+
+
+def _store(conn: Connection, row: dict[str, Any]) -> None:
+    """Write an llm_call row. On a server database it commits on its own, so a later failure in
+    the stage's transaction cannot roll back answers already paid for. (SQLite allows a single
+    writer, so there it stays in the caller's transaction.)"""
+    if conn.dialect.name == "sqlite":
+        upsert(conn, llm_call, [row], key_cols=["input_hash"])
+        return
+    with conn.engine.begin() as own:
+        upsert(own, llm_call, [row], key_cols=["input_hash"])
+
+
 def cached_call(
     conn: Connection,
     client: LLMClient,
@@ -95,11 +112,13 @@ def cached_call(
     user: str,
     schema: dict[str, Any],
     now: datetime,
+    validate: Callable[[Any], Any] | None = None,
 ) -> dict[str, Any] | None:
     """Structured LLM call, reused from `llm_call` when the same inputs were seen before.
 
-    Returns None when the model gave no usable output (refusal, truncation, bad JSON); the
-    error is stored and retried on the next run."""
+    Returns None when the model gave no usable output (refusal, truncation, bad JSON, or output
+    that fails `validate`, usually the output model's `model_validate`); the error is stored and
+    the call is retried on the next run instead of the bad output being reused."""
     key_src = json.dumps(
         [task, prompt_version, spec.model, spec.effort, system, user, schema], sort_keys=True
     )
@@ -107,10 +126,6 @@ def cached_call(
     cached = conn.execute(
         select(llm_call.c.output_json).where(llm_call.c.input_hash == input_hash)
     ).scalar_one_or_none()
-    if cached is not None:
-        out: dict[str, Any] = json.loads(cached)
-        return out
-
     row: dict[str, Any] = {
         "input_hash": input_hash,
         "task": task,
@@ -118,6 +133,14 @@ def cached_call(
         "model": spec.model,
         "created_at": now,
     }
+    if cached is not None:
+        out: dict[str, Any] = json.loads(cached)
+        if validate is None or _valid(validate, out):
+            return out
+        # Stored before validation was checked here: forget it so the next run asks again.
+        _store(conn, row | {"output_json": None, "error": "output failed schema validation"})
+        return None
+
     try:
         result = client.complete_json(
             model=spec.model, effort=spec.effort, max_tokens=spec.max_tokens,
@@ -125,27 +148,32 @@ def cached_call(
         )  # fmt: skip
     except LLMError as exc:
         log.warning("%s on %s: %s", task, spec.model, exc)
-        upsert(conn, llm_call, [row | {"error": str(exc)[:500]}], key_cols=["input_hash"])
+        _store(conn, row | {"error": str(exc)[:500]})
         return None
     except LLMSetupError as exc:
         raise LLMUnavailableError(str(exc)) from exc
     except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as exc:
         raise LLMUnavailableError(str(exc)) from exc
     except anthropic.BadRequestError as exc:
+        if any(m in str(exc).lower() for m in _REQUEST_TOO_LARGE):
+            log.warning("%s on %s: request too large: %s", task, spec.model, exc)
+            _store(conn, row | {"error": f"request too large: {str(exc)[:450]}"})
+            return None
         raise LLMUnavailableError(str(exc)) from exc
-    upsert(
-        conn,
-        llm_call,
-        [
-            row
-            | {
-                "served_model": result.model,
-                "output_json": json.dumps(result.output),
-                "error": None,
-                "input_tokens": result.input_tokens,
-                "output_tokens": result.output_tokens,
-            }
-        ],
-        key_cols=["input_hash"],
-    )
+    usage = {"served_model": result.model, "input_tokens": result.input_tokens,
+             "output_tokens": result.output_tokens}  # fmt: skip
+    if validate is not None and not _valid(validate, result.output):
+        log.warning("%s on %s: output failed schema validation", task, spec.model)
+        _store(conn, row | usage | {"output_json": None,
+                                    "error": "output failed schema validation"})  # fmt: skip
+        return None
+    _store(conn, row | usage | {"output_json": json.dumps(result.output), "error": None})
     return result.output
+
+
+def _valid(validate: Callable[[Any], Any], output: Any) -> bool:
+    try:
+        validate(output)
+    except Exception:  # pydantic ValidationError, or a caller's own check
+        return False
+    return True

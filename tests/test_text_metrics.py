@@ -275,3 +275,14 @@ def test_loan_book_by_class_with_prior_year_end(tmp_path) -> None:
                                             "Credit card"]  # fmt: skip
     assert "+6.9% vs 2025-12-31" in points[1]["text"]  # 846,804 vs 792,367
     assert points[1]["evidence"] == whs
+
+
+def test_number_in_quote_needs_whole_numbers() -> None:
+    """Review 2026-10-14: a plain substring check let '4.9' pass inside '14.95'."""
+    assert not number_in_quote("4.9", "CET1 ratio of 14.95%")
+    assert not number_in_quote("14.9", "CET1 ratio of 14.95%")
+    assert not number_in_quote("234", "Total loans 1,234 million")
+    assert not number_in_quote("1,234", "Total loans 1,234.5 million")
+    assert number_in_quote("14.95", "CET1 ratio of 14.95%")
+    assert number_in_quote("(0.3)", "71.5 % (0.3) % pts.")
+    assert number_in_quote("69.3", "Q2 2026 69.3%")  # neighbouring numbers stay separate

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -31,6 +32,12 @@ from uw_pipeline.logs import log_context
 from uw_pipeline.schema import pipeline_run, pipeline_task
 
 log = logging.getLogger(__name__)
+
+
+def _aware(dt: datetime) -> datetime:
+    """SQLite returns naive datetimes for timezone-aware columns; all stored times are UTC."""
+    return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
+
 
 # Prerequisite stages per stage (only those that are part of the same run count).
 DEPENDS: dict[str, tuple[str, ...]] = {
@@ -63,6 +70,8 @@ class JobsConfig(BaseModel):
     jobs: dict[str, JobSpec]
     stale_after_minutes: int = 30
     max_attempts: int = 2
+    resume_within_hours: int = 12
+    heartbeat_minutes: int = 5
 
 
 def load_jobs_config(config_dir: Path) -> JobsConfig:
@@ -97,11 +106,15 @@ class Orchestrator:
         *,
         stale_after: timedelta = timedelta(minutes=30),
         max_attempts: int = 2,
+        resume_within: timedelta = timedelta(hours=12),
+        heartbeat_every: timedelta = timedelta(minutes=5),
         now: Callable[[], datetime] = lambda: datetime.now(UTC),
     ) -> None:
         self.engine = engine
         self.stale_after = stale_after
         self.max_attempts = max_attempts
+        self.resume_within = resume_within
+        self.heartbeat_every = heartbeat_every
         self.now = now
 
     # -- starting / resuming -------------------------------------------------------------------
@@ -115,53 +128,59 @@ class Orchestrator:
         trigger: str = "manual",
         resume: bool = True,
     ) -> tuple[int, bool]:
-        """(run_id, resumed). Resumes the job's dead run, refuses if one is alive."""
+        """(run_id, resumed).
+
+        One run at a time across all jobs: jobs share stages and tables, so a live run of any
+        job (fresh heartbeat) blocks the start. A dead run of the same job is resumed only if it
+        is recent and covers the same stages and companies; every other dead run is closed, so
+        tonight's nightly never "continues" last night's (decisions D-041)."""
         now = self.now()
         with self.engine.begin() as conn:
-            latest = conn.execute(
+            running = conn.execute(
                 select(pipeline_run)
-                .where(pipeline_run.c.job == job, pipeline_run.c.status == "RUNNING")
+                .where(pipeline_run.c.status == "RUNNING")
                 .order_by(pipeline_run.c.run_id.desc())
-                .limit(1)
-            ).mappings().first()  # fmt: skip
-            if latest is not None:
-                beat = latest["heartbeat_at"]
-                beat = beat if beat.tzinfo else beat.replace(tzinfo=UTC)
+            ).mappings().all()  # fmt: skip
+            for r in running:
+                beat = _aware(r["heartbeat_at"])
                 if now - beat < self.stale_after:
                     raise RunInProgressError(
-                        f"run {latest['run_id']} of job '{job}' is still running "
+                        f"run {r['run_id']} of job '{r['job']}' is still running "
                         f"(heartbeat {beat:%Y-%m-%d %H:%M:%S} UTC)"
                     )
-                if resume and json.loads(latest["stages"]) == list(stages):
-                    run_id = int(latest["run_id"])
-                    conn.execute(
-                        update(pipeline_run)
-                        .where(pipeline_run.c.run_id == run_id)
-                        .values(starts=latest["starts"] + 1, heartbeat_at=now)
-                    )
-                    conn.execute(
-                        update(pipeline_task)
-                        .where(pipeline_task.c.run_id == run_id,
-                               pipeline_task.c.status == "RUNNING")
-                        .values(status="PENDING", detail="interrupted; resumed", updated_at=now)
-                    )  # fmt: skip
-                    # Skips are re-evaluated: their prerequisite may succeed this time.
-                    conn.execute(
-                        update(pipeline_task)
-                        .where(pipeline_task.c.run_id == run_id,
-                               pipeline_task.c.status == "SKIPPED")
-                        .values(status="PENDING", updated_at=now)
-                    )  # fmt: skip
-                    log.warning("resuming run %d of job '%s' (heartbeat was %s)",
-                                run_id, job, beat)  # fmt: skip
-                    return run_id, True
-                # A dead run that won't be resumed is closed so it no longer blocks.
+            latest = next((r for r in running if r["job"] == job), None)
+            if (
+                resume
+                and latest is not None
+                and json.loads(latest["stages"]) == list(stages)
+                and json.loads(latest["tickers"]) == list(tickers)
+                and now - _aware(latest["started_at"]) < self.resume_within
+            ):
+                run_id = int(latest["run_id"])
                 conn.execute(
                     update(pipeline_run)
-                    .where(pipeline_run.c.run_id == latest["run_id"])
-                    .values(status="FAILED", finished_at=now,
-                            stats_json=json.dumps({"abandoned": True}))
+                    .where(pipeline_run.c.run_id == run_id)
+                    .values(starts=latest["starts"] + 1, heartbeat_at=now)
+                )
+                conn.execute(
+                    update(pipeline_task)
+                    .where(pipeline_task.c.run_id == run_id,
+                           pipeline_task.c.status == "RUNNING")
+                    .values(status="PENDING", detail="interrupted; resumed", updated_at=now)
                 )  # fmt: skip
+                # Skips are re-evaluated: their prerequisite may succeed this time.
+                conn.execute(
+                    update(pipeline_task)
+                    .where(pipeline_task.c.run_id == run_id,
+                           pipeline_task.c.status == "SKIPPED")
+                    .values(status="PENDING", updated_at=now)
+                )  # fmt: skip
+                self._close_dead(conn, [r for r in running if r["run_id"] != run_id], now)
+                log.warning("resuming run %d of job '%s' (heartbeat was %s)",
+                            run_id, job, latest["heartbeat_at"])  # fmt: skip
+                return run_id, True
+            # Dead runs that won't be resumed are closed so they no longer block.
+            self._close_dead(conn, running, now)
 
             result = conn.execute(
                 insert(pipeline_run).values(
@@ -184,6 +203,17 @@ class Orchestrator:
             conn.execute(insert(pipeline_task), rows)
         return run_id, False
 
+    @staticmethod
+    def _close_dead(conn: Any, runs: Sequence[Any], now: datetime) -> None:
+        for r in runs:
+            conn.execute(
+                update(pipeline_run)
+                .where(pipeline_run.c.run_id == r["run_id"])
+                .values(status="FAILED", finished_at=now,
+                        stats_json=json.dumps({"abandoned": True}))
+            )  # fmt: skip
+            log.warning("closed dead run %d of job '%s'", r["run_id"], r["job"])
+
     # -- executing -----------------------------------------------------------------------------
 
     def _set(self, task_id: int, run_id: int, **values: Any) -> None:
@@ -197,6 +227,22 @@ class Orchestrator:
             conn.execute(
                 update(pipeline_run).where(pipeline_run.c.run_id == run_id).values(heartbeat_at=now)
             )
+
+    def _heartbeat(self, run_id: int) -> threading.Event:
+        """Keep the run's heartbeat fresh while one long task runs; set the event to stop."""
+        stop = threading.Event()
+
+        def beat() -> None:
+            while not stop.wait(self.heartbeat_every.total_seconds()):
+                try:
+                    with self.engine.begin() as conn:
+                        conn.execute(update(pipeline_run).where(pipeline_run.c.run_id == run_id)
+                                     .values(heartbeat_at=self.now()))  # fmt: skip
+                except Exception:  # e.g. SQLite busy while the stage writes; next beat retries
+                    log.debug("heartbeat update failed", exc_info=True)
+
+        threading.Thread(target=beat, name=f"heartbeat-{run_id}", daemon=True).start()
+        return stop
 
     def execute(self, run_id: int, runner: Runner) -> RunOutcome:
         with self.engine.connect() as conn:
@@ -238,11 +284,14 @@ class Orchestrator:
                 self._set(t["task_id"], run_id, status="RUNNING", attempts=attempts,
                           started_at=self.now())  # fmt: skip
                 with log_context(run_id=run_id, ticker=t["ticker"], stage=t["stage"]):
+                    beating = self._heartbeat(run_id)
                     try:
                         result = runner(t["stage"], t["ticker"])
                     except Exception as exc:  # stage functions normally catch their own errors
                         log.exception("task crashed")
                         result = TaskResult(t["ticker"], t["stage"], ok=False, detail=repr(exc))
+                    finally:
+                        beating.set()
                 outcome = "SUCCEEDED" if result.ok else "FAILED"
                 self._set(t["task_id"], run_id, status=outcome, detail=result.detail[:2000],
                           finished_at=self.now())  # fmt: skip

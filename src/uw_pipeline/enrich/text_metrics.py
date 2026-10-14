@@ -108,12 +108,16 @@ def parse_number(text: str) -> float | None:
 
 
 def number_in_quote(number_text: str, quote: str) -> bool:
-    """The number as written appears in the quote (ignoring $, %, commas spacing)."""
-    core = re.sub(r"[$%()\s]", "", number_text)
+    """The number as written appears in the quote as a whole number (ignoring $, %, sign and
+    thousands separators): "4.9" does not match inside "14.95", nor "234" inside "1,234"."""
+    core = re.sub(r"[$%()\s]", "", number_text).lstrip("-\u2212").lower()
     if not core:
         return False
-    q = normalize(quote).replace(" ", "")
-    return core.lower() in q or core.replace(",", "").lower() in q.replace(",", "")
+    q = normalize(quote)
+    for needle, text in ((core, q), (core.replace(",", ""), q.replace(",", ""))):
+        if needle and re.search(rf"(?<![\d.])(?<!\d,){re.escape(needle)}(?!\.?\d)(?!,\d)", text):
+            return True
+    return False
 
 
 def to_metric_value(ext: ExtractedValue, metric: MetricDef) -> float | None:

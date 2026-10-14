@@ -13,12 +13,14 @@ from uw_pipeline.clients.sec import SEC_DATA, archive_folder_url
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig
 from uw_pipeline.enrich.llm import load_llm_config
-from uw_pipeline.jobs.run_documents import run_documents_stage
+from uw_pipeline.jobs.run_documents import _store_sections, run_documents_stage
 from uw_pipeline.jobs.run_signals import run_signals_stage
+from uw_pipeline.normalize.sections import Section
 from uw_pipeline.schema import (
     company,
     filing_section,
     metadata,
+    section_chunk,
     signal,
     signal_vote,
     source_document,
@@ -229,3 +231,25 @@ def test_rerun_is_idempotent(env) -> None:
     before = snapshot()
     _run(engine, sec)
     assert snapshot() == before
+
+
+def test_resplit_removes_sections_no_longer_found(env) -> None:
+    engine, sec, _ = env
+    _run(engine, sec)
+    with engine.begin() as conn:
+        doc_id = conn.execute(
+            select(source_document.c.doc_id).where(source_document.c.form_type == "10-K")
+        ).scalar_one()
+        _store_sections(conn, doc_id, [Section("10K-1A", 0, 9, "Risk text")])
+        codes = (
+            conn.execute(
+                select(filing_section.c.section_code).where(filing_section.c.doc_id == doc_id)
+            )
+            .scalars()
+            .all()
+        )
+        orphans = conn.execute(
+            select(func.count()).select_from(section_chunk).where(
+                section_chunk.c.section_id.not_in(select(filing_section.c.section_id)))
+        ).scalar_one()  # fmt: skip
+    assert codes == ["10K-1A"] and orphans == 0

@@ -23,9 +23,9 @@
 | FAILED | 没有任何任务成功 |
 | RUNNING | 正在运行，或者进程已经死掉 |
 
-**续跑**：进程或 pod 被杀之后，再次启动同一个 job 会自动接着跑，前提是上一次运行的心跳已经超过 30 分钟（可在 `config/jobs.yaml` 里调整）。
+**续跑**：进程或 pod 被杀之后，再次启动同一个 job（阶段和公司都相同）会自动接着跑，前提是上一次运行的心跳已经超过 30 分钟，并且它开始不到 12 小时（`stale_after_minutes`、`resume_within_hours`，在 `config/jobs.yaml`）。更早的、或者阶段和公司不同的中断运行会被关闭（FAILED，`stats_json` 里有 `abandoned`），新运行从头开始。运行期间每 5 分钟刷新一次心跳（`heartbeat_minutes`），所以耗时很长的任务不会被误判为已死。
 
-**运行锁**：如果同一个 job 已经在运行（心跳仍然新鲜），新的启动会以退出码 2 退出。
+**运行锁**：只要有任何 job 正在运行（心跳仍然新鲜），新的启动就会以退出码 2 退出。不同的 job 也一样：例如 nightly 运行时到点的 news 会跳过这一轮，因为两者写同一批表。
 
 **费用**：每次运行的 LLM token 用量和估算费用记录在 `pipeline_run.stats_json` 中，`runs` 命令也会显示。
 
@@ -89,6 +89,7 @@
 - 每个提供方的缓存各自保留：切换回来时，输入没变的任务直接用缓存，不产生费用。
 - 凭证只放环境变量：`SECUREGPT_CLIENT_ID`、`SECUREGPT_CLIENT_SECRET`、`SECUREGPT_SUBSCRIPTION_KEY`，环境用 `SECUREGPT_ENV`（dv / pp / pr）。
 - 切换或更换环境前先跑 `python scripts/securegpt_smoke.py`：每个模型调用一次，并测试网关是否接受 `reasoning_effort`；接受的话把 `send_reasoning_effort` 改为 true。
+- 模型输出没通过 schema 校验，或者输入超出模型的上下文长度时，只有这一项失败（记录在 `llm_call.error`），其他项照常运行；校验失败的会在下次运行时重新请求。
 - 在公司网络外开发：本地 `.env` 里设 `LLM_PROVIDER=anthropic`。不要在两个提供方之间来回切换同一个部署环境：每次切换，当前版本的洞察会换成另一个提供方的结果。
 
 ## 10. Azure SQL 和 ADLS（D-040）
@@ -97,7 +98,8 @@
 - 公司网络外：不设这些变量，照常用 SQLite 和 `data/raw`。
 - 管线表和应用表在两个 schema（`pipeline_schema`、`app_schema`），**不能放在同一个 schema**：SQL Server 表名不区分大小写，应用的 `Company` 和管线的 `company` 会冲突。
 - 建表：由工程师执行 `deploy/sql/pipeline_schema_full.sql`、`app_schema_full.sql`（新环境）或 `app_schema_changes.sql`（已有数据模型）。改了表结构或 schema 名后，运行 `python scripts/export_app_ddl.py` 重新生成。
-- 首次运行前：`python scripts/azure_smoke.py`，检查连接、schema、表、权限和 ADLS 读写，不会改动任何业务表。
+- 首次运行前：`python scripts/azure_smoke.py`，检查连接、schema、表、权限和 ADLS 读写，不会改动任何业务表。ALTER 和 CREATE TABLE 只显示 WARN：只有自己建表才需要，日常运行只用临时表。
+- `uw-pipeline init-db` 只用于本地 SQLite；在 Azure SQL 上它会提示改用 `deploy/sql/` 的脚本。
 - 改了涉及数据库的代码后，在本机跑 `scripts/test_mssql.sh --all`：用本地 Docker 的 SQL Server 运行全部测试（不需要公司网络）。用完 `scripts/test_mssql.sh --stop`。
 
 ## 11. 常见故障
@@ -108,8 +110,8 @@
 | transcripts 显示 `unavailable` | AV 没有这家公司这一季的记录。改过 ticker 的公司，AV 常把旧数据留在旧代码下：在 `config/companies.yaml` 设置 `av_symbols`（新代码在前，例如 SKYD 是 `[SKYD, PSKY]`），下次运行会按新列表重试，新闻也会重新回补 30 天 |
 | SEC 返回 403/429 | 检查 `SEC_USER_AGENT` 是否包含联系邮箱，限速不要超过 10 次/秒（默认 8）。客户端已经带了重试 |
 | 日志里出现 `LLM unavailable` | 凭证、环境或部署名有问题（SecureGPT：检查 `SECUREGPT_*` 和 `config/securegpt.yaml`，先跑 smoke test）。此时 signals 会退回纯规则，textmetrics 和 insights 会失败 |
-| 运行一直显示 RUNNING | 进程已经死了。30 分钟后再次启动同一个 job 就会续跑；也可以等下一次 CronJob |
-| 退出码 2 | 同一个 job 仍在运行（运行锁），无需处理 |
+| 运行一直显示 RUNNING | 进程已经死了。30 分钟后再次启动同一个 job 就会续跑（12 小时之内）；也可以等下一次 CronJob。超过 12 小时的会被关闭，新运行从头开始 |
+| 退出码 2 | 有运行正在进行（任何 job，运行锁），无需处理；被挡住的 news 会在下一个时间点运行 |
 | DQ 报出 `quarters_vs_year` 错误 | 通常是公司在新申报里重述了前期数据，新旧口径混在一起（例如 LUV 2025 年的 capex，见 D-035）。要核对原始文件；等下一份 10-K 入库后，口径通常会恢复一致 |
 | DQ 报出 `quarter_jump` | 先在申报文件里核实，常见原因是一次性的减值或计提。如果是单位错误，修正 concept 映射 |
 | `coverage-report` 列出 UNEXPLAINED | 要么修正 tag 映射，要么在 `coverage_notes.yaml` 里写明原因 |

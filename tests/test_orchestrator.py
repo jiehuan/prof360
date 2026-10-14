@@ -103,8 +103,9 @@ def test_live_run_blocks_a_second_start(engine) -> None:
     clock.t += timedelta(minutes=5)
     with pytest.raises(RunInProgressError):
         orch.start("nightly", STAGES, ["A"])
-    # Other jobs are independent.
-    orch.start("news", ["news"], ["A"])
+    # One run at a time across jobs (D-041): they share stages and tables.
+    with pytest.raises(RunInProgressError):
+        orch.start("news", ["news"], ["A"])
 
 
 def test_resume_after_crash_runs_only_unfinished_tasks(engine) -> None:
@@ -173,3 +174,45 @@ def test_sigkill_and_restart_continue_the_run(tmp_path: Path) -> None:
     assert len(set(finished)) == 6  # every task completed
     assert len(finished) == 6  # and none that had finished ran again
     assert done_before >= 2
+
+
+def test_old_or_different_dead_runs_are_closed_not_resumed(engine) -> None:
+    """Review 2026-10-14: a dead nightly run was resumed the next night (its finished tasks
+    were then never refreshed), and a run over other companies was resumed too."""
+    clock = Clock()
+    orch = Orchestrator(engine, now=clock, resume_within=timedelta(hours=12))
+    old, _ = orch.start("nightly", STAGES, ["A", "B"])
+    clock.t += timedelta(hours=23)  # next night: dead and too old
+    new, resumed = orch.start("nightly", STAGES, ["A", "B"])
+    assert new != old and not resumed
+    clock.t += timedelta(hours=1)  # `new` died; a start for one company only
+    other, resumed = orch.start("nightly", STAGES, ["A"])
+    assert other not in (old, new) and not resumed
+    with engine.connect() as c:
+        status = dict(c.execute(select(pipeline_run.c.run_id, pipeline_run.c.status)).all())
+    assert (status[old], status[new], status[other]) == ("FAILED", "FAILED", "RUNNING")
+
+
+def test_heartbeat_is_refreshed_during_a_long_task(tmp_path) -> None:
+    import time
+
+    from sqlalchemy import create_engine
+
+    from uw_pipeline.schema import metadata
+
+    eng = create_engine(f"sqlite:///{tmp_path / 'hb.db'}")
+    metadata.create_all(eng)
+    orch = Orchestrator(eng, heartbeat_every=timedelta(seconds=0.05))
+    run_id, _ = orch.start("nightly", ["company"], ["A"])
+    beats = []
+
+    def slow(stage, ticker):
+        with eng.connect() as c:
+            before = c.execute(select(pipeline_run.c.heartbeat_at)).scalar_one()
+        time.sleep(0.4)
+        with eng.connect() as c:
+            beats.append((before, c.execute(select(pipeline_run.c.heartbeat_at)).scalar_one()))
+        return TaskResult(ticker, stage, ok=True)
+
+    assert orch.execute(run_id, slow).status == "SUCCEEDED"
+    assert beats[0][1] > beats[0][0]  # refreshed while the task was still running

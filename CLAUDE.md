@@ -28,6 +28,7 @@ scripts/test_mssql.sh --all                          # whole test suite on a loc
 .venv/bin/python scripts/compare_models.py --model claude-sonnet-5-5 MAR JPM ENPH  # model A/B
 ```
 
+Architecture, stages, data model and internals: `docs/TECHNICAL.md`.
 Operations (adding companies/metrics, prompt changes, troubleshooting): `docs/OPERATIONS.md`.
 Pipeline output for the BFF (application tables, `schema_app.py`): `docs/schema-contract.md`.
 

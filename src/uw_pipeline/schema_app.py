@@ -285,7 +285,7 @@ NewsRiskScore = Table(
     Column("NewsId", Integer, ForeignKey("News.NewsId"), primary_key=True),
     Column("runId", Integer, primary_key=True),
     Column("CompanyId", Integer, ForeignKey("Company.CompanyId"), nullable=False),
-    Column("ActivityId", Integer),  # Phase 9 addition: the de-duplicated event scored
+    Column("ActivityId", Integer),  # Phase 9 addition: the event scored (app Activities.ActivityId)
     Column("litigationEO", Numeric(5, 2)),
     Column("regulatory", Numeric(5, 2)),
     Column("financialDistress", Numeric(5, 2)),

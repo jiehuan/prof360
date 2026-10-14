@@ -342,9 +342,16 @@ def metric_signals(values: Sequence[Mapping[str, Any]], rules: SignalRules) -> l
         for v in values
         if v["period_type"] == "Q"
     }
-    latest = quarters[-1]
-    equity = by_key.get(("equity", *latest))
-    if equity is None or equity["value"] is None or equity["value"] > 0:
+    # The latest quarter with an equity value: a newer quarter that only has PRELIMINARY rows
+    # from an earnings release (no balance sheet yet) must not make the signal disappear.
+    with_equity = [q for q in quarters
+                   if (by_key.get(("equity", *q)) or {}).get("value") is not None]  # fmt: skip
+    if not with_equity:
+        return []
+    latest = with_equity[-1]
+    quarters = [q for q in quarters if q <= latest]
+    equity = by_key[("equity", *latest)]
+    if equity["value"] > 0:
         return []
     label = f"FY{latest[0]} Q{latest[1]}"
     spec = rules.metrics.negative_equity

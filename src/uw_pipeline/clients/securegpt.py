@@ -176,6 +176,16 @@ class SecureGPTClient:
             text = _error_text(r)
             if "content_filter" in text or "content management policy" in text.lower():
                 raise LLMError(f"{deployment}: input blocked by the content filter")
+            if any(
+                m in text.lower()
+                for m in (
+                    "context_length",
+                    "maximum context",
+                    "string_above_max_length",
+                    "too many tokens",
+                )
+            ):
+                raise LLMError(f"{deployment}: request too large: {text}")  # this item only
             raise LLMSetupError(f"SecureGPT {deployment}: 400 {text}")
         if r.status_code >= 400:
             raise LLMError(f"SecureGPT {deployment}: {r.status_code} {_error_text(r)}")

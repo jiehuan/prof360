@@ -155,6 +155,18 @@ def test_429_retries_after_the_gateway_says() -> None:
             LLMSetupError,
         ),
         (httpx.Response(403, json={"error": {"message": "forbidden"}}), LLMSetupError),
+        (
+            httpx.Response(
+                400,
+                json={
+                    "error": {
+                        "code": "context_length_exceeded",
+                        "message": "maximum context length is 400000",
+                    }
+                },
+            ),
+            LLMError,  # one oversized request, not a setup problem
+        ),
     ],
 )
 def test_failures_are_classified(response, error) -> None:

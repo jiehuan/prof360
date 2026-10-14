@@ -59,7 +59,7 @@ def judge(
             conn, client, spec,
             task="news_relevance", prompt_version=prompt_version, system=system,
             user=f"Company: {company}\n\nid | headline | summary\n" + "\n".join(lines),
-            schema=SCHEMA, now=now(),
+            schema=SCHEMA, now=now(), validate=Verdicts.model_validate,
         )  # fmt: skip
         got: dict[int, str] = {}
         if raw is not None:

@@ -113,6 +113,8 @@ def run(
         engine,
         stale_after=timedelta(minutes=jobs_cfg.stale_after_minutes),
         max_attempts=jobs_cfg.max_attempts,
+        resume_within=timedelta(hours=jobs_cfg.resume_within_hours),
+        heartbeat_every=timedelta(minutes=jobs_cfg.heartbeat_minutes),
     )
     try:
         run_id, resumed = orch.start(
@@ -300,7 +302,13 @@ def dq_report(
 def init_db() -> None:
     """Create tables in the local SQLite databases (pipeline and dev app database)."""
     settings = Settings()
-    ensure_schema(pipeline_engine(settings))
+    engine = pipeline_engine(settings)
+    if engine.dialect.name != "sqlite":
+        typer.echo("init-db is for local SQLite. On Azure SQL apply the reviewed scripts in "
+                   "deploy/sql/ and check with scripts/azure_smoke.py (docs/OPERATIONS.md).",
+                   err=True)  # fmt: skip
+        raise typer.Exit(1)
+    ensure_schema(engine)
     typer.echo(f"schema ready at {settings.database_url}")
     app_eng = app_engine(settings)
     if app_eng.dialect.name == "sqlite":

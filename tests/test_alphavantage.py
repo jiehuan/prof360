@@ -107,3 +107,18 @@ def test_premium_error_is_raised_not_landed(av) -> None:
         with pytest.raises(PremiumRequiredError):
             client.news("MAR", datetime(2026, 9, 1))
     assert not (tmp / "raw" / "av" / "news").exists()
+
+
+@pytest.mark.parametrize("status", [401, 403, 404])
+def test_http_errors_never_carry_the_key(av, status) -> None:
+    """raise_for_status() would put the request URL, apikey included, into the message that
+    ends up in logs and pipeline_task.detail (review 2026-10-14)."""
+    from uw_pipeline.clients.alphavantage import AlphaVantageError
+
+    client, _ = av
+    with respx.mock() as router:
+        router.get(AV_URL).mock(return_value=httpx.Response(status, text="denied"))
+        with pytest.raises(AlphaVantageError) as exc:
+            client.news("MAR", datetime(2026, 9, 1))
+    assert KEY not in str(exc.value) and "apikey" not in str(exc.value)
+    assert str(status) in str(exc.value)

@@ -17,8 +17,13 @@ jobs:
   news:
     stages: [news, scores, publish]
 
-# A RUNNING run whose heartbeat is older than this is treated as dead (e.g. the pod was killed)
-# and the next start of the same job resumes it.
+# One run at a time across all jobs (D-041): a start while any run has a fresh heartbeat exits
+# with code 2. A RUNNING run whose heartbeat is older than this is treated as dead (e.g. the pod
+# was killed); the next start of the same job resumes it if it started within
+# `resume_within_hours` and covers the same stages and companies, otherwise it is closed.
 stale_after_minutes: 30
+resume_within_hours: 12
+# The heartbeat is refreshed this often while a long task runs.
+heartbeat_minutes: 5
 # Attempts per task across the whole run, including resumes.
 max_attempts: 2
