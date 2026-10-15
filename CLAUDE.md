@@ -67,3 +67,6 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
   The free plan has ~25 calls/day; stages stop cleanly at the quota and resume next run.
 - Signal and section rules live in `config/signal_rules.yaml` and `company_overrides/*.yaml`
   (`sections:`); every false positive found becomes a test case in `tests/test_signals.py`.
+
+Release to the SecureGPT-only `prod` branch: `.venv/bin/python scripts/release_prod.py --push`
+(it stops on a patch conflict or a provider name; fix in its worktree, then `--refresh`).

@@ -1,0 +1,1962 @@
+diff --git a/.env.example b/.env.example
+index 527afcbd03102a401c4529903aa89f1fc601c566..326f71f294f0958ae49700124ff1e40c851dc0fe 100644
+--- a/.env.example
++++ b/.env.example
+@@ -11,18 +11,10 @@ SEC_USER_AGENT="Your Name your.email@example.com"
+ ALPHAVANTAGE_API_KEY=
+ # ALPHAVANTAGE_CALLS_PER_MINUTE=75   # premium plan
+ # ALPHAVANTAGE_DAILY_QUOTA=0         # 0 = unlimited
+-# LLM provider profile (config/llm.yaml): securegpt on the corporate network (default),
+-# anthropic for development and testing off it, runware for DeepSeek + Claude via Runware.
+-# LLM_PROVIDER=anthropic
++# LLM: SecureGPT gateway (config/llm.yaml, config/securegpt.yaml)
+ SECUREGPT_CLIENT_ID=
+ SECUREGPT_CLIENT_SECRET=
+ SECUREGPT_SUBSCRIPTION_KEY=
+ # SECUREGPT_ENV=dv   # dv | pp | pr
+ # APP_DATABASE_URL=sqlite:///data/app.db
+-# Only when config/llm.yaml has provider: anthropic
+-ANTHROPIC_API_KEY=
+-# Required when the API key is not scoped to a workspace
+-# ANTHROPIC_WORKSPACE_ID=
+-# Only with LLM_PROVIDER=runware (account needs at least $5 credit)
+-RUNWARE_API_KEY=
+ # LLM_ENABLED=false   # rules only
+diff --git a/CLAUDE.md b/CONTRIBUTING.md
+similarity index 96%
+rename from CLAUDE.md
+rename to CONTRIBUTING.md
+index 2a5fe621e10485ce7a84e8106af191081a588f0d..86e60ab878ce058bbb49a529dc4e2ebcfa4ddff9 100644
+--- a/CLAUDE.md
++++ b/CONTRIBUTING.md
+@@ -24,11 +24,9 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
+ .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy
+ .venv/bin/python scripts/refresh_sec_fixtures.py   # rebuild SEC fixtures from data/raw
+ .venv/bin/python scripts/securegpt_smoke.py         # SecureGPT gateway check (work network)
+-.venv/bin/python scripts/runware_smoke.py           # Runware gateway check (LLM_PROVIDER=runware)
+ .venv/bin/python scripts/azure_smoke.py             # Azure SQL + ADLS check (work network)
+ scripts/test_mssql.sh --all                          # whole test suite on a local SQL Server (Docker)
+ .venv/bin/python scripts/export_app_ddl.py           # regenerate deploy/sql/*.sql after schema changes
+-.venv/bin/python scripts/compare_models.py --model claude-sonnet-5-5 MAR JPM ENPH  # model A/B
+ ```
+ 
+ Architecture, stages, data model and internals: `docs/TECHNICAL.md`.
+diff --git a/config/insights.yaml b/config/insights.yaml
+index 39a6ec1207ede1aeb873d234eb10587b130d5151..e007724f78e3d0c49347fd26477e4485dc176112 100644
+--- a/config/insights.yaml
++++ b/config/insights.yaml
+@@ -24,7 +24,7 @@ excerpts:
+ transcripts: 3            # latest earnings calls for behavioral insights
+ news_days: 30             # activities in the package
+ # Only material news enters the package (Phase 9.4, decisions D-037), so routine news does not
+-# regenerate the Opus insights: an activity needs a news_risk_score with overall >= `overall`
++# regenerate the insights: an activity needs a news_risk_score with overall >= `overall`
+ # or any single dimension >= `any_dimension`. Unscored activities are left out.
+ news_materiality:
+   overall: 0.5
+diff --git a/config/llm.yaml b/config/llm.yaml
+index 5a0879f14ad112ca503b7a863b0aba8f660a1243..55c116d961928caadf11754f2beda9aa10928f39 100644
+--- a/config/llm.yaml
++++ b/config/llm.yaml
+@@ -2,13 +2,8 @@
+ # The extractor reads every in-scope section. When it disagrees with the rules, the tie-breaker
+ # answers the same question independently and the majority of the three votes wins.
+ #
+-# Providers (D-039). One complete model profile per provider; the active one is
+-# `default_provider`, or the LLM_PROVIDER environment variable when set (e.g. Claude for
+-# development off the corporate network, SecureGPT on it):
+-#   securegpt = Azure OpenAI through the AXA XL gateway (config/securegpt.yaml, SECUREGPT_* vars)
+-#   anthropic = Claude API (ANTHROPIC_API_KEY)
+-#   runware   = Runware gateway, OpenAI-compatible (config/runware.yaml, RUNWARE_API_KEY, D-047):
+-#               DeepSeek reads first, Claude Haiku is the independent second model
++# Provider (D-039): Azure OpenAI through the AXA XL gateway (config/securegpt.yaml,
++# SECUREGPT_* vars). `default_provider` names the profile; LLM_PROVIDER overrides it.
+ # The model is part of every cache key: each profile keeps its own cached results, and switching
+ # re-uses them; a new model runs all LLM tasks again once.
+ # `synthesis` is the model of the company-level tasks (config/insights.yaml).
+@@ -24,42 +19,6 @@ providers:
+     pricing:
+       gpt-5-nano-2025-08-07: [0.052, 0.378]
+       gpt-5-mini-2025-08-07: [0.240, 1.889]
+-  anthropic:
+-    extractor: {model: claude-haiku-5-5, effort: low, max_tokens: 8000}
+-    tiebreaker: {model: claude-sonnet-5-5, effort: high, max_tokens: 16000}
+-    # Largest synthesis output so far 11,433 tokens (2026-10-15); headroom for more news.
+-    synthesis: {model: claude-sonnet-5-5, effort: high, max_tokens: 32000}
+-    pricing_currency: USD
+-    pricing:
+-      claude-haiku-5-5: [0.1, 0.5]    # prompts <= 100K tokens; longer prompts 0.5 / 2.5
+-      claude-sonnet-5-5: [2.0, 10.0]
+-      claude-opus-5-5: [4.0, 20.0]
+-  runware:
+-    # Runware model ids. Extractor and tie-breaker are different models, so dual checks and
+-    # signal votes stay two independent reads.
+-    # max_tokens includes DeepSeek's reasoning tokens; 8000 cut off long text-metric answers
+-    # (2026-10-15). The model allows far more; only tokens produced are billed.
+-    extractor: {model: "deepseek:v4@flash", effort: low, max_tokens: 32000}
+-    tiebreaker: {model: "anthropic:claude@haiku-5.5", effort: high, max_tokens: 16000}
+-    synthesis: {model: "anthropic:claude@sonnet-5.5", effort: high, max_tokens: 32000}
+-    pricing_currency: USD
+-    # TO VERIFY against the cost Runware reports on the first calls (scripts/runware_smoke.py).
+-    # DeepSeek: third-party listing of Runware's price; Claude: Anthropic list prices.
+-    pricing:
+-      "deepseek:v4@flash": [0.08, 0.15]
+-      "anthropic:claude@haiku-5.5": [0.1, 0.5]
+-      "anthropic:claude@sonnet-5.5": [2.0, 10.0]
+-  runware_luna:
+-    # Experiment (2026-10-15): one model in every role, no second opinion. The tie-breaker is
+-    # the extractor's exact spec (model + effort), so a dual check's second read comes from the
+-    # cache and agrees with the first; only signal disagreements are judged again (same model).
+-    extractor: {model: "openai:gpt@6-luna", effort: medium, max_tokens: 32000}
+-    tiebreaker: {model: "openai:gpt@6-luna", effort: medium, max_tokens: 32000}
+-    synthesis: {model: "openai:gpt@6-luna", effort: high, max_tokens: 32000}
+-    pricing_currency: USD
+-    # TO VERIFY: third-party listings (eesel.ai, anotherwrapper.com, 2026-10-11), not Runware.
+-    pricing:
+-      "openai:gpt@6-luna": [0.10, 0.50]
+ 
+ prompt_version: signals_v1
+ # The tie-breaker sees both claims and their evidence and rules on the text (D-028).
+diff --git a/config/runware.yaml b/config/runware.yaml
+deleted file mode 100644
+index cbb941ae3e3c5da587cf6399ab86d05e8125a0d1..0000000000000000000000000000000000000000
+--- a/config/runware.yaml
++++ /dev/null
+@@ -1,28 +0,0 @@
+-# Runware gateway (OpenAI-compatible chat completions), decisions D-047. Non-secret settings
+-# only; the key comes from RUNWARE_API_KEY. Models are Runware model ids (provider:model@version),
+-# e.g. deepseek:v4@flash, anthropic:claude@haiku-5.5:
+-# https://runware.ai/docs/tools/compatible-apis
+-base_url: https://api.runware.ai/v1
+-
+-# How structured output is requested:
+-#   json_schema = strict JSON schema (preferred; the model must follow the schema)
+-#   json_object = JSON mode, the schema is written into the system prompt
+-# Our schema validation rejects any output that does not fit, in both modes. Per model, from
+-# the smoke test (scripts/runware_smoke.py); models not listed use `default_output`.
+-default_output: json_schema
+-output: {}
+-# Send `reasoning_effort` (our effort level mapped to low/medium/high) for these models only.
+-# All three accepted it in the smoke test of 2026-10-15. JSON mode is rejected for the Claude
+-# models ("response_format.type: Input should be 'json_schema'"), so all stay on json_schema.
+-reasoning_effort_models: ["deepseek:v4@flash", "anthropic:claude@haiku-5.5",
+-                          "anthropic:claude@sonnet-5.5", "openai:gpt@6-luna"]
+-
+-# Models (by id prefix) that take `max_completion_tokens` instead of `max_tokens` (OpenAI
+-# reasoning models reject `max_tokens`).
+-max_completion_tokens_prefixes: ["openai:"]
+-
+-timeout_sec: 300
+-max_attempts: 6
+-retry_statuses: [408, 429, 500, 502, 503, 504]
+-backoff_initial: 5
+-backoff_max: 120
+diff --git a/config/text_extraction.yaml b/config/text_extraction.yaml
+index f04022bfd39b8e7c1859138f038c60553901477a..7b9e84145fd41b384c590935283d8049ee84e57a 100644
+--- a/config/text_extraction.yaml
++++ b/config/text_extraction.yaml
+@@ -2,8 +2,8 @@
+ # Every value needs a verbatim quote that contains the number as written; otherwise dropped.
+ 
+ prompt_version: text_metrics_v2
+-# Claude Haiku 5.5 at `low` skipped comparative columns and rewrote table headers in quotes
+-# (D-038), so this task runs the extractor at a higher effort.
++# At `low` effort the extractor skipped comparative columns and rewrote table headers in
++# quotes (D-038), so this task runs the extractor at a higher effort.
+ extractor_effort: medium
+ # Where text metrics (metrics.yaml `kind: text`) are looked for.
+ sections: ["10K-7", "10Q-I-2"]   # MD&A
+diff --git a/deploy/openshift/secret.example.yaml b/deploy/openshift/secret.example.yaml
+index 26638f2f64a3f45f56c4819754ad965413547e13..634a0767cb348389b10706270c9d9c50c1087ac4 100644
+--- a/deploy/openshift/secret.example.yaml
++++ b/deploy/openshift/secret.example.yaml
+@@ -12,9 +12,6 @@ stringData:
+   SECUREGPT_CLIENT_SECRET: ""
+   SECUREGPT_SUBSCRIPTION_KEY: ""
+   SECUREGPT_ENV: "dv"               # dv | pp | pr
+-  # Only when config/llm.yaml has provider: anthropic
+-  # ANTHROPIC_API_KEY: ""
+-  # ANTHROPIC_WORKSPACE_ID: ""
+   ALPHAVANTAGE_API_KEY: ""
+   # Azure SQL + ADLS (D-040; non-secret settings in config/azure.yaml)
+   DATABASE_BACKEND: "azure_sql"
+diff --git a/docs/OPERATIONS.md b/docs/OPERATIONS.md
+index deadfa7eb3376e505d644e34623481938ae09cab..b972651c6be54990c8263eaf0ad0335bc47ab214 100644
+--- a/docs/OPERATIONS.md
++++ b/docs/OPERATIONS.md
+@@ -1,6 +1,6 @@
+ # 运维手册
+ 
+-读者：维护这条管线的工程师。设计和背后的理由见 `docs/decisions.md`（D-xxx），开发约定见 `CLAUDE.md`。
++读者：维护这条管线的工程师。设计和背后的理由见 `docs/decisions.md`（D-xxx），开发约定见 `CONTRIBUTING.md`。
+ 
+ ## 1. 日常运行
+ 
+@@ -68,7 +68,7 @@
+ 
+ ## 7. 详情弹窗数据（Phase 8，D-036）
+ 
+-- `metricdetail` 阶段排在 `insights` 之后：Methodology 和 Data Sources 由规则生成；每家公司一次 Opus 调用写各指标的 Underwriting Relevance 和关联。输入不变时不调用 LLM。没有 LLM 时规则部分照常运行。
++- `metricdetail` 阶段排在 `insights` 之后：Methodology 和 Data Sources 由规则生成；每家公司一次综合模型调用写各指标的 Underwriting Relevance 和关联。输入不变时不调用 LLM。没有 LLM 时规则部分照常运行。
+ - 章节的可读名称、公式里概念的名称在 `config/source_labels.yaml`。新增章节代码或概念时在这里加一项，否则界面上会直接显示代码。
+ - 银行的 5 年历史由 `config/industry_groups.yaml` 的 `mdna_history_years` 控制，只保存旧 10-K 的 MD&A。
+ - 贷款组合的口径在 `config/text_extraction.yaml` 的 `loan_portfolio`。只保留两个模型一致、且原文给出余额的类别，不会从百分比反推余额。
+@@ -78,20 +78,15 @@
+ - `publish` 阶段把管线结果写进应用库（`APP_DATABASE_URL`，dev 是 `data/app.db`）。管线不写 `Company.logo` 和用户相关的表。重跑只写有变化的行。
+ - 应用库的映射规则（指标分类、风险类型、confidence）在 `config/app_publish.yaml`。如果 `RiskTypes` 里出现 "Other"，在 `risk_types` 里加一条规则即可，重新 publish 不需要 LLM。
+ - 新闻相关性：公司别名在 `config/companies.yaml` 的 `news_aliases`；排除规则和 LLM 判断在 `config/news.yaml`。新闻阶段的 `pruned` 是按当前规则删掉的旧文章数。
+-- 风险评分在 `scores` 阶段（`config/scores.yaml`）。只有重要新闻进入洞察输入，阈值在 `config/insights.yaml` 的 `news_materiality`；阈值调低会让洞察更常重新生成（每家公司每次约 $0.9）。
+-- 比较模型：`python scripts/compare_models.py --model claude-sonnet-5-5 MAR JPM ENPH`，报告在 `data/reports/`。
++- 风险评分在 `scores` 阶段（`config/scores.yaml`）。只有重要新闻进入洞察输入，阈值在 `config/insights.yaml` 的 `news_materiality`；阈值调低会让洞察更常重新生成，费用随之增加。
+ 
+-## 9. LLM：SecureGPT、Claude、Runware（D-039、D-047）
++## 9. LLM：SecureGPT（D-039）
+ 
+-- `config/llm.yaml` 里每个提供方有一套完整的模型配置（抽取、复核、综合、价格）。用环境变量 `LLM_PROVIDER` 选择，不设时用 `default_provider`（securegpt）：
+-  - **securegpt**（公司网络内）：抽取 gpt-5-nano，复核和综合 gpt-5-mini。网关地址、api-version、部署名在 `config/securegpt.yaml`。
+-  - **anthropic**（公司网络外开发和测试）：抽取 Claude Haiku 5.5，复核和综合 Claude Sonnet 5.5，需要 `ANTHROPIC_API_KEY`。
+-  - **runware**（经 Runware 网关，OpenAI 兼容接口）：抽取 DeepSeek V4 Flash（`deepseek:v4@flash`），复核 Claude Haiku 5.5，综合 Claude Sonnet 5.5，需要 `RUNWARE_API_KEY`，账户余额至少 $5。网关设置在 `config/runware.yaml`；先跑 `python scripts/runware_smoke.py`（每个模型、每种输出方式调用一次，不写数据库）。新增模型时，smoke test 显示只支持 JSON 模式的，写进 `output:`。
+-- 每个提供方的缓存各自保留：切换回来时，输入没变的任务直接用缓存，不产生费用。
++- 模型配置在 `config/llm.yaml`：抽取 gpt-5-nano，复核和综合 gpt-5-mini，以及价格。网关地址、api-version、部署名在 `config/securegpt.yaml`。
+ - 凭证只放环境变量：`SECUREGPT_CLIENT_ID`、`SECUREGPT_CLIENT_SECRET`、`SECUREGPT_SUBSCRIPTION_KEY`，环境用 `SECUREGPT_ENV`（dv / pp / pr）。
+-- 切换或更换环境前先跑 `python scripts/securegpt_smoke.py`：每个模型调用一次，并测试网关是否接受 `reasoning_effort`；接受的话把 `send_reasoning_effort` 改为 true。
++- 更换环境或模型前先跑 `python scripts/securegpt_smoke.py`：每个模型调用一次，并测试网关是否接受 `reasoning_effort`；接受的话把 `send_reasoning_effort` 改为 true。
++- 模型是缓存键的一部分：换模型后所有 LLM 任务会重新请求一次。
+ - 模型输出没通过 schema 校验，或者输入超出模型的上下文长度时，只有这一项失败（记录在 `llm_call.error`），其他项照常运行；校验失败的会在下次运行时重新请求。
+-- 在公司网络外开发：本地 `.env` 里设 `LLM_PROVIDER=anthropic`。不要在两个提供方之间来回切换同一个部署环境：每次切换，当前版本的洞察会换成另一个提供方的结果。
+ 
+ ## 10. Azure SQL 和 ADLS（D-040）
+ 
+@@ -141,5 +136,5 @@
+ ## 12. 密钥和费用
+ 
+ - 密钥只放在 `.env`（本地，已被 git 忽略）或 OpenShift Secret 中，**不要写进代码、日志或测试数据**。Alpha Vantage 的报错消息里会带 key，客户端已经做了脱敏。
+-- 提交前检查：用 `git grep --cached` 搜索 Anthropic key 的固定前缀和 Alpha Vantage key 的前几位，应该没有任何结果。
++- 提交前检查：用 `git grep --cached` 搜索 SecureGPT 订阅 key 和 Alpha Vantage key 的前几位，应该没有任何结果。
+ - LLM 调用会按输入哈希缓存，输入不变时不会再次调用。每晚的费用只来自内容发生变化的公司。可以用 `runs` 查看每次运行的估算费用。
+diff --git a/docs/PLAN.md b/docs/PLAN.md
+index e05b93326477f869b0de730605d8cd119c0c9f56..60e350ee0a20d86003f68339f5ab9b60cfbf102b 100644
+--- a/docs/PLAN.md
++++ b/docs/PLAN.md
+@@ -1,6 +1,6 @@
+ # Underwriting Intelligence — 数据管线开发计划（SEC + Alpha Vantage → Azure SQL）
+ 
+-> 本文档供 Claude Code 执行使用。请按 Phase 顺序推进，每个 Phase 完成后对照"验收标准"自检，再进入下一阶段。
++> 请按 Phase 顺序推进，每个 Phase 完成后对照"验收标准"自检，再进入下一阶段。
+ > 遇到本文档未覆盖的决策，先在 `docs/decisions.md` 记录选项和理由，再继续。
+ 
+ ---
+@@ -100,7 +100,7 @@
+ | 数据校验 | `pydantic` v2 | 所有 LLM 输出必须过 schema |
+ | DB | `SQLAlchemy 2.x` + `pyodbc`（ODBC Driver 18）| `fast_executemany=True` |
+ | DB 认证 | Service Principal / Managed Identity | 不使用 SQL 密码 |
+-| LLM | 抽象 `LLMClient` 接口，实现：Secure GPT 网关 / Claude API | 由配置切换 |
++| LLM | 抽象 `LLMClient` 接口，实现：SecureGPT 网关 | 配置在 `config/llm.yaml`、`config/securegpt.yaml` |
+ | 配置 | `pydantic-settings` + 环境变量 + YAML | 密钥来自 OpenShift Secret |
+ | CLI | `typer` | |
+ | 测试 | `pytest` + 录制的响应 fixtures | 测试不访问外网 |
+@@ -113,7 +113,7 @@
+ ```
+ uw-pipeline/
+ ├── pyproject.toml
+-├── CLAUDE.md                     # 项目约定（见 §11）
++├── CONTRIBUTING.md               # 项目约定（见 §11）
+ ├── docs/
+ │   ├── PLAN.md                   # 本文件
+ │   ├── decisions.md              # 决策记录
+@@ -402,7 +402,7 @@ uw-pipeline dq-report --run-id <id>
+ **验收**：schema-contract.md 经人工确认；差距项都有处理方案。
+ 
+ ### Phase 1 — 骨架 + SEC 客户端 + 公司主数据
+-- [x] 项目骨架、settings、CLI、ruff/mypy/pytest 配置、CLAUDE.md
++- [x] 项目骨架、settings、CLI、ruff/mypy/pytest 配置、CONTRIBUTING.md
+ - [x] `clients/sec.py`：UA、限速、重试、本地/ADLS 缓存
+ - [x] `companies.yaml`：初始清单 = 前端已出现的公司（MAR、LUV、F、PFE、JPM、M、LUMN、PARA、ENPH）
+ - [x] ticker → CIK → submissions → 写入 `company`；判定 `industry_group`
+@@ -429,7 +429,7 @@ uw-pipeline dq-report --run-id <id>
+ - [x] 8-K item 规则 → 事件信号（§5.4）
+ - [x] 治理信号：审计师（dei:AuditorName + 审计报告任期）、4.01 审计师变更、5.02 CEO/CFO 变更
+ - [x] 关键词信号：going concern、material weakness、restatement
+-- [x] 判断类信号改为 规则 + LLM 投票（Sonnet 5.5 抽取，分歧由 Opus 5.5 裁决；见 decisions D-028）
++- [x] 判断类信号改为 规则 + LLM 投票（抽取模型判断，分歧由复核模型裁决；见 decisions D-028）
+ 
+ **验收**：9 家公司最近一份 10-K 的 Item 1A / 3 / 7 切分成功率 ≥ 90%，失败的有日志；最近 2 年 8-K 事件全部入库。
+ 
+@@ -442,7 +442,7 @@ uw-pipeline dq-report --run-id <id>
+ **验收**：重复运行不产生重复 activity；每家公司至少有近 30 天新闻（若 AV 有）。
+ 
+ ### Phase 5 — LLM 增强
+-- [ ] `LLMClient` 抽象 + Secure GPT / Claude 实现（抽象与 Claude 实现已完成，D-028；Secure GPT 待接入）
++- [x] `LLMClient` 抽象 + SecureGPT 实现（D-028、D-039）
+ - [x] `schemas.py`、prompts v1、`grounding.py`（引用 + 数字校验）（D-033）
+ - [x] Key Insights、Strategic & Risk Insights、Behavioral Insights、Follow-Up Questions、Activity 摘要（D-033；Activity 摘要待付费新闻数据）
+ - [x] 文本指标抽取：酒店 RevPAR/入住率；FI：CET1/NIM/NPL/贷款组合（D-032）
+@@ -504,7 +504,7 @@ uw-pipeline dq-report --run-id <id>
+ #### 8.4 指标详情（新增 `metricdetail` 阶段，排在 insights 之后）
+ - [x] Methodology（规则模板）：公式或概念、实际用到的 XBRL tag、各期取值方式（直接报告 / 推导 / 公式计算 / 文本抽取 / 初步数字）、N/M 条件、最新值；文本类指标附口径定义和原文片段
+ - [x] `metric_source`（规则）：最近一个季度和最近一个财年的值分别来自哪份文件，包括报表类型、提交日期和链接
+-- [x] LLM（每家公司一次 Opus 调用）：为每个有数据的指标写 `uw_relevance`，并选出相关的 K / R / B / Q 编号；编号必须真实存在，数字必须通过校验
++- [x] LLM（每家公司一次综合模型调用）：为每个有数据的指标写 `uw_relevance`，并选出相关的 K / R / B / Q 编号；编号必须真实存在，数字必须通过校验
+ - [x] `metric_insight` 表（带 `is_current`）；指标与洞察、问题的关联并入 `insight_metric` 和 `followup_question_metric`
+ 
+ #### 8.5 契约、质量与验收工具
+@@ -531,8 +531,8 @@ uw-pipeline dq-report --run-id <id>
+ - [x] 9.1 应用库表定义 `schema_app.py`：按数据模型图，加上 `ItemLink`、`CompanyMetricDetail` 两张新表和少量新列；`docs/schema-contract.md` 改为应用表的对照
+ - [x] 9.2 `publish` 阶段：应用 id 稳定（`pipeline_publish_map`）、内容不变不写、版本化对象用 isActive、已删除的行会补回；RiskTypes 和 confidence 按 `config/app_publish.yaml`
+ - [x] 9.3 新闻（付费 key）：回补 30 天；规则 + LLM 判断只保留与公司本身有关的新闻；`uw-news` CronJob 启用（03/09/15/21 点）
+-- [x] 9.4 风险评分（Sonnet 5.5）：`NewsRiskScore`、`TranscriptToneAnalysis`、`TranscriptRiskFlag`；只有重要新闻（overall ≥ 0.5 或任一维度 ≥ 0.6）进入洞察输入
+-- [x] 9.5 模型切换（用户决定，D-038）：抽取用 Haiku 5.5，复核和综合用 Sonnet 5.5；全部 LLM 任务按新模型重跑一次，并与旧结果对比质量。`scripts/compare_models.py` 留作以后对比用
++- [x] 9.4 风险评分（抽取模型）：`NewsRiskScore`、`TranscriptToneAnalysis`、`TranscriptRiskFlag`；只有重要新闻（overall ≥ 0.5 或任一维度 ≥ 0.6）进入洞察输入
++- [x] 9.5 抽取质量（D-038）：引文允许用 "..." 省略的片段；文本抽取用较高的推理强度
+ 
+ **验收**：
+ - 9 家公司全部写入应用库；无变化时重跑写入 0 行
+@@ -718,15 +718,15 @@ uw-pipeline dq-report --run-id <id>
+ |---|---|---|---|
+ | sec | company、facts、documents | SEC 每秒 10 次（所有 pod 共用一个 IP / User-Agent） | 少量 worker + 全局令牌桶（8/秒） |
+ | av | news、transcripts | AV 每分钟配额 | 全局令牌桶 |
+-| llm-fast | signals、scores、news 相关性、textmetrics 第一遍（Haiku） | Anthropic 每分钟请求数和 token 数 | 较多 worker + 按模型的令牌桶 |
+-| llm-synth | insights、metricdetail、textmetrics 复核（Sonnet） | 同上；夜间改走 Batch API | 见 10.F |
++| llm-fast | signals、scores、news 相关性、textmetrics 第一遍（抽取模型） | SecureGPT 每分钟请求数和 token 数 | 较多 worker + 按模型的令牌桶 |
++| llm-synth | insights、metricdetail、textmetrics 复核（复核和综合模型） | 同上；夜间改走 Batch API | 见 10.F |
+ | cpu | compute、publish、dq | 数据库 | 不限，按数据库连接数 |
+ 
+ 部署上每个通道是一组 worker（OpenShift Job 并行或 Deployment），数量写在配置里；另有一组常驻小 worker 只处理按需请求（每分钟轮询）。
+ 
+ #### 10.D 全局限速
+ - 令牌桶放在数据库表里（`rate_bucket`：名称、剩余令牌、更新时间），用一条原子 UPDATE 取令牌，所有 pod 共用；以后需要更高吞吐再换 Redis。
+-- 收到 429 或 Anthropic 的剩余额度响应头偏低时，按桶整体退避，而不是每个 worker 各自重试。
++- 收到 429 或网关的剩余额度响应头偏低时，按桶整体退避，而不是每个 worker 各自重试。
+ 
+ #### 10.E 必须先改的代码结构
+ - **事务缩短**：现在每个阶段把一家公司的网络和 LLM 调用都放在同一个数据库事务里，可能持续几分钟。改成"先读输入（短事务）→ 在事务外调用 SEC / AV / LLM → 一次性写结果（短事务）"。这是并行的前提，也是改动最大的一步。
+@@ -736,13 +736,13 @@ uw-pipeline dq-report --run-id <id>
+ - **数据库**：SQLite 无法并发写，必须换 Azure SQL；在拿到权限前用本地 Postgres 开发和压测。
+ 
+ #### 10.F LLM 的 Batch 化（夜间）
+-- Sonnet 综合任务在夜间作业中拆成两步：提交（把一批公司的请求打包提交 Batch API）和收取（结果回来后做 schema、grounding 校验并写库）。中间状态记在任务表里，worker 不必等待。
++- 综合任务在夜间作业中拆成两步：提交（把一批公司的请求打包提交 Batch API）和收取（结果回来后做 schema、grounding 校验并写库）。中间状态记在任务表里，worker 不必等待。
+ - 半价；结果通常一小时内返回，夜间作业足够。按需请求和白天的任务仍走实时 API。
+ 
+ #### 10.G 容量估算（高峰日，约 500 家公司有新财报）
+ - SEC：约 500 × 30 次请求 = 1.5 万次，8 次/秒约 30 分钟。
+-- Haiku 任务：并发高，约 30 分钟。
+-- Sonnet 综合：约 2,000 次调用；实时 16 个并发约 1.5–2 小时，或 Batch 提交后约 1 小时内返回。
++- 抽取模型任务：并发高，约 30 分钟。
++- 综合模型：约 2,000 次调用；实时 16 个并发约 1.5–2 小时，或 Batch 提交后约 1 小时内返回。
+ - 结论：23:30 开始，约 03:00 前完成，满足次日早上更新的要求；早上 05:30 的补跑处理失败项和晚到的申报。
+ - 首次回补 4,000 家：companyfacts / submissions 用 SEC 批量包，不逐家请求；文件下载约 6 万次请求，约 2 小时；Tier 1 的洞察用 Batch。
+ 
+@@ -763,7 +763,7 @@ uw-pipeline dq-report --run-id <id>
+ 
+ ---
+ 
+-## 11. 给 Claude Code 的工作约定（写入 CLAUDE.md）
++## 11. 工作约定（写入 CONTRIBUTING.md）
+ 
+ - 每个 Phase 开始前先列出要改动的文件和计划，等待确认后再动手
+ - 单测不得访问外网；新增外部调用必须同时加 fixture
+@@ -782,8 +782,8 @@ uw-pipeline dq-report --run-id <id>
+ 暂时不用管
+ 2. Alpha Vantage 订阅档位与限速？
+ 现在用 free key（存于本地 `.env` 的 `ALPHAVANTAGE_API_KEY`）。之后是75call/min
+-3. LLM 使用 Secure GPT 网关还是直接调用 Claude API？模型与 token 预算？
+-之后用SecureGPT，现在先用Claude API
++3. LLM 使用哪个网关？模型与 token 预算？
++SecureGPT（D-039）
+ 4. 保险公司（SIC 63xx）是否按 FI 处理？
+ 每个SIC在yaml里分开计划，可以同一个SIC用同一批metrics
+ 5. Adjusted EBITDA 展示计算值即可，还是必须用公司公布值？
+diff --git a/docs/TECHNICAL.md b/docs/TECHNICAL.md
+index 0b4ae8f3fd90d30c09ea2572e5aceecbddcc2f28..4b9698909af3c9082a273ab4a9cc72ca997bcc05 100644
+--- a/docs/TECHNICAL.md
++++ b/docs/TECHNICAL.md
+@@ -9,7 +9,7 @@ done; Phase 10 planned, on hold). Related documents:
+ | `docs/decisions.md` | Every design decision with its reason (D-001 … D-046), cited below as D-xxx |
+ | `docs/OPERATIONS.md` | Day-to-day operations, troubleshooting (Chinese) |
+ | `docs/schema-contract.md` | Application tables as the BFF reads them |
+-| `CLAUDE.md` | Commands and coding conventions |
++| `CONTRIBUTING.md` | Commands and coding conventions |
+ 
+ ## 1. What it does
+ 
+@@ -34,7 +34,7 @@ designed in and tested:
+ flowchart LR
+   SEC[SEC EDGAR<br/>submissions, companyfacts,<br/>XBRL instances, documents] --> C
+   AV[Alpha Vantage<br/>news, transcripts] --> C
+-  LLM[SecureGPT or Claude] <--> C
++  LLM[SecureGPT] <--> C
+   C[clients/<br/>rate limits, retries, raw landing] --> RAW[(Raw storage<br/>data/raw or ADLS)]
+   C --> S[Stages<br/>jobs/run_*.py]
+   S --> P[(Pipeline DB<br/>SQLite or Azure SQL)]
+@@ -52,7 +52,7 @@ swap them for fakes.
+ | `cli.py` | Typer CLI: `run`, `runs`, `dq-report`, `coverage-report`, `audit-insights`, `review` (list / approve / reject), `init-db` |
+ | `settings.py` | Settings from environment / `.env` (pydantic-settings), §13 |
+ | `config.py` | Loads companies and industry groups (traits merged into each group's metric sets) |
+-| `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing), `alphavantage.py` (quota, key masking), `llm.py` (Claude), `securegpt.py` (Azure OpenAI gateway), `runware.py` (Runware gateway), `openai_chat.py` (shared OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py` |
++| `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing), `alphavantage.py` (quota, key masking), `llm.py` (client interface), `securegpt.py` (Azure OpenAI gateway), `openai_chat.py` (OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py` |
+ | `extract/` | Company metadata, filing lists from submissions |
+ | `normalize/` | XBRL facts, fiscal periods (restatement basis), HTML to text, table grids (`table_grid.py`), section splitting, news normalisation |
+ | `compute/` | Metric registry (from `config/metrics.yaml`), formulas, coverage |
+@@ -198,7 +198,6 @@ versioned with the code.
+ | `scores.yaml` | News and transcript risk scoring |
+ | `llm.yaml` | Provider profiles (models, effort, token limits, prices), signal topics, `max_input_chars` |
+ | `securegpt.yaml` | Gateway and token URLs per environment, API version, deployments |
+-| `runware.yaml` | Runware base URL, output mode per model, `reasoning_effort` models, retries |
+ | `azure.yaml` | Azure SQL server, database, schemas; ADLS account, container, root (placeholders) |
+ | `app_publish.yaml` | Metric categories, RiskTypes regex rules, confidence rules, trend and loan metrics |
+ | `source_labels.yaml` | Readable names for sections and concepts |
+@@ -207,18 +206,16 @@ versioned with the code.
+ 
+ ## 8. LLM layer
+ 
+-**Providers** (`config/llm.yaml`, D-039, D-047). One profile per provider with three roles; `LLM_PROVIDER`
+-selects it, default `securegpt`:
++**Models** (`config/llm.yaml`, D-039). The SecureGPT gateway (Azure OpenAI) with three roles:
+ 
+-| Role | Used for | securegpt | anthropic | runware |
+-|---|---|---|---|---|
+-| extractor | Signal votes, text-metric first pass, news grouping and relevance, activity summaries, risk scores | gpt-5-nano | Claude Haiku 5.5 | DeepSeek V4 Flash |
+-| tiebreaker | Signal tie-breaks, second model of the dual check | gpt-5-mini | Claude Sonnet 5.5 | Claude Haiku 5.5 |
+-| synthesis | Behavioral, strategic & risk, key insights, follow-ups, metric relevance | gpt-5-mini | Claude Sonnet 5.5 | Claude Sonnet 5.5 |
++| Role | Used for | Model |
++|---|---|---|
++| extractor | Signal votes, text-metric first pass, news grouping and relevance, activity summaries, risk scores | gpt-5-nano |
++| tiebreaker | Signal tie-breaks, second model of the dual check | gpt-5-mini |
++| synthesis | Behavioral, strategic & risk, key insights, follow-ups, metric relevance | gpt-5-mini |
+ 
+-`runware` reaches all three through Runware's OpenAI-compatible gateway (`clients/runware.py`,
+-`config/runware.yaml`); the SecureGPT and Runware clients share the OpenAI response handling
+-(`clients/openai_chat.py`). All three clients implement `complete_json` with structured outputs (strict JSON schema; every output
++The client (`clients/securegpt.py`, response handling in `clients/openai_chat.py`) implements
++`complete_json` with structured outputs (strict JSON schema; every output
+ schema is checked against strict-mode rules in a test). Errors are classified:
+ `LLMError` fails one item (refusal, truncation, content filter, request too large);
+ `LLMSetupError` (bad credentials, unknown model or deployment) stops LLM use for the run, and
+@@ -227,7 +224,7 @@ the stages fall back to rules (`signals`) or fail (`textmetrics`, `insights`).
+ 
+ **Cache** (`enrich/llm.cached_call`). Every call is stored in `llm_call`, keyed by a hash of
+ task, prompt version, model, effort, system prompt, user prompt and schema; an unchanged input
+-is never sent twice, and each provider keeps its own entries. Output is schema-validated before
++is never sent twice. Output is schema-validated before
+ it is cached; an invalid output is recorded as an error and asked again next run. On SQL Server
+ the cache row commits in its own transaction, so a stage that rolls back keeps calls already
+ paid for.
+@@ -371,10 +368,8 @@ because the service echoes the key.
+ | `AZURE_ENV` | from `azure.yaml` | dv / pp / pr |
+ | `AZURE_SQL_CLIENT_ID`, `AZURE_SQL_CLIENT_SECRET` | – | Azure SQL service principal |
+ | `ADLS_CLIENT_ID`, `ADLS_CLIENT_SECRET` | – | ADLS service principal |
+-| `LLM_PROVIDER` | `securegpt` | `anthropic` for development off the corporate network; `runware` for DeepSeek + Claude via Runware |
++| `LLM_PROVIDER` | `securegpt` | Model profile in `config/llm.yaml` |
+ | `SECUREGPT_CLIENT_ID`, `SECUREGPT_CLIENT_SECRET`, `SECUREGPT_SUBSCRIPTION_KEY`, `SECUREGPT_ENV` | – | SecureGPT gateway |
+-| `RUNWARE_API_KEY` | – | Runware gateway (`LLM_PROVIDER=runware`) |
+-| `ANTHROPIC_API_KEY` | – | Claude (development) |
+ | `ALPHAVANTAGE_API_KEY` | – | Alpha Vantage |
+ | `LLM_DAILY_BUDGET` | 25 | New LLM spend per day in the profile's currency; 0 = unlimited |
+ | `ALPHAVANTAGE_CALLS_PER_MINUTE`, `ALPHAVANTAGE_DAILY_QUOTA` | 5, 25 | Paid plan: 75 and 0 (unlimited) |
+diff --git a/docs/decisions.md b/docs/decisions.md
+index 2977a1efe49cb574ef403c5b08e0a12b1bedee78..38e2508ec27ab18ff18d304c7949e435cdaeacf3 100644
+--- a/docs/decisions.md
++++ b/docs/decisions.md
+@@ -220,7 +220,7 @@ has no exhibit; this is logged.
+   and delete only that company's signals that are no longer produced.
+ 
+ **D-028 Judgment signals: rules + LLM vote** (user decision, 2026-10-13: "切分完用 LLM 更
+-robust，或者都做然后 vote"; extractor Claude Sonnet 5.5, ties decided by Claude Opus 5.5).
++robust，或者都做然后 vote"; the extractor model votes, the tie-breaker model decides ties).
+ - Scope (`config/llm.yaml` `topics`): judgment questions per section.
+   - 8-K 5.02: CEO / CFO departure or appointment
+   - 8-K 3.01: adverse listing notice vs voluntary transfer
+@@ -230,8 +230,8 @@ robust，或者都做然后 vote"; extractor Claude Sonnet 5.5, ties decided by
+   Structural facts stay rule-only: 8-K item numbers, auditor name from XBRL, metric signals.
+ - Per document × topic:
+   1. Rules vote.
+-  2. Sonnet 5.5 (effort low) reads the sections and answers with verbatim evidence.
+-  3. Only on disagreement, Opus 5.5 (effort high) rules. It sees both claims with their
++  2. The extractor model (effort low) reads the sections and answers with verbatim evidence.
++  3. Only on disagreement, the tie-breaker model (effort high) rules. It sees both claims with their
+      quotes, unlabelled and in a neutral order, and decides on the text.
+   4. Majority wins. Three different answers → DISPUTED (kept, flagged for a human).
+   5. A rule detection that both LLMs vote down is **kept as OVERRULED**, not deleted. The two
+@@ -244,16 +244,13 @@ robust，或者都做然后 vote"; extractor Claude Sonnet 5.5, ties decided by
+   `signal_vote`. Signals carry `method`, `review_status` and `votes_json`.
+ - If the LLM is unavailable (no key, bad credentials, bad request), the stage logs one error
+   and continues with rules only (`review_status = RULE_ONLY`).
+-- Server-side refusal fallback (`fallbacks: "default"`) is enabled on both models.
+-- The key is a user-level key; `ANTHROPIC_WORKSPACE_ID` is sent as the `anthropic-workspace-id`
+-  header when set.
+ - **Succession** (added after the first live run): a departure and an appointment to the same
+   role in one filing is answered `succession` (Warning), by the rules and by the LLM parsing.
+   Before this, the code kept a single value per role, so a CFO handover looked like a
+   disagreement between "departure" and "appointment".
+ - **Live run, 9 companies, 2 years of filings** (2026-10-13):
+   - 89 documents and 185 topic votes; 179 were unanimous.
+-  - 6 went to a tie-break and Opus agreed with Sonnet in all 6:
++  - 6 went to a tie-break and the tie-breaker agreed with the extractor in all 6:
+     - 5 CFO successions where the rules saw only one side (MAR, LUV, F, PFE, SKYD)
+     - 1 rule miss: Paramount Skydance's 2026-10-01 8-K appointing Ynon Kreiz Co-CEO
+   - 0 OVERRULED, 0 DISPUTED, 0 ungrounded quotes.
+@@ -268,7 +265,7 @@ robust，或者都做然后 vote"; extractor Claude Sonnet 5.5, ties decided by
+    `www.`/`m.`, AMP suffix and trailing slash removed.
+ 2. Syndicated copies: within 72 h, word 3-gram Jaccard of the normalised title ≥ 0.8 (a trailing
+    " - Reuters" style source tag is removed first), or title ≥ 0.5 and summary ≥ 0.8.
+-3. Same event, different articles: Claude Sonnet 5.5 groups headlines (id, date, source,
++3. Same event, different articles: the extractor model groups headlines (id, date, source,
+    headline only) into specific events. Ids it invents are ignored, members must be within the
+    window, and results are cached in `llm_call`. Without an LLM, tiers 1–2 still run.
+ 
+@@ -305,8 +302,9 @@ cross-check in PLAN Phase 4 is deferred. A first look showed MAR 2026 Q2 AV figu
+ ## Phase 5 (2026-10-13)
+ 
+ User: Phase 5 runs on my judgement until commit. Split into 5a (numbers from text) and 5b
+-(insights). Sonnet 5.5 handles extraction and per-item summaries, Opus 5.5 handles
+-company-level synthesis, and only bank capital/liquidity metrics get a two-model check.
++(insights). The extractor model handles extraction and per-item summaries, the synthesis
++model handles company-level synthesis, and only bank capital/liquidity metrics get a two-model
++check.
+ 
+ **D-032 Numbers from text (5a).**
+ - Text metrics are curated per industry group like every other metric: `metrics.yaml`
+@@ -320,7 +318,8 @@ company-level synthesis, and only bank capital/liquidity metrics get a two-model
+   quote, the unit fits the metric, and the period length fits (quarter 75–105 days, year
+   350–380). The period check is what rejected SKYD's Aug 8 – Sep 30 merger stub shown in a
+   "quarter" column. Year-to-date values are skipped.
+-- Bank metrics (`dual_check`) and the loan book are kept only where Sonnet and Opus agree
++- Bank metrics (`dual_check`) and the loan book are kept only where the extractor and the
++  tie-breaker agree
+   within 0.5%. When several documents report the same metric and period, the latest-filed one
+   wins and disagreements are counted.
+ - Earnings releases (D-022): when a period already has XBRL, the release value is only
+@@ -345,11 +344,11 @@ company-level synthesis, and only bank capital/liquidity metrics get a two-model
+   - N: news activities from the last 30 days
+   - B, R, K: insights from earlier steps
+ - Tasks, in order:
+-  1. activity summaries (Sonnet 5.5, batches of 20)
+-  2. behavioral insights from transcripts (Opus 5.5)
+-  3. strategic & risk insights for 3 categories, with explicit "no signal" (Opus)
+-  4. key insights, 6–10 (Opus)
+-  5. follow-up questions, 10–15 (Opus)
++  1. activity summaries (extractor model, batches of 20)
++  2. behavioral insights from transcripts (synthesis model)
++  3. strategic & risk insights for 3 categories, with explicit "no signal"
++  4. key insights, 6–10
++  5. follow-up questions, 10–15
+ 
+   Prompts are `common_v1` (shared rules: no underwriting decisions, cite everything, numbers
+   only from the input) plus one versioned prompt per task.
+@@ -397,8 +396,7 @@ company-level synthesis, and only bank capital/liquidity metrics get a two-model
+   prompt v1→v2, the NIM definition change, the schema bug).
+   - Biggest items: strategic & risk ($4.4 for 9 companies, ~70k input tokens each), text
+     metrics ($6.7 including reruns) and key insights ($2.5).
+-  - A full first run for one company is about $1.2–1.5 with Opus 5.5 for synthesis. Nightly
+-    cost depends only on which companies have new inputs.
++  - Nightly cost depends only on which companies have new inputs.
+ - **Open:**
+   - Activity summaries are built and tested but have no live data until the premium Alpha
+     Vantage key arrives.
+@@ -511,7 +509,7 @@ set of links between metrics, insights and questions, and one set of source titl
+ - **Rules first.** Methodology, Data Sources, Supporting Evidence, Sources and the loan book's
+   Raw Data Points are built by rules (`enrich/sources.py`, `enrich/metric_detail.py`,
+   `config/source_labels.yaml`): traceable and free. The LLM writes only what needs judgment:
+-  each metric's Underwriting Relevance and its related insights/questions (one Claude Opus 5.5
++  each metric's Underwriting Relevance and its related insights/questions (one synthesis-model
+   call per company, `metricdetail` stage), and the new question fields (`followups_v2`:
+   summary, following risk, UW relevance, related metric rows). Numbers are checked as before.
+ - **Source titles** follow "<company> <form> filed <date> · <section>" and link to the SEC
+@@ -563,53 +561,41 @@ by config; confidence by rules; only material news feeds the insights.
+ - **News quality.** With the premium key, AV relevance proved useless for large companies: 1,893
+   JPM articles in 30 days, mostly other banks or JPMorgan as analyst / fund holder. Two filters:
+   (1) rules — the article must name the company (`news_aliases`, case-sensitive) and the
+-  headline must not match analyst-action or holdings patterns; (2) a Claude Sonnet 5.5 verdict
++  headline must not match analyst-action or holdings patterns; (2) an LLM verdict
+   per stored article (SUBJECT / PASSING / ANALYST / HOLDING / MARKET), judged once, only SUBJECT
+   kept. Result: 379 activities for 9 companies (JPM 1,714 → 117). Stored articles are re-checked
+   against the current rules on every run (`pruned`).
+-- **Risk scores (Sonnet 5.5, anchored rubrics).** News: five dimensions plus overall, per
++- **Risk scores (extractor model, anchored rubrics).** News: five dimensions plus overall, per
+   activity, rationale numbers checked (a failing rationale is withheld, scores kept, so the item
+   is not re-sent every run). Transcripts: per chunk (6 chunks per call), length-weighted mean;
+   risk flags must be verbatim quotes. Bounds are in the descriptions and clamped in code
+   (structured outputs do not enforce numeric bounds).
+ - **Materiality gate (option C).** News enters the strategic/key/follow-up input only with
+   overall ≥ 0.5 or any dimension ≥ 0.6 (`config/insights.yaml`), so routine news does not
+-  regenerate the Opus insights (measured ~$0.93 per company per regeneration). 0.6/0.7 admitted
++  regenerate the insights. 0.6/0.7 admitted
+   4 items and missed an SEC censure of JPM and class actions against Ford; 0.5/0.6 admits 13.
+ - **Schedules.** `uw-news` (news, scores, publish) runs at 03/09/15/21 ET, between nightly and
+   morning, because SQLite has one writer.
+ 
+-**D-038 Cheaper models (user decision, 2026-10-13).** Claude Haiku 5.5 replaces Claude Sonnet 5.5
+-(extractor: signal votes, text-metric first pass, news grouping and relevance, activity
+-summaries, risk scores) and Claude Sonnet 5.5 replaces Claude Opus 5.5 (tie-breaker and second
+-model of the dual check, and the synthesis tasks: behavioral, strategic & risk, key insights,
+-follow-ups, metric relevance). Config only (`llm.yaml`, `insights.yaml`).
+-- Haiku 5.5 rejects the `fallbacks` parameter (400), so the client sends server-side fallback
+-  only to models that support it.
+-- The dual check still pairs two different models (Haiku + Sonnet).
+-- The model is part of every cache key, so the switch re-ran all LLM tasks once. Stored news
+-  relevance verdicts and risk scores are keyed by their text and prompt version, not the model,
+-  and were kept.
+-- Text shown to users no longer names models ("two different models").
+-- **Results of the re-run** (compared with the Sonnet/Opus outputs):
+-  - Signal votes: all 102 signal outcomes identical (89 Haiku calls, 8 Sonnet tie-breaks).
+-  - Text metrics: no value disagrees with the earlier extraction. At `low` effort Haiku lost
+-    15 of ~94 values: it skipped comparative columns and quoted loosely, joining a table header
+-    and a row with "..." and leaving out footnote markers ("capital3"). Grounding now accepts
+-    elided quotes (every piece verbatim, in order, ≥ 8 characters) and ignores footnote markers
+-    glued to words (`GROUNDING_VERSION` 5), and text extraction runs Haiku at `medium`
+-    (`extractor_effort`). Remaining gap: three JPM 2025 Q1 comparatives.
+-  - Synthesis (Sonnet): grounding dropped 17 of 89 key insights (about 19%, Opus about 5%),
+-    almost all for figures the model computed itself (sums, ranges), which the prompt forbids.
+-    Every company still has 6-10 key insights. If the drop rate stays near the 20% DQ
+-    threshold, a stricter prompt version is the next step.
+-  - Cost of the full re-run: about $6.
+-
+-**D-039 SecureGPT instead of the Claude API (user decision, 2026-10-14).** LLM calls go through
+-the company's SecureGPT gateway (Azure OpenAI behind the AXA XL API gateway). gpt-5-nano
+-replaces Claude Haiku 5.5 (extractor) and gpt-5-mini replaces Claude Sonnet 5.5 (tie-breaker,
+-second model of the dual check, synthesis).
+-- `clients/securegpt.py` implements the same `complete_json` interface, so no stage changed.
++**D-038 Extraction quality: elided quotes and extractor effort (2026-10-13).**
++- At `low` effort the extractor skipped comparative columns and quoted loosely, joining a table
++  header and a row with "..." and leaving out footnote markers ("capital3"). Grounding now
++  accepts elided quotes (every piece verbatim, in order, ≥ 8 characters) and ignores footnote
++  markers glued to words (`GROUNDING_VERSION` 5), and text extraction runs the extractor at
++  `medium` (`extractor_effort`).
++- The dual check pairs two different models (extractor and tie-breaker).
++- The model is part of every cache key, so a model change re-runs all LLM tasks once. Stored
++  news relevance verdicts and risk scores are keyed by their text and prompt version, not the
++  model, and are kept.
++- Text shown to users does not name models ("two different models").
++- Synthesis grounding drops are mostly figures the model computed itself (sums, ranges), which
++  the prompt forbids. If the drop rate stays near the 20% DQ threshold, a stricter prompt
++  version is the next step.
++
++**D-039 SecureGPT gateway (2026-10-14).** LLM calls go through the company's SecureGPT gateway
++(Azure OpenAI behind the AXA XL API gateway): gpt-5-nano as extractor, gpt-5-mini as
++tie-breaker, second model of the dual check and synthesis.
++- `clients/securegpt.py` implements the `complete_json` interface used by every stage.
+   Protocol as in the team's working client (professional-databricks `utils/secure_gpt.py`):
+   OAuth token from `token_url` (Client_Id / Client_Secret / scope / subscription key headers),
+   then `{base_url}/{deployment}/chat/completions?api-version=2024-10-21`. Differences on
+@@ -622,24 +608,19 @@ second model of the dual check, synthesis).
+   skipped); rejected credentials, unknown deployments and other 400/403/404 stop LLM use for
+   the run (`LLMSetupError`).
+ - `reasoning_effort` is off for api-version 2024-10-21 until the smoke test
+-  (`scripts/securegpt_smoke.py`) shows the gateway accepts it. `max_tokens` limits were raised
++  (`scripts/securegpt_smoke.py`) shows the gateway accepts it. `max_tokens` limits are high
+   because gpt-5 counts reasoning tokens in them.
+ - Credentials only in environment variables (`SECUREGPT_*`); non-secret settings in
+   `config/securegpt.yaml`. The production gateway URLs are assumed from the dv/pp pattern and
+   must be confirmed.
+ - Cost statistics in EUR (SecureGPT price list: nano 0.052 / 0.378, mini 0.240 / 1.889 per
+-  million tokens). The Claude client stays available (`provider: anthropic`).
+-- The development machine cannot reach the gateway, so the switch is verified from the work
+-  environment: smoke test first, then a full re-run compared with the current outputs, as for
+-  D-038. gpt-5-nano is expected to need a higher effort (or gpt-5-mini) for text extraction.
++  million tokens).
++- Verification from the work environment: smoke test first, then a full run. gpt-5-nano may
++  need a higher effort (or gpt-5-mini) for text extraction.
+ - Security note: the team repository's `config/utils.yaml` holds what look like plaintext APIM
+   subscription keys; they should be rotated and moved to a secret store. None were copied here.
+-- **Both providers stay usable** (user decision, 2026-10-14): `config/llm.yaml` keeps one
+-  complete profile per provider (extractor, tie-breaker, synthesis, prices); `LLM_PROVIDER`
+-  selects it, default `securegpt`. Development and tests off the corporate network use
+-  `anthropic` (set in the local `.env`); each profile keeps its own cached results, so
+-  switching back re-uses them without new calls. The synthesis model moved from insights.yaml
+-  into the profiles.
++- `config/llm.yaml` holds the model profile (extractor, tie-breaker, synthesis, prices);
++  `LLM_PROVIDER` selects a profile by name, default `securegpt`.
+ 
+ **D-040 Azure SQL and ADLS (Phase 12, 2026-10-14).** Same approach as the team's
+ professional-databricks code (pyodbc with a service principal; azure-identity +
+@@ -795,8 +776,7 @@ and a signal but is not shown as metric rows; add the pay/performance signal.
+     expected (they are not published).
+   - Skydance has no pay data: no DEF 14A in three years, and its 10-K/A Part III has no `ecd`
+     tags (newly public successor).
+-- No table changes. Insights regenerate once for companies whose input changed (live run:
+-  $5.86 + $0.40 + $0.64 with Claude).
++- No table changes. Insights regenerate once for companies whose input changed.
+ - Not adopted (for now): axis-anchored matching of other banks' members (wait for a second
+   bank), the status vocabulary (needs a BFF contract change), cross-CIK 8-K retrieval.
+ 
+@@ -840,8 +820,8 @@ LLM runs until the end, then one comparison.
+   revenue, decoy table). Found on the way and fixed: Hilton puts metrics in rows; Hyatt names
+   the whole system "system-wide", not "worldwide"; JPM's note groups years as rows.
+ - Loan book: `loan_table_v2` also reads tables with classes as columns (JPM wholesale). The
+-  two models may read a segment at different levels (Sonnet: the wholesale "Loans retained"
+-  line, 846.8B; Haiku: its classes). Where one gives a single line and the other classes that
++  two models may read a segment at different levels (one: the wholesale "Loans retained"
++  line, 846.8B; the other: its classes). Where one gives a single line and the other classes that
+   add up to it, the single line is kept, since both models confirm its value; the classes,
+   confirmed by one model only, are not stored. JPM total 1,463.8B as before the change.
+ - NIM relation: NIM = net interest income / average interest-earning assets, quarters
+@@ -853,7 +833,7 @@ LLM runs until the end, then one comparison.
+   cell check cannot be bypassed. Adversarial tests: hidden characters, a closing-tag breakout,
+   an embedded instruction to report 999, a decoy table.
+ - Cost: the data rule changes every cache key, so the first run after this asks every task
+-  again (Claude); SecureGPT would have asked again anyway (other models).
++  again.
+ 
+ **D-045 Board composition, review.**
+ - The documents stage downloads the latest proxy (DEF 14A). The new `governance` stage (after
+@@ -878,49 +858,10 @@ LLM runs until the end, then one comparison.
+ - `scripts/stability_check.py`: N live runs on a database copy with an empty cache, compared
+   (Jira T2); `--faults` runs timeout, rate-limit and invalid-schema clients: all three failed
+   closed (no exception, nothing stored, earlier values kept).
+-- Live result (Claude, MAR + JPM, 3 runs, about $0.93 each, 2026-10-14): board facts and all MAR
++- Live result (MAR + JPM, 3 runs, 2026-10-14): board facts and all MAR
+   values identical; no value ever differed in amount; 96 of 107 values stored in all three runs,
+   11 (JPM AUM, LCR, VaR quarters, international revenue) withheld in some runs. The loan book's
+   wholesale line was stored only when both models read it at the same level, which led to the
+-  roll-up rule in D-044. The SecureGPT run is still open (PLAN Phase 14).
++  roll-up rule in D-044. A run on the work network is still open (PLAN Phase 14).
+ - Not done: tables in the pipeline schema only, no app tables changed; deploy/sql/
+   pipeline_schema_full.sql gains board_composition and review_decision.
+-
+-## 2026-10-15
+-
+-**D-047 Runware as a third LLM provider.**
+-- Asked for: DeepSeek V4 Flash through Runware. Kept: the securegpt and anthropic profiles,
+-  unchanged. Added: profile `runware` (`LLM_PROVIDER=runware`, `RUNWARE_API_KEY`).
+-- Roles: extractor `deepseek:v4@flash`; tie-breaker `anthropic:claude@haiku-5.5`; synthesis
+-  `anthropic:claude@sonnet-5.5`. Options were DeepSeek in all three roles (cheapest, but dual
+-  checks and signal votes would compare DeepSeek with itself) or comparison only; the
+-  extractor-only choice keeps every dual check two independent models.
+-- Client: `clients/runware.py`, Runware's OpenAI-compatible chat completions
+-  (`https://api.runware.ai/v1/chat/completions`, Bearer key), retries and error classes as the
+-  SecureGPT client; the OpenAI response handling is shared (`clients/openai_chat.py`).
+-  Account errors (no credit, bad key, unknown model) stop LLM use for the run.
+-- Smoke test 2026-10-15 (`scripts/runware_smoke.py`): strict JSON schema and
+-  `reasoning_effort` work on all three models; JSON mode is rejected for the Claude models,
+-  so every model uses the strict schema. Responses recorded in tests/fixtures/runware/.
+-- Open: Runware returns no cost on these calls, and its docs list no DeepSeek price. The
+-  prices in config/llm.yaml (DeepSeek $0.08 / $0.15 per million tokens from a third-party
+-  listing; Claude at Anthropic list prices) are to be checked against the Runware invoice.
+-- Switching a deployment to this profile asks every LLM task once again (the model is part of
+-  the cache key), about the cost of one cold run.
+-- Found in the first run (MAR, JPM, ENPH on a database copy, 2026-10-15): DeepSeek's reasoning
+-  tokens count toward max_tokens, so 8000 cut off 15 answers (now 32000; Sonnet synthesis also
+-  32000, largest output so far 11,433); and Runware sometimes leaks DeepSeek's reasoning into the
+-  content before the answer (`…</think>{answer}`), so the parser keeps only the text after the
+-  last `</think>`, which must still pass schema validation.
+-- Result vs the Claude profile (same 3 companies): signal votes 55 of 55 same outcome; text
+-  values identical where both have one (Runware 8 more, 1 fewer); JPM loan book stored by class,
+-  same total; board facts found the JPM lead director Claude missed. Cost of this cold run
+-  about $2.1 vs about $2.8 on the Claude profile: the saving comes from Haiku instead of Sonnet as
+-  tie-breaker; DeepSeek and Haiku cost about the same as extractor, because DeepSeek's reasoning
+-  output is 5-10 times Haiku's output.
+-- Experiment `runware_luna` (openai:gpt@6-luna in every role, no second opinion: the
+-  tie-breaker spec equals the extractor's, so dual checks read the cache). Same 3 companies:
+-  about $0.17 (third-party price), signal votes 55 of 55 same, but the cell check withheld 12
+-  wrong cells (MAR FY2025 RevPAR, occupancy, ADR missing) and 24% of key insights failed
+-  grounding; insights took 44 minutes (long answers past the 300 s timeout, retried). OpenAI
+-  models on Runware need `max_completion_tokens` (config `max_completion_tokens_prefixes`).
+diff --git a/pyproject.toml b/pyproject.toml
+index badeff572574c39da29876dc08eb0702d47a503d..7741d692771c6d5e41b7e21b85b7048e6a4b538f 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -17,7 +17,6 @@ dependencies = [
+     "pyyaml>=6.0",
+     "pandas>=2.2",
+     "lxml>=5.0",
+-    "anthropic>=1.13",
+ ]
+ 
+ [project.optional-dependencies]
+diff --git a/scripts/compare_models.py b/scripts/compare_models.py
+deleted file mode 100644
+index 97a8fb4859518b04dc5f6ee4fbf10df2775f60be..0000000000000000000000000000000000000000
+--- a/scripts/compare_models.py
++++ /dev/null
+@@ -1,145 +0,0 @@
+-"""Compare a candidate model with the current synthesis model on the company-level tasks.
+-
+-For each company, the strategic & risk, key insight and follow-up prompts are rebuilt exactly
+-as the insights stage builds them (key insights and follow-ups get the current stored insights
+-as their input, so each task is compared on the same input). The candidate's output is grounded
+-with the same rules and NOT stored; only the LLM call is cached. Writes
+-data/reports/model-compare-<model>.md with drop rates, cost and the titles side by side.
+-
+-    python scripts/compare_models.py --model claude-sonnet-5-5 --effort medium MAR JPM ENPH
+-"""
+-
+-from __future__ import annotations
+-
+-import argparse
+-from datetime import UTC, datetime, timedelta
+-from typing import Any
+-
+-from sqlalchemy import select, true
+-
+-from uw_pipeline.clients.db import pipeline_engine
+-from uw_pipeline.clients.llm import ClaudeClient
+-from uw_pipeline.compute.registry import load_registry
+-from uw_pipeline.config import load_companies, load_industry_config
+-from uw_pipeline.enrich.insights import TaskRunner, ground_items
+-from uw_pipeline.enrich.llm import PROMPTS_DIR, ModelSpec, load_llm_config
+-from uw_pipeline.enrich.package import build_package, load_insights_config
+-from uw_pipeline.enrich.schemas import FollowUpQuestions, KeyInsights, StrategicInsights
+-from uw_pipeline.jobs.run_insights import _insight_source, _stored_set
+-from uw_pipeline.jobs.run_xbrl import company_row
+-from uw_pipeline.schema import followup_question, llm_call
+-from uw_pipeline.settings import Settings
+-
+-
+-def _cost(conn: Any, model: str, since: datetime, pricing: dict[str, Any]) -> float:
+-    rows = conn.execute(
+-        select(llm_call.c.input_tokens, llm_call.c.output_tokens)
+-        .where(llm_call.c.model == model, llm_call.c.created_at >= since)
+-    ).all()  # fmt: skip
+-    pin, pout = pricing[model]
+-    return float(sum((i or 0) * pin + (o or 0) * pout for i, o in rows)) / 1e6
+-
+-
+-def main() -> None:
+-    ap = argparse.ArgumentParser()
+-    ap.add_argument("--model", required=True)
+-    ap.add_argument("--effort", default="medium")
+-    ap.add_argument("tickers", nargs="+")
+-    args = ap.parse_args()
+-
+-    s = Settings()
+-    assert s.anthropic_api_key is not None, "ANTHROPIC_API_KEY is not set"
+-    client = ClaudeClient(s.anthropic_api_key.get_secret_value(),
+-                          workspace_id=s.anthropic_workspace_id)  # fmt: skip
+-    icfg = load_insights_config(s.config_dir, s.llm_provider)
+-    llm_cfg = load_llm_config(s.config_dir, s.llm_provider)
+-    registry, industry = load_registry(s.config_dir), load_industry_config(s.config_dir)
+-    companies = {c.ticker: c for c in load_companies(s.config_dir)}
+-    cand = ModelSpec(model=args.model, effort=args.effort, max_tokens=icfg.synthesis.max_tokens)
+-    v = icfg.prompt_versions
+-    started = datetime.now(UTC)
+-    lines = [f"# {args.model} ({args.effort}) vs {icfg.synthesis.model} "
+-             f"({icfg.synthesis.effort})", ""]  # fmt: skip
+-    summary = ["| Company | Task | Current kept | Candidate kept/generated |", "|---|---|---|---|"]
+-    engine = pipeline_engine(s)
+-    with engine.begin() as conn:
+-        common = (PROMPTS_DIR / f"{v['common']}.md").read_text(encoding="utf-8")
+-        runner = TaskRunner(client, conn, lambda: datetime.now(UTC), common)
+-        for t in args.tickers:
+-            row = company_row(conn, companies[t])
+-            group = industry.groups[row["industry_group"]]
+-            metrics = registry.for_company(t, group).metrics
+-            since = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=icfg.news_days)
+-            pkg = build_package(conn, row, metrics, group.label, icfg, news_since=since)
+-            cur = {k: _stored_set(conn, row["company_id"], k)
+-                   for k in ("STRATEGIC_RISK", "BEHAVIORAL", "KEY")}  # fmt: skip
+-            lines += [f"## {t}", ""]
+-
+-            # strategic & risk (same input as the stage)
+-            user_r = pkg.render("METRIC", "SIGNAL", "DOCUMENT", "TRANSCRIPT", "NEWS")
+-            out_r = runner.run(cand, "strategic_risk", v["strategic_risk"], user_r,
+-                               StrategicInsights)  # fmt: skip
+-            fields = ["title", "description", "uw_relevance"]
+-            kept_r, g_r = ground_items(out_r.insights if out_r else [], pkg, fields, "strategic")
+-            cur_r = [r for r in cur["STRATEGIC_RISK"] if r["subcategory"] != "No signal"]
+-            summary.append(
+-                f"| {t} | strategic & risk | {len(cur_r)} | {g_r.kept}/{g_r.generated} |"
+-            )
+-            lines += ["### Strategic & risk", "", "| Current | Candidate |", "|---|---|"]
+-            cand_r = [f"{i.category}: {i.title}" for i, _ in kept_r]
+-            cur_titles = [f"{r['category']}: {r['title']}" for r in cur_r]
+-            for a, b in zip(cur_titles + [""] * len(cand_r), cand_r + [""] * len(cur_titles),
+-                            strict=False):  # fmt: skip
+-                if a or b:
+-                    lines.append(f"| {a} | {b} |")
+-            lines.append("")
+-
+-            # key insights and follow-ups on the current (stored) earlier insights
+-            for prefix, rows in (("B", cur["BEHAVIORAL"]), ("R", cur["STRATEGIC_RISK"])):
+-                for n, r in enumerate(rows, start=1):
+-                    pkg.add(_insight_source(prefix, n, r))
+-            user_k = pkg.render("METRIC", "SIGNAL", "INSIGHT", "NEWS")
+-            out_k = runner.run(cand, "key_insights", v["key_insights"], user_k, KeyInsights)
+-            kept_k, g_k = ground_items(out_k.insights if out_k else [], pkg,
+-                                       ["title", "summary", "uw_relevance", "supporting_evidence"],
+-                                       "key insight")  # fmt: skip
+-            summary.append(
+-                f"| {t} | key insights | {len(cur['KEY'])} | {g_k.kept}/{g_k.generated} |"
+-            )
+-            lines += ["### Key insights", "", "| Current | Candidate |", "|---|---|"]
+-            a_k = [f"{r['insight_type']}: {r['title']}" for r in cur["KEY"]]
+-            b_k = [f"{i.type}: {i.title}" for i, _ in kept_k]
+-            for a, b in zip(a_k + [""] * len(b_k), b_k + [""] * len(a_k), strict=False):
+-                if a or b:
+-                    lines.append(f"| {a} | {b} |")
+-            lines.append("")
+-
+-            for n, r in enumerate(cur["KEY"], start=1):
+-                pkg.add(_insight_source("K", n, r))
+-            user_q = pkg.render("METRIC", "INSIGHT")
+-            out_q = runner.run(cand, "followups", v["followups"], user_q, FollowUpQuestions)
+-            cur_q = conn.execute(
+-                select(followup_question.c.question)
+-                .where(followup_question.c.company_id == row["company_id"],
+-                       followup_question.c.is_current == true())
+-                .order_by(followup_question.c.ordinal)
+-            ).scalars().all()  # fmt: skip
+-            n_q = len(out_q.questions) if out_q else 0
+-            summary.append(f"| {t} | follow-ups | {len(cur_q)} | {n_q} generated |")
+-            lines += ["### Follow-up questions", "", "| Current | Candidate |", "|---|---|"]
+-            b_q = [q.question for q in out_q.questions] if out_q else []
+-            for a, b in zip(list(cur_q) + [""] * len(b_q), b_q + [""] * len(cur_q), strict=False):
+-                if a or b:
+-                    lines.append(f"| {a} | {b} |")
+-            lines.append("")
+-        cost = _cost(conn, args.model, started, llm_cfg.pricing)
+-    report = [*lines[:2], f"Candidate cost for this comparison: ${cost:.2f}", "", *summary, "",
+-              *lines[2:]]  # fmt: skip
+-    out = s.data_dir / "reports" / f"model-compare-{args.model}.md"
+-    out.parent.mkdir(parents=True, exist_ok=True)
+-    out.write_text("\n".join(report) + "\n", encoding="utf-8")
+-    print(f"wrote {out} (candidate cost ${cost:.2f})")
+-
+-
+-if __name__ == "__main__":
+-    main()
+diff --git a/scripts/runware_smoke.py b/scripts/runware_smoke.py
+deleted file mode 100644
+index e9099d729b8a5183209b4ca17c7a8f49b2ebf3fc..0000000000000000000000000000000000000000
+--- a/scripts/runware_smoke.py
++++ /dev/null
+@@ -1,112 +0,0 @@
+-"""Smoke test for the Runware gateway before using the `runware` profile (D-047).
+-
+-    python scripts/runware_smoke.py            # RUNWARE_API_KEY from the environment or .env
+-    python scripts/runware_smoke.py --record   # also save responses as test fixtures
+-
+-For each model of the runware profile (config/llm.yaml) it makes one small call with a real
+-pipeline schema in each output mode (strict JSON schema, JSON mode) and with `reasoning_effort`,
+-and prints what worked, tokens, the reported cost and the answer. The key is never printed.
+-Nothing is written to the database. `--record` saves the JSON-schema responses (without ids) to
+-tests/fixtures/runware/. Cost: well under a cent per call. The account needs at least $5 credit.
+-"""
+-
+-from __future__ import annotations
+-
+-import argparse
+-import json
+-import sys
+-import time
+-from pathlib import Path
+-from typing import Any
+-
+-import httpx
+-
+-from uw_pipeline.clients.llm import LLMError, LLMSetupError
+-from uw_pipeline.clients.runware import RunwareClient, load_runware_config
+-from uw_pipeline.enrich.llm import load_llm_config
+-from uw_pipeline.enrich.news_relevance import Verdicts
+-from uw_pipeline.enrich.schemas import strict_json_schema
+-from uw_pipeline.settings import Settings
+-
+-ROOT = Path(__file__).resolve().parents[1]
+-CONFIG = ROOT / "config"
+-FIXTURES = ROOT / "tests" / "fixtures" / "runware"
+-SYSTEM = ("You screen news for underwriters. For each article give a verdict: SUBJECT if the "
+-          "company is the main subject, otherwise PASSING. Use the ids as given.")  # fmt: skip
+-USER = ("Company: Marriott International\n\nid | headline | summary\n"
+-        "N1 | Marriott raises full-year RevPAR outlook | The hotel group beat estimates.\n"
+-        "N2 | Hotel stocks to watch this week | A roundup of lodging names.")  # fmt: skip
+-
+-
+-def main() -> int:
+-    ap = argparse.ArgumentParser()
+-    ap.add_argument("--record", action="store_true")
+-    ap.add_argument("--profile", default="runware", help="profile in config/llm.yaml")
+-    args = ap.parse_args()
+-    settings = Settings()
+-    if settings.runware_api_key is None:
+-        print("set RUNWARE_API_KEY first (environment or .env)")
+-        return 2
+-    cfg = load_runware_config(CONFIG)
+-    llm = load_llm_config(CONFIG, args.profile)
+-    models = list(dict.fromkeys([llm.extractor.model, llm.tiebreaker.model, llm.synthesis.model]))
+-    schema = strict_json_schema(Verdicts)
+-    last: dict[str, Any] = {}
+-
+-    def keep(r: httpx.Response) -> None:  # the raw body, for --record and the reported cost
+-        r.read()
+-        last["body"] = r.json() if r.headers.get("content-type", "").startswith(
+-            "application/json") else None  # fmt: skip
+-
+-    http = httpx.Client(timeout=cfg.timeout_sec, event_hooks={"response": [keep]})
+-    results: dict[str, dict[str, bool]] = {}
+-    for model in models:
+-        for mode, effort in (("json_schema", False), ("json_schema", True), ("json_object", False)):
+-            run_cfg = cfg.model_copy(
+-                update={
+-                    "output": {model: mode},
+-                    "max_attempts": 2,
+-                    "reasoning_effort_models": [model] if effort else [],
+-                }
+-            )
+-            client = RunwareClient(run_cfg, api_key=settings.runware_api_key.get_secret_value(),
+-                                   http=http)  # fmt: skip
+-            label = f"{model:<28} {mode:<11} effort={'on ' if effort else 'off'}"
+-            start = time.monotonic()
+-            last.clear()
+-            try:
+-                res = client.complete_json(model=model, effort="low", max_tokens=4000,
+-                                           system=SYSTEM, user=USER, schema=schema)  # fmt: skip
+-                Verdicts.model_validate(res.output)
+-                verdicts = {a["id"]: a["verdict"] for a in res.output.get("articles", [])}
+-                good = verdicts == {"N1": "SUBJECT", "N2": "PASSING"}
+-                cost = ((last.get("body") or {}).get("usage") or {}).get("cost")
+-                print(f"OK    {label} {time.monotonic() - start:5.1f}s in={res.input_tokens} "
+-                      f"out={res.output_tokens} cost={cost} served={res.model} "
+-                      f"answer={'as expected' if good else verdicts}")  # fmt: skip
+-                results.setdefault(model, {})[f"{mode}{'+effort' if effort else ''}"] = True
+-                if args.record and mode == "json_schema" and not effort and last.get("body"):
+-                    FIXTURES.mkdir(parents=True, exist_ok=True)
+-                    body = {k: v for k, v in last["body"].items() if k not in ("id", "created")}
+-                    name = model.replace(":", "_").replace("@", "_") + ".json"
+-                    (FIXTURES / name).write_text(json.dumps(body, indent=1) + "\n")
+-            except (LLMError, LLMSetupError, ValueError) as exc:
+-                print(f"FAIL  {label} {type(exc).__name__}: {str(exc)[:200]}")
+-                results.setdefault(model, {})[f"{mode}{'+effort' if effort else ''}"] = False
+-    http.close()
+-    print()
+-    for model, r in results.items():
+-        if r.get("json_schema"):
+-            mode = "json_schema"
+-        elif r.get("json_object"):
+-            mode = "json_object  -> add to `output:` in config/runware.yaml"
+-        else:
+-            mode = "neither worked"
+-        note = " ; reasoning_effort accepted -> add to reasoning_effort_models" if r.get(
+-            "json_schema+effort") else ""  # fmt: skip
+-        print(f"{model}: {mode}{note}")
+-    return 0 if all(r.get("json_schema") or r.get("json_object") for r in results.values()) else 1
+-
+-
+-if __name__ == "__main__":
+-    sys.exit(main())
+diff --git a/src/uw_pipeline/clients/llm.py b/src/uw_pipeline/clients/llm.py
+index 6a473615156e7ca05bd02a9c194618e2f2f66246..73878448a4f43dd6e6ecb8a4de3dd08430c25145 100644
+--- a/src/uw_pipeline/clients/llm.py
++++ b/src/uw_pipeline/clients/llm.py
+@@ -1,26 +1,14 @@
+-"""LLM client interface and the Claude implementation.
+-
+-Pipeline code depends only on `LLMClient`; switching to the Secure GPT gateway later means
+-adding another implementation here.
+-"""
++"""LLM client interface. Pipeline code depends only on `LLMClient`; the implementation is the
++SecureGPT gateway client (`clients/securegpt.py`)."""
+ 
+ from __future__ import annotations
+ 
+-import json
+ import logging
+ from dataclasses import dataclass
+ from typing import Any, Protocol
+ 
+-import anthropic
+-
+ log = logging.getLogger(__name__)
+ 
+-# Server-side fallback: on a safety decline the API retries on a fallback model it picks by
+-# refusal category (Claude API only).
+-FALLBACK_BETA = "server-side-fallback-2026-07-01"
+-# Models that reject the `fallbacks` parameter with a 400 (no server-side fallback).
+-NO_FALLBACK_PREFIXES = ("claude-haiku-",)
+-
+ 
+ class LLMError(Exception):
+     """The model produced no usable output (refusal, truncation, invalid JSON)."""
+@@ -50,52 +38,3 @@ class LLMClient(Protocol):
+         user: str,
+         schema: dict[str, Any],
+     ) -> LLMResult: ...
+-
+-
+-class ClaudeClient:
+-    def __init__(self, api_key: str, *, workspace_id: str | None = None) -> None:
+-        headers = {"anthropic-workspace-id": workspace_id} if workspace_id else None
+-        self._client = anthropic.Anthropic(api_key=api_key, default_headers=headers)
+-
+-    def complete_json(
+-        self,
+-        *,
+-        model: str,
+-        effort: str,
+-        max_tokens: int,
+-        system: str,
+-        user: str,
+-        schema: dict[str, Any],
+-    ) -> LLMResult:
+-        # Plain dicts below; the SDK's TypedDict overloads are too narrow for mypy here.
+-        create: Any = self._client.beta.messages.create
+-        fallback: dict[str, Any] = (
+-            {} if model.startswith(NO_FALLBACK_PREFIXES)
+-            else {"betas": [FALLBACK_BETA], "fallbacks": "default"}
+-        )  # fmt: skip
+-        response = create(
+-            model=model,
+-            max_tokens=max_tokens,
+-            output_config={"effort": effort, "format": {"type": "json_schema", "schema": schema}},
+-            system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+-            messages=[{"role": "user", "content": user}],
+-            **fallback,
+-        )
+-        if response.stop_reason == "refusal":
+-            details = getattr(response, "stop_details", None)
+-            raise LLMError(f"{model} declined: {getattr(details, 'category', None)}")
+-        if response.stop_reason == "max_tokens":
+-            raise LLMError(f"{model} hit max_tokens={max_tokens}")
+-        text = next((b.text for b in response.content if b.type == "text"), None)
+-        if text is None:
+-            raise LLMError(f"{model} returned no text block")
+-        try:
+-            output = json.loads(text)
+-        except json.JSONDecodeError as exc:
+-            raise LLMError(f"{model} returned invalid JSON: {exc}") from exc
+-        return LLMResult(
+-            output=output,
+-            model=response.model,
+-            input_tokens=response.usage.input_tokens,
+-            output_tokens=response.usage.output_tokens,
+-        )
+diff --git a/src/uw_pipeline/clients/openai_chat.py b/src/uw_pipeline/clients/openai_chat.py
+index 1a3df7e1af03389b1b2c9295e0310788d7a523b6..ae4a441804f958060c4170c21f4c7e2e034079a1 100644
+--- a/src/uw_pipeline/clients/openai_chat.py
++++ b/src/uw_pipeline/clients/openai_chat.py
+@@ -1,5 +1,5 @@
+-"""Shared parts of the OpenAI chat-completions format, used by the SecureGPT and Runware
+-clients: the effort mapping, error text and turning a response into an `LLMResult`."""
++"""OpenAI chat-completions format used by the SecureGPT client: the effort mapping, error text
++and turning a response into an `LLMResult`."""
+ 
+ from __future__ import annotations
+ 
+@@ -10,7 +10,7 @@ import httpx
+ 
+ from uw_pipeline.clients.llm import LLMError, LLMResult
+ 
+-# Our effort levels (shared with the Claude config) -> OpenAI reasoning_effort.
++# Our effort levels (config/llm.yaml) -> OpenAI reasoning_effort.
+ EFFORT = {"low": "low", "medium": "medium", "high": "high", "xhigh": "high", "max": "high"}
+ 
+ 
+@@ -56,9 +56,9 @@ def chat_result(body: dict[str, Any], name: str) -> LLMResult:
+ 
+ 
+ def _strip_fence(text: str) -> str:
+-    """The answer alone: some gateways leak a reasoning model's thinking into the content,
+-    ending in `</think>` (DeepSeek through Runware, D-047), and some models put a ```json fence
+-    around JSON mode output. The answer still goes through schema validation."""
++    """The answer alone: reasoning text a gateway may leave in the content, ending in
++    `</think>`, and a ```json fence around the JSON are removed. The answer still goes through
++    schema validation."""
+     t = text.rsplit("</think>", 1)[-1].strip()
+     if t.startswith("```"):
+         t = t.split("\n", 1)[1] if "\n" in t else ""
+diff --git a/src/uw_pipeline/clients/runware.py b/src/uw_pipeline/clients/runware.py
+deleted file mode 100644
+index fe1b69e17127706484bd433a415d35bb680719bb..0000000000000000000000000000000000000000
+--- a/src/uw_pipeline/clients/runware.py
++++ /dev/null
+@@ -1,153 +0,0 @@
+-"""Runware client: OpenAI-compatible chat completions for many hosted models (D-047).
+-
+-Same interface as ClaudeClient (`complete_json`), so stages do not change. POST
+-{base_url}/chat/completions with `Authorization: Bearer <RUNWARE_API_KEY>`; the model is a
+-Runware model id (deepseek:v4@flash). Structured output is a strict JSON schema, or JSON mode
+-with the schema in the system prompt for models that do not take one (config/runware.yaml).
+-The key is never logged: error messages carry the status and the gateway's error text only.
+-"""
+-
+-from __future__ import annotations
+-
+-import json
+-import logging
+-import time
+-from collections.abc import Callable
+-from pathlib import Path
+-from typing import Any, Literal
+-
+-import httpx
+-import yaml
+-from pydantic import BaseModel
+-
+-from uw_pipeline.clients.llm import LLMError, LLMResult, LLMSetupError
+-from uw_pipeline.clients.openai_chat import EFFORT, chat_result, error_text
+-
+-log = logging.getLogger(__name__)
+-
+-OutputMode = Literal["json_schema", "json_object"]
+-# Gateway messages that mean the account or key cannot run anything (not one item).
+-_SETUP_MESSAGES = ("credit", "invoice", "api key", "apikey", "unauthorized", "not found",
+-                   "unknown model", "invalid model", "not supported")  # fmt: skip
+-_TOO_LARGE = ("context_length", "context length", "maximum context", "too many tokens",
+-              "prompt is too long")  # fmt: skip
+-
+-
+-class RunwareConfig(BaseModel):
+-    base_url: str
+-    default_output: OutputMode
+-    output: dict[str, OutputMode]
+-    reasoning_effort_models: list[str]
+-    max_completion_tokens_prefixes: list[str] = []
+-    timeout_sec: float
+-    max_attempts: int
+-    retry_statuses: list[int]
+-    backoff_initial: float
+-    backoff_max: float
+-
+-    def output_mode(self, model: str) -> OutputMode:
+-        return self.output.get(model, self.default_output)
+-
+-
+-def load_runware_config(config_dir: Path) -> RunwareConfig:
+-    with (config_dir / "runware.yaml").open(encoding="utf-8") as f:
+-        return RunwareConfig.model_validate(yaml.safe_load(f))
+-
+-
+-def schema_instruction(schema: dict[str, Any]) -> str:
+-    """JSON mode: the schema the answer must follow, appended to the system prompt."""
+-    return ("\n\nReturn only one JSON object, no other text, that conforms to this JSON schema:\n"
+-            + json.dumps(schema, separators=(",", ":")))  # fmt: skip
+-
+-
+-class RunwareClient:
+-    def __init__(
+-        self,
+-        cfg: RunwareConfig,
+-        *,
+-        api_key: str,
+-        http: httpx.Client | None = None,
+-        sleep: Callable[[float], None] = time.sleep,
+-    ) -> None:
+-        self.cfg = cfg
+-        self._key = api_key
+-        self._http = http or httpx.Client(timeout=cfg.timeout_sec)
+-        self._sleep = sleep
+-
+-    def close(self) -> None:
+-        self._http.close()
+-
+-    def _wait(self, attempt: int, r: httpx.Response | None) -> float:
+-        after = r.headers.get("retry-after") if r is not None else None
+-        if after:
+-            try:
+-                return min(float(after), self.cfg.backoff_max)
+-            except ValueError:
+-                pass
+-        return float(min(self.cfg.backoff_initial * (2.0**attempt), self.cfg.backoff_max))
+-
+-    def _post(self, body: dict[str, Any]) -> httpx.Response:
+-        """POST with retries on transient statuses and network errors."""
+-        url = f"{self.cfg.base_url}/chat/completions"
+-        headers = {"Authorization": f"Bearer {self._key}", "Content-Type": "application/json"}
+-        last = ""
+-        for attempt in range(self.cfg.max_attempts):
+-            try:
+-                r = self._http.post(url, json=body, headers=headers)
+-            except httpx.TransportError as exc:  # includes timeouts on long answers
+-                last = type(exc).__name__
+-                log.info("Runware %s: %s, retrying", body["model"], last)
+-                self._sleep(self._wait(attempt, None))
+-                continue
+-            if r.status_code in self.cfg.retry_statuses and attempt + 1 < self.cfg.max_attempts:
+-                last = str(r.status_code)
+-                log.info("Runware %s: %s, retrying", body["model"], r.status_code)
+-                self._sleep(self._wait(attempt, r))
+-                continue
+-            return r
+-        raise LLMError(f"Runware {body['model']}: gave up after {self.cfg.max_attempts} "
+-                       f"attempts ({last})")  # fmt: skip
+-
+-    def complete_json(
+-        self,
+-        *,
+-        model: str,
+-        effort: str,
+-        max_tokens: int,
+-        system: str,
+-        user: str,
+-        schema: dict[str, Any],
+-    ) -> LLMResult:
+-        mode = self.cfg.output_mode(model)
+-        if mode == "json_schema":
+-            fmt: dict[str, Any] = {
+-                "type": "json_schema",
+-                "json_schema": {"name": "output", "strict": True, "schema": schema},
+-            }
+-        else:
+-            fmt, system = {"type": "json_object"}, system + schema_instruction(schema)
+-        body: dict[str, Any] = {
+-            "model": model,
+-            "messages": [{"role": "system", "content": system},
+-                         {"role": "user", "content": user}],
+-            "response_format": fmt,
+-        }  # fmt: skip
+-        completion = model.startswith(tuple(self.cfg.max_completion_tokens_prefixes))
+-        limit = "max_completion_tokens" if completion else "max_tokens"
+-        body[limit] = max_tokens
+-        if model in self.cfg.reasoning_effort_models:
+-            body["reasoning_effort"] = EFFORT.get(effort, "medium")
+-        r = self._post(body)
+-        if r.status_code in (401, 402, 403, 404):
+-            raise LLMSetupError(f"Runware {model}: {r.status_code} {error_text(r)}")
+-        if r.status_code == 400:
+-            text = error_text(r)
+-            low = text.lower()
+-            if any(m in low for m in _TOO_LARGE):
+-                raise LLMError(f"Runware {model}: request too large: {text}")  # this item only
+-            if any(m in low for m in _SETUP_MESSAGES) or "response_format" in low:
+-                raise LLMSetupError(f"Runware {model}: 400 {text}")
+-            raise LLMError(f"Runware {model}: 400 {text}")
+-        if r.status_code >= 400:
+-            raise LLMError(f"Runware {model}: {r.status_code} {error_text(r)}")
+-        return chat_result(r.json(), model)
+diff --git a/src/uw_pipeline/clients/securegpt.py b/src/uw_pipeline/clients/securegpt.py
+index 8b65258353d61f4936d77db581e75733c4232110..07a9e7ea265e35b85cdbd984db1bc7d5c6659dbe 100644
+--- a/src/uw_pipeline/clients/securegpt.py
++++ b/src/uw_pipeline/clients/securegpt.py
+@@ -1,6 +1,6 @@
+ """SecureGPT client: Azure OpenAI models behind the AXA XL API gateway (Phase 11, D-039).
+ 
+-Same interface as ClaudeClient (`complete_json`), so stages do not change. The protocol follows
++Implements `LLMClient` (`complete_json`), so stages do not change. The protocol follows
+ the team's working client (professional-databricks utils/secure_gpt.py):
+ 
+ - token: POST token_url with Client_Id / Client_Secret / scope / Ocp-Apim-Subscription-Key
+diff --git a/src/uw_pipeline/enrich/llm.py b/src/uw_pipeline/enrich/llm.py
+index c9f89cca7fce37417cfedcaf682f9305a3f1786f..3cd8c18ceb61d17eb87bd1a301ff7287628acc68 100644
+--- a/src/uw_pipeline/enrich/llm.py
++++ b/src/uw_pipeline/enrich/llm.py
+@@ -12,7 +12,6 @@ from datetime import UTC, datetime
+ from pathlib import Path
+ from typing import Any
+ 
+-import anthropic
+ import yaml
+ from pydantic import BaseModel
+ from sqlalchemy import Connection, select
+@@ -46,7 +45,7 @@ class ProviderProfile(BaseModel):
+ class LLMConfig(BaseModel):
+     """llm.yaml with the active provider's profile filled in."""
+ 
+-    provider: str  # anthropic (Claude API) | securegpt (gateway, D-039)
++    provider: str  # securegpt (gateway, D-039)
+     extractor: ModelSpec
+     tiebreaker: ModelSpec
+     synthesis: ModelSpec
+@@ -87,11 +86,6 @@ class LLMUnavailableError(Exception):
+     """Credentials or request setup are wrong; stop using the LLM for this run."""
+ 
+ 
+-# Context-window or output-size errors concern one request, not the setup (review 2026-10-14).
+-_REQUEST_TOO_LARGE = ("prompt is too long", "context length", "context_length", "too many tokens",
+-                      "maximum context", "string_above_max_length")  # fmt: skip
+-
+-
+ def _store(conn: Connection, row: dict[str, Any]) -> None:
+     """Write an llm_call row. On a server database it commits on its own, so a later failure in
+     the stage's transaction cannot roll back answers already paid for. (SQLite allows a single
+@@ -213,14 +207,6 @@ def cached_call(
+         return None
+     except LLMSetupError as exc:
+         raise LLMUnavailableError(str(exc)) from exc
+-    except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as exc:
+-        raise LLMUnavailableError(str(exc)) from exc
+-    except anthropic.BadRequestError as exc:
+-        if any(m in str(exc).lower() for m in _REQUEST_TOO_LARGE):
+-            log.warning("%s on %s: request too large: %s", task, spec.model, exc)
+-            _store(conn, row | {"error": f"request too large: {str(exc)[:450]}"})
+-            return None
+-        raise LLMUnavailableError(str(exc)) from exc
+     usage = {"served_model": result.model, "input_tokens": result.input_tokens,
+              "output_tokens": result.output_tokens}  # fmt: skip
+     if budget is not None:
+diff --git a/src/uw_pipeline/jobs/stages.py b/src/uw_pipeline/jobs/stages.py
+index 02620b2ff82d06ec7a2a3ed3cb9d9f6ea55ac79c..a0ce38eb3d812704d9b4e5da38a5b559389846f7 100644
+--- a/src/uw_pipeline/jobs/stages.py
++++ b/src/uw_pipeline/jobs/stages.py
+@@ -11,9 +11,8 @@ from sqlalchemy import Engine, func, select
+ 
+ from uw_pipeline.clients.alphavantage import AlphaVantageClient
+ from uw_pipeline.clients.db import app_engine, ensure_schema
+-from uw_pipeline.clients.llm import ClaudeClient, LLMClient
++from uw_pipeline.clients.llm import LLMClient
+ from uw_pipeline.clients.ratelimit import TokenBucket
+-from uw_pipeline.clients.runware import RunwareClient, load_runware_config
+ from uw_pipeline.clients.sec import SecClient
+ from uw_pipeline.clients.securegpt import SecureGPTClient, load_securegpt_config
+ from uw_pipeline.clients.storage import make_storage
+@@ -101,26 +100,15 @@ class StageRunner:
+             s = self.settings
+             cfg = load_llm_config(s.config_dir, s.llm_provider)
+             client: LLMClient | None = None
+-            if not s.llm_enabled:
+-                pass
+-            elif cfg.provider == "securegpt":
+-                if s.securegpt_client_id and s.securegpt_client_secret and \
+-                        s.securegpt_subscription_key:  # fmt: skip
+-                    gcfg = load_securegpt_config(s.config_dir)
+-                    client = SecureGPTClient(
+-                        gcfg, env=s.securegpt_env or gcfg.default_env,
+-                        client_id=s.securegpt_client_id,
+-                        client_secret=s.securegpt_client_secret.get_secret_value(),
+-                        subscription_key=s.securegpt_subscription_key.get_secret_value(),
+-                    )  # fmt: skip
+-            elif cfg.provider.startswith("runware"):
+-                if s.runware_api_key is not None:
+-                    key = s.runware_api_key.get_secret_value()
+-                    client = RunwareClient(load_runware_config(s.config_dir), api_key=key)
+-            elif s.anthropic_api_key is not None:
+-                client = ClaudeClient(
+-                    s.anthropic_api_key.get_secret_value(), workspace_id=s.anthropic_workspace_id
+-                )
++            if s.llm_enabled and s.securegpt_client_id and s.securegpt_client_secret and \
++                    s.securegpt_subscription_key:  # fmt: skip
++                gcfg = load_securegpt_config(s.config_dir)
++                client = SecureGPTClient(
++                    gcfg, env=s.securegpt_env or gcfg.default_env,
++                    client_id=s.securegpt_client_id,
++                    client_secret=s.securegpt_client_secret.get_secret_value(),
++                    subscription_key=s.securegpt_subscription_key.get_secret_value(),
++                )  # fmt: skip
+             if client is not None:
+                 # Daily spend cap in the profile's currency (D-043); 0 = unlimited.
+                 client.budget = DailyBudget(s.llm_daily_budget, cfg.pricing,  # type: ignore[attr-defined]
+diff --git a/src/uw_pipeline/logs.py b/src/uw_pipeline/logs.py
+index 94ecc992bf23093a6fb4759c975b588b5c46bc3d..3d1554d23f5dac2246d03325b0a4ff12ca877c17 100644
+--- a/src/uw_pipeline/logs.py
++++ b/src/uw_pipeline/logs.py
+@@ -63,5 +63,5 @@ def setup_logging(*, json_format: bool, verbose: bool = False) -> None:
+     root = logging.getLogger()
+     root.handlers[:] = [handler]
+     root.setLevel(logging.DEBUG if verbose else logging.INFO)
+-    for noisy in ("httpx", "httpcore", "anthropic"):
++    for noisy in ("httpx", "httpcore"):
+         logging.getLogger(noisy).setLevel(logging.WARNING)
+diff --git a/src/uw_pipeline/settings.py b/src/uw_pipeline/settings.py
+index 8fac00900fe9d9e801a58f6d96b4825c8fdc7a6f..9375f47840ffe708a062dabfc6d3fd1d8f147a07 100644
+--- a/src/uw_pipeline/settings.py
++++ b/src/uw_pipeline/settings.py
+@@ -52,19 +52,13 @@ class Settings(BaseSettings):
+     # Free plan: 25 calls/day. Premium (75 calls/min): set the rate to 75 and the quota to 0.
+     alphavantage_calls_per_minute: float = Field(default=5, gt=0)
+     alphavantage_daily_quota: int = Field(default=25, ge=0)  # 0 = unlimited
+-    anthropic_api_key: SecretStr | None = None
+-    # Needed for user-level API keys that aren't scoped to a workspace.
+-    anthropic_workspace_id: str | None = None
+-    # LLM provider profile in config/llm.yaml: securegpt | anthropic | runware
+-    # (default: default_provider).
++    # LLM provider profile in config/llm.yaml (default: default_provider, securegpt).
+     llm_provider: str | None = None
+     # SecureGPT gateway (provider securegpt; D-039).
+     securegpt_client_id: str | None = None
+     securegpt_client_secret: SecretStr | None = None
+     securegpt_subscription_key: SecretStr | None = None
+     securegpt_env: str | None = None  # dv | pp | pr; default from config/securegpt.yaml
+-    # Runware gateway (provider runware; D-047).
+-    runware_api_key: SecretStr | None = None
+     # Turn LLM voting off (rules only), e.g. when no credentials are available.
+     llm_enabled: bool = True
+     # New LLM calls per UTC day, in the active profile's currency (D-043); 0 = unlimited.
+diff --git a/tests/fixtures/runware/anthropic_claude_haiku-5.5.json b/tests/fixtures/runware/anthropic_claude_haiku-5.5.json
+deleted file mode 100644
+index 3fc58c1fd2af4d09ae61fe9e4e8bf2e1737e9cf8..0000000000000000000000000000000000000000
+--- a/tests/fixtures/runware/anthropic_claude_haiku-5.5.json
++++ /dev/null
+@@ -1,19 +0,0 @@
+-{
+- "choices": [
+-  {
+-   "finish_reason": "stop",
+-   "index": 0,
+-   "message": {
+-    "role": "assistant",
+-    "content": "{\"articles\":[{\"id\":\"N1\",\"verdict\":\"SUBJECT\"},{\"id\":\"N2\",\"verdict\":\"PASSING\"}]}"
+-   }
+-  }
+- ],
+- "model": "anthropic:claude@haiku-5.5",
+- "object": "chat.completion",
+- "usage": {
+-  "completion_tokens": 50,
+-  "prompt_tokens": 527,
+-  "total_tokens": 577
+- }
+-}
+diff --git a/tests/fixtures/runware/anthropic_claude_sonnet-5.5.json b/tests/fixtures/runware/anthropic_claude_sonnet-5.5.json
+deleted file mode 100644
+index 1e2b9ba067dc59fdaf32c3f625b263c0614d5d02..0000000000000000000000000000000000000000
+--- a/tests/fixtures/runware/anthropic_claude_sonnet-5.5.json
++++ /dev/null
+@@ -1,19 +0,0 @@
+-{
+- "choices": [
+-  {
+-   "finish_reason": "stop",
+-   "index": 0,
+-   "message": {
+-    "role": "assistant",
+-    "content": "{\"articles\":[{\"id\":\"N1\",\"verdict\":\"SUBJECT\"},{\"id\":\"N2\",\"verdict\":\"PASSING\"}]}"
+-   }
+-  }
+- ],
+- "model": "anthropic:claude@sonnet-5.5",
+- "object": "chat.completion",
+- "usage": {
+-  "completion_tokens": 50,
+-  "prompt_tokens": 527,
+-  "total_tokens": 577
+- }
+-}
+diff --git a/tests/fixtures/runware/deepseek_v4_flash.json b/tests/fixtures/runware/deepseek_v4_flash.json
+deleted file mode 100644
+index 14bd6359bcc3399921969c03e1079dbb10edcdec..0000000000000000000000000000000000000000
+--- a/tests/fixtures/runware/deepseek_v4_flash.json
++++ /dev/null
+@@ -1,34 +0,0 @@
+-{
+- "object": "chat.completion",
+- "model": "deepseek:v4@flash",
+- "choices": [
+-  {
+-   "index": 0,
+-   "message": {
+-    "role": "assistant",
+-    "content": "{\"articles\":[{\"id\":\"N1\",\"verdict\":\"SUBJECT\"},{\"id\":\"N2\",\"verdict\":\"PASSING\"}]}",
+-    "reasoning_content": "We need to output JSON with articles verdicts. Need to determine if Marriott International is main subject or passing. N1: \"Marriott raises full-year RevPAR outlook\" clearly subject is Marriott. N2: \"Hotel stocks to watch this week\" mentions lodging names, so Marriott is passing. So N1 SUBJECT, N2 PASSING.",
+-    "refusal": null
+-   },
+-   "finish_reason": "stop"
+-  }
+- ],
+- "usage": {
+-  "prompt_tokens": 338,
+-  "completion_tokens": 106,
+-  "total_tokens": 444,
+-  "prompt_tokens_details": {
+-   "cached_tokens": 256
+-  },
+-  "completion_tokens_details": {
+-   "reasoning_tokens": 74
+-  },
+-  "cache_read_input_tokens": 256,
+-  "cache_creation_input_tokens": 0,
+-  "cache_creation": {
+-   "ephemeral_5m_input_tokens": 0,
+-   "ephemeral_1h_input_tokens": 0,
+-   "ephemeral_24h_input_tokens": 0
+-  }
+- }
+-}
+diff --git a/tests/test_config.py b/tests/test_config.py
+index 6e50798835b1f128a8fb4a03332cd50efb6870cf..c7079a5ad110241c7abfc1f0f8784d274c60945e 100644
+--- a/tests/test_config.py
++++ b/tests/test_config.py
+@@ -61,8 +61,7 @@ def test_unknown_group_reference_rejected() -> None:
+ 
+ 
+ def test_llm_provider_profiles(monkeypatch) -> None:
+-    """One model profile per provider (D-039): SecureGPT on the corporate network, Claude for
+-    development off it."""
++    """The SecureGPT profile (D-039); LLM_PROVIDER selects a profile by name."""
+     import pytest
+ 
+     from uw_pipeline.enrich.llm import load_llm_config
+@@ -75,14 +74,9 @@ def test_llm_provider_profiles(monkeypatch) -> None:
+         "gpt-5-nano-2025-08-07", "gpt-5-mini-2025-08-07")  # fmt: skip
+     assert default.pricing_currency == "EUR"
+ 
+-    claude = load_llm_config(CONFIG_DIR, "anthropic")
+-    assert (claude.extractor.model, claude.tiebreaker.model, claude.synthesis.model) == (
+-        "claude-haiku-5-5", "claude-sonnet-5-5", "claude-sonnet-5-5")  # fmt: skip
+-    assert claude.prompt_version == default.prompt_version  # shared settings stay
+-    assert load_insights_config(CONFIG_DIR, "anthropic").synthesis.model == "claude-sonnet-5-5"
++    assert load_insights_config(CONFIG_DIR).synthesis.model == "gpt-5-mini-2025-08-07"
+ 
+-    monkeypatch.setenv("LLM_PROVIDER", "anthropic")
+-    assert load_llm_config(CONFIG_DIR).provider == "anthropic"
+-    assert load_llm_config(CONFIG_DIR, "securegpt").provider == "securegpt"  # explicit wins
++    monkeypatch.setenv("LLM_PROVIDER", "securegpt")
++    assert load_llm_config(CONFIG_DIR).provider == "securegpt"
+     with pytest.raises(ValueError, match=r"not in config/llm\.yaml"):
+         load_llm_config(CONFIG_DIR, "nope")
+diff --git a/tests/test_llm_cache.py b/tests/test_llm_cache.py
+index fc36e8ae6c56a757faec1a9c2d5996090685f7f3..2f0dae6faf0db56923f73d926d6f8a6fa6356d30 100644
+--- a/tests/test_llm_cache.py
++++ b/tests/test_llm_cache.py
+@@ -3,13 +3,12 @@ one item, not the whole run."""
+ 
+ from datetime import UTC, datetime
+ 
+-import anthropic
+-import httpx
+ import pytest
+ from pydantic import BaseModel
+ from sqlalchemy import create_engine, select
+ 
+ from tests.fake_llm import FakeLLM
++from uw_pipeline.clients.llm import LLMError, LLMSetupError
+ from uw_pipeline.enrich.llm import LLMUnavailableError, ModelSpec, cached_call
+ from uw_pipeline.schema import llm_call, metadata
+ 
+@@ -46,15 +45,12 @@ def test_invalid_output_is_retried_not_reused(conn) -> None:
+ 
+ def test_request_too_large_fails_the_item_only(conn) -> None:
+     def too_long(model, user):
+-        response = httpx.Response(400, request=httpx.Request("POST", "https://api.example"))
+-        return anthropic.BadRequestError("prompt is too long: 1200000 tokens > 1000000 maximum",
+-                                         response=response, body=None)  # fmt: skip
++        return LLMError("m: request too large: context_length_exceeded")
+ 
+     assert _call(conn, FakeLLM(too_long)) is None  # recorded; other items go on
+ 
+     def bad_setup(model, user):
+-        response = httpx.Response(400, request=httpx.Request("POST", "https://api.example"))
+-        return anthropic.BadRequestError("unknown model 'm'", response=response, body=None)
++        return LLMSetupError("no SecureGPT deployment configured for model 'm'")
+ 
+     with pytest.raises(LLMUnavailableError):
+         _call(conn, FakeLLM(bad_setup), user="other")
+diff --git a/tests/test_phase3_stages.py b/tests/test_phase3_stages.py
+index 3ea581d66c80cb72f5d418be5a085ed4ee1cdc08..557c43d02049f58a4dcba1c46c3ba3e05cf24700 100644
+--- a/tests/test_phase3_stages.py
++++ b/tests/test_phase3_stages.py
+@@ -161,14 +161,10 @@ def test_signals_with_llm_vote_and_no_calls_on_rerun(env) -> None:
+ 
+ 
+ def test_llm_auth_failure_falls_back_to_rules(env) -> None:
+-    import anthropic
+-    import httpx as _httpx
++    from uw_pipeline.clients.llm import LLMSetupError
+ 
+     engine, sec, _ = env
+-    req = _httpx.Request("POST", "https://api.anthropic.com/v1/messages")
+-    err = anthropic.AuthenticationError(
+-        "bad key", response=_httpx.Response(401, request=req), body=None
+-    )
++    err = LLMSetupError("SecureGPT token request rejected (401)")
+     _run(engine, sec, FakeLLM(lambda m, u: err))
+     with engine.connect() as conn:
+         statuses = {r.review_status for r in conn.execute(select(signal))}
+diff --git a/tests/test_runware.py b/tests/test_runware.py
+deleted file mode 100644
+index e87f0883aa7b64b6847ae294df4b4c986b57763f..0000000000000000000000000000000000000000
+--- a/tests/test_runware.py
++++ /dev/null
+@@ -1,164 +0,0 @@
+-"""Runware gateway client (D-047) against a mocked gateway; no network."""
+-
+-import json
+-
+-import httpx
+-import pytest
+-import respx
+-
+-from tests.conftest import CONFIG_DIR
+-from uw_pipeline.clients.llm import LLMError, LLMSetupError
+-from uw_pipeline.clients.runware import RunwareClient, load_runware_config
+-from uw_pipeline.enrich.llm import load_llm_config
+-
+-CFG = load_runware_config(CONFIG_DIR)
+-CHAT = f"{CFG.base_url}/chat/completions"
+-FLASH = "deepseek:v4@flash"
+-SCHEMA = {"type": "object", "properties": {"answer": {"type": "string"}},
+-          "required": ["answer"], "additionalProperties": False}  # fmt: skip
+-
+-
+-def _client(slept: list[float] | None = None, **overrides) -> RunwareClient:
+-    return RunwareClient(CFG.model_copy(update=overrides), api_key="rw-test-key",
+-                         sleep=(slept if slept is not None else []).append)  # fmt: skip
+-
+-
+-def _ok(content: str, finish: str = "stop") -> httpx.Response:
+-    return httpx.Response(200, json={
+-        "model": "DeepSeek-V4-Flash-0731",
+-        "choices": [{"finish_reason": finish,
+-                     "message": {"role": "assistant", "content": content}}],
+-        "usage": {"prompt_tokens": 90, "completion_tokens": 12, "cost": 0.00001},
+-    })  # fmt: skip
+-
+-
+-def _call(c: RunwareClient, model: str = FLASH):
+-    return c.complete_json(model=model, effort="low", max_tokens=500, system="sys",
+-                           user="hello", schema=SCHEMA)  # fmt: skip
+-
+-
+-def test_strict_schema_request_and_result() -> None:
+-    with respx.mock(assert_all_called=True) as r:
+-        chat = r.post(CHAT).mock(return_value=_ok('{"answer": "present"}'))
+-        res = _call(_client())
+-    assert res.output == {"answer": "present"}
+-    assert (res.model, res.input_tokens, res.output_tokens) == ("DeepSeek-V4-Flash-0731", 90, 12)
+-    req = chat.calls[0].request
+-    assert req.headers["Authorization"] == "Bearer rw-test-key"
+-    body = json.loads(req.content)
+-    assert body["model"] == FLASH and body["max_tokens"] == 500
+-    assert body["response_format"] == {
+-        "type": "json_schema",
+-        "json_schema": {"name": "output", "strict": True, "schema": SCHEMA},
+-    }
+-    assert body["messages"] == [{"role": "system", "content": "sys"},
+-                                {"role": "user", "content": "hello"}]  # fmt: skip
+-    assert body["reasoning_effort"] == "low"  # accepted in the smoke test (config)
+-
+-
+-def test_json_mode_puts_the_schema_in_the_system_prompt_and_strips_a_fence() -> None:
+-    c = _client(output={FLASH: "json_object"}, reasoning_effort_models=[FLASH])
+-    with respx.mock() as r:
+-        chat = r.post(CHAT).mock(return_value=_ok('```json\n{"answer": "none"}\n```'))
+-        assert _call(c).output == {"answer": "none"}
+-    body = json.loads(chat.calls[0].request.content)
+-    assert body["response_format"] == {"type": "json_object"}
+-    assert body["messages"][0]["content"].startswith("sys\n\nReturn only one JSON object")
+-    assert json.dumps(SCHEMA, separators=(",", ":")) in body["messages"][0]["content"]
+-    assert body["reasoning_effort"] == "low"
+-
+-
+-def test_openai_models_get_max_completion_tokens() -> None:
+-    with respx.mock() as r:
+-        chat = r.post(CHAT).mock(return_value=_ok('{"answer": "x"}'))
+-        _call(_client(), model="openai:gpt@6-luna")
+-    body = json.loads(chat.calls[0].request.content)
+-    assert body["max_completion_tokens"] == 500 and "max_tokens" not in body
+-
+-
+-def test_retries_transient_errors_then_gives_up() -> None:
+-    slept: list[float] = []
+-    with respx.mock() as r:
+-        r.post(CHAT).mock(side_effect=[httpx.Response(429, headers={"retry-after": "7"}),
+-                                       _ok('{"answer": "x"}')])  # fmt: skip
+-        assert _call(_client(slept)).output == {"answer": "x"}
+-    assert slept == [7.0]
+-    with respx.mock() as r:
+-        r.post(CHAT).mock(return_value=httpx.Response(503))
+-        with pytest.raises(LLMError, match="503"):  # after the last retry
+-            _call(_client([], max_attempts=2))
+-
+-
+-@pytest.mark.parametrize(
+-    ("status", "message", "error"),
+-    [
+-        (400, "External inference tasks require a paid invoice or at least $5 credit.",
+-         LLMSetupError),
+-        (401, "Invalid API key", LLMSetupError),
+-        (400, "response_format json_schema is not supported for this model", LLMSetupError),
+-        (400, "This model's maximum context length is 1000000 tokens", LLMError),
+-        (400, "messages[1].content is malformed", LLMError),
+-        (500, "internal", LLMError),
+-    ],
+-)  # fmt: skip
+-def test_errors_are_classified(status: int, message: str, error: type) -> None:
+-    with respx.mock() as r:
+-        r.post(CHAT).mock(
+-            return_value=httpx.Response(
+-                status, json={"error": {"message": message, "type": "invalid_request_error"}}
+-            )
+-        )
+-        with pytest.raises(error) as exc:
+-            _call(_client([], max_attempts=1))
+-    assert "rw-test-key" not in str(exc.value)  # the key never reaches a message
+-
+-
+-@pytest.mark.parametrize(
+-    "content",
+-    [
+-        '{...}</think>{"answer": "present"}',  # a preview of the reasoning, then the answer
+-        '{\n  "answer": "none"\n}</think>{\n  "answer": "present"\n}',  # a draft, then the answer
+-    ],
+-)
+-def test_leaked_reasoning_before_the_answer_is_dropped(content: str) -> None:
+-    """Seen from deepseek:v4@flash on 2026-10-15: content `<reasoning></think><answer>`."""
+-    with respx.mock() as r:
+-        r.post(CHAT).mock(return_value=_ok(content))
+-        assert _call(_client()).output == {"answer": "present"}
+-
+-
+-@pytest.mark.parametrize(
+-    ("content", "finish", "match"),
+-    [("not json", "stop", "invalid JSON"), ('{"answer": "x"', "length", "token limit"),
+-     ("", "stop", "no content"), ('["a"]', "stop", "not an object")],
+-)  # fmt: skip
+-def test_unusable_output_fails_the_item(content: str, finish: str, match: str) -> None:
+-    with respx.mock() as r:
+-        r.post(CHAT).mock(return_value=_ok(content, finish))
+-        with pytest.raises(LLMError, match=match):
+-            _call(_client())
+-
+-
+-def test_profile_uses_two_different_models_for_dual_checks() -> None:
+-    cfg = load_llm_config(CONFIG_DIR, "runware")
+-    assert cfg.extractor.model == FLASH
+-    assert cfg.tiebreaker.model == "anthropic:claude@haiku-5.5"
+-    assert cfg.extractor.model != cfg.tiebreaker.model
+-    assert {cfg.extractor.model, cfg.tiebreaker.model, cfg.synthesis.model} <= set(cfg.pricing)
+-
+-
+-@pytest.mark.parametrize(
+-    "fixture", ["deepseek_v4_flash", "anthropic_claude_haiku-5.5", "anthropic_claude_sonnet-5.5"]
+-)
+-def test_recorded_responses_parse_and_validate(fixture: str) -> None:
+-    """Responses recorded by scripts/runware_smoke.py --record (2026-10-15)."""
+-    from tests.conftest import FIXTURES
+-    from uw_pipeline.enrich.news_relevance import Verdicts
+-
+-    body = json.loads((FIXTURES / "runware" / f"{fixture}.json").read_text())
+-    with respx.mock() as r:
+-        r.post(CHAT).mock(return_value=httpx.Response(200, json=body))
+-        res = _call(_client())
+-    verdicts = Verdicts.model_validate(res.output)
+-    assert {a.id: a.verdict for a in verdicts.articles} == {"N1": "SUBJECT", "N2": "PASSING"}
+-    assert res.input_tokens > 0 and res.output_tokens > 0
+diff --git a/tests/test_vote.py b/tests/test_vote.py
+index 3086c05aeb651d26017162a880ab530e7e757dfd..b10ca39ad96dcae5c26515af724d85b5a0e35aab 100644
+--- a/tests/test_vote.py
++++ b/tests/test_vote.py
+@@ -15,7 +15,7 @@ from uw_pipeline.signals.vote import Answer, Voter, decide, merge
+ 
+ RULES = load_signal_rules(CONFIG_DIR)
+ CONFIG = load_llm_config(CONFIG_DIR)
+-SONNET, OPUS = CONFIG.extractor.model, CONFIG.tiebreaker.model
++EXTRACTOR, TIEBREAKER = CONFIG.extractor.model, CONFIG.tiebreaker.model
+ NOW = datetime(2026, 10, 13, tzinfo=UTC)
+ 
+ DEPARTURE = ("Dave Denton notified the Company that he will step down from his current "
+@@ -46,9 +46,9 @@ def by(answer_map):
+ 
+ 
+ def test_agreement_needs_no_tiebreak() -> None:
+-    llm = by({SONNET: signals(leadership=[("CFO", "departure", "Dave Denton", DEPARTURE)])})
++    llm = by({EXTRACTOR: signals(leadership=[("CFO", "departure", "Dave Denton", DEPARTURE)])})
+     out, rows, _, _ = run(DEPARTURE, llm)
+-    assert llm.calls == [SONNET]
++    assert llm.calls == [EXTRACTOR]
+     assert rows["leadership:CFO"].status == "UNANIMOUS"
+     assert [(s.rule_id, s.review_status, s.method) for s in out] == [
+         ("8k_5.02_cfo_departure", "UNANIMOUS", "VOTE")
+@@ -67,9 +67,9 @@ def test_rule_match_voted_down_is_kept_as_overruled() -> None:
+         description="", event_date="2026-06-18", accession_no="acc-7", doc_id=7,
+         snippet=text, key_extra="CFO",
+     )  # fmt: skip
+-    llm = by({SONNET: NOTHING, OPUS: rulings(("leadership:CFO", "none", ""))})
++    llm = by({EXTRACTOR: NOTHING, TIEBREAKER: rulings(("leadership:CFO", "none", ""))})
+     out, rows, voter, _ = run(text, llm, rule=[misfire])
+-    assert llm.calls == [SONNET, OPUS]
++    assert llm.calls == [EXTRACTOR, TIEBREAKER]
+     vote = rows["leadership:CFO"]
+     assert (vote.rule_value, vote.outcome, vote.status) == ("appointment", "none", "OVERRULED")
+     # Not deleted: kept, clearly labelled, for review (the two LLMs could share a mistake).
+@@ -82,8 +82,8 @@ def test_llm_catches_rule_miss_confirmed_by_tiebreak() -> None:
+     text = "Mr. Smith has informed the Board that he intends to retire from the Company at year end, ending his tenure as CFO."
+     quote = "ending his tenure as CFO"
+     llm = by({
+-        SONNET: signals(leadership=[("CFO", "departure", "Mr. Smith", quote)]),
+-        OPUS: rulings(("leadership:CFO", "departure", quote)),
++        EXTRACTOR: signals(leadership=[("CFO", "departure", "Mr. Smith", quote)]),
++        TIEBREAKER: rulings(("leadership:CFO", "departure", quote)),
+     })  # fmt: skip
+     out, rows, _, _ = run(text, llm)
+     assert rows["leadership:CFO"].rule_value == "none"
+@@ -97,29 +97,30 @@ def test_llm_catches_rule_miss_confirmed_by_tiebreak() -> None:
+ 
+ def test_three_way_split_is_disputed() -> None:
+     llm = by({
+-        SONNET: signals(leadership=[("CFO", "appointment", None, "Chief Financial Officer effective August 15")]),
+-        OPUS: rulings(("leadership:CFO", "none", "")),
++        EXTRACTOR: signals(leadership=[("CFO", "appointment", None, "Chief Financial Officer effective August 15")]),
++        TIEBREAKER: rulings(("leadership:CFO", "none", "")),
+     })  # fmt: skip
+-    out, rows, _, _ = run(DEPARTURE, llm)  # rules: departure, Sonnet: appointment, Opus: none
++    # rules: departure, extractor: appointment, tie-breaker: none
++    out, rows, _, _ = run(DEPARTURE, llm)
+     assert rows["leadership:CFO"].status == "DISPUTED"
+     sig = next(s for s in out if s.rule_id.startswith("8k_5.02_cfo"))
+     assert sig.review_status == "DISPUTED" and sig.title.startswith("Possible CFO departure")
+ 
+ 
+ def test_ungrounded_llm_claim_counts_as_none() -> None:
+-    llm = by({SONNET: signals(leadership=[("CEO", "departure", "X", "The CEO resigned today.")]),
+-              OPUS: NOTHING})  # fmt: skip
++    llm = by({EXTRACTOR: signals(leadership=[("CEO", "departure", "X", "The CEO resigned today.")]),
++              TIEBREAKER: NOTHING})  # fmt: skip
+     _, rows, voter, _ = run(SEGMENT_CEO, llm)
+     assert rows["leadership:CEO"].extractor_value == "none"
+     assert voter.stats["ungrounded"] == 1
+-    assert llm.calls == [SONNET]  # rules and grounded LLM both say none: no tie-break
++    assert llm.calls == [EXTRACTOR]  # rules and grounded LLM both say none: no tie-break
+ 
+ 
+ def test_listing_transfer_vote() -> None:
+     text = "On September 25, 2026, the Company notified the NYSE of its intention to voluntarily de-list its common stock."
+     llm = by(
+         {
+-            SONNET: signals(
++            EXTRACTOR: signals(
+                 findings=[("listing_voluntary_transfer", "voluntarily de-list its common stock")]
+             )
+         }
+@@ -134,14 +135,14 @@ def test_listing_transfer_vote() -> None:
+ def test_cached_answers_are_reused() -> None:
+     engine = create_engine("sqlite://")
+     metadata.create_all(engine)
+-    llm = by({SONNET: signals(leadership=[("CFO", "departure", None, DEPARTURE)])})
++    llm = by({EXTRACTOR: signals(leadership=[("CFO", "departure", None, DEPARTURE)])})
+     doc = Doc(7, "8-K", "PRIMARY", "acc-7", "2026-06-18", None, "5.02")
+     sections = {"8K-5.02": DEPARTURE}
+     rule = eight_k_signals([doc], {7: sections}, RULES)
+     for _ in range(2):
+         with engine.begin() as conn:
+             Voter(llm, CONFIG, RULES, conn, lambda: NOW).vote_document(doc, "ACME", sections, rule)
+-    assert llm.calls == [SONNET]
++    assert llm.calls == [EXTRACTOR]
+ 
+ 
+ def test_unusable_llm_output_keeps_rule_result() -> None:
+@@ -199,7 +200,7 @@ def test_tiebreaker_sees_both_claims_without_sources() -> None:
+     seen = {}
+ 
+     def answer(model, user):
+-        if model == SONNET:
++        if model == EXTRACTOR:
+             return NOTHING
+         seen["user"] = user
+         return rulings(("leadership:CFO", "departure", "step down from his current position"))
+@@ -207,7 +208,7 @@ def test_tiebreaker_sees_both_claims_without_sources() -> None:
+     _, rows, _, _ = run(DEPARTURE, FakeLLM(answer))
+     user = seen["user"]
+     assert "Claim A: departure; quote:" in user and "Claim B: none; quote: (none)" in user
+-    assert "rules" not in user.lower() and SONNET not in user
++    assert "rules" not in user.lower() and EXTRACTOR not in user
+     assert (rows["leadership:CFO"].outcome, rows["leadership:CFO"].status) == (
+         "departure", "MAJORITY",
+     )  # fmt: skip
+@@ -215,7 +216,10 @@ def test_tiebreaker_sees_both_claims_without_sources() -> None:
+ 
+ def test_tiebreak_answer_outside_allowed_set_is_disputed() -> None:
+     llm = by(
+-        {SONNET: NOTHING, OPUS: rulings(("leadership:CFO", "present", "Chief Financial Officer"))}
++        {
++            EXTRACTOR: NOTHING,
++            TIEBREAKER: rulings(("leadership:CFO", "present", "Chief Financial Officer")),
++        }
+     )
+     _, rows, _, _ = run(DEPARTURE, llm)
+     assert rows["leadership:CFO"].status == "DISPUTED"
+@@ -224,7 +228,7 @@ def test_tiebreak_answer_outside_allowed_set_is_disputed() -> None:
+ def test_llm_departure_plus_appointment_is_succession() -> None:
+     text = ("John Doe will retire as Chief Financial Officer on March 1. "
+             "The Board appointed Jane Roe as Chief Financial Officer.")  # fmt: skip
+-    llm = by({SONNET: signals(leadership=[
++    llm = by({EXTRACTOR: signals(leadership=[
+         ("CFO", "appointment", "Jane Roe", "appointed Jane Roe as Chief Financial Officer"),
+         ("CFO", "departure", "John Doe", "John Doe will retire as Chief Financial Officer"),
+     ])})  # fmt: skip
+@@ -237,7 +241,7 @@ def test_llm_departure_plus_appointment_is_succession() -> None:
+ 
+ 
+ def test_grounding_accepts_elided_quotes_in_order() -> None:
+-    # Claude Haiku 5.5 joins a table header and the row it read with "..." (live MAR 10-Q).
++    # The extractor joins a table header and the row it read with "..." (live MAR 10-Q).
+     src = ("Comparable Systemwide Properties\nThree Months Ended September 30, 2025\n"
+            "RevPAR Occupancy\nWorldwide (2) $ 131.43 0.5 % 71.5 % (0.3) % pts. $ 183.71 0.9 %")  # fmt: skip
+     q = "Comparable Systemwide Properties ... Worldwide (2) $ 131.43 0.5 % 71.5 %"
