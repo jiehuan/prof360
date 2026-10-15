@@ -8,6 +8,7 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 
 ```bash
 .venv/bin/pip install -e ".[dev]"             # Python 3.14 venv (project supports >=3.11)
+.venv/bin/pip install -e "./bff[dev]"         # BFF (FastAPI over the app database, D-048)
 .venv/bin/uw-pipeline run --all     # company -> facts -> compute -> documents -> transcripts
                                      #   -> news -> scores -> textmetrics -> signals -> insights
                                      #   -> metricdetail -> publish (app database) -> dq
@@ -17,6 +18,9 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 .venv/bin/uw-pipeline dq-report      # data-quality findings of the latest run
 .venv/bin/uw-pipeline run --ticker MAR --stage compute
 .venv/bin/uw-pipeline run --ticker MAR --force       # ignore same-day raw cache / input hash
+.venv/bin/p360-bff --reload                          # BFF on :8000 (data/app.db); docs at /docs
+.venv/bin/python -m p360_bff.ddl                     # regenerate deploy/sql/bff_user_tables.sql
+.venv/bin/python -m p360_bff.openapi                 # regenerate docs/bff-openapi.json
 .venv/bin/uw-pipeline coverage-report                # data/reports/coverage-<date>.md
 .venv/bin/uw-pipeline review                          # disputed signals / identity breaks; approve|reject
 .venv/bin/python scripts/stability_check.py --faults MAR   # failure handling (--runs 3: live, costs)
@@ -34,6 +38,7 @@ scripts/test_mssql.sh --all                          # whole test suite on a loc
 Architecture, stages, data model and internals: `docs/TECHNICAL.md`.
 Operations (adding companies/metrics, prompt changes, troubleshooting): `docs/OPERATIONS.md`.
 Pipeline output for the BFF (application tables, `schema_app.py`): `docs/schema-contract.md`.
+BFF API for the front end (`bff/`, D-048): `docs/bff-api.md`.
 
 Local dev: settings come from env vars / `.env` (see `.env.example`). Raw responses land in
 `data/raw/` (stand-in for ADLS) and the database defaults to SQLite at `data/uw.db`.

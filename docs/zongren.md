@@ -40,3 +40,10 @@
 - 应用表没有改动，app_schema_changes.sql 和 app_schema_full.sql 不变。
 - 如果已经执行过 pipeline_schema_full.sql：重新执行一次即可。脚本只创建不存在的表，已有的表和数据不受影响。权限沿用第 2 步，不需要新的授权。
 - 应用库里 metrics 会多 3 行（ROA、ROE、贷款损失准备率），由管线发布时写入，不需要你处理。
+
+【更新 2026-10-15：BFF】
+- 本仓库新增 BFF（`bff/`，FastAPI），读应用库，并读写用户状态表。
+- 用户状态表脚本：deploy/sql/bff_user_tables.sql，建在应用表的 schema 里，可重复执行。表名和团队数据模型图一致（Users、UserHistory、UserFavority、UserPinnedCompanies、UserFlaggedFollowupQuestions、UserSIC、UserMetricsSelection），字段是按表名推测的。如果这些表在你们的环境里已经存在，请先不要执行，把现有的表结构发给我，我按实际字段改。
+- 请为 BFF 单独建一个服务主体和数据库用户：应用表只给 SELECT；用户状态表给 SELECT、INSERT、UPDATE、DELETE。凭证放 OpenShift Secret `bff-secrets`（BFF_SQL_CLIENT_ID、BFF_SQL_CLIENT_SECRET，模板见 deploy/openshift/secret.example.yaml）。
+- 部署：镜像 `docker build --target bff .`，清单 deploy/openshift/bff.yaml（Deployment、Service、Route，健康检查 /health）。登录暂时是开发模式，接公司 SSO 前需要 IT 的 tenant ID 和应用注册。
+

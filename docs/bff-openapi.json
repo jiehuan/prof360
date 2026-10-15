@@ -1,0 +1,3763 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "Professional 360 BFF",
+  "description": "Company pages for D&O underwriting: metrics, insights, risks, follow-up questions, news and user state.",
+  "version": "0.1.0"
+ },
+ "paths": {
+  "/api/v1/companies": {
+   "get": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "List Companies",
+    "description": "Companies by name; `search` matches name or ticker. Counts for the dashboard cards.",
+    "operationId": "list_companies_api_v1_companies_get",
+    "parameters": [
+     {
+      "name": "search",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Search"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/CompanySummary"
+         },
+         "title": "Response List Companies Api V1 Companies Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/companies/{company_id}": {
+   "get": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "Get Company",
+    "description": "Company header, counts and which modules have data. Records the view (Recently Viewed).",
+    "operationId": "get_company_api_v1_companies__company_id__get",
+    "parameters": [
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CompanyDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/companies/{company_id}/metrics": {
+   "get": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "Get Metrics",
+    "description": "Metric cards by category. quarterly: the last 8 quarters (QoQ and YoY views); annual:\nthe last 5 fiscal years (5Ys view). The user's metric choice for the industry applies.",
+    "operationId": "get_metrics_api_v1_companies__company_id__metrics_get",
+    "parameters": [
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "view",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "enum": [
+        "quarterly",
+        "annual"
+       ],
+       "type": "string",
+       "default": "quarterly",
+       "title": "View"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MetricsResponse"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/companies/{company_id}/metrics/{metric_id}": {
+   "get": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "Get Metric",
+    "description": "Metric modal: methodology, data sources, data points, UW relevance and related items.",
+    "operationId": "get_metric_api_v1_companies__company_id__metrics__metric_id__get",
+    "parameters": [
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "metric_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Metric Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MetricDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/companies/{company_id}/key-insights": {
+   "get": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "Get Key Insights",
+    "operationId": "get_key_insights_api_v1_companies__company_id__key_insights_get",
+    "parameters": [
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/KeyInsight"
+         },
+         "title": "Response Get Key Insights Api V1 Companies  Company Id  Key Insights Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/companies/{company_id}/key-insights/{insight_id}": {
+   "get": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "Get Key Insight",
+    "operationId": "get_key_insight_api_v1_companies__company_id__key_insights__insight_id__get",
+    "parameters": [
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "insight_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Insight Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/KeyInsightDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/companies/{company_id}/risks": {
+   "get": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "Get Risks",
+    "description": "Strategic & Risk Insights in the page's four groups.",
+    "operationId": "get_risks_api_v1_companies__company_id__risks_get",
+    "parameters": [
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/RiskGroup"
+         },
+         "title": "Response Get Risks Api V1 Companies  Company Id  Risks Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/companies/{company_id}/risks/{risk_id}": {
+   "get": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "Get Risk",
+    "operationId": "get_risk_api_v1_companies__company_id__risks__risk_id__get",
+    "parameters": [
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "risk_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Risk Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RiskDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/companies/{company_id}/follow-ups": {
+   "get": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "Get Follow Ups",
+    "operationId": "get_follow_ups_api_v1_companies__company_id__follow_ups_get",
+    "parameters": [
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/FollowUp"
+         },
+         "title": "Response Get Follow Ups Api V1 Companies  Company Id  Follow Ups Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/companies/{company_id}/follow-ups/{question_id}": {
+   "get": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "Get Follow Up",
+    "operationId": "get_follow_up_api_v1_companies__company_id__follow_ups__question_id__get",
+    "parameters": [
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "question_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Question Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FollowUpDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/companies/{company_id}/follow-ups/{question_id}/flag": {
+   "put": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "Flag Follow Up",
+    "description": "Flag or unflag a question for the current user. Only current questions can be flagged.",
+    "operationId": "flag_follow_up_api_v1_companies__company_id__follow_ups__question_id__flag_put",
+    "parameters": [
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "question_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Question Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FlagBody"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FollowUp"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/companies/{company_id}/activities": {
+   "get": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "Get Activities",
+    "description": "Recent Activities (news), newest first, with the news risk score.",
+    "operationId": "get_activities_api_v1_companies__company_id__activities_get",
+    "parameters": [
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "days",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 365,
+       "minimum": 1,
+       "default": 30,
+       "title": "Days"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Activity"
+         },
+         "title": "Response Get Activities Api V1 Companies  Company Id  Activities Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/companies/{company_id}/trends": {
+   "get": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "Get Trends",
+    "description": "Performance Trends (financial institutions; empty for other companies).",
+    "operationId": "get_trends_api_v1_companies__company_id__trends_get",
+    "parameters": [
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/Trend"
+         },
+         "title": "Response Get Trends Api V1 Companies  Company Id  Trends Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/companies/{company_id}/loan-portfolio": {
+   "get": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "Get Loan Portfolio",
+    "description": "Loan Portfolio Composition and its modal (financial institutions; empty otherwise).",
+    "operationId": "get_loan_portfolio_api_v1_companies__company_id__loan_portfolio_get",
+    "parameters": [
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LoanPortfolio"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/companies/{company_id}/transcripts": {
+   "get": {
+    "tags": [
+     "companies"
+    ],
+    "summary": "Get Transcripts",
+    "description": "Earnings call tone and risk flags, latest quarter first.",
+    "operationId": "get_transcripts_api_v1_companies__company_id__transcripts_get",
+    "parameters": [
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/TranscriptTone"
+         },
+         "title": "Response Get Transcripts Api V1 Companies  Company Id  Transcripts Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/me": {
+   "get": {
+    "tags": [
+     "me"
+    ],
+    "summary": "Me",
+    "operationId": "me_api_v1_me_get",
+    "parameters": [
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Me"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/me/recent": {
+   "get": {
+    "tags": [
+     "me"
+    ],
+    "summary": "Recent",
+    "operationId": "recent_api_v1_me_recent_get",
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 50,
+       "minimum": 1,
+       "default": 10,
+       "title": "Limit"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/RecentCompany"
+         },
+         "title": "Response Recent Api V1 Me Recent Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/me/preferences": {
+   "get": {
+    "tags": [
+     "me"
+    ],
+    "summary": "Get Preferences",
+    "operationId": "get_preferences_api_v1_me_preferences_get",
+    "parameters": [
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Preferences"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/me/preferences/industries": {
+   "put": {
+    "tags": [
+     "me"
+    ],
+    "summary": "Set Industries",
+    "description": "Industries (SIC ids) the user follows; replaces the list.",
+    "operationId": "set_industries_api_v1_me_preferences_industries_put",
+    "parameters": [
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/IdList"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Preferences"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/me/preferences/metrics/{sic_id}": {
+   "put": {
+    "tags": [
+     "me"
+    ],
+    "summary": "Set Metrics",
+    "description": "Metrics shown for companies of this industry; an empty list restores the default.",
+    "operationId": "set_metrics_api_v1_me_preferences_metrics__sic_id__put",
+    "parameters": [
+     {
+      "name": "sic_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Sic Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/IdList"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Preferences"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/me/preferences/metrics/{sic_id}/available": {
+   "get": {
+    "tags": [
+     "me"
+    ],
+    "summary": "Available Metrics",
+    "description": "Metrics that can be chosen for an industry: the industry's default set first.",
+    "operationId": "available_metrics_api_v1_me_preferences_metrics__sic_id__available_get",
+    "parameters": [
+     {
+      "name": "sic_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Sic Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/MetricRef"
+         },
+         "title": "Response Available Metrics Api V1 Me Preferences Metrics  Sic Id  Available Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/me/{kind}": {
+   "get": {
+    "tags": [
+     "me"
+    ],
+    "summary": "Company Set",
+    "description": "Favorite or pinned companies.",
+    "operationId": "company_set_api_v1_me__kind__get",
+    "parameters": [
+     {
+      "name": "kind",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "enum": [
+        "favorites",
+        "pinned"
+       ],
+       "type": "string",
+       "title": "Kind"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/CompanySummary"
+         },
+         "title": "Response Company Set Api V1 Me  Kind  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/v1/me/{kind}/{company_id}": {
+   "put": {
+    "tags": [
+     "me"
+    ],
+    "summary": "Add Company",
+    "operationId": "add_company_api_v1_me__kind___company_id__put",
+    "parameters": [
+     {
+      "name": "kind",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "enum": [
+        "favorites",
+        "pinned"
+       ],
+       "type": "string",
+       "title": "Kind"
+      }
+     },
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "me"
+    ],
+    "summary": "Remove Company",
+    "operationId": "remove_company_api_v1_me__kind___company_id__delete",
+    "parameters": [
+     {
+      "name": "kind",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "enum": [
+        "favorites",
+        "pinned"
+       ],
+       "type": "string",
+       "title": "Kind"
+      }
+     },
+     {
+      "name": "company_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Company Id"
+      }
+     },
+     {
+      "name": "x-user-email",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-User-Email"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/health": {
+   "get": {
+    "tags": [
+     "ops"
+    ],
+    "summary": "Health",
+    "operationId": "health_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": true,
+         "type": "object",
+         "title": "Response Health Health Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "Activity": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "date": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Date"
+     },
+     "summary": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Summary"
+     },
+     "sentiment": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sentiment"
+     },
+     "underwriting": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Underwriting"
+     },
+     "sources": {
+      "items": {
+       "$ref": "#/components/schemas/Source"
+      },
+      "type": "array",
+      "title": "Sources"
+     },
+     "confidence": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Confidence"
+     },
+     "riskScore": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/RiskScore"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "title",
+     "date",
+     "summary",
+     "sentiment",
+     "underwriting",
+     "sources",
+     "confidence",
+     "riskScore"
+    ],
+    "title": "Activity"
+   },
+   "CompanyDetail": {
+    "properties": {
+     "companyId": {
+      "type": "integer",
+      "title": "Companyid"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "ticker": {
+      "type": "string",
+      "title": "Ticker"
+     },
+     "cik": {
+      "type": "string",
+      "title": "Cik"
+     },
+     "location": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Location"
+     },
+     "logo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Logo"
+     },
+     "sic": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Sic"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "updatedAt": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Updatedat"
+     },
+     "riskFlags": {
+      "type": "integer",
+      "title": "Riskflags"
+     },
+     "followUps": {
+      "type": "integer",
+      "title": "Followups"
+     },
+     "isFavorite": {
+      "type": "boolean",
+      "title": "Isfavorite"
+     },
+     "isPinned": {
+      "type": "boolean",
+      "title": "Ispinned"
+     },
+     "modules": {
+      "additionalProperties": {
+       "type": "boolean"
+      },
+      "type": "object",
+      "title": "Modules"
+     }
+    },
+    "type": "object",
+    "required": [
+     "companyId",
+     "name",
+     "ticker",
+     "cik",
+     "location",
+     "logo",
+     "sic",
+     "updatedAt",
+     "riskFlags",
+     "followUps",
+     "isFavorite",
+     "isPinned",
+     "modules"
+    ],
+    "title": "CompanyDetail"
+   },
+   "CompanySummary": {
+    "properties": {
+     "companyId": {
+      "type": "integer",
+      "title": "Companyid"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "ticker": {
+      "type": "string",
+      "title": "Ticker"
+     },
+     "cik": {
+      "type": "string",
+      "title": "Cik"
+     },
+     "location": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Location"
+     },
+     "logo": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Logo"
+     },
+     "sic": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Sic"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "updatedAt": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Updatedat"
+     },
+     "riskFlags": {
+      "type": "integer",
+      "title": "Riskflags"
+     },
+     "followUps": {
+      "type": "integer",
+      "title": "Followups"
+     },
+     "isFavorite": {
+      "type": "boolean",
+      "title": "Isfavorite"
+     },
+     "isPinned": {
+      "type": "boolean",
+      "title": "Ispinned"
+     }
+    },
+    "type": "object",
+    "required": [
+     "companyId",
+     "name",
+     "ticker",
+     "cik",
+     "location",
+     "logo",
+     "sic",
+     "updatedAt",
+     "riskFlags",
+     "followUps",
+     "isFavorite",
+     "isPinned"
+    ],
+    "title": "CompanySummary"
+   },
+   "DataPoint": {
+    "properties": {
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "text": {
+      "type": "string",
+      "title": "Text"
+     },
+     "evidence": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evidence"
+     }
+    },
+    "type": "object",
+    "required": [
+     "label",
+     "text"
+    ],
+    "title": "DataPoint"
+   },
+   "FlagBody": {
+    "properties": {
+     "flagged": {
+      "type": "boolean",
+      "title": "Flagged"
+     }
+    },
+    "type": "object",
+    "required": [
+     "flagged"
+    ],
+    "title": "FlagBody"
+   },
+   "FollowUp": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "category": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Category"
+     },
+     "question": {
+      "type": "string",
+      "title": "Question"
+     },
+     "summary": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Summary"
+     },
+     "followingRisk": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Followingrisk"
+     },
+     "underwritingRelevance": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Underwritingrelevance"
+     },
+     "priority": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Priority"
+     },
+     "sources": {
+      "items": {
+       "$ref": "#/components/schemas/Source"
+      },
+      "type": "array",
+      "title": "Sources"
+     },
+     "isFlagged": {
+      "type": "boolean",
+      "title": "Isflagged"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "category",
+     "question",
+     "summary",
+     "followingRisk",
+     "underwritingRelevance",
+     "priority",
+     "sources",
+     "isFlagged"
+    ],
+    "title": "FollowUp"
+   },
+   "FollowUpDetail": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "category": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Category"
+     },
+     "question": {
+      "type": "string",
+      "title": "Question"
+     },
+     "summary": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Summary"
+     },
+     "followingRisk": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Followingrisk"
+     },
+     "underwritingRelevance": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Underwritingrelevance"
+     },
+     "priority": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Priority"
+     },
+     "sources": {
+      "items": {
+       "$ref": "#/components/schemas/Source"
+      },
+      "type": "array",
+      "title": "Sources"
+     },
+     "isFlagged": {
+      "type": "boolean",
+      "title": "Isflagged"
+     },
+     "related": {
+      "$ref": "#/components/schemas/Related"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "category",
+     "question",
+     "summary",
+     "followingRisk",
+     "underwritingRelevance",
+     "priority",
+     "sources",
+     "isFlagged",
+     "related"
+    ],
+    "title": "FollowUpDetail"
+   },
+   "FollowUpRef": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "category": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Category"
+     },
+     "question": {
+      "type": "string",
+      "title": "Question"
+     },
+     "priority": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Priority"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "category",
+     "question",
+     "priority"
+    ],
+    "title": "FollowUpRef"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "IdList": {
+    "properties": {
+     "ids": {
+      "items": {
+       "type": "integer"
+      },
+      "type": "array",
+      "title": "Ids"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ids"
+    ],
+    "title": "IdList"
+   },
+   "KeyInsight": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "type": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Type"
+     },
+     "iconType": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Icontype"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "summary": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Summary"
+     },
+     "underwriting": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Underwriting"
+     },
+     "evidence": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evidence"
+     },
+     "sources": {
+      "items": {
+       "$ref": "#/components/schemas/Source"
+      },
+      "type": "array",
+      "title": "Sources"
+     },
+     "updatedDate": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Updateddate"
+     },
+     "link": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Link"
+     },
+     "confidence": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Confidence"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "type",
+     "iconType",
+     "title",
+     "summary",
+     "underwriting",
+     "evidence",
+     "sources",
+     "updatedDate",
+     "link",
+     "confidence"
+    ],
+    "title": "KeyInsight"
+   },
+   "KeyInsightDetail": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "type": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Type"
+     },
+     "iconType": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Icontype"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "summary": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Summary"
+     },
+     "underwriting": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Underwriting"
+     },
+     "evidence": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Evidence"
+     },
+     "sources": {
+      "items": {
+       "$ref": "#/components/schemas/Source"
+      },
+      "type": "array",
+      "title": "Sources"
+     },
+     "updatedDate": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Updateddate"
+     },
+     "link": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Link"
+     },
+     "confidence": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Confidence"
+     },
+     "related": {
+      "$ref": "#/components/schemas/Related"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "type",
+     "iconType",
+     "title",
+     "summary",
+     "underwriting",
+     "evidence",
+     "sources",
+     "updatedDate",
+     "link",
+     "confidence",
+     "related"
+    ],
+    "title": "KeyInsightDetail"
+   },
+   "KeyInsightRef": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "type": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Type"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "summary": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Summary"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "type",
+     "title",
+     "summary"
+    ],
+    "title": "KeyInsightRef"
+   },
+   "LoanPortfolio": {
+    "properties": {
+     "currentPeriod": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Currentperiod"
+     },
+     "priorPeriod": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Priorperiod"
+     },
+     "segments": {
+      "items": {
+       "$ref": "#/components/schemas/LoanSegment"
+      },
+      "type": "array",
+      "title": "Segments"
+     },
+     "methodology": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Methodology"
+     },
+     "dataSources": {
+      "items": {
+       "$ref": "#/components/schemas/Source"
+      },
+      "type": "array",
+      "title": "Datasources"
+     },
+     "dataPoints": {
+      "items": {
+       "$ref": "#/components/schemas/DataPoint"
+      },
+      "type": "array",
+      "title": "Datapoints"
+     }
+    },
+    "type": "object",
+    "required": [
+     "currentPeriod",
+     "priorPeriod",
+     "segments",
+     "methodology",
+     "dataSources",
+     "dataPoints"
+    ],
+    "title": "LoanPortfolio"
+   },
+   "LoanSegment": {
+    "properties": {
+     "parentSegment": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Parentsegment"
+     },
+     "segment": {
+      "type": "string",
+      "title": "Segment"
+     },
+     "periodEnd": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Periodend"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value"
+     },
+     "pctOfBook": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pctofbook"
+     },
+     "nonaccrual": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Nonaccrual"
+     },
+     "nonaccrualRatio": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Nonaccrualratio"
+     }
+    },
+    "type": "object",
+    "required": [
+     "parentSegment",
+     "segment",
+     "periodEnd",
+     "value",
+     "pctOfBook",
+     "nonaccrual",
+     "nonaccrualRatio"
+    ],
+    "title": "LoanSegment"
+   },
+   "Me": {
+    "properties": {
+     "userId": {
+      "type": "integer",
+      "title": "Userid"
+     },
+     "email": {
+      "type": "string",
+      "title": "Email"
+     },
+     "displayName": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Displayname"
+     }
+    },
+    "type": "object",
+    "required": [
+     "userId",
+     "email",
+     "displayName"
+    ],
+    "title": "Me"
+   },
+   "Metric": {
+    "properties": {
+     "metricId": {
+      "type": "integer",
+      "title": "Metricid"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "subtitle": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Subtitle"
+     },
+     "description": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Description"
+     },
+     "unit": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Unit"
+     },
+     "latest": {
+      "$ref": "#/components/schemas/MetricPoint"
+     },
+     "series": {
+      "items": {
+       "$ref": "#/components/schemas/MetricPoint"
+      },
+      "type": "array",
+      "title": "Series"
+     }
+    },
+    "type": "object",
+    "required": [
+     "metricId",
+     "name",
+     "subtitle",
+     "description",
+     "unit",
+     "latest",
+     "series"
+    ],
+    "title": "Metric"
+   },
+   "MetricCategory": {
+    "properties": {
+     "category": {
+      "type": "string",
+      "title": "Category"
+     },
+     "metrics": {
+      "items": {
+       "$ref": "#/components/schemas/Metric"
+      },
+      "type": "array",
+      "title": "Metrics"
+     }
+    },
+    "type": "object",
+    "required": [
+     "category",
+     "metrics"
+    ],
+    "title": "MetricCategory"
+   },
+   "MetricDetail": {
+    "properties": {
+     "metricId": {
+      "type": "integer",
+      "title": "Metricid"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "category": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Category"
+     },
+     "formula": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Formula"
+     },
+     "methodology": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Methodology"
+     },
+     "dataSources": {
+      "items": {
+       "$ref": "#/components/schemas/Source"
+      },
+      "type": "array",
+      "title": "Datasources"
+     },
+     "dataPoints": {
+      "items": {
+       "$ref": "#/components/schemas/DataPoint"
+      },
+      "type": "array",
+      "title": "Datapoints"
+     },
+     "underwritingRelevance": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Underwritingrelevance"
+     },
+     "updatedAt": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Updatedat"
+     },
+     "related": {
+      "$ref": "#/components/schemas/Related"
+     }
+    },
+    "type": "object",
+    "required": [
+     "metricId",
+     "name",
+     "category",
+     "formula",
+     "methodology",
+     "dataSources",
+     "dataPoints",
+     "underwritingRelevance",
+     "updatedAt",
+     "related"
+    ],
+    "title": "MetricDetail"
+   },
+   "MetricPoint": {
+    "properties": {
+     "period": {
+      "type": "string",
+      "title": "Period"
+     },
+     "fiscalYear": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Fiscalyear"
+     },
+     "fiscalPeriod": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Fiscalperiod"
+     },
+     "periodEnd": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Periodend"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "sourceClass": {
+      "type": "string",
+      "title": "Sourceclass"
+     },
+     "sourceLabel": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sourcelabel"
+     },
+     "notes": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Notes"
+     }
+    },
+    "type": "object",
+    "required": [
+     "period",
+     "fiscalYear",
+     "fiscalPeriod",
+     "periodEnd",
+     "value",
+     "status",
+     "sourceClass",
+     "sourceLabel",
+     "notes"
+    ],
+    "title": "MetricPoint"
+   },
+   "MetricRef": {
+    "properties": {
+     "metricId": {
+      "type": "integer",
+      "title": "Metricid"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "category": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Category"
+     }
+    },
+    "type": "object",
+    "required": [
+     "metricId",
+     "name",
+     "category"
+    ],
+    "title": "MetricRef"
+   },
+   "MetricsResponse": {
+    "properties": {
+     "view": {
+      "type": "string",
+      "title": "View"
+     },
+     "customized": {
+      "type": "boolean",
+      "title": "Customized"
+     },
+     "categories": {
+      "items": {
+       "$ref": "#/components/schemas/MetricCategory"
+      },
+      "type": "array",
+      "title": "Categories"
+     }
+    },
+    "type": "object",
+    "required": [
+     "view",
+     "customized",
+     "categories"
+    ],
+    "title": "MetricsResponse"
+   },
+   "Preferences": {
+    "properties": {
+     "followedSicIds": {
+      "items": {
+       "type": "integer"
+      },
+      "type": "array",
+      "title": "Followedsicids"
+     },
+     "metricSelections": {
+      "additionalProperties": {
+       "items": {
+        "type": "integer"
+       },
+       "type": "array"
+      },
+      "type": "object",
+      "title": "Metricselections"
+     }
+    },
+    "type": "object",
+    "required": [
+     "followedSicIds",
+     "metricSelections"
+    ],
+    "title": "Preferences"
+   },
+   "RecentCompany": {
+    "properties": {
+     "company": {
+      "$ref": "#/components/schemas/CompanySummary"
+     },
+     "viewedAt": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Viewedat"
+     }
+    },
+    "type": "object",
+    "required": [
+     "company",
+     "viewedAt"
+    ],
+    "title": "RecentCompany"
+   },
+   "Related": {
+    "properties": {
+     "keyInsights": {
+      "items": {
+       "$ref": "#/components/schemas/KeyInsightRef"
+      },
+      "type": "array",
+      "title": "Keyinsights",
+      "default": []
+     },
+     "risks": {
+      "items": {
+       "$ref": "#/components/schemas/RiskRef"
+      },
+      "type": "array",
+      "title": "Risks",
+      "default": []
+     },
+     "followUps": {
+      "items": {
+       "$ref": "#/components/schemas/FollowUpRef"
+      },
+      "type": "array",
+      "title": "Followups",
+      "default": []
+     },
+     "metrics": {
+      "items": {
+       "$ref": "#/components/schemas/MetricRef"
+      },
+      "type": "array",
+      "title": "Metrics",
+      "default": []
+     }
+    },
+    "type": "object",
+    "title": "Related"
+   },
+   "Risk": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "category": {
+      "type": "string",
+      "title": "Category"
+     },
+     "categoryLabel": {
+      "type": "string",
+      "title": "Categorylabel"
+     },
+     "riskType": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Risktype"
+     },
+     "updatedAt": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Updatedat"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "summary": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Summary"
+     },
+     "underwritingRelevance": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Underwritingrelevance"
+     },
+     "supportingEvidence": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Supportingevidence"
+     },
+     "sources": {
+      "items": {
+       "$ref": "#/components/schemas/Source"
+      },
+      "type": "array",
+      "title": "Sources"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "category",
+     "categoryLabel",
+     "riskType",
+     "updatedAt",
+     "title",
+     "summary",
+     "underwritingRelevance",
+     "supportingEvidence",
+     "sources"
+    ],
+    "title": "Risk"
+   },
+   "RiskDetail": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "category": {
+      "type": "string",
+      "title": "Category"
+     },
+     "categoryLabel": {
+      "type": "string",
+      "title": "Categorylabel"
+     },
+     "riskType": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Risktype"
+     },
+     "updatedAt": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Updatedat"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "summary": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Summary"
+     },
+     "underwritingRelevance": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Underwritingrelevance"
+     },
+     "supportingEvidence": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Supportingevidence"
+     },
+     "sources": {
+      "items": {
+       "$ref": "#/components/schemas/Source"
+      },
+      "type": "array",
+      "title": "Sources"
+     },
+     "related": {
+      "$ref": "#/components/schemas/Related"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "category",
+     "categoryLabel",
+     "riskType",
+     "updatedAt",
+     "title",
+     "summary",
+     "underwritingRelevance",
+     "supportingEvidence",
+     "sources",
+     "related"
+    ],
+    "title": "RiskDetail"
+   },
+   "RiskGroup": {
+    "properties": {
+     "category": {
+      "type": "string",
+      "title": "Category"
+     },
+     "categoryLabel": {
+      "type": "string",
+      "title": "Categorylabel"
+     },
+     "risks": {
+      "items": {
+       "$ref": "#/components/schemas/Risk"
+      },
+      "type": "array",
+      "title": "Risks"
+     }
+    },
+    "type": "object",
+    "required": [
+     "category",
+     "categoryLabel",
+     "risks"
+    ],
+    "title": "RiskGroup"
+   },
+   "RiskRef": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "category": {
+      "type": "string",
+      "title": "Category"
+     },
+     "categoryLabel": {
+      "type": "string",
+      "title": "Categorylabel"
+     },
+     "riskType": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Risktype"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "category",
+     "categoryLabel",
+     "riskType",
+     "title"
+    ],
+    "title": "RiskRef"
+   },
+   "RiskScore": {
+    "properties": {
+     "overall": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Overall"
+     },
+     "litigation": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Litigation"
+     },
+     "regulatory": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Regulatory"
+     },
+     "financialDistress": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Financialdistress"
+     },
+     "governance": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Governance"
+     },
+     "operational": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Operational"
+     },
+     "rationale": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rationale"
+     }
+    },
+    "type": "object",
+    "required": [
+     "overall",
+     "litigation",
+     "regulatory",
+     "financialDistress",
+     "governance",
+     "operational",
+     "rationale"
+    ],
+    "title": "RiskScore"
+   },
+   "Sic": {
+    "properties": {
+     "sicId": {
+      "type": "integer",
+      "title": "Sicid"
+     },
+     "code": {
+      "type": "string",
+      "title": "Code"
+     },
+     "description": {
+      "type": "string",
+      "title": "Description"
+     }
+    },
+    "type": "object",
+    "required": [
+     "sicId",
+     "code",
+     "description"
+    ],
+    "title": "Sic"
+   },
+   "Source": {
+    "properties": {
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Url"
+     },
+     "date": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Date"
+     }
+    },
+    "type": "object",
+    "required": [
+     "title"
+    ],
+    "title": "Source",
+    "description": "A document behind a value or an insight. Transcripts have no public url."
+   },
+   "TranscriptFlag": {
+    "properties": {
+     "index": {
+      "type": "integer",
+      "title": "Index"
+     },
+     "category": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Category"
+     },
+     "text": {
+      "type": "string",
+      "title": "Text"
+     }
+    },
+    "type": "object",
+    "required": [
+     "index",
+     "category",
+     "text"
+    ],
+    "title": "TranscriptFlag"
+   },
+   "TranscriptTone": {
+    "properties": {
+     "transcriptId": {
+      "type": "integer",
+      "title": "Transcriptid"
+     },
+     "quarter": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Quarter"
+     },
+     "overallTone": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Overalltone"
+     },
+     "confidence": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Confidence"
+     },
+     "hedging": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Hedging"
+     },
+     "uncertainty": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Uncertainty"
+     },
+     "forwardLooking": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Forwardlooking"
+     },
+     "liabilityCues": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Liabilitycues"
+     },
+     "chunks": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Chunks"
+     },
+     "analyzedAt": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Analyzedat"
+     },
+     "flags": {
+      "items": {
+       "$ref": "#/components/schemas/TranscriptFlag"
+      },
+      "type": "array",
+      "title": "Flags"
+     }
+    },
+    "type": "object",
+    "required": [
+     "transcriptId",
+     "quarter",
+     "overallTone",
+     "confidence",
+     "hedging",
+     "uncertainty",
+     "forwardLooking",
+     "liabilityCues",
+     "chunks",
+     "analyzedAt",
+     "flags"
+    ],
+    "title": "TranscriptTone"
+   },
+   "Trend": {
+    "properties": {
+     "trendTypeId": {
+      "type": "integer",
+      "title": "Trendtypeid"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "methodology": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Methodology"
+     },
+     "points": {
+      "items": {
+       "$ref": "#/components/schemas/TrendPoint"
+      },
+      "type": "array",
+      "title": "Points"
+     }
+    },
+    "type": "object",
+    "required": [
+     "trendTypeId",
+     "name",
+     "methodology",
+     "points"
+    ],
+    "title": "Trend"
+   },
+   "TrendPoint": {
+    "properties": {
+     "year": {
+      "type": "integer",
+      "title": "Year"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value"
+     },
+     "dataSources": {
+      "items": {
+       "$ref": "#/components/schemas/Source"
+      },
+      "type": "array",
+      "title": "Datasources"
+     },
+     "dataPoints": {
+      "items": {
+       "$ref": "#/components/schemas/DataPoint"
+      },
+      "type": "array",
+      "title": "Datapoints"
+     }
+    },
+    "type": "object",
+    "required": [
+     "year",
+     "value",
+     "dataSources",
+     "dataPoints"
+    ],
+    "title": "TrendPoint"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   }
+  }
+ }
+}

@@ -1,5 +1,6 @@
 # 管线输出 → 应用库 对照
 
+> BFF：本仓库 `bff/`（FastAPI，D-048）按本文读取应用库，接口见 `docs/bff-api.md`。用户状态表（Users、UserHistory、UserFavority、UserPinnedCompanies、UserFlaggedFollowupQuestions、UserSIC、UserMetricsSelection）由 BFF 读写，字段按图里的表名推测，**待和团队核对**。
 > 状态：**Phase 9 起，BFF 读应用库**（团队数据模型图里的表，见 `src/uw_pipeline/schema_app.py`），由 `publish` 阶段写入；dev 是 `data/app.db`，生产是 Azure SQL（`APP_DATABASE_URL`）。管线自己的表（`data/uw.db`）只供审计和排错，BFF 不需要读。
 > 数据模型图左半部分（`sec_*`、`alpha_*`、`CompanyExternalRef`）由管线取代，不再建；三张评分表（`TranscriptToneAnalysis`、`TranscriptRiskFlag`、`NewsRiskScore`）在 Phase 9.4 由管线写入。
 
@@ -143,5 +144,5 @@
 1. BFF 现有表结构与本文的差异：表名、字段名、类型、是否需要视图。
 2. Schema 迁移由哪边负责（D-003）。
 3. Azure SQL 下写入路径的验证。管线使用 staging 表加 MERGE，这条路径还没在 SQL Server 上跑过。
-4. Risk Flags 的计数口径：是否包括 Info，是否排除 OVERRULED。
+4. Risk Flags 的计数口径：是否包括 Info，是否排除 OVERRULED。BFF 目前用当前版本中类型为 Warning 或 Negative 的 Key Insights（应用库里没有 signal 表）。
 5. Recent Activities 要等付费 Alpha Vantage key。

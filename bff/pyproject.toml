@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "p360-bff"
+version = "0.1.0"
+description = "Professional 360 BFF: REST API over the application database (D-048)"
+requires-python = ">=3.11"
+# uw-pipeline supplies the application table definitions (schema_app.py) and the database
+# connection helpers; install both: pip install -e . -e bff
+dependencies = [
+    "uw-pipeline",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "sqlalchemy>=2.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "httpx>=0.27"]
+
+[project.scripts]
+p360-bff = "p360_bff.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/p360_bff"]

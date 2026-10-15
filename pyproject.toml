@@ -41,7 +41,7 @@ uw-pipeline = "uw_pipeline.cli:app"
 packages = ["src/uw_pipeline"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "bff/tests"]
 markers = [
     "mssql: needs a SQL Server (MSSQL_TEST_URL), e.g. scripts/test_mssql.sh; skipped otherwise",
 ]
@@ -50,7 +50,7 @@ addopts = "-ra"
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-src = ["src", "tests"]
+src = ["src", "tests", "bff/src", "bff/tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
@@ -72,8 +72,8 @@ select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
 python_version = "3.11"
 strict = true
 plugins = ["pydantic.mypy"]
-mypy_path = "src"
-packages = ["uw_pipeline"]
+mypy_path = "src:bff/src"
+packages = ["uw_pipeline", "p360_bff"]
 
 [[tool.mypy.overrides]]
 # Optional dependencies (".[azure]"), imported only for ADLS storage / SQL Server.

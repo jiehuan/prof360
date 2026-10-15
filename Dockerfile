@@ -1,4 +1,4 @@
-# Underwriting Intelligence pipeline (Phase 6, decisions D-034).
+# Underwriting Intelligence pipeline (Phase 6, decisions D-034) and the BFF (D-048).
 # BASE_IMAGE: replace with the Artifactory mirror, e.g.
 #   --build-arg BASE_IMAGE=<artifactory-host>/docker-remote/python:3.14-slim
 ARG BASE_IMAGE=python:3.14-slim
@@ -7,8 +7,9 @@ FROM ${BASE_IMAGE} AS build
 WORKDIR /build
 COPY pyproject.toml ./
 COPY src ./src
+COPY bff ./bff
 RUN pip install --no-cache-dir --upgrade pip \
- && pip wheel --no-cache-dir --wheel-dir /wheels ".[azure]"
+ && pip wheel --no-cache-dir --wheel-dir /wheels ".[azure]" ./bff
 
 FROM ${BASE_IMAGE} AS odbc
 # Microsoft ODBC Driver 18 for Azure SQL (pyodbc). PLACEHOLDER: point these at the Artifactory
@@ -33,7 +34,22 @@ FROM odbc AS test
 WORKDIR /src
 COPY pyproject.toml ./
 COPY src ./src
-RUN pip install --no-cache-dir -e ".[dev,azure]"
+COPY bff ./bff
+RUN pip install --no-cache-dir -e ".[dev,azure]" -e "./bff[dev]"
+
+# BFF image (D-048): docker build --target bff . ; the pipeline image below stays the default.
+FROM odbc AS bff
+COPY --from=build /wheels /wheels
+RUN pip install --no-cache-dir /wheels/* && rm -rf /wheels
+WORKDIR /app
+COPY config ./config
+RUN chgrp -R 0 /app && chmod -R g=u /app
+ENV PYTHONUNBUFFERED=1 \
+    CONFIG_DIR=/app/config \
+    BFF_DATABASE_BACKEND=azure_sql
+USER 1001
+EXPOSE 8080
+CMD ["uvicorn", "p360_bff.main:app", "--host", "0.0.0.0", "--port", "8080", "--proxy-headers"]
 
 FROM odbc
 COPY --from=build /wheels /wheels

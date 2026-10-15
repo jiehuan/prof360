@@ -444,3 +444,24 @@ scripts/test_mssql.sh --all               # whole suite on SQL Server 2022 in Do
 | Change grounding | Bump `GROUNDING_VERSION` |
 | Change a table | `schema.py` / `schema_app.py`; new columns nullable; rerun `export_app_ddl.py`; `scripts/test_mssql.sh --all` |
 | Add a stage | `DEPENDS`, `StageRunner._stage`, `config/jobs.yaml`, tests |
+
+## 18. BFF (`bff/`, D-048)
+
+A FastAPI service for the React front end, in its own package (`p360-bff`) in this repository.
+It reads the application database only and owns the user-state tables.
+
+| Module | Responsibility |
+|---|---|
+| `app.py`, `main.py` | Application factory, CORS, `/health`; `uvicorn p360_bff.main:app` |
+| `settings.py` | `BFF_DATABASE_URL` (default `data/app.db`), `BFF_DATABASE_BACKEND=azure_sql` with `BFF_SQL_CLIENT_ID/SECRET` and `AZURE_ENV`, `BFF_AUTH_MODE` (dev), `BFF_CORS_ORIGINS` |
+| `db.py` | Engine: SQLite in development (user tables created on start), Azure SQL app schema in deployment (pipeline's connection helpers) |
+| `deps.py` | One transaction per request; the current user (`X-User-Email` in development) |
+| `content.py` | Queries over the published tables (`schema_app.py`): active versions only, ItemLink in either direction, JSON sources parsed |
+| `user_tables.py` | The diagram's user tables (columns inferred, to confirm) and every query on them |
+| `routers/companies.py`, `routers/me.py` | `/api/v1/companies/...` and `/api/v1/me/...` |
+| `schemas.py` | Response models, camelCase JSON |
+| `ddl.py`, `openapi.py` | `deploy/sql/bff_user_tables.sql`, `docs/bff-openapi.json` |
+
+API reference: `docs/bff-api.md`. Image: `docker build --target bff .`; deployment:
+`deploy/openshift/bff.yaml`. Tests: `bff/tests` (seeded database plus a smoke test of every
+endpoint on a copy of `data/app.db`), collected by the root `pytest`.

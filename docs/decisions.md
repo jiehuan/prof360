@@ -924,3 +924,34 @@ LLM runs until the end, then one comparison.
   wrong cells (MAR FY2025 RevPAR, occupancy, ADR missing) and 24% of key insights failed
   grounding; insights took 44 minutes (long answers past the 300 s timeout, retried). OpenAI
   models on Runware need `max_completion_tokens` (config `max_completion_tokens_prefixes`).
+
+**D-048 BFF in this repository (FastAPI, Phase 17).**
+- User decision (2026-10-15): a new BFF in `bff/` of this repository, API designed from the
+  data model (the team's BFF repository and the front end's API calls were not available), the
+  team's BFF repository untouched. Separate package `p360-bff`; it imports the application
+  table definitions (`uw_pipeline.schema_app`) and the Azure SQL connection helpers, so the
+  pipeline and the BFF cannot drift apart.
+- Reads only the application database (`schema_app.py` tables), never the pipeline database.
+  Endpoints under `/api/v1` per page module (docs/bff-api.md, docs/bff-openapi.json); camelCase
+  JSON; JSON source columns parsed into `{title, url, date}` objects; only isActive versions;
+  related items from ItemLink in either direction, only current ones.
+- Page modules are flagged by data presence (`modules`), because the application database has
+  no industry group or is-financial column: a bank has Trend and LoanPortfolio rows, a hotel
+  group has none.
+- Risk flag count = current key insights of type Warning or Negative. The pipeline's signal
+  table is not in the application database; to confirm with product.
+- Model names are not exposed (TranscriptToneAnalysis.modelVersion is left out), as for all
+  text shown to users.
+- User state uses the diagram's application-owned tables: Users, UserHistory, UserFavority,
+  UserPinnedCompanies, UserFlaggedFollowupQuestions, UserSIC, UserMetricsSelection. Their
+  columns were not available and are inferred from the names (user decision: develop now,
+  confirm later); every query on them is in `user_tables.py`. DDL:
+  deploy/sql/bff_user_tables.sql (`python -m p360_bff.ddl`). vw_Notification is not built.
+- Auth: development mode (`X-User-Email` header, default user); corporate SSO (Entra ID token
+  check) once the app registration exists. One database transaction per request.
+- Deployment: image target `bff` (Dockerfile), deploy/openshift/bff.yaml (Deployment with
+  /health probes, Service, edge-TLS Route), secret `bff-secrets` with the BFF's own service
+  principal (read on published tables, read/write on the user tables).
+- Tests: 14 API tests on a seeded database (a hotel group and a bank) and a smoke test of every
+  endpoint for all companies on a copy of data/app.db. Not yet run on SQL Server (the
+  SQL Server harness converts only the pipeline tests' engines).

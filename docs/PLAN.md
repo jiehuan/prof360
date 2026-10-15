@@ -696,6 +696,19 @@ uw-pipeline dq-report --run-id <id>
 
 ---
 
+### Phase 17 — BFF（FastAPI，本仓库 `bff/`，2026-10-15，D-048）
+
+- [x] 只读应用库的 REST 接口（`/api/v1`）：公司列表与头部（按数据决定显示哪些模块）、指标（季度 / 年度）、指标弹窗、Key Insights、Strategic & Risk（四个分组）、追问问题、新闻、Trends、Loan Portfolio、电话会语气
+- [x] 用户状态：图里的 Users、UserHistory、UserFavority、UserPinnedCompanies、UserFlaggedFollowupQuestions、UserSIC、UserMetricsSelection（字段按名字推测，待和团队核对）；建表脚本 `deploy/sql/bff_user_tables.sql`
+- [x] 开发模式用户（`X-User-Email`）；OpenAPI 导出 `docs/bff-openapi.json`，前端说明 `docs/bff-api.md`
+- [x] 镜像 target `bff`，OpenShift Deployment / Service / Route，`bff-secrets`
+- [ ] 公司 SSO（Entra ID）：需要 tenant ID 和应用注册
+- [ ] 用户表字段和团队的数据模型核对；`vw_Notification`
+- [ ] Risk Flags 计数口径和产品确认
+- [ ] BFF 测试在 SQL Server 上跑一遍；前端联调
+
+---
+
 ### Phase 10 — 扩展到约 4,000 家公司：分层与并行处理（2026-10-13 计划，未开始）
 
 **已定**：分层处理，约 800 家全量（Tier 1），约 3,200 家轻量（Tier 2，洞察按需生成）。本阶段先只做设计，不抓取、不抽取；实现前用模拟客户端做压测。

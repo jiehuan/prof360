@@ -1,0 +1,60 @@
+# Professional 360 BFF (D-048): FastAPI over the application database.
+# Image: docker build --target bff . ; secrets: bff-secrets (BFF_SQL_CLIENT_ID,
+# BFF_SQL_CLIENT_SECRET), see secret.example.yaml.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p360-bff
+  namespace: PLACEHOLDER_NAMESPACE
+  labels: {app: p360-bff}
+spec:
+  replicas: 2
+  selector:
+    matchLabels: {app: p360-bff}
+  template:
+    metadata:
+      labels: {app: p360-bff}
+    spec:
+      containers:
+        - name: p360-bff
+          image: PLACEHOLDER_BFF_IMAGE:latest
+          ports:
+            - {containerPort: 8080, name: http}
+          envFrom:
+            - secretRef: {name: bff-secrets}
+          env:
+            - {name: BFF_DATABASE_BACKEND, value: azure_sql}
+            - {name: AZURE_ENV, value: dv}                       # dv | pp | pr
+            - {name: BFF_CORS_ORIGINS, value: '["https://PLACEHOLDER_FRONTEND_HOST"]'}
+          readinessProbe:
+            httpGet: {path: /health, port: http}
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: {path: /health, port: http}
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {cpu: "1", memory: 1Gi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p360-bff
+  namespace: PLACEHOLDER_NAMESPACE
+  labels: {app: p360-bff}
+spec:
+  selector: {app: p360-bff}
+  ports:
+    - {name: http, port: 8080, targetPort: http}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: p360-bff
+  namespace: PLACEHOLDER_NAMESPACE
+  labels: {app: p360-bff}
+spec:
+  to: {kind: Service, name: p360-bff}
+  port: {targetPort: http}
+  tls: {termination: edge, insecureEdgeTerminationPolicy: Redirect}
