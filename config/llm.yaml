@@ -1,0 +1,37 @@
+# LLM settings for rule + LLM voting on judgment signals (decisions D-028).
+# The extractor reads every in-scope section. When it disagrees with the rules, the tie-breaker
+# answers the same question independently and the majority of the three votes wins.
+#
+# Provider (D-039): Azure OpenAI through the AXA XL gateway (config/securegpt.yaml,
+# SECUREGPT_* vars). `default_provider` names the profile; LLM_PROVIDER overrides it.
+# The model is part of every cache key: each profile keeps its own cached results, and switching
+# re-uses them; a new model runs all LLM tasks again once.
+# `synthesis` is the model of the company-level tasks (config/insights.yaml).
+default_provider: securegpt
+providers:
+  securegpt:
+    # max_tokens includes reasoning tokens on gpt-5 models, hence the higher limits.
+    extractor: {model: gpt-5-nano-2025-08-07, effort: low, max_tokens: 16000}
+    tiebreaker: {model: gpt-5-mini-2025-08-07, effort: high, max_tokens: 32000}
+    synthesis: {model: gpt-5-mini-2025-08-07, effort: high, max_tokens: 32000}
+    # SecureGPT price list, per million tokens (input, output); run statistics only.
+    pricing_currency: EUR
+    pricing:
+      gpt-5-nano-2025-08-07: [0.052, 0.378]
+      gpt-5-mini-2025-08-07: [0.240, 1.889]
+
+prompt_version: signals_v1
+# The tie-breaker sees both claims and their evidence and rules on the text (D-028).
+tiebreak_prompt_version: tiebreak_v2
+# Longer inputs are not sent (never silently truncated); those documents stay rule-only.
+max_input_chars: 120000
+
+# Judgment questions ("topics") asked of each section; only these sections are sent.
+# Answers: leadership:* -> departure | appointment | succession (both) | none; listing -> adverse |
+# voluntary_transfer | none; the rest -> present | none.
+topics:
+  "8K-5.02": ["leadership:CEO", "leadership:CFO"]
+  "8K-3.01": ["listing"]
+  "10K-AUDIT": ["going_concern"]
+  "10K-9A": ["material_weakness", "controls_not_effective"]
+  "10Q-I-4": ["material_weakness", "controls_not_effective"]

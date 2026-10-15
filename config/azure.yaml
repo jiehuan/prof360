@@ -1,0 +1,49 @@
+# Azure SQL and ADLS (Phase 12, decisions D-040). Non-secret settings only.
+# Credentials from the environment: AZURE_SQL_CLIENT_ID / AZURE_SQL_CLIENT_SECRET (service
+# principal for SQL), ADLS_CLIENT_ID / ADLS_CLIENT_SECRET (service principal for storage).
+# Environment: AZURE_ENV (dv | pp | pr), default `default_env`.
+#
+# TO EDIT: the server, database, schema, storage account and container values below are copied
+# from the loss-run project (professional-databricks config/main_config.cfg) as placeholders.
+# Replace them with the Professional 360 values before the first run on the corporate network.
+
+default_env: dv
+
+azure_sql:
+  driver: "ODBC Driver 18 for SQL Server"
+  authentication: ActiveDirectoryServicePrincipal
+  environments:
+    dv:
+      server: z-xlc-0122-axio-dv-ue2-sql01-axiomaisubmissionprioriti.database.windows.net  # TO EDIT
+      port: 1433
+      database: z-xlc-0122-axio-dv-ue2-sdb01-axiomaisubmissionprioriti                     # TO EDIT
+      pipeline_schema: uw_pipeline        # TO EDIT: pipeline's own tables
+      app_schema: dbo_professional360     # TO EDIT: tables the BFF reads (schema_app.py)
+    pp:
+      server: z-xlc-0328-axio-pp-ue2-sql01-axiomaisubmissionprioriti.database.windows.net  # TO EDIT
+      port: 1433
+      database: z-xlc-0328-axio-pp-ue2-sdb02-axiomaisubmissionprioriti                     # TO EDIT
+      pipeline_schema: uw_pipeline
+      app_schema: dbo_professional360
+    pr:
+      server: z-xlc-0328-axio-pr-ue2-sql01-axiomaisubmissionprioriti.database.windows.net  # TO EDIT
+      port: 1433
+      database: z-xlc-0328-axio-pr-ue2-sdb02-axiomaisubmissionprioriti                     # TO EDIT
+      pipeline_schema: uw_pipeline
+      app_schema: dbo_professional360
+
+adls:
+  tenant_id: 451fd7f5-4b59-4f2f-9b45-16ab9c30036f   # AXA XL tenant (not a secret)
+  environments:
+    dv:
+      storage_account: zxlc0149adlsdvue2dls01                          # TO EDIT
+      container: z-xlc-0122-axio-dv-ue2-dlc01-axiomaisubmissionprioriti # TO EDIT
+      root: professional360/raw                                        # TO EDIT: path prefix
+    pp:
+      storage_account: zxlc0159adlsppue2dls01                          # TO EDIT
+      container: z-xlc-0328-axio-pp-ue2-dlc04-axiomaisubmissionprioriti # TO EDIT
+      root: professional360/raw
+    pr:
+      storage_account: zxlc0159adlsprue2dls01                          # TO EDIT
+      container: z-xlc-0328-axio-pr-ue2-dlc04-axiomaisubmissionprioriti # TO EDIT
+      root: professional360/raw

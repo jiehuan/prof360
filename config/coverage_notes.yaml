@@ -1,0 +1,56 @@
+# Explanations for metrics short of the coverage target (5 fiscal years, 8 quarters).
+# `uw-pipeline coverage-report` flags any gap without a note here as UNEXPLAINED.
+# Key "*" applies to every metric of that company.
+
+SKYD:
+  "*": >-
+    Successor registrant (Skydance / Paramount Skydance) since the 2025-08-07 merger. Only the
+    successor's own periods are used (decisions D-012), so history starts with the stub period
+    from 2025-08-08 and grows each quarter.
+  buybacks: No share repurchases reported by the successor registrant.
+  buyback_intensity: No share repurchases reported by the successor registrant.
+
+F:
+  total_debt: >-
+    Ford tags debt only with company-extension tags split between Automotive and Ford Credit
+    (captive finance). Consolidated debt is dominated by Ford Credit, so an industrial-scope
+    figure needs a reviewed override before D/E is shown (NEEDS_REVIEW).
+  long_term_debt: Same as total_debt; Ford's debt is tagged with company-extension tags only.
+  debt_to_equity: Not computed until Ford's industrial-scope debt override is reviewed.
+  interest_expense: >-
+    Ford's FY2024 10-Qs and its Q3 2025 10-Q don't tag interest expense, so those quarters
+    (and Q4, which needs the 9-month YTD) are missing. Annual values are complete.
+  interest_coverage: Same quarters missing as interest_expense.
+
+PFE:
+  operating_income: >-
+    Pfizer's income statement has no operating-income line. Interest coverage uses EBIT =
+    pre-tax income + interest expense instead.
+  ebitda_computed: Needs operating income, which Pfizer does not report.
+  buybacks: >-
+    No repurchases since FY2022. Pfizer tags repurchases (or zero) in its 10-K only, so there
+    are no quarterly values.
+  buyback_intensity: See buybacks.
+
+LUMN:
+  buybacks: >-
+    No repurchases since FY2022. Reported (as zero) in the 10-K only, so there are no quarterly
+    values.
+  buyback_intensity: See buybacks.
+
+M:
+  interest_expense: >-
+    Macy's 10-Qs tag only net interest (InterestIncomeExpenseNonoperatingNet), so gross interest
+    expense is annual only.
+  interest_coverage: Quarterly gross interest expense is not tagged in Macy's 10-Qs.
+
+LUV:
+  interest_expense: >-
+    FY2021 interest expense isn't tagged with a supported tag (InterestExpense ends FY2019,
+    InterestExpenseNonoperating starts FY2022).
+  interest_coverage: FY2021 interest expense missing; see interest_expense.
+
+JPM:
+  npl_ratio: >-
+    JPM states the nonaccrual-loans-to-total-loans ratio only in its 10-K, so quarterly values
+    exist for fiscal Q4 only.

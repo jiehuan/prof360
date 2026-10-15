@@ -1,0 +1,547 @@
+# Metric catalog. Computed by rules only (no LLM).
+#
+# Which metrics a company gets is decided here and in industry_groups.yaml, curated once
+# (domain knowledge, optionally LLM-assisted, then human-reviewed). It is never generated at
+# run time. Each industry group lists the `metric_sets` it uses (plus extra metric codes), and
+# company_overrides/ can add company-specific metrics. Helper metrics a listed metric depends
+# on (e.g. ebit) are computed automatically.
+#
+# kind: text -> extracted from filing text by the LLM (Phase 5a, decisions D-032). `extraction`
+#         gives the exact scope (`definition`), the words that locate it (`keywords`), and
+#         whether two models must agree (`dual_check`, used for bank capital/liquidity metrics).
+#       A formula metric with `extraction` is text-extracted only for periods XBRL does not
+#         cover (e.g. an earnings release before the 10-Q); elsewhere the text value is only
+#         cross-checked against XBRL (release_check). Decisions D-042.
+# kind: formula (default) -> `formula` is one expression or an ordered list of alternatives.
+#         The first alternative that evaluates wins. Names are concepts (concept_map.yaml)
+#         or earlier metric codes. Supported operators: + - * / and parentheses.
+#       growth -> (current - comparison) / |comparison| of `base`, compared with the prior
+#         quarter (`prior_quarter`) or the same period a year earlier (`prior_year`).
+# optional: names treated as 0 when missing, as long as one non-optional input is present.
+# nm_when: condition that makes the value "not meaningful" (stored as N/M, no number).
+# units: USD, ratio (x), fraction (0.05 = 5%).
+# `x_py` in a formula is x for the same period a year earlier (averages such as ROA, D-043).
+# display: false hides helper metrics from the front end (they are still stored for audit).
+# insight_input: true puts a hidden metric into the insight input anyway (e.g. CEO pay).
+
+metric_sets:
+  COMMERCIAL_CORE:
+    - revenue
+    - revenue_growth_qoq
+    - revenue_growth_yoy
+    - net_income
+    - operating_income
+    - ebitda_computed
+    - cash
+    - current_assets
+    - current_liabilities
+    - current_ratio
+    - working_capital
+    - total_debt
+    - long_term_debt
+    - equity
+    - debt_to_equity
+    - interest_expense
+    - interest_coverage
+    - operating_cash_flow
+    - capex
+    - free_cash_flow
+    - buybacks
+    - buyback_intensity
+  HOTEL_OPERATING:
+    - revpar
+    - occupancy
+    - adr
+  # Capital ratios come from XBRL where the bank tags them, otherwise from the text (D-042);
+  # LCR, NIM and NPL are text-extracted. total_capital_ratio and total_loans are checks only.
+  BANK_REGULATORY:
+    - cet1_ratio
+    - tier1_ratio
+    - total_capital_ratio
+    - lcr
+    - nim
+    - npl_ratio
+    - total_loans
+    - avg_interest_earning_assets
+    - aum
+    - var_total_avg
+    - international_revenue
+  # Pay versus performance from the proxy statement (D-042): input to insights, follow-up
+  # questions and the pay/performance signal; not shown as metric rows.
+  GOVERNANCE:
+    - ceo_total_comp
+    - ceo_comp_actually_paid
+    - neo_avg_total_comp
+    - tsr_value_100
+    - peer_tsr_value_100
+  BANK_CORE:
+    - revenue
+    - revenue_growth_qoq
+    - revenue_growth_yoy
+    - net_income
+    - noninterest_income
+    - fee_income_growth_yoy
+    - equity
+    - buybacks
+    - buyback_intensity
+    - roa
+    - roe
+    - loan_loss_reserve_ratio
+    - fee_to_net_interest_income
+  CONTRACT_REVENUE:
+    - rpo
+  MANUFACTURING_OPERATING:
+    - capacity_utilization
+
+metrics:
+  # -- Financial -------------------------------------------------------------------------
+  - code: revenue
+    display_name: Total Revenue
+    section: financial
+    unit: USD
+    formula: revenue
+  - code: revenue_growth_qoq
+    display_name: Revenue Growth (QoQ)
+    section: financial
+    unit: fraction
+    kind: growth
+    base: revenue
+    compare: prior_quarter
+    period_types: [Q]
+  - code: revenue_growth_yoy
+    display_name: Revenue Growth (YoY)
+    section: financial
+    unit: fraction
+    kind: growth
+    base: revenue
+    compare: prior_year
+  - code: net_income
+    display_name: Net Income
+    section: financial
+    unit: USD
+    formula: net_income
+  - code: operating_income
+    display_name: Operating Income
+    section: financial
+    unit: USD
+    formula: operating_income
+  - code: ebitda_computed
+    display_name: EBITDA (computed)
+    description: Operating income + D&A. Not the company's non-GAAP Adjusted EBITDA.
+    section: financial
+    unit: USD
+    formula: operating_income + d_and_a
+  - code: ebit
+    display_name: EBIT
+    description: Operating income; falls back to pre-tax income + interest expense.
+    section: financial
+    unit: USD
+    display: false
+    formula:
+      - operating_income
+      - pretax_income + interest_expense
+
+  # -- Liquidity -------------------------------------------------------------------------
+  - code: cash
+    display_name: Cash & Equivalents
+    section: liquidity
+    unit: USD
+    formula: cash
+  - code: current_assets
+    display_name: Current Assets
+    section: liquidity
+    unit: USD
+    formula: current_assets
+  - code: current_liabilities
+    display_name: Current Liabilities
+    section: liquidity
+    unit: USD
+    formula: current_liabilities
+  - code: current_ratio
+    display_name: Current Ratio
+    section: liquidity
+    unit: ratio
+    formula: current_assets / current_liabilities
+  - code: working_capital
+    display_name: Working Capital
+    section: liquidity
+    unit: USD
+    formula: current_assets - current_liabilities
+
+  # -- Leverage --------------------------------------------------------------------------
+  - code: total_debt
+    display_name: Total Debt
+    description: >-
+      Reported total debt. Otherwise a same-family current + non-current pair (families are
+      never mixed), plus short-term borrowings / commercial paper, plus finance lease
+      liabilities for the LongTermDebt family, which excludes them (D-046).
+    section: leverage
+    unit: USD
+    formula:
+      - debt_total_reported
+      - ltdcl_noncurrent + ltdcl_current + short_term_borrowings
+      - ltd_noncurrent + ltd_current + short_term_borrowings + finance_lease_liabilities
+      # Non-current only, used when the family has no current sibling. Understates debt;
+      # dq_rules.yaml debt_completeness reports it.
+      - ltdcl_noncurrent + short_term_borrowings
+      - ltd_noncurrent + short_term_borrowings + finance_lease_liabilities
+    optional: [short_term_borrowings, finance_lease_liabilities]
+  - code: long_term_debt
+    display_name: Long-term Debt
+    section: leverage
+    unit: USD
+    formula:
+      - ltdcl_noncurrent
+      - ltd_noncurrent
+  - code: equity
+    display_name: Stockholders' Equity
+    section: leverage
+    unit: USD
+    formula: equity
+  - code: debt_to_equity
+    display_name: Debt-to-Equity
+    section: leverage
+    unit: ratio
+    formula: total_debt / equity
+    nm_when: equity <= 0
+  - code: interest_expense
+    display_name: Interest Expense
+    section: leverage
+    unit: USD
+    formula: interest_expense
+  - code: interest_coverage
+    display_name: Interest Coverage
+    section: leverage
+    unit: ratio
+    formula: ebit / interest_expense
+    nm_when: ebit <= 0
+
+  # -- Cash flow -------------------------------------------------------------------------
+  - code: operating_cash_flow
+    display_name: Operating Cash Flow
+    section: cash_flow
+    unit: USD
+    formula: operating_cash_flow
+  - code: capex
+    display_name: Capital Expenditures
+    section: cash_flow
+    unit: USD
+    formula: capex
+  - code: free_cash_flow
+    display_name: Free Cash Flow
+    section: cash_flow
+    unit: USD
+    formula: operating_cash_flow - capex
+  - code: buybacks
+    display_name: Share Repurchases
+    section: cash_flow
+    unit: USD
+    formula: buybacks
+  - code: buyback_intensity
+    display_name: Buybacks / Net Income
+    section: cash_flow
+    unit: ratio
+    formula: buybacks / net_income
+    nm_when: net_income <= 0
+
+  # -- Bank fee income (Performance Trends, Phase 8) --------------------------------------
+  # Fee income = total noninterest income as reported (us-gaap:NoninterestIncome): banks' fees,
+  # commissions, markets and other non-interest revenue. Decision D-036.
+  - code: noninterest_income
+    display_name: Noninterest (Fee) Income
+    section: financial
+    unit: USD
+    formula: noninterest_income
+  - code: fee_income_growth_yoy
+    display_name: Fee Income Growth (YoY)
+    section: fi_performance
+    unit: fraction
+    kind: growth
+    base: noninterest_income
+    compare: prior_year
+
+  # -- Text-extracted operating metrics (kind: text) ---------------------------------------
+  - code: revpar
+    display_name: RevPAR
+    section: operational
+    unit: USD
+    kind: text
+    extraction:
+      definition: >-
+        Comparable systemwide worldwide RevPAR (revenue per available room) for the period, in
+        US dollars. Use the worldwide (or total) comparable systemwide figure; not a region,
+        brand, or owned/leased subset, and not a percentage change.
+      keywords: [RevPAR]
+      table:   # read by cell, checked mechanically (D-044)
+        column: [RevPAR]
+        scope: [[systemwide, system-wide]]
+        exclude_rows: &hotel_subsets [international, "u.s.", united states, us & canada,
+          americas, europe, asia, china, middle east, africa, caribbean, latin america, luxury,
+          premium, select, owned, leased, managed, franchised, all-inclusive, resorts]
+  - code: occupancy
+    display_name: Occupancy Rate
+    section: operational
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Comparable systemwide worldwide occupancy rate for the period (a percentage level such
+        as 69.3%, not a change in percentage points).
+      keywords: [occupancy]
+      table:   # read by cell, checked mechanically (D-044)
+        column: [Occupancy]
+        scope: [[systemwide, system-wide]]
+        exclude_rows: *hotel_subsets
+  - code: adr
+    display_name: Average Daily Rate
+    section: operational
+    unit: USD
+    kind: text
+    extraction:
+      definition: >-
+        Comparable systemwide worldwide average daily rate for the period, in US dollars (a
+        level, not a percentage change).
+      keywords: [average daily rate, ADR]
+      table:   # read by cell, checked mechanically (D-044)
+        column: [Average Daily Rate, ADR]
+        scope: [[systemwide, system-wide]]
+        exclude_rows: *hotel_subsets
+
+  # -- Text-extracted bank metrics (FI only) -----------------------------------------------
+  - code: cet1_ratio
+    display_name: CET1 Ratio
+    section: fi_performance
+    unit: fraction
+    formula: cet1_ratio
+    extraction:
+      definition: >-
+        Firm-wide Common Equity Tier 1 (CET1) capital ratio at period end under the
+        Standardized approach. Not a bank subsidiary, not the Advanced approach, not a
+        regulatory minimum or target.
+      keywords: [CET1, Common equity Tier 1]
+      dual_check: true
+  - code: tier1_ratio
+    display_name: Tier 1 Capital Ratio
+    section: fi_performance
+    unit: fraction
+    formula: tier1_ratio
+    extraction:
+      definition: >-
+        Firm-wide Tier 1 capital ratio at period end under the Standardized approach. Not a
+        bank subsidiary, not the Advanced approach, not a minimum or target.
+      keywords: [Tier 1 capital ratio, Tier 1 ratio]
+      dual_check: true
+  # -- Bank profitability and credit (XBRL, decisions D-043) --------------------------------------
+  - code: roa
+    display_name: Return on Average Assets (ROA)
+    section: fi_performance
+    unit: fraction
+    formula: net_income / ((total_assets + total_assets_py) / 2)
+    period_types: [FY]
+  - code: roe
+    display_name: Return on Average Equity (ROE)
+    section: fi_performance
+    unit: fraction
+    formula: net_income / ((equity + equity_py) / 2)
+    period_types: [FY]
+    nm_when: equity <= 0
+  - code: loan_loss_reserve_ratio
+    display_name: Allowance for Loan Losses / Loans
+    section: fi_performance
+    unit: fraction
+    formula: allowance_for_loan_losses / total_loans
+  - code: net_interest_income
+    display_name: Net Interest Income
+    section: fi_performance
+    unit: USD
+    formula: net_interest_income
+    display: false
+  - code: fee_to_net_interest_income
+    display_name: Noninterest Income / Net Interest Income
+    section: fi_performance
+    unit: ratio
+    formula: noninterest_income / net_interest_income
+    display: false
+    insight_input: true
+  - code: total_capital_ratio
+    display_name: Total Capital Ratio
+    section: fi_performance
+    unit: fraction
+    formula: total_capital_ratio
+    display: false
+    extraction:
+      definition: >-
+        Firm-wide total capital ratio (total risk-based capital ratio) at period end under the
+        Standardized approach. Not a bank subsidiary, not the Advanced approach, not a minimum.
+      keywords: [Total capital ratio]
+      dual_check: true
+  - code: total_loans
+    display_name: Total Loans (retained)
+    section: fi_performance
+    unit: USD
+    formula: total_loans
+    display: false
+  - code: lcr
+    display_name: Liquidity Coverage Ratio
+    section: fi_performance
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Firm-wide average liquidity coverage ratio (LCR) for the period (the firm, not a bank
+        subsidiary), as a percentage.
+      keywords: [LCR, liquidity coverage ratio]
+      dual_check: true
+  - code: nim
+    display_name: Net Interest Margin
+    section: fi_performance
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Firm-wide net interest margin / net yield on interest-earning assets for the period
+        (e.g. "the net yield on these assets, on an FTE basis, was 2.40%"). Use the firm-wide
+        figure; an FTE (fully taxable-equivalent) basis is fine when it is the only one given.
+        Not a figure excluding a business (e.g. "excluding Markets"), not a change in bps.
+      keywords: [net interest margin, net interest yield, net yield on]
+      dual_check: true
+  - code: npl_ratio
+    display_name: Nonperforming Loan Ratio
+    section: fi_performance
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Firm-wide nonaccrual (nonperforming) loans as a percentage of total loans at period end,
+        only when the filing states this ratio directly.
+      keywords: [nonaccrual loans to total loans, nonperforming loans to total loans, nonaccrual]
+      dual_check: true
+
+  # -- Pay versus performance (DEF 14A; not displayed, insight input, decisions D-042) ------------
+  - code: ceo_total_comp
+    display_name: CEO Total Compensation (Summary Compensation Table)
+    section: governance
+    unit: USD
+    formula: ceo_total_comp
+    period_types: [FY]
+    display: false
+    insight_input: true
+  - code: ceo_comp_actually_paid
+    display_name: CEO Compensation Actually Paid
+    section: governance
+    unit: USD
+    formula: ceo_comp_actually_paid
+    period_types: [FY]
+    display: false
+    insight_input: true
+  - code: neo_avg_total_comp
+    display_name: Other Named Executives' Average Total Compensation
+    section: governance
+    unit: USD
+    formula: neo_avg_total_comp
+    period_types: [FY]
+    display: false
+    insight_input: true
+  - code: tsr_value_100
+    display_name: Company TSR (value of $100 invested)
+    section: governance
+    unit: USD
+    formula: tsr_value_100
+    period_types: [FY]
+    display: false
+    insight_input: true
+  - code: peer_tsr_value_100
+    display_name: Peer Group TSR (value of $100 invested)
+    section: governance
+    unit: USD
+    formula: peer_tsr_value_100
+    period_types: [FY]
+    display: false
+    insight_input: true
+  - code: rpo
+    display_name: Remaining Performance Obligations (contracted revenue)
+    section: financial
+    unit: USD
+    formula: rpo
+    display: false
+    insight_input: true
+
+  # -- Read from tables by cell (D-044); not displayed, insight input ---------------------------
+  - code: avg_interest_earning_assets
+    display_name: Average Interest-Earning Assets
+    section: fi_performance
+    unit: USD
+    kind: text
+    display: false   # checks NIM (dq_rules.yaml nim_relation)
+    extraction:
+      definition: >-
+        Firm-wide average interest-earning assets for the period, in US dollars (not excluding
+        Markets or any business).
+      keywords: [average interest-earning assets]
+      table:
+        column: [average interest-earning assets]
+        exclude_rows: [markets, excluding]
+  - code: aum
+    display_name: Assets Under Management
+    section: fi_performance
+    unit: USD
+    kind: text
+    display: false
+    insight_input: true
+    extraction:
+      definition: >-
+        Total assets under management of the firm at period end, in US dollars (the total,
+        not client assets, a region or an asset class).
+      keywords: [assets under management]
+      table:
+        column: [total assets under management]
+  - code: var_total_avg
+    display_name: Average Total VaR (95%)
+    section: fi_performance
+    unit: USD
+    kind: text
+    display: false
+    insight_input: true
+    extraction:
+      definition: >-
+        Firm-wide total value-at-risk, average for the quarter, in US dollars (the total, not a
+        business or risk type; the average, not the minimum or maximum).
+      keywords: [Total VaR]
+      table:
+        column: [total var]
+        exclude: [min, max, "vs.", change]
+  - code: international_revenue
+    display_name: International Revenue (outside North America)
+    section: financial
+    unit: USD
+    kind: text
+    display: false
+    insight_input: true
+    extraction:
+      definition: >-
+        The firm's total revenue from international operations (outside North America) for the
+        fiscal year: the row named "Total international" in the notes' table of international
+        operations (revenue, expense, income before tax, net income and total assets by
+        region). Not a business segment's "Total international net revenue" table.
+      keywords: [total international]
+      table:
+        column: [revenue]
+        find: [total international]
+        scope: [[total international]]
+        # Business-segment tables ("International metrics" of CIB / AWM) label their row
+        # "Total international net revenue"; the firm-wide note says "Total international".
+        exclude_rows: [net revenue]
+  - code: capacity_utilization
+    display_name: Capacity Utilization
+    section: operational
+    unit: fraction
+    kind: text
+    display: false
+    insight_input: true
+    extraction:
+      definition: >-
+        Company-wide manufacturing capacity utilization for the period, as a percentage (a
+        level, not a change).
+      keywords: [capacity utilization]
+      table:
+        column: [capacity utilization, capacity utilisation]

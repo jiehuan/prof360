@@ -1,0 +1,85 @@
+# Data-quality rules (Phase 7, decisions D-035). Run by the `dq` stage at the end of nightly and
+# morning jobs; findings go to dq_finding and `uw-pipeline dq-report`.
+# Severity: Error = data is probably wrong; Warning = someone should look; Info = review queue.
+
+missing_metric:      # latest periods lack a core metric and coverage_notes.yaml doesn't explain it
+  severity: Warning
+
+quarter_jump:        # change vs the prior quarter AND vs a year earlier (scale/sign errors)
+  severity: Warning
+  metrics: [revenue, operating_income, net_income, cash, total_debt, current_assets,
+            current_liabilities, equity]
+  max_change: 5.0    # 5.0 = 500%
+  min_base_usd: 50000000   # ignore when the previous quarter is smaller than this
+  quarters: 8
+
+negative_value:      # metrics that should never be negative
+  severity: Error
+  metrics: [revenue, cash, current_assets, current_liabilities, total_debt, long_term_debt]
+  quarters: 8
+  years: 3
+
+quarters_vs_year:    # four quarters must add up to the fiscal year
+  severity: Error
+  metrics: [revenue, net_income, operating_income, operating_cash_flow, capex]
+  tolerance: 0.005
+  years: 3
+
+release_vs_xbrl:     # a value read from filing text (earnings release, or MD&A for capital
+                     # ratios, D-042) disagrees with the XBRL value
+  severity: Error
+  days: 180
+
+llm_drop_rate:       # share of LLM items dropped by grounding, per task
+  severity: Warning
+  max_rate: 0.2
+  min_generated: 10
+  days: 30
+
+stale_filings:       # no new 10-K/10-Q for this long
+  severity: Warning
+  days: 120
+
+review_queue:        # signals the rule/LLM vote could not settle
+  severity: Info
+  statuses: [DISPUTED, OVERRULED]
+
+# Detail modals (Phase 8, decisions D-036) -----------------------------------------------------
+
+detail_coverage:     # every displayed metric with data has methodology, sources and relevance
+  severity: Warning
+  min_relevance: 0.9 # share of those metrics that must have a current Underwriting Relevance
+
+source_coverage:     # every current insight and follow-up question shows at least one source
+  severity: Warning
+
+link_integrity:      # links between current objects point to current objects; FI data only for FI
+  severity: Error
+
+# Identities (decisions D-042) ----------------------------------------------------------------
+
+metric_identities:   # relations between metrics of the same period
+  severity: Error    # stored values (XBRL included) that break one
+  periods: 8
+  # The textmetrics stage also uses these: text-extracted values that break one are dropped
+  # (a wrong number is worse than a missing one) and reported here as a Warning.
+  checks:
+    - name: revpar_identity        # RevPAR = ADR x occupancy
+      left: revpar
+      right: adr * occupancy
+      tolerance: 0.05
+    - name: capital_ratio_order    # CET1 <= Tier 1 <= total capital
+      ascending: [cet1_ratio, tier1_ratio, total_capital_ratio]
+    - name: debt_completeness      # total debt includes long-term debt (D-046)
+      ascending: [long_term_debt, total_debt]
+    - name: nim_relation           # NIM = net interest income / average interest-earning assets
+      left: nim                    # (reported vs managed basis and day counts: within 5%)
+      right: net_interest_income / avg_interest_earning_assets
+      annualize: [net_interest_income]
+      tolerance: 0.05
+  loan_book:                       # loan classes may not add up to more than total loans
+    total: total_loans
+    max_over: 0.01
+
+debt_current_portion:  # total debt from the non-current-only fallback understates debt (D-046)
+  severity: Warning

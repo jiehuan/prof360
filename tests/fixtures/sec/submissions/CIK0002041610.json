@@ -1,0 +1,262 @@
+{
+ "cik": "0002041610",
+ "entityType": "operating",
+ "sic": "4833",
+ "sicDescription": "Television Broadcasting Stations",
+ "ownerOrg": "06 Technology",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Skydance Corp",
+ "tickers": [
+  "SKYD"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "993917985",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "1515 BROADWAY",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10036",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "1515 BROADWAY",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10036",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "212-258-6000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "Paramount Skydance Corp",
+   "from": "2025-08-07T04:00:00.000Z",
+   "to": "2026-10-06T04:00:00.000Z"
+  },
+  {
+   "name": "New Pluto Global, Inc.",
+   "from": "2024-11-04T05:00:00.000Z",
+   "to": "2025-08-01T04:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000876661-26-000820",
+    "0001104659-26-114888",
+    "0001193125-26-418171",
+    "0001193125-26-418162",
+    "0001225208-26-008340",
+    "0002041610-26-000054",
+    "0002041610-26-000026",
+    "0001140361-26-016758",
+    "0002041610-26-000011",
+    "0002041610-25-000044"
+   ],
+   "filingDate": [
+    "2026-10-09",
+    "2026-10-09",
+    "2026-10-08",
+    "2026-10-08",
+    "2026-10-08",
+    "2026-08-04",
+    "2026-05-04",
+    "2026-04-24",
+    "2026-02-25",
+    "2025-11-10"
+   ],
+   "reportDate": [
+    "",
+    "",
+    "2026-10-06",
+    "2026-10-06",
+    "2026-10-06",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-09T17:45:13.000Z",
+    "2026-10-09T17:28:13.000Z",
+    "2026-10-09T02:46:10.000Z",
+    "2026-10-09T02:37:34.000Z",
+    "2026-10-09T01:30:35.000Z",
+    "2026-08-05T01:17:34.000Z",
+    "2026-05-05T01:17:02.000Z",
+    "2026-04-25T01:02:08.000Z",
+    "2026-02-26T03:19:07.000Z",
+    "2025-11-11T02:20:38.000Z"
+   ],
+   "act": [
+    "34",
+    "34",
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "CERT",
+    "8-A12B",
+    "4",
+    "3",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K/A",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "001-42791",
+    "001-42791",
+    "",
+    "",
+    "",
+    "001-42791",
+    "001-42791",
+    "001-42791",
+    "001-42791",
+    "001-42791"
+   ],
+   "filmNumber": [
+    "261451404",
+    "261451333",
+    "",
+    "",
+    "",
+    "261240246",
+    "26939147",
+    "26895519",
+    "26680216",
+    "251466521"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "CERT",
+    "8-A12B",
+    "4",
+    "3",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    146401,
+    503713,
+    7310,
+    23913,
+    5749,
+    18413721,
+    10982829,
+    1446592,
+    34702318,
+    14523980
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "SKYDWS100926.pdf",
+    "tm2626659d10_8a12b.htm",
+    "xslF345X06/ownership.xml",
+    "xslF345X06/ownership.xml",
+    "xslF345X06/doc4.xml",
+    "psky-20260630.htm",
+    "psky-20260331.htm",
+    "ef20071103_10ka.htm",
+    "psky-20251231.htm",
+    "psky-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "NYSE CERTIFICATION",
+    "8-A12B",
+    "4",
+    "3",
+    "",
+    "10-Q",
+    "10-Q",
+    "10-K/A",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

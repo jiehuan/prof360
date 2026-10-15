@@ -1,0 +1,251 @@
+{
+ "cik": "0000092380",
+ "entityType": "operating",
+ "sic": "4512",
+ "sicDescription": "Air Transportation, Scheduled",
+ "ownerOrg": "01 Energy & Transportation",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "SOUTHWEST AIRLINES CO",
+ "tickers": [
+  "LUV"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "741563240",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "TX",
+ "stateOfIncorporationDescription": "TX",
+ "addresses": {
+  "mailing": {
+   "street1": "PO BOX 36611",
+   "street2": null,
+   "city": "DALLAS",
+   "stateOrCountry": "TX",
+   "zipCode": "75235-1611",
+   "stateOrCountryDescription": "TX",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "2702 LOVE FIELD DR",
+   "street2": "P O BOX 36611",
+   "city": "DALLAS",
+   "stateOrCountry": "TX",
+   "zipCode": "75235",
+   "stateOrCountryDescription": "TX",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "2147924000",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000038777-26-000259",
+    "0001085146-26-000796",
+    "0000092380-26-000102",
+    "0000092380-26-000100",
+    "0000092380-26-000098",
+    "0000092380-26-000077",
+    "0000092380-26-000047",
+    "0000092380-26-000006",
+    "0000092380-26-000004",
+    "0000092380-25-000140"
+   ],
+   "filingDate": [
+    "2026-10-07",
+    "2026-10-05",
+    "2026-09-17",
+    "2026-08-25",
+    "2026-08-12",
+    "2026-07-23",
+    "2026-04-23",
+    "2026-02-06",
+    "2026-02-05",
+    "2025-10-23"
+   ],
+   "reportDate": [
+    "",
+    "",
+    "2026-09-15",
+    "2026-08-21",
+    "2026-08-10",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-07T21:30:40.000Z",
+    "2026-10-05T18:25:10.000Z",
+    "2026-09-18T00:11:55.000Z",
+    "2026-08-26T00:59:07.000Z",
+    "2026-08-13T00:06:35.000Z",
+    "2026-07-24T00:11:50.000Z",
+    "2026-04-24T00:25:10.000Z",
+    "2026-02-07T02:01:14.000Z",
+    "2026-02-06T02:07:52.000Z",
+    "2025-10-24T00:19:35.000Z"
+   ],
+   "act": [
+    "34",
+    "34",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "SCHEDULE 13G/A",
+    "SCHEDULE 13G/A",
+    "4",
+    "4",
+    "8-K",
+    "10-Q",
+    "10-Q",
+    "10-K/A",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "005-33255",
+    "005-33255",
+    "",
+    "",
+    "001-07259",
+    "001-07259",
+    "001-07259",
+    "001-07259",
+    "001-07259",
+    "001-07259"
+   ],
+   "filmNumber": [
+    "261446427",
+    "261439170",
+    "",
+    "",
+    "261267476",
+    "261197156",
+    "26889007",
+    "26607489",
+    "26602935",
+    "251413324"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "1.01,1.02,2.03,9.01",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "SCHEDULE 13G/A",
+    "SCHEDULE 13G/A",
+    "4",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    27467,
+    7487,
+    6098,
+    5626,
+    31611102,
+    13268556,
+    54595396,
+    681363,
+    22169385,
+    9142035
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslSCHEDULE_13G_X02/primary_doc.xml",
+    "xslSCHEDULE_13G_X02/primary_doc.xml",
+    "xslF345X06/wk-form4_1789675913.xml",
+    "xslF345X06/wk-form4_1787691545.xml",
+    "luv-20260810.htm",
+    "luv-20260630.htm",
+    "luv-20260331.htm",
+    "luv-20251231.htm",
+    "luv-20251231.htm",
+    "luv-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "",
+    "",
+    "FORM 4",
+    "FORM 4",
+    "8-K",
+    "SECOND QUARTER 2026 10-Q",
+    "FIRST QUARTER 2026 10-Q",
+    "FORM 10-K/A",
+    "FORM 10-K",
+    "3RD QUARTER 2025 FORM 10-Q"
+   ]
+  },
+  "files": []
+ }
+}

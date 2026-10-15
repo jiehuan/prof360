@@ -1,0 +1,120 @@
+# Concept -> ordered XBRL tag candidates.
+#
+# Tags are picked PER PERIOD: for each fiscal period the first candidate that has a value wins,
+# and the tag actually used is stored with every value. Companies switch tags over time
+# (e.g. MAR InterestExpense -> InterestExpenseNonoperating in 2024), so picking one tag for
+# all history would drop recent periods.
+#
+# A candidate is "taxonomy:Tag", or {tag: ..., dims: {Axis: Member}} for a dimensional fact.
+# Non-standard taxonomies (company extensions such as mar:) and dimensional facts are not in
+# SEC companyfacts and are read from each filing's XBRL instance instead.
+#
+# `by_group` replaces `tags` for companies in that industry group. Company files under
+# company_overrides/ can replace any concept's tags for one company.
+
+concepts:
+  revenue:
+    tags:
+      - us-gaap:Revenues
+      - us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
+      - us-gaap:SalesRevenueNet
+    by_group:
+      # Banks report "total net revenue" (net of interest expense). us-gaap:Revenues means
+      # something different for JPM and stops in 2025, so mixing the two would distort growth.
+      BANKS: [us-gaap:RevenuesNetOfInterestExpense]
+  net_income:
+    tags:
+      - us-gaap:NetIncomeLoss
+      - us-gaap:NetIncomeLossAvailableToCommonStockholdersBasic
+      - us-gaap:ProfitLoss
+  operating_income:
+    tags: [us-gaap:OperatingIncomeLoss]
+  noninterest_income:
+    tags: [us-gaap:NoninterestIncome]
+  pretax_income:
+    tags:
+      - us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest
+      - us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments
+  d_and_a:
+    tags:
+      - us-gaap:DepreciationDepletionAndAmortization
+      - us-gaap:DepreciationAndAmortization
+      - us-gaap:DepreciationAmortizationAndAccretionNet
+  cash:
+    tags:
+      - us-gaap:CashAndCashEquivalentsAtCarryingValue
+      - us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents
+  current_assets:
+    tags: [us-gaap:AssetsCurrent]
+  current_liabilities:
+    tags: [us-gaap:LiabilitiesCurrent]
+  # Debt is only ever summed within one tag family (see metrics.yaml total_debt).
+  debt_total_reported:
+    tags:
+      - us-gaap:DebtAndCapitalLeaseObligations
+      - us-gaap:LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities
+  ltdcl_noncurrent:
+    tags: [us-gaap:LongTermDebtAndCapitalLeaseObligations]
+  ltdcl_current:
+    tags: [us-gaap:LongTermDebtAndCapitalLeaseObligationsCurrent]
+  ltd_noncurrent:
+    tags: [us-gaap:LongTermDebtNoncurrent]
+  ltd_current:
+    tags: [us-gaap:LongTermDebtCurrent]
+  short_term_borrowings:
+    tags: [us-gaap:ShortTermBorrowings, us-gaap:CommercialPaper]
+  # Finance lease liabilities, added only to the LongTermDebt family, which excludes them
+  # (the ...AndCapitalLeaseObligations family already includes them). Decisions D-046.
+  finance_lease_liabilities:
+    tags: [us-gaap:FinanceLeaseLiability]
+  equity:
+    tags:
+      - us-gaap:StockholdersEquity
+      - us-gaap:StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest
+  interest_expense:
+    tags:
+      - us-gaap:InterestExpense
+      - us-gaap:InterestExpenseNonoperating
+      - us-gaap:InterestExpenseDebt
+  operating_cash_flow:
+    tags: [us-gaap:NetCashProvidedByUsedInOperatingActivities]
+  capex:
+    tags:
+      - us-gaap:PaymentsToAcquirePropertyPlantAndEquipment
+      - us-gaap:PaymentsToAcquireProductiveAssets
+  buybacks:
+    tags: [us-gaap:PaymentsForRepurchaseOfCommonStock]
+  dividends_paid:
+    tags: [us-gaap:PaymentsOfDividends, us-gaap:PaymentsOfDividendsCommonStock]
+
+  # -- Bank regulatory capital (decisions D-042) ------------------------------------------------
+  # Actual ratios, unit pure. Banks tag them per methodology (Standardized / Advanced) with
+  # members they name themselves, so the candidates are in company_overrides/; without one the
+  # text extraction stays the source. Regulatory floors and buffers share unit, period and
+  # dimensions with the actual ratios and are refused here (registry check).
+  cet1_ratio: {tags: [], unit: pure}
+  tier1_ratio: {tags: [], unit: pure}
+  total_capital_ratio: {tags: [], unit: pure}
+  # Retained loans; the loan book by class must add up to no more than this.
+  total_loans:
+    tags:
+      - us-gaap:FinancingReceivableExcludingAccruedInterestBeforeAllowanceForCreditLoss
+      - us-gaap:LoansAndLeasesReceivableNetOfDeferredIncome
+
+  # -- Pay versus performance (proxy statement DEF 14A, `ecd` taxonomy, decisions D-042) --------
+  # PEO = principal executive officer. TSR = value of a fixed $100 investment.
+  ceo_total_comp: {tags: [ecd:PeoTotalCompAmt]}
+  ceo_comp_actually_paid: {tags: [ecd:PeoActuallyPaidCompAmt]}
+  neo_avg_total_comp: {tags: [ecd:NonPeoNeoAvgTotalCompAmt]}
+  tsr_value_100: {tags: [ecd:TotalShareholderRtnAmt]}
+  peer_tsr_value_100: {tags: [ecd:PeerGroupTotalShareholderRtnAmt]}
+
+  # -- Bank profitability and credit (decisions D-043) --------------------------------------------
+  total_assets: {tags: [us-gaap:Assets]}
+  net_interest_income: {tags: [us-gaap:InterestIncomeExpenseNet]}
+  allowance_for_loan_losses:
+    tags:
+      - us-gaap:FinancingReceivableAllowanceForCreditLossExcludingAccruedInterest
+      - us-gaap:FinancingReceivableAllowanceForCreditLosses
+  # Remaining performance obligations (ASC 606): contracted revenue not yet recognised.
+  rpo: {tags: [us-gaap:RevenueRemainingPerformanceObligation]}

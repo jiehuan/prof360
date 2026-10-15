@@ -1,0 +1,38 @@
+# LLM insights (Phase 5b, decisions D-033).
+
+# Models: the company-level synthesis (behavioral, strategic & risk, key insights, follow-up
+# questions, metric relevance) uses the active provider's `synthesis` model in llm.yaml; per-item
+# work (news activity summaries) uses its `extractor`.
+
+prompt_versions:
+  common: common_v1          # shared rules, prepended to every company-level task
+  activity_summary: activity_summary_v1
+  behavioral: behavioral_v1
+  strategic_risk: strategic_risk_v1
+  key_insights: key_insights_v1
+  followups: followups_v2
+  metric_detail: metric_detail_v1   # metricdetail stage (Phase 8): per-metric UW relevance
+
+# Filing excerpts in the package: section code -> max characters taken (latest filing with that
+# section). Sections longer than the budget are cut at a paragraph boundary and marked as cut.
+excerpts:
+  "10K-1A": 120000   # risk factors
+  "10K-3": 15000     # legal proceedings
+  "10Q-II-1": 15000  # legal proceedings update
+  "10Q-II-1A": 15000 # risk factor update
+  "10Q-I-2": 30000   # MD&A (start: overview and results)
+transcripts: 3            # latest earnings calls for behavioral insights
+news_days: 30             # activities in the package
+# Only material news enters the package (Phase 9.4, decisions D-037), so routine news does not
+# regenerate the insights: an activity needs a news_risk_score with overall >= `overall`
+# or any single dimension >= `any_dimension`. Unscored activities are left out.
+news_materiality:
+  overall: 0.5
+  any_dimension: 0.6
+activity_batch: 20        # activities per summary call
+metric_quarters: 5        # latest quarters of each metric in the table
+metric_years: 3           # latest fiscal years
+
+counts:                   # asked of the model; enforced loosely (log only)
+  key_insights: [6, 10]
+  followups: [10, 15]

@@ -1,0 +1,42 @@
+# LLM extraction of numbers from filing text (Phase 5a, decisions D-032).
+# Every value needs a verbatim quote that contains the number as written; otherwise dropped.
+
+prompt_version: text_metrics_v2
+# At `low` effort the extractor skipped comparative columns and rewrote table headers in
+# quotes (D-038), so this task runs the extractor at a higher effort.
+extractor_effort: medium
+# Where text metrics (metrics.yaml `kind: text`) are looked for.
+sections: ["10K-7", "10Q-I-2"]   # MD&A
+earnings_release: true           # EX-99.1 of Item 2.02 8-Ks
+# Chunks containing a metric keyword are sent, most matches first, up to this much text.
+max_chars: 60000
+
+# Preliminary results from the earnings release (decisions D-022). Stored with
+# derivation = PRELIMINARY only for periods that have no XBRL value yet; the 10-Q/10-K replaces
+# them. A metric is extracted only if it is on the company's curated metric list.
+preliminary:
+  revenue: >-
+    Total revenues (GAAP, as reported) for the fiscal quarter the release announces. For banks:
+    total net revenue on a reported (not managed) basis.
+  net_income: >-
+    Net income attributable to the company (GAAP, as reported) for the fiscal quarter the
+    release announces.
+  operating_income: >-
+    Operating income (GAAP, as reported) for the fiscal quarter the release announces.
+
+# Loan book by loan class (BANKS only; Phase 8, decisions D-036). Both models must agree.
+loan_portfolio:
+  # Read by cell from the credit-portfolio tables (D-044); loan_book_v2 read quotes. v2 adds
+  # tables with classes as columns (JPM wholesale).
+  prompt_version: loan_table_v2
+  groups: [BANKS]
+  keywords: [loans retained, retained loans, residential real estate, nonaccrual loans,
+             credit portfolio, loan portfolio]
+  definition: >-
+    Retained loans (held for investment, excluding loans held-for-sale and loans at fair value)
+    by loan class at the latest period end and at the prior fiscal year-end shown in the same
+    table, with nonaccrual (nonperforming) loans per class when the same table shows them. Use
+    the finest classes for which the table gives a balance (for example Residential real
+    estate, Auto and other, Credit card), and the segment's own retained-loan line where a
+    segment is not broken down (for example Wholesale). Do not include subtotals or totals of
+    classes already listed.

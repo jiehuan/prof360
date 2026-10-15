@@ -1,0 +1,84 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "uw-pipeline"
+version = "0.1.0"
+description = "Underwriting Intelligence data pipeline: SEC EDGAR + Alpha Vantage -> Azure SQL"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.27",
+    "tenacity>=8.2",
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "sqlalchemy>=2.0",
+    "typer>=0.12",
+    "pyyaml>=6.0",
+    "pandas>=2.2",
+    "lxml>=5.0",
+]
+
+[project.optional-dependencies]
+mssql = ["pyodbc>=5.0"]
+# Azure SQL + ADLS on the corporate network (Phase 12, D-040)
+azure = ["pyodbc>=5.0", "azure-identity>=1.15", "azure-storage-file-datalake>=12.14"]
+dev = [
+    "pytest>=8.0",
+    "respx>=0.21",
+    "ruff>=0.5",
+    "mypy>=1.10",
+    "types-PyYAML",
+    "pandas-stubs",
+    "lxml-stubs",
+]
+
+[project.scripts]
+uw-pipeline = "uw_pipeline.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/uw_pipeline"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "mssql: needs a SQL Server (MSSQL_TEST_URL), e.g. scripts/test_mssql.sh; skipped otherwise",
+]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test_xbrl_facts.py" = ["E501"]  # inline XBRL instance sample
+"tests/test_phase3_stages.py" = ["E501"]  # inline HTML samples
+"tests/test_signals.py" = ["E501"]  # real 8-K sentences
+"tests/test_html_text.py" = ["E501"]  # inline HTML sample
+"tests/test_vote.py" = ["E501"]  # filing sentences
+"tests/test_news.py" = ["E501"]  # synthetic feed
+"tests/test_alphavantage.py" = ["E501"]  # API messages
+"tests/test_text_metrics.py" = ["E501"]  # filing rows
+"tests/test_insights.py" = ["E501"]  # canned LLM outputs
+"tests/test_dq.py" = ["E501"]  # synthetic rows
+"tests/test_table_reader.py" = ["E501"]  # answer tables read from filings
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = ["pydantic.mypy"]
+mypy_path = "src"
+packages = ["uw_pipeline"]
+
+[[tool.mypy.overrides]]
+# Optional dependencies (".[azure]"), imported only for ADLS storage / SQL Server.
+module = ["azure.*", "pyodbc"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["respx.*"]
+ignore_missing_imports = true

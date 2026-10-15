@@ -1,0 +1,56 @@
+# Harness CI/CD skeleton (Phase 6). PLACEHOLDER values follow the team's existing pipelines.
+pipeline:
+  name: uw-pipeline
+  identifier: uw_pipeline
+  projectIdentifier: PLACEHOLDER_PROJECT
+  orgIdentifier: PLACEHOLDER_ORG
+  stages:
+    - stage:
+        name: Build and test
+        identifier: build
+        type: CI
+        spec:
+          cloneCodebase: true
+          infrastructure: PLACEHOLDER_CI_INFRASTRUCTURE
+          execution:
+            steps:
+              - step:
+                  name: Lint, type-check and unit tests
+                  identifier: test
+                  type: Run
+                  spec:
+                    image: PLACEHOLDER_ARTIFACTORY/docker-remote/python:3.14-slim
+                    shell: Sh
+                    command: |
+                      pip install -e ".[dev]"
+                      ruff check . && ruff format --check . && mypy && pytest -q
+              - step:
+                  name: Build and push image
+                  identifier: push
+                  type: BuildAndPushDockerRegistry
+                  spec:
+                    connectorRef: PLACEHOLDER_ARTIFACTORY_CONNECTOR
+                    repo: PLACEHOLDER_IMAGE
+                    tags: [<+pipeline.sequenceId>, <+codebase.commitSha>]
+                    buildArgs:
+                      BASE_IMAGE: PLACEHOLDER_ARTIFACTORY/docker-remote/python:3.14-slim
+    - stage:
+        name: Deploy to dev
+        identifier: deploy_dev
+        type: Deployment
+        spec:
+          deploymentType: Kubernetes
+          service:
+            serviceRef: uw_pipeline
+          environment:
+            environmentRef: dev
+            infrastructureDefinitions: [{identifier: PLACEHOLDER_OPENSHIFT_DEV}]
+          execution:
+            steps:
+              - step:
+                  name: Apply CronJobs
+                  identifier: apply
+                  type: K8sApply
+                  spec:
+                    filePaths: [deploy/openshift/pvc.yaml, deploy/openshift/cronjobs.yaml]
+                    # image tag substituted from the pushed artifact (<+artifact.image>)

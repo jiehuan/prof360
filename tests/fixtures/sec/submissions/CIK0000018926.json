@@ -1,0 +1,251 @@
+{
+ "cik": "0000018926",
+ "entityType": "operating",
+ "sic": "4813",
+ "sicDescription": "Telephone Communications (No Radiotelephone)",
+ "ownerOrg": "06 Technology",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Lumen Technologies, Inc.",
+ "tickers": [
+  "LUMN"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "720651161",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "LA",
+ "stateOfIncorporationDescription": "LA",
+ "addresses": {
+  "mailing": {
+   "street1": "100 CENTURYLINK DR",
+   "street2": "P O BOX 4065",
+   "city": "MONROE",
+   "stateOrCountry": "LA",
+   "zipCode": "71203",
+   "stateOrCountryDescription": "LA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "P O BOX 4065",
+   "street2": "100 CENTURYLINK DR",
+   "city": "MONROE",
+   "stateOrCountry": "LA",
+   "zipCode": "71203",
+   "stateOrCountryDescription": "LA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "3183889000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "CENTURYLINK, INC",
+   "from": "2010-11-09T05:00:00.000Z",
+   "to": "2021-01-20T05:00:00.000Z"
+  },
+  {
+   "name": "CENTURYTEL INC",
+   "from": "1999-07-09T04:00:00.000Z",
+   "to": "2010-11-08T05:00:00.000Z"
+  },
+  {
+   "name": "CENTURY TELEPHONE ENTERPRISES INC",
+   "from": "1994-01-28T05:00:00.000Z",
+   "to": "1999-05-14T04:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001354457-26-000948",
+    "0000947871-26-000920",
+    "0000947871-26-000919",
+    "0000947871-26-000891",
+    "0002087595-26-000002",
+    "0000018926-26-000060",
+    "0000018926-26-000046",
+    "0000018926-26-000014",
+    "0000018926-25-000111"
+   ],
+   "filingDate": [
+    "2026-10-05",
+    "2026-10-05",
+    "2026-10-05",
+    "2026-09-25",
+    "2026-09-24",
+    "2026-08-04",
+    "2026-05-05",
+    "2026-02-20",
+    "2025-10-30"
+   ],
+   "reportDate": [
+    "",
+    "",
+    "",
+    "2026-09-25",
+    "2026-09-23",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-06T00:51:37.000Z",
+    "2026-10-06T00:07:39.000Z",
+    "2026-10-06T00:01:29.000Z",
+    "2026-09-25T16:39:06.000Z",
+    "2026-09-25T00:31:49.000Z",
+    "2026-08-05T00:29:15.000Z",
+    "2026-05-06T00:18:54.000Z",
+    "2026-02-21T02:18:31.000Z",
+    "2025-10-31T00:20:33.000Z"
+   ],
+   "act": [
+    "34",
+    "34",
+    "34",
+    "34",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "CERT",
+    "25",
+    "8-A12B",
+    "8-K",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "001-07784",
+    "001-07784",
+    "001-07784",
+    "001-07784",
+    "",
+    "001-07784",
+    "001-07784",
+    "001-07784",
+    "001-07784"
+   ],
+   "filmNumber": [
+    "261441080",
+    "261440413",
+    "261440257",
+    "261406346",
+    "",
+    "261239185",
+    "26943535",
+    "26660190",
+    "251435922"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "3.01,7.01,9.01",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "CERT",
+    "25",
+    "8-A12B",
+    "XBRL",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    183925,
+    28064,
+    35445,
+    278833,
+    369544,
+    10607360,
+    8832970,
+    21998152,
+    11194646
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "8A_CERT_LUMN_0000018926.pdf",
+    "ss6901616_25.htm",
+    "ss6901563_8a12b.htm",
+    "ss6865668_8k.htm",
+    "xslF345X06/wk-form4_1790281902.xml",
+    "lumn-20260630.htm",
+    "lumn-20260331.htm",
+    "lumn-20251231.htm",
+    "lumn-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "",
+    "FORM 25",
+    "FORM 8-A",
+    "CURRENT REPORT",
+    "FORM 4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

@@ -1,0 +1,241 @@
+{
+ "cik": "0000078003",
+ "entityType": "operating",
+ "sic": "2834",
+ "sicDescription": "Pharmaceutical Preparations",
+ "ownerOrg": "03 Life Sciences",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "PFIZER INC",
+ "tickers": [
+  "PFE"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "135315170",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "66 HUDSON BOULEVARD EAST",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10001-2192",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "66 HUDSON BOULEVARD EAST",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10001-2192",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "2127332323",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "PFIZER INC",
+   "from": "1994-03-18T00:00:00.000Z",
+   "to": "2026-10-01T00:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001225208-26-008044",
+    "0001225208-26-007989",
+    "0001225208-26-007988",
+    "0001225208-26-007987",
+    "0001225208-26-007986",
+    "0000078003-26-000095",
+    "0000078003-26-000054",
+    "0000078003-26-000026",
+    "0000078003-25-000150"
+   ],
+   "filingDate": [
+    "2026-10-01",
+    "2026-09-29",
+    "2026-09-29",
+    "2026-09-29",
+    "2026-09-29",
+    "2026-08-04",
+    "2026-05-05",
+    "2026-02-26",
+    "2025-11-04"
+   ],
+   "reportDate": [
+    "2026-09-30",
+    "2026-09-25",
+    "2026-09-25",
+    "2026-09-25",
+    "2026-09-25",
+    "2026-06-28",
+    "2026-03-29",
+    "2025-12-31",
+    "2025-09-28"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-01T18:04:33.000Z",
+    "2026-09-29T18:26:28.000Z",
+    "2026-09-29T18:26:26.000Z",
+    "2026-09-29T18:25:28.000Z",
+    "2026-09-29T18:25:26.000Z",
+    "2026-08-04T11:04:14.000Z",
+    "2026-05-05T11:03:03.000Z",
+    "2026-02-26T17:44:01.000Z",
+    "2025-11-04T12:03:48.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "001-03619",
+    "001-03619",
+    "001-03619",
+    "001-03619"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "261235412",
+    "26940380",
+    "26684208",
+    "251446395"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    5638,
+    5490,
+    5444,
+    5433,
+    5461,
+    14845838,
+    12526053,
+    31228044,
+    14742302
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml",
+    "pfe-20260628.htm",
+    "pfe-20260329.htm",
+    "pfe-20251231.htm",
+    "pfe-20250928.htm"
+   ],
+   "primaryDocDescription": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

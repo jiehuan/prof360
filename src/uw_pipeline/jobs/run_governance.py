@@ -1,0 +1,199 @@
+"""`governance` stage: board composition from the latest proxy statement (decisions D-045).
+
+Both models read the board passages of the proxy (DEF 14A). A fact is kept only where its
+quote is found in the proxy, a number or name in it appears in the quote, and both models give
+the same value; otherwise it is NULL. Stored in `board_composition`; the signals stage turns it
+into governance signals and the insight package carries it as a source.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import logging
+import re
+from collections.abc import Callable, Sequence
+from datetime import UTC, datetime
+from typing import Any
+
+from sqlalchemy import Connection, Engine, desc, select
+
+from uw_pipeline.clients.llm import LLMClient
+from uw_pipeline.clients.storage import Storage
+from uw_pipeline.config import CompanyConfig
+from uw_pipeline.enrich.grounding import is_grounded, normalize
+from uw_pipeline.enrich.llm import PROMPTS_DIR, LLMConfig, cached_call
+from uw_pipeline.enrich.schemas import BoardFacts, strict_json_schema
+from uw_pipeline.enrich.text_metrics import select_chunks
+from uw_pipeline.enrich.untrusted import data_block
+from uw_pipeline.jobs.run_company import TaskResult
+from uw_pipeline.jobs.run_xbrl import company_row
+from uw_pipeline.load.upsert import upsert
+from uw_pipeline.normalize.html_text import html_to_text
+from uw_pipeline.normalize.sections import chunk
+from uw_pipeline.schema import board_composition, source_document
+
+log = logging.getLogger(__name__)
+
+PROMPT_VERSION = "board_v1"
+SCHEMA = strict_json_schema(BoardFacts)
+MAX_CHARS = 40_000
+KEYWORDS = [
+    ["independent"],
+    ["lead independent director", "presiding director", "independent chair"],
+    ["chair of the board", "chairman of the board", "board chair", "executive chair"],
+    ["committee", "chair"],
+    ["director nominees", "nominees for director"],
+]
+_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+          "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
+          "eighteen", "nineteen", "twenty"]  # fmt: skip
+
+
+def _number_in(n: int, quote: str) -> bool:
+    q = normalize(quote)
+    words = [str(n)] + ([_WORDS[n]] if n < len(_WORDS) else [])
+    return any(re.search(rf"(?<![\w.]){re.escape(w)}(?![\w.])", q) for w in words)
+
+
+def _name_in(name: str, quote: str) -> bool:
+    """The surname (last word) of a name appears in the quote."""
+    parts = re.findall(r"[A-Za-z][A-Za-z'\-]+", name)
+    return bool(parts) and parts[-1].lower() in normalize(quote)
+
+
+def checked(facts: BoardFacts, source: str) -> dict[str, Any]:
+    """The facts whose quote is in the proxy and supports the value; others None."""
+
+    def ok(quote: str) -> bool:
+        return bool(quote.strip()) and is_grounded(quote, source)
+
+    lid = facts.lead_independent_director
+
+    def number(value: int | None, quote: str) -> int | None:
+        return value if value is not None and ok(quote) and _number_in(value, quote) else None
+
+    out: dict[str, Any] = {
+        "board_size": number(facts.board_size, facts.board_size_quote),
+        "independent_directors": number(facts.independent_directors, facts.independent_quote),
+        "ceo_is_chair": facts.ceo_is_chair
+        if facts.ceo_is_chair is not None and ok(facts.ceo_chair_quote) else None,
+        "lead_independent_director": None,
+        "committees": {},
+        "evidence": {},
+    }  # fmt: skip
+    if lid is not None and ok(facts.lead_quote):
+        if lid.strip().lower() == "none":
+            out["lead_independent_director"] = ""  # confirmed: there is none
+        elif _name_in(lid, facts.lead_quote):
+            out["lead_independent_director"] = lid.strip()
+    for c in facts.committees:
+        if c.chair and ok(c.quote) and _name_in(c.chair, c.quote):
+            out["committees"][c.name.strip().lower()] = (c.name.strip(), c.chair.strip())
+    quotes = {"board_size": facts.board_size_quote, "independent_directors":
+              facts.independent_quote, "ceo_is_chair": facts.ceo_chair_quote,
+              "lead_independent_director": facts.lead_quote}  # fmt: skip
+    out["evidence"] = {k: q for k, q in quotes.items() if out[k] is not None}
+    return out
+
+
+def agreed(a: dict[str, Any], b: dict[str, Any]) -> dict[str, Any]:
+    """Facts both models read the same way (names compared by surname)."""
+    out: dict[str, Any] = {}
+    for key in ("board_size", "independent_directors", "ceo_is_chair"):
+        out[key] = a[key] if a[key] is not None and a[key] == b[key] else None
+    la, lb = a["lead_independent_director"], b["lead_independent_director"]
+    same = la is not None and lb is not None and (
+        la == lb or (la and lb and _name_in(la, lb) and _name_in(lb, la)))  # fmt: skip
+    out["lead_independent_director"] = la if same else None
+    committees = []
+    for key, (name, chair) in a["committees"].items():
+        other = b["committees"].get(key)
+        if other and _name_in(chair, other[1]):
+            committees.append({"name": name, "chair": chair})
+    out["committees"] = committees
+    out["evidence"] = {k: q for k, q in a["evidence"].items() if out.get(k) is not None}
+    return out
+
+
+def _latest_proxy(conn: Connection, company_id: int) -> Any:
+    return conn.execute(
+        select(source_document)
+        .where(source_document.c.company_id == company_id,
+               source_document.c.form_type == "DEF 14A",
+               source_document.c.raw_path.is_not(None))
+        .order_by(desc(source_document.c.filed_at))
+        .limit(1)
+    ).mappings().first()  # fmt: skip
+
+
+def process_company(
+    cfg: CompanyConfig, client: LLMClient, llm: LLMConfig, storage: Storage, conn: Connection,
+    now: datetime,
+) -> str:  # fmt: skip
+    row = company_row(conn, cfg)
+    proxy = _latest_proxy(conn, row["company_id"])
+    if proxy is None:
+        return "no proxy statement"
+    chunks = [c.text for c in chunk(html_to_text(storage.read_bytes(proxy["raw_path"])))]
+    idx = select_chunks(chunks, KEYWORDS, MAX_CHARS, per_group=3)
+    if not idx:
+        return "no board passages"
+    source = "\n".join(chunks[i] for i in idx)
+    user = (f"Company: {row['legal_name']}\nDocument: proxy statement filed {proxy['filed_at']}"
+            f"\n\n{data_block('excerpt', source)}")  # fmt: skip
+    system = (PROMPTS_DIR / f"{PROMPT_VERSION}.md").read_text(encoding="utf-8")
+    reads = []
+    for spec in (llm.extractor, llm.tiebreaker):
+        raw = cached_call(conn, client, spec, task="board", prompt_version=PROMPT_VERSION,
+                          system=system, user=user, schema=SCHEMA, now=now,
+                          validate=BoardFacts.model_validate)  # fmt: skip
+        if raw is None:
+            return "a model gave no usable answer"
+        reads.append(checked(BoardFacts.model_validate(raw), source))
+    facts = agreed(reads[0], reads[1])
+    input_hash = hashlib.sha256(f"{PROMPT_VERSION}\n{user}".encode()).hexdigest()
+    upsert(conn, board_composition, [{
+        "company_id": row["company_id"], "doc_id": proxy["doc_id"],
+        "board_size": facts["board_size"], "independent_directors": facts["independent_directors"],
+        "ceo_is_chair": facts["ceo_is_chair"],
+        "lead_independent_director": facts["lead_independent_director"],
+        "committees_json": json.dumps(facts["committees"]),
+        "evidence_json": json.dumps(facts["evidence"]),
+        "model": f"{llm.extractor.model}+{llm.tiebreaker.model}",
+        "prompt_version": PROMPT_VERSION, "input_hash": input_hash, "updated_at": now,
+    }], key_cols=["company_id"])  # fmt: skip
+    kept = sum(
+        facts[k] is not None
+        for k in (
+            "board_size",
+            "independent_directors",
+            "ceo_is_chair",
+            "lead_independent_director",
+        )
+    )
+    return f"{kept}/4 facts, {len(facts['committees'])} committee chairs"
+
+
+def run_governance_stage(
+    companies: Sequence[CompanyConfig],
+    llm: tuple[LLMClient, LLMConfig] | None,
+    storage: Storage,
+    engine: Engine,
+    *,
+    now: Callable[[], datetime] = lambda: datetime.now(UTC),
+) -> list[TaskResult]:
+    if llm is None:
+        return [TaskResult(c.ticker, "governance", ok=False, detail="LLM not configured")
+                for c in companies]  # fmt: skip
+    results = []
+    for cfg in companies:
+        try:
+            with engine.begin() as conn:
+                detail = process_company(cfg, llm[0], llm[1], storage, conn, now())
+            log.info("%s: governance %s", cfg.ticker, detail)
+            results.append(TaskResult(cfg.ticker, "governance", ok=True, detail=detail))
+        except Exception as exc:
+            log.exception("%s: governance stage failed", cfg.ticker)
+            results.append(TaskResult(cfg.ticker, "governance", ok=False, detail=str(exc)))
+    return results

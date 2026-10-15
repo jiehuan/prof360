@@ -1,0 +1,119 @@
+# Rule-based signals (no LLM). Categories follow the front end's Strategic & Risk Insights:
+# "Governance & Leadership", "Risk & Legal", "Event Signals". Severity: Info | Warning | Critical.
+
+# 8-K item number -> event signal (PLAN §5.4). Items not listed produce no signal.
+eight_k_items:
+  "1.01": {category: Event Signals, subcategory: Material Agreement, severity: Info,
+           title: Entered into a material definitive agreement}
+  "1.03": {category: Event Signals, subcategory: Bankruptcy, severity: Critical,
+           title: Bankruptcy or receivership}
+  "2.01": {category: Event Signals, subcategory: M&A, severity: Info,
+           title: Completed an acquisition or disposition of assets}
+  "2.04": {category: Event Signals, subcategory: Debt, severity: Warning,
+           title: Triggering event accelerating a financial obligation}
+  "2.06": {category: Event Signals, subcategory: Impairment, severity: Warning,
+           title: Material impairment}
+  "3.01": {category: Event Signals, subcategory: Listing, severity: Warning,
+           title: Notice of delisting or failure to meet a listing rule,
+           # A voluntary exchange transfer is filed under the same item but is not adverse.
+           downgrade: {pattern: 'voluntar\w* (?:to )?(?:de-?list|withdraw|transfer)|transfer of listing from',
+                       severity: Info, subcategory: Listing Transfer,
+                       title: Voluntary transfer of stock exchange listing}}
+  "4.01": {category: Governance & Leadership, subcategory: Auditor Change, severity: Warning,
+           title: Change in the company's certifying accountant}
+  "4.02": {category: Event Signals, subcategory: Restatement, severity: Critical,
+           title: Previously issued financial statements should no longer be relied upon}
+  "5.02": {category: Governance & Leadership, subcategory: Leadership Change, severity: Info,
+           title: "Director or officer departure, election or appointment"}
+
+# 8-K items whose document body is downloaded (for evidence snippets and the 5.02 rules).
+fetch_body_items: ["1.03", "2.04", "2.06", "3.01", "4.01", "4.02", "5.02"]
+
+# Item 5.02: escalate when the text names the CEO or CFO.
+leadership:
+  roles:
+    CEO: '\b(chief executive officer|principal executive officer)\b'
+    CFO: '\b(chief financial officer|principal financial officer)\b'
+  # Sentences that mention a role without a change of that role at this company.
+  exclude: '\b(continues? to serve|will continue|previously served|formerly served|prior to joining|served as .{0,80} (?:at|of) (?!the company|the firm|the corporation))'
+  # A role followed by "of <name>" belongs to another entity or a business unit unless the name
+  # is the company itself.
+  own_entity: '(?:the )?(?:company|firm|corporation|registrant)\b'
+  # The change verb must be within this many characters of the role mention.
+  proximity: 100
+  departure: '\b(resign\w*|retire\w*|depart\w*|leav(?:e|es|ing)\b|terminat\w*|step(?:ped|ping|s)? down|will not stand for re-?election|separat\w+ from)\b'
+  appointment: '\b(appoint\w*|elect\w*|nam(?:ed|es) .{0,40}as|promot\w*|succeed\w*)\b'
+  # severity by kind of change; succession = a departure and an appointment to the same role
+  severity:
+    departure: Warning
+    succession: Warning
+    appointment: Info
+
+# Keyword rules over filing sections. `sections` are section-code prefixes. A match is dropped
+# when its sentence also matches `exclude`.
+keywords:
+  - id: going_concern
+    category: Risk & Legal
+    subcategory: Going Concern
+    severity: Critical
+    title: Auditor's report raises substantial doubt about going concern
+    sections: ["10K-AUDIT"]
+    pattern: 'substantial doubt about (?:the \w+.s|its|our) ability to continue as a going concern'
+    exclude: '\b(no|not|alleviat\w*)\b'
+  - id: material_weakness
+    category: Risk & Legal
+    subcategory: Internal Controls
+    severity: Warning
+    title: Material weakness in internal control over financial reporting
+    sections: ["10K-9A", "10Q-I-4"]
+    pattern: '(identified|identification of|existence of|remediat\w+|disclosed) (?:a |the |certain |two |three )?material weakness(?:es)?'
+    exclude: '\b(no|not|did not|has not|have not|none)\b'
+  - id: controls_not_effective
+    category: Risk & Legal
+    subcategory: Internal Controls
+    severity: Warning
+    title: Controls and procedures concluded not effective
+    sections: ["10K-9A", "10Q-I-4"]
+    pattern: '(internal control over financial reporting|disclosure controls and procedures) (?:was|were) not effective'
+  - id: restatement
+    category: Event Signals
+    subcategory: Restatement
+    severity: Warning
+    title: Financial statements restated
+    sections: ["10K-7", "10K-8", "10K-9A", "10Q-I-1", "10Q-I-2", "10Q-I-4"]
+    pattern: '(restatement of (?:our |the |its )?(?:previously issued|prior[- ]period|consolidated) financial statements|have been restated to correct|\(as restated\))'
+
+# Signals derived from computed metrics (latest quarter).
+metrics:
+  negative_equity:
+    category: Risk & Legal
+    subcategory: Balance Sheet
+    severity: Warning
+    title: Stockholders' equity is negative; debt-to-equity is not meaningful
+  buybacks_with_negative_equity:
+    category: Governance & Leadership
+    subcategory: Capital Allocation
+    severity: Info
+    title: Share repurchases continue while equity is negative
+    # trailing four quarters of buybacks must exceed this (USD)
+    min_buybacks_ttm: 0
+  # Pay versus performance from the proxy statement (decisions D-042): say-on-pay and
+  # compensation litigation risk.
+  pay_vs_performance:
+    category: Governance & Leadership
+    subcategory: Executive Compensation
+    severity: Warning
+    title: CEO pay rose while shareholder return fell
+    min_pay_growth: 0.25   # CEO total compensation, year on year
+  # Board composition from the proxy statement (D-045); facts both models agreed on only.
+  ceo_chair_without_lead_director:
+    category: Governance & Leadership
+    subcategory: Board Structure
+    severity: Warning
+    title: CEO is also chair, with no lead independent director
+  board_independence:
+    category: Governance & Leadership
+    subcategory: Board Structure
+    severity: Warning
+    title: Less than two-thirds of the board is independent
+    min_ratio: 0.667

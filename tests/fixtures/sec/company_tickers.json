@@ -1,0 +1,57 @@
+{
+ "0": {
+  "cik_str": 19617,
+  "ticker": "JPM",
+  "title": "JPMORGAN CHASE & CO"
+ },
+ "1": {
+  "cik_str": 78003,
+  "ticker": "PFE",
+  "title": "PFIZER INC"
+ },
+ "2": {
+  "cik_str": 1048286,
+  "ticker": "MAR",
+  "title": "MARRIOTT INTERNATIONAL INC /MD/"
+ },
+ "3": {
+  "cik_str": 37996,
+  "ticker": "F",
+  "title": "FORD MOTOR CO"
+ },
+ "4": {
+  "cik_str": 2041610,
+  "ticker": "SKYD",
+  "title": "Skydance Corp"
+ },
+ "5": {
+  "cik_str": 92380,
+  "ticker": "LUV",
+  "title": "SOUTHWEST AIRLINES CO"
+ },
+ "6": {
+  "cik_str": 794367,
+  "ticker": "M",
+  "title": "Macy's, Inc."
+ },
+ "7": {
+  "cik_str": 18926,
+  "ticker": "LUMN",
+  "title": "Lumen Technologies, Inc."
+ },
+ "8": {
+  "cik_str": 1463101,
+  "ticker": "ENPH",
+  "title": "Enphase Energy, Inc."
+ },
+ "9": {
+  "cik_str": 1826011,
+  "ticker": "PARA",
+  "title": "Banzai International, Inc."
+ },
+ "10": {
+  "cik_str": 2041610,
+  "ticker": "PSKY",
+  "title": "Skydance Corp"
+ }
+}

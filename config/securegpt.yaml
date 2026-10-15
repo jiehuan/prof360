@@ -1,0 +1,36 @@
+# SecureGPT gateway (Azure OpenAI behind the AXA XL API gateway), Phase 11, decisions D-039.
+# Non-secret settings only. Credentials come from the environment:
+#   SECUREGPT_CLIENT_ID, SECUREGPT_CLIENT_SECRET, SECUREGPT_SUBSCRIPTION_KEY, SECUREGPT_ENV.
+# Taken from the team's working client (professional-databricks utils/secure_gpt.py and
+# config/main_config.cfg).
+
+default_env: dv
+environments:
+  dv:
+    token_url: https://gateway-dev.api.axaxl.com/axaonelogin/v1/as/token.oauth2
+    base_url: https://gateway-dev.api.axaxl.com/securegptmodelhub/v1/providers/openai/deployments
+  pp:
+    token_url: https://gateway-preprod.api.axaxl.com/axaonelogin/v1/as/token.oauth2
+    base_url: https://gateway-preprod.api.axaxl.com/securegptmodelhub/v1/providers/openai/deployments
+  pr:
+    # TO CONFIRM: production URLs follow the dv/pp pattern on gateway.api.axaxl.com.
+    token_url: https://gateway.api.axaxl.com/axaonelogin/v1/as/token.oauth2
+    base_url: https://gateway.api.axaxl.com/securegptmodelhub/v1/providers/openai/deployments
+
+scope: "urn:grp:chatgpt"
+api_version: "2024-10-21"
+# gpt-5 models take `reasoning_effort`; older api-versions may reject it. Off until the smoke
+# test (scripts/securegpt_smoke.py) shows the gateway accepts it.
+send_reasoning_effort: false
+# Model name used in config/llm.yaml and insights.yaml -> gateway deployment id.
+deployments:
+  gpt-5-nano-2025-08-07: gpt-5-nano-2025-08-07
+  gpt-5-mini-2025-08-07: gpt-5-mini-2025-08-07
+
+timeout_sec: 300
+max_attempts: 8
+retry_statuses: [408, 429, 500, 502, 503, 504]
+# Waits between attempts (seconds): Retry-After when the gateway sends it, otherwise
+# exponential from `backoff_initial` up to `backoff_max`.
+backoff_initial: 5
+backoff_max: 300

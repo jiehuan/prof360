@@ -1,0 +1,99 @@
+# SIC code -> industry group -> metric list. All companies with the same SIC share the same
+# metrics. The lists are curated here (see metrics.yaml header), not generated at run time.
+# Lookup order: exact `sic`, then `sic_ranges` (first match), then `default_group`.
+# `is_financial` controls whether FI-only modules (NIM, CET1, NPL, loan portfolio) get data.
+# `metric_sets` refer to metrics.yaml; `metrics` adds individual metric codes.
+
+default_group: UNCLASSIFIED
+
+# Traits (decisions D-043): business-model properties that decide metric sets. A group's sets
+# are its `metric_sets`, plus `common_metric_sets`, plus the sets of each of its `traits`.
+common_metric_sets: [GOVERNANCE]
+trait_metric_sets:
+  bank: [BANK_CORE, BANK_REGULATORY]
+  lodging: [HOTEL_OPERATING]
+  contract_revenue: [CONTRACT_REVENUE]   # remaining performance obligations (RPO)
+  manufacturing: [MANUFACTURING_OPERATING]
+  captive_finance: []                    # debt includes a finance arm (Ford Credit): see coverage
+
+groups:
+  UNCLASSIFIED:
+    label: Unclassified
+    is_financial: false
+    metric_sets: []
+  HOTELS:
+    label: Hotels & Lodging
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+    traits: [lodging]
+  AIRLINES:
+    label: Airlines
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+  AUTOMOTIVE:
+    label: Automotive Manufacturing
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+    traits: [manufacturing, captive_finance]
+  PHARMA:
+    label: Pharmaceuticals
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+  BANKS:
+    label: Banks
+    is_financial: true
+    metric_sets: []
+    traits: [bank]
+    mdna_history_years: 5   # Performance Trends: 5 years of NIM / CET1 / NPL (Phase 8)
+  # Groups with no metric set get one when their first company is onboarded.
+  CREDIT:
+    label: Non-depository Credit
+    is_financial: true
+    metric_sets: []
+  BROKER_DEALERS:
+    label: Securities & Brokerage
+    is_financial: true
+    metric_sets: []
+  # Bank-style FI modules (CET1, NIM, loan book) don't fit insurers. See decisions D-008.
+  INSURANCE:
+    label: Insurance
+    is_financial: false
+    metric_sets: []
+  RETAIL:
+    label: Retail
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+  TELECOM:
+    label: Telecommunications
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+    traits: [contract_revenue]
+  MEDIA:
+    label: Media & Broadcasting
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+  SEMICONDUCTORS:
+    label: Semiconductors & Related Devices
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE]
+    traits: [contract_revenue]
+
+# Exact SIC codes (MVP companies).
+sic:
+  7011: HOTELS          # MAR
+  4512: AIRLINES        # LUV
+  3711: AUTOMOTIVE      # F
+  2834: PHARMA          # PFE
+  6021: BANKS           # JPM
+  5311: RETAIL          # M
+  4813: TELECOM         # LUMN
+  4833: MEDIA           # SKYD
+  3674: SEMICONDUCTORS  # ENPH
+  6712: BANKS           # bank holding companies (6700 block, otherwise not FI)
+
+# Fallbacks for SIC codes not listed above.
+sic_ranges:
+  - {from: 6000, to: 6099, group: BANKS}
+  - {from: 6100, to: 6199, group: CREDIT}
+  - {from: 6200, to: 6299, group: BROKER_DEALERS}
+  - {from: 6300, to: 6411, group: INSURANCE}

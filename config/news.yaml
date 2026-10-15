@@ -1,0 +1,47 @@
+# News ingestion and de-duplication (Alpha Vantage NEWS_SENTIMENT). See decisions D-029.
+
+# First run fetches this many days back; later runs continue from the newest stored item.
+lookback_days: 30
+# Days of overlap re-fetched on each incremental run (late-indexed articles).
+overlap_days: 1
+# An article counts for a company only if AV's ticker relevance is at least this. Articles that
+# mention many companies in passing score low.
+min_relevance: 0.3
+# AV relevance alone lets through articles that only mention the company as an analyst or an
+# investor (e.g. "Downgraded at JPMorgan", "Shares bought by Bank of America"). An article must
+# also name the company (companies.yaml `news_aliases`) in its headline or summary, and its
+# headline must not match an exclusion below ({alias} = any of the company's aliases).
+mention:
+  require_mention: true
+  exclude_patterns:
+    # analyst actions by the company ("Downgraded at JPM", "PT lowered by JPMorgan")
+    - '\b(?:upgraded|downgraded|raised|lowered|cut|initiated|reiterated|maintained|started|resumed|boosted|trimmed|target\w*|rating\w*|coverage)\b.{0,60}\b(?:at|by)\s+{alias}\b'
+    - '\b{alias}(?:\s*&\s*Co\.?|\s+Chase(?:\s*&\s*Co\.?)?|\s+Securities)?\s+(?:initiates?|upgrades?|downgrades?|raises?|lowers?|cuts?|reiterates?|maintains?|resumes?|starts?|begins?|assumes?|boosts?|trims?|reaffirms?)\b.{0,60}\b(?:rating|target|coverage|overweight|underweight|neutral|buy|sell|hold|outperform)'
+    # fund holdings filings ("Shares bought by ...", "Holding(s) in Company")
+    - 'holding\(s\) in company'
+    - '\b{alias}\b.{0,40}\b(?:buys|sells|acquires|purchases|makes new investment|increases|decreases|reduces|trims|lifts|grows|cuts)\b.{0,60}\b(?:shares|stake|position|holdings)\b'
+    - '\bshares\b.{0,80}\b(?:bought|sold|purchased|acquired)\s+by\s+{alias}'
+    - '\b{alias}\b.{0,40}\bmakes? (?:a )?new investment in\b'
+
+# After the rules, the LLM (extractor model) judges each stored article once: SUBJECT, PASSING,
+# ANALYST, HOLDING or MARKET. Only `keep` verdicts stay (prompt: news_relevance_v1).
+relevance_llm:
+  enabled: true
+  batch_size: 100
+  prompt_version: news_relevance_v1
+  keep: [SUBJECT, UNCLASSIFIED]
+
+dedup:
+  # Two articles can only be duplicates if published within this many hours of each other.
+  window_hours: 72
+  # Tier 2, near-identical text (syndication): Jaccard similarity of word 3-gram shingles.
+  title_similarity: 0.8
+  summary_similarity: 0.8
+  # When summaries match, titles must still be at least this similar.
+  title_similarity_with_summary: 0.5
+  # Tracking query parameters removed when normalising URLs (tier 1).
+  strip_params_prefixes: ["utm_", "guccounter", "guce_", "ncid", "cmpid", "ref", "src", "fbclid", "gclid", "mc_"]
+  # Tier 3: group different articles about the same event with the LLM (headlines only).
+  llm_event_grouping: true
+  llm_batch_size: 120
+  llm_prompt_version: news_events_v1

@@ -1,0 +1,12 @@
+# Raw landing zone (stand-in for ADLS) and the dev SQLite database.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: uw-pipeline-data
+  namespace: PLACEHOLDER_NAMESPACE
+  labels: {app: uw-pipeline}
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 20Gi
