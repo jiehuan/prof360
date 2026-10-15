@@ -1,0 +1,28 @@
+# Runware gateway (OpenAI-compatible chat completions), decisions D-047. Non-secret settings
+# only; the key comes from RUNWARE_API_KEY. Models are Runware model ids (provider:model@version),
+# e.g. deepseek:v4@flash, anthropic:claude@haiku-5.5:
+# https://runware.ai/docs/tools/compatible-apis
+base_url: https://api.runware.ai/v1
+
+# How structured output is requested:
+#   json_schema = strict JSON schema (preferred; the model must follow the schema)
+#   json_object = JSON mode, the schema is written into the system prompt
+# Our schema validation rejects any output that does not fit, in both modes. Per model, from
+# the smoke test (scripts/runware_smoke.py); models not listed use `default_output`.
+default_output: json_schema
+output: {}
+# Send `reasoning_effort` (our effort level mapped to low/medium/high) for these models only.
+# All three accepted it in the smoke test of 2026-10-15. JSON mode is rejected for the Claude
+# models ("response_format.type: Input should be 'json_schema'"), so all stay on json_schema.
+reasoning_effort_models: ["deepseek:v4@flash", "anthropic:claude@haiku-5.5",
+                          "anthropic:claude@sonnet-5.5", "openai:gpt@6-luna"]
+
+# Models (by id prefix) that take `max_completion_tokens` instead of `max_tokens` (OpenAI
+# reasoning models reject `max_tokens`).
+max_completion_tokens_prefixes: ["openai:"]
+
+timeout_sec: 300
+max_attempts: 6
+retry_statuses: [408, 429, 500, 502, 503, 504]
+backoff_initial: 5
+backoff_max: 120

@@ -13,7 +13,6 @@ Unlike that client, TLS certificates are verified and errors are raised, not pri
 
 from __future__ import annotations
 
-import json
 import logging
 import time
 from collections.abc import Callable
@@ -25,11 +24,10 @@ import yaml
 from pydantic import BaseModel
 
 from uw_pipeline.clients.llm import LLMError, LLMResult, LLMSetupError
+from uw_pipeline.clients.openai_chat import EFFORT, chat_result, error_text
 
 log = logging.getLogger(__name__)
 
-# Our effort levels (shared with the Claude config) -> OpenAI reasoning_effort.
-EFFORT = {"low": "low", "medium": "medium", "high": "high", "xhigh": "high", "max": "high"}
 TOKEN_MARGIN_SEC = 120  # refresh this long before the token expires
 
 
@@ -171,9 +169,9 @@ class SecureGPTClient:
             self._get_token(force=True)
             r = self._post(url, body, params)
         if r.status_code in (401, 403, 404):
-            raise LLMSetupError(f"SecureGPT {deployment}: {r.status_code} {_error_text(r)}")
+            raise LLMSetupError(f"SecureGPT {deployment}: {r.status_code} {error_text(r)}")
         if r.status_code == 400:
-            text = _error_text(r)
+            text = error_text(r)
             if "content_filter" in text or "content management policy" in text.lower():
                 raise LLMError(f"{deployment}: input blocked by the content filter")
             if any(
@@ -188,8 +186,8 @@ class SecureGPTClient:
                 raise LLMError(f"{deployment}: request too large: {text}")  # this item only
             raise LLMSetupError(f"SecureGPT {deployment}: 400 {text}")
         if r.status_code >= 400:
-            raise LLMError(f"SecureGPT {deployment}: {r.status_code} {_error_text(r)}")
-        return _result(r.json(), deployment)
+            raise LLMError(f"SecureGPT {deployment}: {r.status_code} {error_text(r)}")
+        return chat_result(r.json(), deployment)
 
     def _post(
         self, url: str, body: dict[str, Any], params: dict[str, str] | None
@@ -201,40 +199,3 @@ class SecureGPTClient:
         }
         return self._send("POST", url, json=body, params=params, headers=headers,
                           what="chat completion")  # fmt: skip
-
-
-def _error_text(r: httpx.Response) -> str:
-    try:
-        err = r.json().get("error") or {}
-        return f"{err.get('code', '')} {err.get('message', '')}".strip()[:300]
-    except (ValueError, AttributeError):
-        return r.text[:300]
-
-
-def _result(body: dict[str, Any], deployment: str) -> LLMResult:
-    choices = body.get("choices") or []
-    if not choices:
-        raise LLMError(f"{deployment} returned no choices")
-    choice = choices[0]
-    message = choice.get("message") or {}
-    finish = choice.get("finish_reason")
-    if message.get("refusal"):
-        raise LLMError(f"{deployment} declined: {str(message['refusal'])[:200]}")
-    if finish == "length":
-        raise LLMError(f"{deployment} hit max_completion_tokens")
-    if finish == "content_filter":
-        raise LLMError(f"{deployment}: output blocked by the content filter")
-    content = message.get("content")
-    if not content:
-        raise LLMError(f"{deployment} returned no content")
-    try:
-        output = json.loads(content)
-    except json.JSONDecodeError as exc:
-        raise LLMError(f"{deployment} returned invalid JSON: {exc}") from exc
-    usage = body.get("usage") or {}
-    return LLMResult(
-        output=output,
-        model=str(body.get("model") or deployment),
-        input_tokens=int(usage.get("prompt_tokens") or 0),
-        output_tokens=int(usage.get("completion_tokens") or 0),
-    )

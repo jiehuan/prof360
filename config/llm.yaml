@@ -7,6 +7,8 @@
 # development off the corporate network, SecureGPT on it):
 #   securegpt = Azure OpenAI through the AXA XL gateway (config/securegpt.yaml, SECUREGPT_* vars)
 #   anthropic = Claude API (ANTHROPIC_API_KEY)
+#   runware   = Runware gateway, OpenAI-compatible (config/runware.yaml, RUNWARE_API_KEY, D-047):
+#               DeepSeek reads first, Claude Haiku is the independent second model
 # The model is part of every cache key: each profile keeps its own cached results, and switching
 # re-uses them; a new model runs all LLM tasks again once.
 # `synthesis` is the model of the company-level tasks (config/insights.yaml).
@@ -25,12 +27,39 @@ providers:
   anthropic:
     extractor: {model: claude-haiku-5-5, effort: low, max_tokens: 8000}
     tiebreaker: {model: claude-sonnet-5-5, effort: high, max_tokens: 16000}
-    synthesis: {model: claude-sonnet-5-5, effort: high, max_tokens: 16000}
+    # Largest synthesis output so far 11,433 tokens (2026-10-15); headroom for more news.
+    synthesis: {model: claude-sonnet-5-5, effort: high, max_tokens: 32000}
     pricing_currency: USD
     pricing:
       claude-haiku-5-5: [0.1, 0.5]    # prompts <= 100K tokens; longer prompts 0.5 / 2.5
       claude-sonnet-5-5: [2.0, 10.0]
       claude-opus-5-5: [4.0, 20.0]
+  runware:
+    # Runware model ids. Extractor and tie-breaker are different models, so dual checks and
+    # signal votes stay two independent reads.
+    # max_tokens includes DeepSeek's reasoning tokens; 8000 cut off long text-metric answers
+    # (2026-10-15). The model allows far more; only tokens produced are billed.
+    extractor: {model: "deepseek:v4@flash", effort: low, max_tokens: 32000}
+    tiebreaker: {model: "anthropic:claude@haiku-5.5", effort: high, max_tokens: 16000}
+    synthesis: {model: "anthropic:claude@sonnet-5.5", effort: high, max_tokens: 32000}
+    pricing_currency: USD
+    # TO VERIFY against the cost Runware reports on the first calls (scripts/runware_smoke.py).
+    # DeepSeek: third-party listing of Runware's price; Claude: Anthropic list prices.
+    pricing:
+      "deepseek:v4@flash": [0.08, 0.15]
+      "anthropic:claude@haiku-5.5": [0.1, 0.5]
+      "anthropic:claude@sonnet-5.5": [2.0, 10.0]
+  runware_luna:
+    # Experiment (2026-10-15): one model in every role, no second opinion. The tie-breaker is
+    # the extractor's exact spec (model + effort), so a dual check's second read comes from the
+    # cache and agrees with the first; only signal disagreements are judged again (same model).
+    extractor: {model: "openai:gpt@6-luna", effort: medium, max_tokens: 32000}
+    tiebreaker: {model: "openai:gpt@6-luna", effort: medium, max_tokens: 32000}
+    synthesis: {model: "openai:gpt@6-luna", effort: high, max_tokens: 32000}
+    pricing_currency: USD
+    # TO VERIFY: third-party listings (eesel.ai, anotherwrapper.com, 2026-10-11), not Runware.
+    pricing:
+      "openai:gpt@6-luna": [0.10, 0.50]
 
 prompt_version: signals_v1
 # The tie-breaker sees both claims and their evidence and rules on the text (D-028).

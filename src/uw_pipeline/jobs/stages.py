@@ -13,6 +13,7 @@ from uw_pipeline.clients.alphavantage import AlphaVantageClient
 from uw_pipeline.clients.db import app_engine, ensure_schema
 from uw_pipeline.clients.llm import ClaudeClient, LLMClient
 from uw_pipeline.clients.ratelimit import TokenBucket
+from uw_pipeline.clients.runware import RunwareClient, load_runware_config
 from uw_pipeline.clients.sec import SecClient
 from uw_pipeline.clients.securegpt import SecureGPTClient, load_securegpt_config
 from uw_pipeline.clients.storage import make_storage
@@ -112,6 +113,10 @@ class StageRunner:
                         client_secret=s.securegpt_client_secret.get_secret_value(),
                         subscription_key=s.securegpt_subscription_key.get_secret_value(),
                     )  # fmt: skip
+            elif cfg.provider.startswith("runware"):
+                if s.runware_api_key is not None:
+                    key = s.runware_api_key.get_secret_value()
+                    client = RunwareClient(load_runware_config(s.config_dir), api_key=key)
             elif s.anthropic_api_key is not None:
                 client = ClaudeClient(
                     s.anthropic_api_key.get_secret_value(), workspace_id=s.anthropic_workspace_id

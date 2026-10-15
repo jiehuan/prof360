@@ -24,6 +24,7 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy
 .venv/bin/python scripts/refresh_sec_fixtures.py   # rebuild SEC fixtures from data/raw
 .venv/bin/python scripts/securegpt_smoke.py         # SecureGPT gateway check (work network)
+.venv/bin/python scripts/runware_smoke.py           # Runware gateway check (LLM_PROVIDER=runware)
 .venv/bin/python scripts/azure_smoke.py             # Azure SQL + ADLS check (work network)
 scripts/test_mssql.sh --all                          # whole test suite on a local SQL Server (Docker)
 .venv/bin/python scripts/export_app_ddl.py           # regenerate deploy/sql/*.sql after schema changes

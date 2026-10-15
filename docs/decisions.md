@@ -885,3 +885,42 @@ LLM runs until the end, then one comparison.
   roll-up rule in D-044. The SecureGPT run is still open (PLAN Phase 14).
 - Not done: tables in the pipeline schema only, no app tables changed; deploy/sql/
   pipeline_schema_full.sql gains board_composition and review_decision.
+
+## 2026-10-15
+
+**D-047 Runware as a third LLM provider.**
+- Asked for: DeepSeek V4 Flash through Runware. Kept: the securegpt and anthropic profiles,
+  unchanged. Added: profile `runware` (`LLM_PROVIDER=runware`, `RUNWARE_API_KEY`).
+- Roles: extractor `deepseek:v4@flash`; tie-breaker `anthropic:claude@haiku-5.5`; synthesis
+  `anthropic:claude@sonnet-5.5`. Options were DeepSeek in all three roles (cheapest, but dual
+  checks and signal votes would compare DeepSeek with itself) or comparison only; the
+  extractor-only choice keeps every dual check two independent models.
+- Client: `clients/runware.py`, Runware's OpenAI-compatible chat completions
+  (`https://api.runware.ai/v1/chat/completions`, Bearer key), retries and error classes as the
+  SecureGPT client; the OpenAI response handling is shared (`clients/openai_chat.py`).
+  Account errors (no credit, bad key, unknown model) stop LLM use for the run.
+- Smoke test 2026-10-15 (`scripts/runware_smoke.py`): strict JSON schema and
+  `reasoning_effort` work on all three models; JSON mode is rejected for the Claude models,
+  so every model uses the strict schema. Responses recorded in tests/fixtures/runware/.
+- Open: Runware returns no cost on these calls, and its docs list no DeepSeek price. The
+  prices in config/llm.yaml (DeepSeek $0.08 / $0.15 per million tokens from a third-party
+  listing; Claude at Anthropic list prices) are to be checked against the Runware invoice.
+- Switching a deployment to this profile asks every LLM task once again (the model is part of
+  the cache key), about the cost of one cold run.
+- Found in the first run (MAR, JPM, ENPH on a database copy, 2026-10-15): DeepSeek's reasoning
+  tokens count toward max_tokens, so 8000 cut off 15 answers (now 32000; Sonnet synthesis also
+  32000, largest output so far 11,433); and Runware sometimes leaks DeepSeek's reasoning into the
+  content before the answer (`…</think>{answer}`), so the parser keeps only the text after the
+  last `</think>`, which must still pass schema validation.
+- Result vs the Claude profile (same 3 companies): signal votes 55 of 55 same outcome; text
+  values identical where both have one (Runware 8 more, 1 fewer); JPM loan book stored by class,
+  same total; board facts found the JPM lead director Claude missed. Cost of this cold run
+  about $2.1 vs about $2.8 on the Claude profile: the saving comes from Haiku instead of Sonnet as
+  tie-breaker; DeepSeek and Haiku cost about the same as extractor, because DeepSeek's reasoning
+  output is 5-10 times Haiku's output.
+- Experiment `runware_luna` (openai:gpt@6-luna in every role, no second opinion: the
+  tie-breaker spec equals the extractor's, so dual checks read the cache). Same 3 companies:
+  about $0.17 (third-party price), signal votes 55 of 55 same, but the cell check withheld 12
+  wrong cells (MAR FY2025 RevPAR, occupancy, ADR missing) and 24% of key insights failed
+  grounding; insights took 44 minutes (long answers past the 300 s timeout, retried). OpenAI
+  models on Runware need `max_completion_tokens` (config `max_completion_tokens_prefixes`).

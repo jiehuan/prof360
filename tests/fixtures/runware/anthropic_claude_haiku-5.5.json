@@ -1,0 +1,19 @@
+{
+ "choices": [
+  {
+   "finish_reason": "stop",
+   "index": 0,
+   "message": {
+    "role": "assistant",
+    "content": "{\"articles\":[{\"id\":\"N1\",\"verdict\":\"SUBJECT\"},{\"id\":\"N2\",\"verdict\":\"PASSING\"}]}"
+   }
+  }
+ ],
+ "model": "anthropic:claude@haiku-5.5",
+ "object": "chat.completion",
+ "usage": {
+  "completion_tokens": 50,
+  "prompt_tokens": 527,
+  "total_tokens": 577
+ }
+}

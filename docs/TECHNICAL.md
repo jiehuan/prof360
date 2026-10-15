@@ -52,7 +52,7 @@ swap them for fakes.
 | `cli.py` | Typer CLI: `run`, `runs`, `dq-report`, `coverage-report`, `audit-insights`, `review` (list / approve / reject), `init-db` |
 | `settings.py` | Settings from environment / `.env` (pydantic-settings), §13 |
 | `config.py` | Loads companies and industry groups (traits merged into each group's metric sets) |
-| `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing), `alphavantage.py` (quota, key masking), `llm.py` (Claude), `securegpt.py` (Azure OpenAI gateway), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py` |
+| `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing), `alphavantage.py` (quota, key masking), `llm.py` (Claude), `securegpt.py` (Azure OpenAI gateway), `runware.py` (Runware gateway), `openai_chat.py` (shared OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py` |
 | `extract/` | Company metadata, filing lists from submissions |
 | `normalize/` | XBRL facts, fiscal periods (restatement basis), HTML to text, table grids (`table_grid.py`), section splitting, news normalisation |
 | `compute/` | Metric registry (from `config/metrics.yaml`), formulas, coverage |
@@ -198,6 +198,7 @@ versioned with the code.
 | `scores.yaml` | News and transcript risk scoring |
 | `llm.yaml` | Provider profiles (models, effort, token limits, prices), signal topics, `max_input_chars` |
 | `securegpt.yaml` | Gateway and token URLs per environment, API version, deployments |
+| `runware.yaml` | Runware base URL, output mode per model, `reasoning_effort` models, retries |
 | `azure.yaml` | Azure SQL server, database, schemas; ADLS account, container, root (placeholders) |
 | `app_publish.yaml` | Metric categories, RiskTypes regex rules, confidence rules, trend and loan metrics |
 | `source_labels.yaml` | Readable names for sections and concepts |
@@ -206,16 +207,18 @@ versioned with the code.
 
 ## 8. LLM layer
 
-**Providers** (`config/llm.yaml`, D-039). One profile per provider with three roles; `LLM_PROVIDER`
+**Providers** (`config/llm.yaml`, D-039, D-047). One profile per provider with three roles; `LLM_PROVIDER`
 selects it, default `securegpt`:
 
-| Role | Used for | securegpt | anthropic |
-|---|---|---|---|
-| extractor | Signal votes, text-metric first pass, news grouping and relevance, activity summaries, risk scores | gpt-5-nano | Claude Haiku 5.5 |
-| tiebreaker | Signal tie-breaks, second model of the dual check | gpt-5-mini | Claude Sonnet 5.5 |
-| synthesis | Behavioral, strategic & risk, key insights, follow-ups, metric relevance | gpt-5-mini | Claude Sonnet 5.5 |
+| Role | Used for | securegpt | anthropic | runware |
+|---|---|---|---|---|
+| extractor | Signal votes, text-metric first pass, news grouping and relevance, activity summaries, risk scores | gpt-5-nano | Claude Haiku 5.5 | DeepSeek V4 Flash |
+| tiebreaker | Signal tie-breaks, second model of the dual check | gpt-5-mini | Claude Sonnet 5.5 | Claude Haiku 5.5 |
+| synthesis | Behavioral, strategic & risk, key insights, follow-ups, metric relevance | gpt-5-mini | Claude Sonnet 5.5 | Claude Sonnet 5.5 |
 
-Both clients implement `complete_json` with structured outputs (strict JSON schema; every output
+`runware` reaches all three through Runware's OpenAI-compatible gateway (`clients/runware.py`,
+`config/runware.yaml`); the SecureGPT and Runware clients share the OpenAI response handling
+(`clients/openai_chat.py`). All three clients implement `complete_json` with structured outputs (strict JSON schema; every output
 schema is checked against strict-mode rules in a test). Errors are classified:
 `LLMError` fails one item (refusal, truncation, content filter, request too large);
 `LLMSetupError` (bad credentials, unknown model or deployment) stops LLM use for the run, and
@@ -368,8 +371,9 @@ because the service echoes the key.
 | `AZURE_ENV` | from `azure.yaml` | dv / pp / pr |
 | `AZURE_SQL_CLIENT_ID`, `AZURE_SQL_CLIENT_SECRET` | – | Azure SQL service principal |
 | `ADLS_CLIENT_ID`, `ADLS_CLIENT_SECRET` | – | ADLS service principal |
-| `LLM_PROVIDER` | `securegpt` | `anthropic` for development off the corporate network |
+| `LLM_PROVIDER` | `securegpt` | `anthropic` for development off the corporate network; `runware` for DeepSeek + Claude via Runware |
 | `SECUREGPT_CLIENT_ID`, `SECUREGPT_CLIENT_SECRET`, `SECUREGPT_SUBSCRIPTION_KEY`, `SECUREGPT_ENV` | – | SecureGPT gateway |
+| `RUNWARE_API_KEY` | – | Runware gateway (`LLM_PROVIDER=runware`) |
 | `ANTHROPIC_API_KEY` | – | Claude (development) |
 | `ALPHAVANTAGE_API_KEY` | – | Alpha Vantage |
 | `LLM_DAILY_BUDGET` | 25 | New LLM spend per day in the profile's currency; 0 = unlimited |

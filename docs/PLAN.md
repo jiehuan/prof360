@@ -582,6 +582,120 @@ uw-pipeline dq-report --run-id <id>
 
 ---
 
+### Phase 15 — D&O 风险核心层：市场数据、内部人交易、财报质量、诉讼（2026-10-15 计划，待确认）
+
+**目标**：补上证券集体诉讼最主要的驱动因素（股价大跌、业绩不及预期、内部人卖出、披露和会计问题、诉讼与监管调查），先在现有 9 家公司上做完并验证，再进入 Phase 16 扩大范围。应用库结构不变（方案 A）：新指标进 `MatrixData`，新事件经信号和洞察进 `StrategicRisk`。
+
+#### 15a 市场数据（Alpha Vantage）
+- 新端点：`OVERVIEW`（市值、股本、beta，每周一次）、`TIME_SERIES_DAILY`（日收盘价和成交量，每天一次）、`EARNINGS`（实际 EPS、预期 EPS、差额；有新财报时才取），外加一个市场基准（SPY）用来算相对跌幅。
+- 新管线表 `market_daily`（company_id, trade_date, close, volume, shares_outstanding, source）。
+- 新指标（季末取值，进 `metric_value`，derivation = MARKET）：`market_cap`、`volatility_90d`、`max_drawdown_52w`、`eps_surprise_pct`。
+- 新信号：单日跌幅 ≥ 10% 且相对 SPY ≥ 8%（`stock_drop`）；业绩不及预期后 3 个交易日内下跌（`earnings_miss_drop`）。阈值写在 `config/signal_rules.yaml`。
+- 配额：9 家约 30 次/天，超出免费版（25 次），需要付费 key；客户端已有限速和到配额干净停止的机制。
+
+#### 15b 内部人交易（SEC Form 4）
+- documents 阶段增加 Form 4（XML，结构化，不用 LLM）。新管线表 `insider_transaction`（accession, filer_cik, filer_name, role, trade_date, code, shares, price, shares_after, is_10b5_1, footnote）。
+- 指标：季度内部人净卖出金额、高管持股卖出比例（`insider_net_sales`、`officer_sell_pct`）。
+- 信号：30 天内 ≥ 3 名高管或董事公开市场卖出、且不在 10b5-1 计划内（`insider_cluster_selling`）；在股价大跌或业绩不及预期前 90 天内的集中卖出升级为 Warning。
+
+#### 15c 财报质量和偿债（XBRL）
+- 新概念：总资产（已有）、留存收益、应收账款、存货、商誉、商誉减值、股权激励费用、稀释后股本、债务到期（`LongTermDebtMaturitiesRepaymentsOfPrincipalInNextTwelveMonths`、`…InYearTwo` … `…AfterYearFive`）、或有损失计提（`LossContingencyAccrualAtCarryingValue`、`LossContingencyEstimateOfPossibleLoss`）。
+- 新指标：应收账款周转天数、存货周转天数、应计项目 / 总资产、商誉 / 权益、股权激励 / 收入、稀释后股本同比、一年内到期债务 / (现金 + 经营现金流)、Altman Z（非金融类，用 15a 的市值）。
+- DQ：Altman Z 低于 1.81 记 Warning；一年内到期债务超过现金 + 经营现金流记 Warning。
+
+#### 15d 规则信号补充
+- 8-K 1.05（网络安全事件，Warning）、1.02（终止重大协议，Info）。
+- 激进投资者：其他人以本公司为标的提交的 SC 13D / SCHEDULE 13D（先验证 EDGAR submissions 是否列出标的公司的这些文件；不列出时用全文检索接口，需另记决策）。
+
+#### 15e 诉讼和监管调查（LLM）
+- 来源：10-K Item 3、或有事项附注、10-Q Part II Item 1。新管线表 `legal_matter`（matter_key, type: securities_class_action / derivative / regulatory_investigation / enforcement / product_liability / antitrust / other, agency, status, first_disclosed, last_seen, accrual, quote, doc_id）。
+- 两个模型读同一段落；只有引文能在原文找到、类型一致的事项才保存。跨期合并同一事项：按案名或机构 + 主题匹配，匹配不上就记为新事项，交给人工复核（`uw-pipeline review` 增加事项类型）。
+- 信号：新出现的 SEC / DOJ 调查、Wells notice、证券集体诉讼（Critical / Warning），进入洞察输入。
+- 新 prompt：`legal_matters_v1.md`；留出测试用 PFE、JPM 和一家未参与开发的公司。
+
+#### 15f 审计和治理补充
+- 审计师：10-K 封面 XBRL `dei:AuditorName`、`dei:AuditorFirmId`；审计报告里的 "served as the Company's auditor since"（规则提取）。
+- 委托书：审计费与非审计费、双重股权、CEO 任期（`board_v2` prompt，沿用双模型一致才保存）。
+- 新管线表 `audit_facts`，或在 `board_composition` 加列（实现时二选一，记入 decisions）。
+
+#### 15g 发布、文档、测试
+- `config/app_publish.yaml`：新指标类别 "Market & Trading"、"Reporting Quality"；新 RiskTypes（Litigation、Regulatory、Market、Insider Trading、Cybersecurity）。
+- `scripts/export_app_ddl.py` 重新生成 `deploy/sql/pipeline_schema_full.sql`（新表 3–4 张）；更新 `docs/zongren.md`、`schema-contract.md`、`TECHNICAL.md`、`OPERATIONS.md`。
+- 测试：AV 新端点和 Form 4 的录制 fixture；指标 golden 值取自文件本身；信号误报写进 `tests/test_signals.py`；SQL Server 全套测试。
+
+#### 15h 读表指标改为双模型
+- 显示的读表指标（MAR 的 RevPAR、入住率、ADR）在 `config/metrics.yaml` 设 `dual_check: true`：两个模型分别给出单元格，各自通过单元格核对后，数值一致（误差 ≤ 0.5%）才保存。只作洞察输入的读表指标（AUM、VaR、国际收入、平均生息资产、产能利用率）维持单模型；Phase 16 新增的显示指标一律双模型。
+- 代价：每份含这些表的文件多一次模型调用。验收：MAR 现有 5 期 RevPAR 三项不变；`dual_dropped` 计入 run 统计，不一致的期间在日志里列出。
+
+#### 15i 并行调用 LLM，按 TPM / RPM 限速（SecureGPT 为主，其他提供方同样适用）
+- 现状（run 37，9 家冷启动 37.5 分钟）：LLM 阶段占 95% 以上（insights 53%、textmetrics 25%、metricdetail 9%、signals 6%、governance 5%），SEC、计算、发布合计约 2.5 分钟。所有调用逐个串行，瓶颈是每次调用的等待时间，不是配额：整次运行约 320 万 token，平均每分钟约 8.6 万，远低于一般的 TPM 配额。
+- 限速器：每个模型部署一个令牌桶，TPM 和 RPM 都限（`config/securegpt.yaml` 的 `rate_limits`，数值向网关团队确认）。每次请求按"输入 token 估算 + max_tokens"预扣，因为 Azure OpenAI 按这个估算计入 TPM；收到 429 时按 Retry-After 让整个桶退避；读取响应头 `x-ratelimit-remaining-*` 调整。
+- 并发：同一阶段多家公司并行（线程池，`max_workers` 按阶段配置）；公司内部互不依赖的调用并行（textmetrics 各文件、双模型的两次读取、insights 的 behavioral 和 strategic）。
+- 前提（取自 Phase 10.E）：LLM 调用移出数据库事务（先读输入、事务外调用、再一次写入）；`llm_call` 缓存插入冲突时读已有结果。开发环境 SQLite 只能单写，`max_workers` 固定为 1。
+- `max_tokens` 按任务设置，不再整组统一 32K：Azure 按 max_tokens 预扣 TPM，设得过大会白白占掉并发额度。
+- 验收：9 家冷启动从 37.5 分钟降到 10 分钟以内；无 429 导致的失败；结果与串行运行一致（同输入同缓存）。
+
+**要改的文件**：`clients/alphavantage.py`、`clients/sec.py`、新 `jobs/run_market.py`、`jobs/run_documents.py`（Form 4、13D）、新 `normalize/form4.py`、新 `enrich/legal.py` 与 prompt、`jobs/run_governance.py`、`signals/detect.py`、`signals/rules.py`、`schema.py`、`jobs/orchestrator.py`、`jobs/stages.py`、`cli.py`、`config/{concept_map,metrics,signal_rules,jobs,app_publish,dq_rules}.yaml`、测试和文档。新阶段 `market`（依赖 company）。
+
+**验收标准**
+- Ford 2024-07-25 的单日大跌（约 −18%）被识别为 `stock_drop` 和 `earnings_miss_drop`；9 家公司过去两年的跌幅信号逐条在价格数据中可复核。
+- Form 4 交易条数与 EDGAR 列表一致；10b5-1 标记正确。
+- 新 XBRL 指标的 golden 值（每类至少 2 家）取自文件，误差为 0。
+- 诉讼事项：抽查 20 条，引文 100% 能在原文找到，类型正确率 ≥ 90%；人工复核队列可用。
+- 规则阶段不调用 LLM；LLM 新增成本记录在 run 统计里。DQ 无 Error；pytest 和 SQL Server 全部通过。
+
+### Phase 16 — 扩大到 S&P 100（2026-10-15 计划，待确认；依赖 Phase 15）
+
+**目标**：100 家公司全部有通用核心层（XBRL 核心 + Phase 15 的市场、财报质量、信号），每个行业有一套行业模块；不做逐家定制。
+
+#### 16a 公司范围
+- `config/companies.yaml`：按某一日期的 S&P 100 名单逐家钉住 CIK（同一 CIK 的多个股票类别只算一家，例如 GOOGL / GOOG），`av_symbols` 处理特殊代码（例如 BRK.B）。名单每季度人工核对一次。
+- 新增 `industry_group` 公司级覆盖：SIC 太粗（例如 AMZN 的 5961、GOOGL 的 7370），只在 SIC 分错组时使用，写明原因。
+
+#### 16b 行业组和指标集
+- 金融类拆开：`FINANCIAL_CORE`（ROA、ROE、杠杆、监管资本）替代通用的流动比率 / EBITDA；BANKS、BROKER_DEALERS（含资管）、PAYMENTS、INSURANCE 各自补专属指标集。
+- 新行业组：SOFTWARE_INTERNET、HARDWARE、MEDTECH、MANAGED_CARE、CONSUMER_STAPLES、ENERGY、UTILITIES、AEROSPACE_DEFENSE、INDUSTRIALS、TRANSPORT、REIT；已有组复核 SIC 范围。
+- 每组指标以 XBRL 为主；LLM 读取的文本 / 表格指标每组最多 3–5 个，每个指标至少 2 家留出公司测试。初步清单：
+  - 软件：RPO、递延收入增长、研发 / 收入；硬件 / 半导体：毛利率、存货周转天数、客户集中度（文本）
+  - 制药：研发 / 收入、前三大产品收入占比（分维度 XBRL）；器械：毛利率；管理式医疗：医疗赔付率、会员数（文本）
+  - 银行：无保险存款占比（文本）、存款变化、AFS/HTM 未实现亏损、商业地产集中度；资管 / 券商：AUM、净流入、VaR（读表）
+  - 支付：交易量（文本）；保险：综合成本率（文本）、准备金变动、投资收益
+  - 零售 / 消费：可比销售额（文本）、毛利率、存货周转；能源：产量、储量；公用事业：受监管资产基础、灾害计提（文本）
+  - 工业 / 航空防务：订单积压（RPO）、保修准备金、养老金缺口；运输：营业比率；电信 / 媒体：ARPU、用户净增（文本）；汽车：交付量、保修 / 召回；REIT：FFO、出租率（新闻稿）
+
+#### 16c 覆盖率规则
+- `coverage_notes.yaml` 支持行业组级说明（例如 "BANKS: current_ratio 不适用"），公司级说明只用于真正的例外。约定改为：每个缺口要么有行业组或公司说明，要么在 DQ 报 Warning。
+
+#### 16d 运行和成本
+- 首次全量：9 家冷启动约 38 分钟（run 37）。串行时 100 家约 7 小时；有 15i 的并行后，按 TPM 配额计算，目标 1–2 小时。
+- 每天几百家（按 500 家估算）时的瓶颈：
+  - insights：只要新闻或其他输入变化就重新生成，大多数公司每天都会触发（`news_materiality` 闸门会减少一部分，需要实测）。每家串行约 133 秒，500 家约 18.5 小时；每家约 15 万输入 + 2.5 万输出 token，合计每天约 7,500 万 + 1,200 万 token。要在 3 小时内完成，需要约 7 个并发的综合模型调用，持续约 50 万 TPM（另加 max_tokens 预扣）。
+  - textmetrics / governance / signals：只处理有新文件的公司，财报季每天约 100–150 家，每家平均 63 秒（JPM 最长 335 秒），串行约 2.6 小时。
+  - SEC：每家每天 2 次请求加新文件，几千次请求，8 次/秒不到 10 分钟，不是瓶颈。AV 新闻：付费版 75 次/分钟，500 家每轮约 7 分钟。
+  - 数据库：必须用 Azure SQL（SQLite 单写）；发布每家约 1 秒。
+- 结论：第一瓶颈是 LLM 调用串行，并行后变成 SecureGPT 的 TPM / RPM 配额。需要网关团队给出 gpt-5-nano、gpt-5-mini 在 dv / pp / pr 的 TPM 和 RPM（以及 APIM 订阅本身的限额）。
+- Alpha Vantage：每天约 300 次调用，需要付费版。LLM：首次约 $70–100；`LLM_DAILY_BUDGET` 平时 $40，财报季临时调高。
+- 应用库：`MatrixData` 约 20 万行以上，确认 `(CompanyId, metric_id)` 有索引；`SIC_Preferences` 增加新 SIC 的行。
+
+#### 16e 上线前质量关口
+- 每个行业组 2 家公司的 golden 值（取自文件）；`audit-insights` 抽 20 家；DQ 无 Error；`coverage-report` 无未说明缺口；`stability_check.py` 抽 5 家。
+
+**要改的文件**：`config/companies.yaml`、`config/industry_groups.yaml`、`config/metrics.yaml`、`config/concept_map.yaml`、`config/coverage_notes.yaml`、`config/app_publish.yaml`、`config.py`（公司级行业组覆盖）、`compute/coverage.py`（组级说明）、新的读表 prompt 与留出 fixture、文档。表结构除 Phase 15 外不改。
+
+**验收标准**：100 家公司全部跑通；通用核心层每家都有值或有说明；每个行业组的 golden 值核对通过；首次回补费用和时长记录在 run 统计；夜间增量在时间窗口内完成。
+
+#### Phase 15 / 16 待确认
+1. 内部人交易来源：SEC Form 4（建议：权威、免费、按 CIK）还是 AV `INSIDER_TRANSACTIONS`。
+2. 股价大跌阈值：单日 ≥ 10% 且相对 SPY ≥ 8%（建议），或只用绝对跌幅。
+3. 应用库：方案 A（不改结构，建议）还是方案 B（股价图、诉讼清单、内部人明细、治理面板的新表，需 BFF 和前端配合）。
+4. Alpha Vantage 付费版是否可用（Phase 15 起就需要）。
+5. 诉讼和监管调查（15e）放在 Phase 15，还是推迟到 Phase 16 之后。
+6. 覆盖率说明改为行业组级。
+7. S&P 100 名单的基准日期，以及之后谁负责季度核对。
+8. SecureGPT 各部署的 TPM / RPM 配额（dv / pp / pr），以及 APIM 订阅是否另有限额。
+
+---
+
 ### Phase 10 — 扩展到约 4,000 家公司：分层与并行处理（2026-10-13 计划，未开始）
 
 **已定**：分层处理，约 800 家全量（Tier 1），约 3,200 家轻量（Tier 2，洞察按需生成）。本阶段先只做设计，不抓取、不抽取；实现前用模拟客户端做压测。

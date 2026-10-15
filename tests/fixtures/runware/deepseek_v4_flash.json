@@ -1,0 +1,34 @@
+{
+ "object": "chat.completion",
+ "model": "deepseek:v4@flash",
+ "choices": [
+  {
+   "index": 0,
+   "message": {
+    "role": "assistant",
+    "content": "{\"articles\":[{\"id\":\"N1\",\"verdict\":\"SUBJECT\"},{\"id\":\"N2\",\"verdict\":\"PASSING\"}]}",
+    "reasoning_content": "We need to output JSON with articles verdicts. Need to determine if Marriott International is main subject or passing. N1: \"Marriott raises full-year RevPAR outlook\" clearly subject is Marriott. N2: \"Hotel stocks to watch this week\" mentions lodging names, so Marriott is passing. So N1 SUBJECT, N2 PASSING.",
+    "refusal": null
+   },
+   "finish_reason": "stop"
+  }
+ ],
+ "usage": {
+  "prompt_tokens": 338,
+  "completion_tokens": 106,
+  "total_tokens": 444,
+  "prompt_tokens_details": {
+   "cached_tokens": 256
+  },
+  "completion_tokens_details": {
+   "reasoning_tokens": 74
+  },
+  "cache_read_input_tokens": 256,
+  "cache_creation_input_tokens": 0,
+  "cache_creation": {
+   "ephemeral_5m_input_tokens": 0,
+   "ephemeral_1h_input_tokens": 0,
+   "ephemeral_24h_input_tokens": 0
+  }
+ }
+}
