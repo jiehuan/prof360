@@ -2,7 +2,7 @@
 
 ## 0. Canonical Test Entrypoints
 
-仓库根目录是默认工作目录。命令源为 `CLAUDE.md` Commands、`pyproject.toml`、
+仓库根目录是默认工作目录。开发规则见 [AGENTS.md](AGENTS.md#project-specific-conventions)；命令依据 `pyproject.toml`、
 `deploy/harness/pipeline.yaml` 和现有脚本；本文汇集其验证范围，不另建 runner。
 Python 包声明 >=3.11；既有开发约定、Dockerfile 与 Harness skeleton 使用 3.14。
 “兼容性声明 >=3.11”不等于每个解释器都有本轮测试结果，也没有已配置的多版本 CI 矩阵。
@@ -28,13 +28,26 @@ Python 包声明 >=3.11；既有开发约定、Dockerfile 与 Harness skeleton �
   只检查 SQL Server 专项时脚本不带 `--all`。这需要 Docker、ODBC 镜像、网络下载和可清理的测试服务。
 - prompt/grounding 修改：沿用 OPERATIONS §6 的版本、重跑、golden 导出及人工 diff 审阅；
   实际模型运行有成本，不能用 FakeLLM 的 PASS 代替。
-- 新的真实部署/网关：使用原 `scripts/*_smoke.py` 和 OPERATIONS 的对应步骤；必须记录环境、
-  凭据权限及副作用，不能用历史 smoke 记录作为当次结果。
+- SEC fixture 更新：`.venv/bin/python scripts/refresh_sec_fixtures.py` 从已有的 `data/raw/sec/`
+  原始响应重建测试样本，写入 `tests/fixtures/`；先审阅数据来源与生成差异。
+- 故障路径检查：`.venv/bin/python scripts/stability_check.py --faults MAR`；真实模型稳定性使用
+  `.venv/bin/python scripts/stability_check.py --runs 3 MAR JPM`（有费用），范围见 OPERATIONS §10b。
+- 真实部署/网关检查按 OPERATIONS §9–10 执行下表命令；记录环境、凭据权限及副作用，
+  不能用历史 smoke 记录作为当次结果。
 - 生产分支发布：沿用 main 分支的发布流程，执行补丁转换、受限词扫描与四项检查。
   main 中的具体入口是 `scripts/release_prod.py`，转换补丁是 `scripts/prod.patch`。
   该发布流程会创建 worktree、commit，带 `--push` 会写远端，**不是文档检查或只读测试命令**。
   文档变更也可能影响 prod 转换，见 architecture 的 Change propagation；需用实际补丁生成内容，
   核对生产入口引用、受限词扫描及原发布脚本的本地检查。
+
+| 检查入口 | 环境与副作用 |
+|---|---|
+| `.venv/bin/python scripts/securegpt_smoke.py` | 公司网络内检查网关与模型，产生真实请求。 |
+| `.venv/bin/python scripts/runware_smoke.py` | 该网关的凭据与余额；真实模型请求，不写业务数据库。 |
+| `.venv/bin/python scripts/azure_smoke.py` | 公司网络内检查 SQL / ADLS 权限与读写，不改业务表。 |
+
+DDL 重新导出见 OPERATIONS §10 的 `scripts/export_app_ddl.py`；模型比较见 §8。
+这些入口依各自脚本写文件或访问服务，不属于默认离线 suite。
 
 ## 1. Testing Philosophy
 

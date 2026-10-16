@@ -1,6 +1,6 @@
 # 运维手册
 
-读者：维护这条管线的工程师。设计和背后的理由见 `docs/decisions.md`（D-xxx），开发约定见 `CLAUDE.md`。
+读者：维护这条管线的工程师。设计和背后的理由见 `docs/decisions.md`（D-xxx），开发约定见 [AGENTS.md](../AGENTS.md#project-specific-conventions)。
 
 ## 1. 日常运行
 

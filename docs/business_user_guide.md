@@ -16,7 +16,7 @@
 | `review`、`review approve/reject` | 有署名的人工复核；OPERATIONS §10b，命令实际参数以 CLI help 为准。 |
 | `init-db` | 本地 SQLite 建表/补列；服务器库使用 OPERATIONS §10 和 `deploy/sql/`。混合配置的成功退出不证明应用库已初始化，分支见 interact §3。 |
 | 应用数据库表 | `schema-contract.md` 应用库部分、`schema_app.py`；供外部 BFF 读取，重点核对当前版本、关联及 source 字段。 |
-| 开发与维护 | `CLAUDE.md`、`TECHNICAL.md`、`decisions.md`、`PLAN.md`，以及 [TESTING.md](../TESTING.md)。计划不是当前实现证明。 |
+| 开发与维护 | [AGENTS.md](../AGENTS.md)、`TECHNICAL.md`、`decisions.md`、`PLAN.md`，以及 [TESTING.md](../TESTING.md)。计划不是当前实现证明。 |
 
 HTTP API、MCP server 与 Web UI：**Not applicable — 本仓库的交付入口是 CLI 和应用表，
 未包含这些服务实现**。外部 BFF 的 API 地址和部署接入资料：尚未确认，仓库内不足以核实。
@@ -53,6 +53,13 @@ HTTP API、MCP server 与 Web UI：**Not applicable — 本仓库的交付入口
 就期待系统自动接入。`--all` 选择活跃公司，`--ticker` 可重复；`--job` 与 `--stage` 不可组合。
 未提供模型/AV 凭据时，应选择确实可运行的阶段并准备输入，不能期待完整任务退化为离线成功。
 密钥只放环境变量或忽略的本地 `.env`，不要放进反馈、日志示例或 fixture。
+
+在已准备好上述输入的环境中，`.venv/bin/uw-pipeline run --all` 选择全部活跃公司并按默认阶段
+顺序运行；当前顺序见 architecture，不能从命令正常退出推断所有数据都已刷新。
+`.venv/bin/uw-pipeline run --ticker MAR --force` 只把强制标志传给 `company`、`facts`、
+`documents`，按这些阶段的实现跳过相应原始缓存或输入检查；下游阶段的输入哈希判断和
+`cached_call` 的合格模型缓存仍有效，不能用它保证所有阶段重新计算。缓存和依赖限制见
+interact §2、architecture。
 
 ## 5. Representative Real Cases
 

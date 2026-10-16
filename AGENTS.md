@@ -1,10 +1,15 @@
 # Agent Working Guide — prof360
 
+本项目将 SEC EDGAR 与 Alpha Vantage 数据整理为指标、信号和模型洞察，写入应用数据库，
+供 Professional 360 BFF 读取。本文件统一维护人和 Agent 共用的开发约定；专题流程见下列入口。
+开始任务时确认所用工具已读取本文件。若工具不自动加载 `AGENTS.md`，须在会话中显式要求
+读取它；仓库里有此文件并不证明工具已加载规则。
+
 ## Authority Map
 
 | 来源 | 范围与使用方式 |
 |---|---|
-| [CLAUDE.md](CLAUDE.md) | 已有开发约定、阶段确认、配置归属、fixture/prompt/golden 和 BFF 边界；本入口保留这些政策，不因新增文件改换权威。 |
+| [本文件的开发约定](#project-specific-conventions) | 承接项目既有开发规则：阶段确认、配置归属、fixture/prompt/golden、数据库与 BFF 边界；规则正文在此维护，专题文档维护具体流程。 |
 | [docs/PLAN.md](docs/PLAN.md) | 产品计划与 checklist；待确认/未来 Phase 不证明功能已实现。 |
 | [docs/decisions.md](docs/decisions.md) | 已接受选择、理由和后续替代；后续决定只替代明确覆盖的范围，历史实测记录不等于当前环境验收。 |
 | [docs/schema-contract.md](docs/schema-contract.md) | 应用表写入/读取约定；后半部内部表仅供审计排错，历史待对齐项要结合后续决定与实现核查。 |
@@ -43,7 +48,8 @@ app_publish/source_labels 管输出映射与来源，dq_rules/coverage_notes 管
 
 ### Runtime Entrypoints
 
-`uw-pipeline` → `uw_pipeline.cli:app` → Orchestrator / StageRunner；具体命令只在用户指南目录维护。
+`uw-pipeline` → `uw_pipeline.cli:app` → Orchestrator / StageRunner；正式接口目录在用户指南维护，
+操作命令见 docs/OPERATIONS.md，验证命令见 TESTING.md。
 Dockerfile 入口也是此 CLI。OpenShift 和 Harness 文件需要填写部署环境，不证明已上线。
 
 ### Core Modules and Domain Logic
@@ -55,7 +61,8 @@ Dockerfile 入口也是此 CLI。OpenShift 和 Harness 文件需要填写部署�
 ### Generated Artifacts and External State
 
 已提交的 fixtures/golden/SQL DDL 可审阅。`data/` 的原始文件、SQLite、报告与模型缓存是运行状态；
-生产可用 SQL Server/Azure SQL 和 ADLS。凭据不进入代码、日志或 fixture；发布会写应用库，
+本地原始响应默认落在 `data/raw/`，管线库默认是 `data/uw.db`；生产可用 SQL Server/Azure SQL
+和 ADLS。凭据不进入代码、日志或 fixture；发布会写应用库，
 人工决定会改变后续模型输入，外部应用仍有自身数据所有权。
 
 ## Collaboration
@@ -90,18 +97,55 @@ PR 目标分支按请求和实际远端解析，不把默认分支与特殊生�
 
 ## Project-specific Conventions
 
-以下是当前既有政策的路由，不另立第二套定义：
+以下承接项目原有开发约定，保留已接受决定在各自范围内的效力。命令、详细步骤与行为限制
+由 TESTING、OPERATIONS、architecture 和 interact 分别维护，不复制另一份规则正文。
 
-- **Owner-declared — CLAUDE.md、已接受 decisions，仓库开发范围**：新 Phase 先列计划/文件并确认；
-  计划未覆盖的决定先记录选项和理由；完成 checklist 后更新 PLAN。已授权的文档同步不因此变成新 Phase。
-- **Owner-declared — 同上**：固定 CIK；指标、公式、行业组由配置维护；每个 coverage gap 有说明；
-  外部访问走 clients；业务模型输出按任务进行 schema/证据校验；数据写入保持自然键幂等；
-  不修改外部 BFF 仓库，契约问题记到原 schema-contract。
-- **Owner-declared — CLAUDE.md / OPERATIONS §6**：prompt 变化用新版本；grounding 变化提升
-  `GROUNDING_VERSION`；依原入口导出并审查 golden diff；信号误报补回归用例。
-- **Machine-enforced — pyproject.toml / conftest / .gitattributes**：Python >=3.11、ruff 规则与格式、
-  mypy strict、pytest 范围及 socket 拦截、文本换行归一化；具体命令见 TESTING。
+### 计划与范围
 
-已核对上述来源及 D-037/D-040/D-042–D-047：不得从早期“尚无 Azure 支持”等历史记录覆盖后续实现，
-也不得从后续实现推出真实环境验收。LLM 输出政策与缓存/业务表的区别见 architecture；
-production 分支对文档文本的限制见发布 SOP。未把其他项目或个人会话偏好写成 prof360 产品政策。
+- `docs/PLAN.md` 是项目计划。每个新 Phase 开始前列出计划及拟改文件，等待确认；
+  计划未覆盖的决定先在 `docs/decisions.md` 记录选项与理由，再继续执行。
+  已授权的日常修复或文档同步不因此成为新 Phase；完成 checklist 项后更新 PLAN 中对应勾选框。
+- 不修改外部 BFF 仓库；发现接口问题记到 `docs/schema-contract.md`，应用表与 BFF 自有状态
+  的边界按该契约和已接受决定处理。
+
+### 数据、配置与外部访问
+
+- 公司身份由 `config/companies.yaml` 中固定的 CIK 确定；ticker 用于显示和选择，不能当永久身份。
+- XBRL tag 映射、指标公式和行业规则放在 `config/`，不硬编码；行业指标清单在
+  `config/metrics.yaml` 的 `metric_sets` 和 `config/industry_groups.yaml` 中人工维护，不在运行时生成。
+- `coverage-report` 展示的每个指标缺口都须在 `config/coverage_notes.yaml` 中说明。
+- 所有外部 HTTP、LLM、数据库访问经过 `src/uw_pipeline/clients/`，以便测试替换。
+- 数据库写入必须可重复执行且不产生重复结果，使用自然键 upsert / MERGE；禁止全表删除后重插。
+- 密钥只从环境变量读取（本地可由已忽略的 `.env` 提供），不写入代码、日志或 fixture。
+  Alpha Vantage key 同样不得记录或存储；其错误消息由 `clients/alphavantage.py` 脱敏。
+  遵守配置的调用速率和每日额度（客户端默认 25 次/日）；额度耗尽时停止相应请求，额度恢复后
+  由后续运行重试，不能把它理解为本轮全部阶段成功。
+
+### 模型、规则与回归
+
+- 单元测试不得访问网络；每个新增外部调用须在 `tests/fixtures/` 提供记录下来的 fixture。
+  模型测试使用 `tests/fake_llm.py`，不能调用真实模型 API。
+- Golden 基准值必须来自申报原文（XBRL instance 或文档），不能来自估算。
+- 模型调用经过 `enrich/llm.cached_call`，缓存包含输入哈希。输出必须通过结构校验；采纳为业务
+  结果前还须通过相应的来源依据校验。`llm_call` 中缓存了结构合格回答，不代表它已被业务采纳；
+  具体边界见 [architecture 的模型处理](architecture.md#6-state-and-persistence-model)。
+- Prompt 位于 `src/uw_pipeline/enrich/prompts/{task}_v{N}.md`；任何修改使用新版本，不原地覆盖。
+  按 OPERATIONS §6 更新配置、重跑相关公司、运行 `scripts/export_golden.py` 并审阅
+  `git diff tests/golden`。Grounding 规则修改须提升 `jobs/run_insights.py` 的 `GROUNDING_VERSION`。
+- `LLM_ENABLED=false` 关闭真实模型调用；能够独立运行的规则路径仍可执行，但不保证完整任务
+  离线成功，阶段差异见 interact §5 的组合行为。
+- 每次运行由 `pipeline_run` / `pipeline_task` 跟踪。新阶段须登记到 `jobs/orchestrator.DEPENDS`、
+  `jobs/stages.StageRunner._stage` 和 `config/jobs.yaml`；还须按 architecture 的 Change propagation
+  检查 CLI 阶段枚举、默认顺序与调用方，不能只增加阶段实现文件。
+- 信号与章节规则放在 `config/signal_rules.yaml` 和 `config/company_overrides/*.yaml` 的
+  `sections:`；每个发现的信号误报都须成为 `tests/test_signals.py` 的回归用例。
+
+### 机器检查与证据
+
+`pyproject.toml`、conftest 和 `.gitattributes` 分别定义 Python >=3.11、ruff 规则与格式、
+mypy strict、pytest 范围及 socket 拦截、文本换行归一化。开发环境沿用 Python 3.14，
+安装与四项必要检查见 [TESTING.md](TESTING.md#0-canonical-test-entrypoints)。
+配置的限制不自动取消上面的开发政策。
+
+本文件与当前分支 `docs/decisions.md` 中的已接受决定按各自作用域使用。早期“尚无 Azure 支持”
+等历史记录不能覆盖后续实现，后续实现也不能证明真实环境验收。生产转换与发布步骤见 SOP。

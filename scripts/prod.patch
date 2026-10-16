@@ -22,25 +22,6 @@ index 527afcbd03102a401c4529903aa89f1fc601c566..326f71f294f0958ae49700124ff1e40c
 -# Only with LLM_PROVIDER=runware (account needs at least $5 credit)
 -RUNWARE_API_KEY=
  # LLM_ENABLED=false   # rules only
-diff --git a/CLAUDE.md b/CONTRIBUTING.md
-similarity index 96%
-rename from CLAUDE.md
-rename to CONTRIBUTING.md
-index 2a5fe621e10485ce7a84e8106af191081a588f0d..86e60ab878ce058bbb49a529dc4e2ebcfa4ddff9 100644
---- a/CLAUDE.md
-+++ b/CONTRIBUTING.md
-@@ -24,11 +24,9 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
- .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy
- .venv/bin/python scripts/refresh_sec_fixtures.py   # rebuild SEC fixtures from data/raw
- .venv/bin/python scripts/securegpt_smoke.py         # SecureGPT gateway check (work network)
--.venv/bin/python scripts/runware_smoke.py           # Runware gateway check (LLM_PROVIDER=runware)
- .venv/bin/python scripts/azure_smoke.py             # Azure SQL + ADLS check (work network)
- scripts/test_mssql.sh --all                          # whole test suite on a local SQL Server (Docker)
- .venv/bin/python scripts/export_app_ddl.py           # regenerate deploy/sql/*.sql after schema changes
--.venv/bin/python scripts/compare_models.py --model claude-sonnet-5-5 MAR JPM ENPH  # model A/B
- ```
- 
- Architecture, stages, data model and internals: `docs/TECHNICAL.md`.
 diff --git a/config/insights.yaml b/config/insights.yaml
 index 39a6ec1207ede1aeb873d234eb10587b130d5151..e007724f78e3d0c49347fd26477e4485dc176112 100644
 --- a/config/insights.yaml
@@ -181,21 +162,13 @@ index 26638f2f64a3f45f56c4819754ad965413547e13..634a0767cb348389b10706270c9d9c50
    # Azure SQL + ADLS (D-040; non-secret settings in config/azure.yaml)
    DATABASE_BACKEND: "azure_sql"
 diff --git a/docs/OPERATIONS.md b/docs/OPERATIONS.md
-index deadfa7eb3376e505d644e34623481938ae09cab..b972651c6be54990c8263eaf0ad0335bc47ab214 100644
+index 10c21ca68057d9bc8c01db80180c52a9860e5d7d..b520c66056e2b7b4aca3025b029af24239d88bbf 100644
 --- a/docs/OPERATIONS.md
 +++ b/docs/OPERATIONS.md
-@@ -1,6 +1,6 @@
- # 运维手册
- 
--读者：维护这条管线的工程师。设计和背后的理由见 `docs/decisions.md`（D-xxx），开发约定见 `CLAUDE.md`。
-+读者：维护这条管线的工程师。设计和背后的理由见 `docs/decisions.md`（D-xxx），开发约定见 `CONTRIBUTING.md`。
- 
- ## 1. 日常运行
- 
 @@ -68,7 +68,7 @@
- 
+
  ## 7. 详情弹窗数据（Phase 8，D-036）
- 
+
 -- `metricdetail` 阶段排在 `insights` 之后：Methodology 和 Data Sources 由规则生成；每家公司一次 Opus 调用写各指标的 Underwriting Relevance 和关联。输入不变时不调用 LLM。没有 LLM 时规则部分照常运行。
 +- `metricdetail` 阶段排在 `insights` 之后：Methodology 和 Data Sources 由规则生成；每家公司一次综合模型调用写各指标的 Underwriting Relevance 和关联。输入不变时不调用 LLM。没有 LLM 时规则部分照常运行。
  - 章节的可读名称、公式里概念的名称在 `config/source_labels.yaml`。新增章节代码或概念时在这里加一项，否则界面上会直接显示代码。
@@ -208,10 +181,10 @@ index deadfa7eb3376e505d644e34623481938ae09cab..b972651c6be54990c8263eaf0ad0335b
 -- 风险评分在 `scores` 阶段（`config/scores.yaml`）。只有重要新闻进入洞察输入，阈值在 `config/insights.yaml` 的 `news_materiality`；阈值调低会让洞察更常重新生成（每家公司每次约 $0.9）。
 -- 比较模型：`python scripts/compare_models.py --model claude-sonnet-5-5 MAR JPM ENPH`，报告在 `data/reports/`。
 +- 风险评分在 `scores` 阶段（`config/scores.yaml`）。只有重要新闻进入洞察输入，阈值在 `config/insights.yaml` 的 `news_materiality`；阈值调低会让洞察更常重新生成，费用随之增加。
- 
+
 -## 9. LLM：SecureGPT、Claude、Runware（D-039、D-047）
 +## 9. LLM：SecureGPT（D-039）
- 
+
 -- `config/llm.yaml` 里每个提供方有一套完整的模型配置（抽取、复核、综合、价格）。用环境变量 `LLM_PROVIDER` 选择，不设时用 `default_provider`（securegpt）：
 -  - **securegpt**（公司网络内）：抽取 gpt-5-nano，复核和综合 gpt-5-mini。网关地址、api-version、部署名在 `config/securegpt.yaml`。
 -  - **anthropic**（公司网络外开发和测试）：抽取 Claude Haiku 5.5，复核和综合 Claude Sonnet 5.5，需要 `ANTHROPIC_API_KEY`。
@@ -224,27 +197,27 @@ index deadfa7eb3376e505d644e34623481938ae09cab..b972651c6be54990c8263eaf0ad0335b
 +- 模型是缓存键的一部分：换模型后所有 LLM 任务会重新请求一次。
  - 模型输出没通过 schema 校验，或者输入超出模型的上下文长度时，只有这一项失败（记录在 `llm_call.error`），其他项照常运行；校验失败的会在下次运行时重新请求。
 -- 在公司网络外开发：本地 `.env` 里设 `LLM_PROVIDER=anthropic`。不要在两个提供方之间来回切换同一个部署环境：每次切换，当前版本的洞察会换成另一个提供方的结果。
- 
+
  ## 10. Azure SQL 和 ADLS（D-040）
- 
+
 @@ -141,5 +136,5 @@
  ## 12. 密钥和费用
- 
+
  - 密钥只放在 `.env`（本地，已被 git 忽略）或 OpenShift Secret 中，**不要写进代码、日志或测试数据**。Alpha Vantage 的报错消息里会带 key，客户端已经做了脱敏。
 -- 提交前检查：用 `git grep --cached` 搜索 Anthropic key 的固定前缀和 Alpha Vantage key 的前几位，应该没有任何结果。
 +- 提交前检查：用 `git grep --cached` 搜索 SecureGPT 订阅 key 和 Alpha Vantage key 的前几位，应该没有任何结果。
  - LLM 调用会按输入哈希缓存，输入不变时不会再次调用。每晚的费用只来自内容发生变化的公司。可以用 `runs` 查看每次运行的估算费用。
 diff --git a/docs/PLAN.md b/docs/PLAN.md
-index e05b93326477f869b0de730605d8cd119c0c9f56..60e350ee0a20d86003f68339f5ab9b60cfbf102b 100644
+index 0740734aab544201b016c959754a2be03b788227..fcaf8c36a588d850308fb75112208eb98ea51d7d 100644
 --- a/docs/PLAN.md
 +++ b/docs/PLAN.md
 @@ -1,6 +1,6 @@
  # Underwriting Intelligence — 数据管线开发计划（SEC + Alpha Vantage → Azure SQL）
- 
+
 -> 本文档供 Claude Code 执行使用。请按 Phase 顺序推进，每个 Phase 完成后对照"验收标准"自检，再进入下一阶段。
 +> 请按 Phase 顺序推进，每个 Phase 完成后对照"验收标准"自检，再进入下一阶段。
  > 遇到本文档未覆盖的决策，先在 `docs/decisions.md` 记录选项和理由，再继续。
- 
+
  ---
 @@ -100,7 +100,7 @@
  | 数据校验 | `pydantic` v2 | 所有 LLM 输出必须过 schema |
@@ -259,48 +232,39 @@ index e05b93326477f869b0de730605d8cd119c0c9f56..60e350ee0a20d86003f68339f5ab9b60
  ```
  uw-pipeline/
  ├── pyproject.toml
--├── CLAUDE.md                     # 项目约定（见 §11）
-+├── CONTRIBUTING.md               # 项目约定（见 §11）
+-├── AGENTS.md                     # 项目约定（见 §11）
++├── AGENTS.md               # 项目约定（见 §11）
  ├── docs/
  │   ├── PLAN.md                   # 本文件
  │   ├── decisions.md              # 决策记录
-@@ -402,7 +402,7 @@ uw-pipeline dq-report --run-id <id>
- **验收**：schema-contract.md 经人工确认；差距项都有处理方案。
- 
- ### Phase 1 — 骨架 + SEC 客户端 + 公司主数据
--- [x] 项目骨架、settings、CLI、ruff/mypy/pytest 配置、CLAUDE.md
-+- [x] 项目骨架、settings、CLI、ruff/mypy/pytest 配置、CONTRIBUTING.md
- - [x] `clients/sec.py`：UA、限速、重试、本地/ADLS 缓存
- - [x] `companies.yaml`：初始清单 = 前端已出现的公司（MAR、LUV、F、PFE、JPM、M、LUMN、PARA、ENPH）
- - [x] ticker → CIK → submissions → 写入 `company`；判定 `industry_group`
-@@ -429,7 +429,7 @@ uw-pipeline dq-report --run-id <id>
+@@ -429,7 +429,7 @@
  - [x] 8-K item 规则 → 事件信号（§5.4）
  - [x] 治理信号：审计师（dei:AuditorName + 审计报告任期）、4.01 审计师变更、5.02 CEO/CFO 变更
  - [x] 关键词信号：going concern、material weakness、restatement
 -- [x] 判断类信号改为 规则 + LLM 投票（Sonnet 5.5 抽取，分歧由 Opus 5.5 裁决；见 decisions D-028）
 +- [x] 判断类信号改为 规则 + LLM 投票（抽取模型判断，分歧由复核模型裁决；见 decisions D-028）
- 
+
  **验收**：9 家公司最近一份 10-K 的 Item 1A / 3 / 7 切分成功率 ≥ 90%，失败的有日志；最近 2 年 8-K 事件全部入库。
- 
-@@ -442,7 +442,7 @@ uw-pipeline dq-report --run-id <id>
+
+@@ -442,7 +442,7 @@
  **验收**：重复运行不产生重复 activity；每家公司至少有近 30 天新闻（若 AV 有）。
- 
+
  ### Phase 5 — LLM 增强
 -- [ ] `LLMClient` 抽象 + Secure GPT / Claude 实现（抽象与 Claude 实现已完成，D-028；Secure GPT 待接入）
 +- [x] `LLMClient` 抽象 + SecureGPT 实现（D-028、D-039）
  - [x] `schemas.py`、prompts v1、`grounding.py`（引用 + 数字校验）（D-033）
  - [x] Key Insights、Strategic & Risk Insights、Behavioral Insights、Follow-Up Questions、Activity 摘要（D-033；Activity 摘要待付费新闻数据）
  - [x] 文本指标抽取：酒店 RevPAR/入住率；FI：CET1/NIM/NPL/贷款组合（D-032）
-@@ -504,7 +504,7 @@ uw-pipeline dq-report --run-id <id>
+@@ -504,7 +504,7 @@
  #### 8.4 指标详情（新增 `metricdetail` 阶段，排在 insights 之后）
  - [x] Methodology（规则模板）：公式或概念、实际用到的 XBRL tag、各期取值方式（直接报告 / 推导 / 公式计算 / 文本抽取 / 初步数字）、N/M 条件、最新值；文本类指标附口径定义和原文片段
  - [x] `metric_source`（规则）：最近一个季度和最近一个财年的值分别来自哪份文件，包括报表类型、提交日期和链接
 -- [x] LLM（每家公司一次 Opus 调用）：为每个有数据的指标写 `uw_relevance`，并选出相关的 K / R / B / Q 编号；编号必须真实存在，数字必须通过校验
 +- [x] LLM（每家公司一次综合模型调用）：为每个有数据的指标写 `uw_relevance`，并选出相关的 K / R / B / Q 编号；编号必须真实存在，数字必须通过校验
  - [x] `metric_insight` 表（带 `is_current`）；指标与洞察、问题的关联并入 `insight_metric` 和 `followup_question_metric`
- 
+
  #### 8.5 契约、质量与验收工具
-@@ -531,8 +531,8 @@ uw-pipeline dq-report --run-id <id>
+@@ -531,8 +531,8 @@
  - [x] 9.1 应用库表定义 `schema_app.py`：按数据模型图，加上 `ItemLink`、`CompanyMetricDetail` 两张新表和少量新列；`docs/schema-contract.md` 改为应用表的对照
  - [x] 9.2 `publish` 阶段：应用 id 稳定（`pipeline_publish_map`）、内容不变不写、版本化对象用 isActive、已删除的行会补回；RiskTypes 和 confidence 按 `config/app_publish.yaml`
  - [x] 9.3 新闻（付费 key）：回补 30 天；规则 + LLM 判断只保留与公司本身有关的新闻；`uw-news` CronJob 启用（03/09/15/21 点）
@@ -308,10 +272,10 @@ index e05b93326477f869b0de730605d8cd119c0c9f56..60e350ee0a20d86003f68339f5ab9b60
 -- [x] 9.5 模型切换（用户决定，D-038）：抽取用 Haiku 5.5，复核和综合用 Sonnet 5.5；全部 LLM 任务按新模型重跑一次，并与旧结果对比质量。`scripts/compare_models.py` 留作以后对比用
 +- [x] 9.4 风险评分（抽取模型）：`NewsRiskScore`、`TranscriptToneAnalysis`、`TranscriptRiskFlag`；只有重要新闻（overall ≥ 0.5 或任一维度 ≥ 0.6）进入洞察输入
 +- [x] 9.5 抽取质量（D-038）：引文允许用 "..." 省略的片段；文本抽取用较高的推理强度
- 
+
  **验收**：
  - 9 家公司全部写入应用库；无变化时重跑写入 0 行
-@@ -718,15 +718,15 @@ uw-pipeline dq-report --run-id <id>
+@@ -718,15 +718,15 @@
  |---|---|---|---|
  | sec | company、facts、documents | SEC 每秒 10 次（所有 pod 共用一个 IP / User-Agent） | 少量 worker + 全局令牌桶（8/秒） |
  | av | news、transcripts | AV 每分钟配额 | 全局令牌桶 |
@@ -320,24 +284,24 @@ index e05b93326477f869b0de730605d8cd119c0c9f56..60e350ee0a20d86003f68339f5ab9b60
 +| llm-fast | signals、scores、news 相关性、textmetrics 第一遍（抽取模型） | SecureGPT 每分钟请求数和 token 数 | 较多 worker + 按模型的令牌桶 |
 +| llm-synth | insights、metricdetail、textmetrics 复核（复核和综合模型） | 同上；夜间改走 Batch API | 见 10.F |
  | cpu | compute、publish、dq | 数据库 | 不限，按数据库连接数 |
- 
+
  部署上每个通道是一组 worker（OpenShift Job 并行或 Deployment），数量写在配置里；另有一组常驻小 worker 只处理按需请求（每分钟轮询）。
- 
+
  #### 10.D 全局限速
  - 令牌桶放在数据库表里（`rate_bucket`：名称、剩余令牌、更新时间），用一条原子 UPDATE 取令牌，所有 pod 共用；以后需要更高吞吐再换 Redis。
 -- 收到 429 或 Anthropic 的剩余额度响应头偏低时，按桶整体退避，而不是每个 worker 各自重试。
 +- 收到 429 或网关的剩余额度响应头偏低时，按桶整体退避，而不是每个 worker 各自重试。
- 
+
  #### 10.E 必须先改的代码结构
  - **事务缩短**：现在每个阶段把一家公司的网络和 LLM 调用都放在同一个数据库事务里，可能持续几分钟。改成"先读输入（短事务）→ 在事务外调用 SEC / AV / LLM → 一次性写结果（短事务）"。这是并行的前提，也是改动最大的一步。
-@@ -736,13 +736,13 @@ uw-pipeline dq-report --run-id <id>
+@@ -736,13 +736,13 @@
  - **数据库**：SQLite 无法并发写，必须换 Azure SQL；在拿到权限前用本地 Postgres 开发和压测。
- 
+
  #### 10.F LLM 的 Batch 化（夜间）
 -- Sonnet 综合任务在夜间作业中拆成两步：提交（把一批公司的请求打包提交 Batch API）和收取（结果回来后做 schema、grounding 校验并写库）。中间状态记在任务表里，worker 不必等待。
 +- 综合任务在夜间作业中拆成两步：提交（把一批公司的请求打包提交 Batch API）和收取（结果回来后做 schema、grounding 校验并写库）。中间状态记在任务表里，worker 不必等待。
  - 半价；结果通常一小时内返回，夜间作业足够。按需请求和白天的任务仍走实时 API。
- 
+
  #### 10.G 容量估算（高峰日，约 500 家公司有新财报）
  - SEC：约 500 × 30 次请求 = 1.5 万次，8 次/秒约 30 分钟。
 -- Haiku 任务：并发高，约 30 分钟。
@@ -346,17 +310,8 @@ index e05b93326477f869b0de730605d8cd119c0c9f56..60e350ee0a20d86003f68339f5ab9b60
 +- 综合模型：约 2,000 次调用；实时 16 个并发约 1.5–2 小时，或 Batch 提交后约 1 小时内返回。
  - 结论：23:30 开始，约 03:00 前完成，满足次日早上更新的要求；早上 05:30 的补跑处理失败项和晚到的申报。
  - 首次回补 4,000 家：companyfacts / submissions 用 SEC 批量包，不逐家请求；文件下载约 6 万次请求，约 2 小时；Tier 1 的洞察用 Batch。
- 
-@@ -763,7 +763,7 @@ uw-pipeline dq-report --run-id <id>
- 
- ---
- 
--## 11. 给 Claude Code 的工作约定（写入 CLAUDE.md）
-+## 11. 工作约定（写入 CONTRIBUTING.md）
- 
- - 每个 Phase 开始前先列出要改动的文件和计划，等待确认后再动手
- - 单测不得访问外网；新增外部调用必须同时加 fixture
-@@ -782,8 +782,8 @@ uw-pipeline dq-report --run-id <id>
+
+@@ -777,8 +777,8 @@
  暂时不用管
  2. Alpha Vantage 订阅档位与限速？
  现在用 free key（存于本地 `.env` 的 `ALPHAVANTAGE_API_KEY`）。之后是75call/min
@@ -368,19 +323,10 @@ index e05b93326477f869b0de730605d8cd119c0c9f56..60e350ee0a20d86003f68339f5ab9b60
  每个SIC在yaml里分开计划，可以同一个SIC用同一批metrics
  5. Adjusted EBITDA 展示计算值即可，还是必须用公司公布值？
 diff --git a/docs/TECHNICAL.md b/docs/TECHNICAL.md
-index 0b4ae8f3fd90d30c09ea2572e5aceecbddcc2f28..4b9698909af3c9082a273ab4a9cc72ca997bcc05 100644
+index ccd3f5089d4303363bbbb0daaeeb1df91d99a8e0..8319188d30d13fa63ea221b0db7a459081961a80 100644
 --- a/docs/TECHNICAL.md
 +++ b/docs/TECHNICAL.md
-@@ -9,7 +9,7 @@ done; Phase 10 planned, on hold). Related documents:
- | `docs/decisions.md` | Every design decision with its reason (D-001 … D-046), cited below as D-xxx |
- | `docs/OPERATIONS.md` | Day-to-day operations, troubleshooting (Chinese) |
- | `docs/schema-contract.md` | Application tables as the BFF reads them |
--| `CLAUDE.md` | Commands and coding conventions |
-+| `CONTRIBUTING.md` | Commands and coding conventions |
- 
- ## 1. What it does
- 
-@@ -34,7 +34,7 @@ designed in and tested:
+@@ -34,7 +34,7 @@
  flowchart LR
    SEC[SEC EDGAR<br/>submissions, companyfacts,<br/>XBRL instances, documents] --> C
    AV[Alpha Vantage<br/>news, transcripts] --> C
@@ -389,7 +335,7 @@ index 0b4ae8f3fd90d30c09ea2572e5aceecbddcc2f28..4b9698909af3c9082a273ab4a9cc72ca
    C[clients/<br/>rate limits, retries, raw landing] --> RAW[(Raw storage<br/>data/raw or ADLS)]
    C --> S[Stages<br/>jobs/run_*.py]
    S --> P[(Pipeline DB<br/>SQLite or Azure SQL)]
-@@ -52,7 +52,7 @@ swap them for fakes.
+@@ -52,7 +52,7 @@
  | `cli.py` | Typer CLI: `run`, `runs`, `dq-report`, `coverage-report`, `audit-insights`, `review` (list / approve / reject), `init-db` |
  | `settings.py` | Settings from environment / `.env` (pydantic-settings), §13 |
  | `config.py` | Loads companies and industry groups (traits merged into each group's metric sets) |
@@ -398,7 +344,7 @@ index 0b4ae8f3fd90d30c09ea2572e5aceecbddcc2f28..4b9698909af3c9082a273ab4a9cc72ca
  | `extract/` | Company metadata, filing lists from submissions |
  | `normalize/` | XBRL facts, fiscal periods (restatement basis), HTML to text, table grids (`table_grid.py`), section splitting, news normalisation |
  | `compute/` | Metric registry (from `config/metrics.yaml`), formulas, coverage |
-@@ -198,7 +198,6 @@ versioned with the code.
+@@ -198,7 +198,6 @@
  | `scores.yaml` | News and transcript risk scoring |
  | `llm.yaml` | Provider profiles (models, effort, token limits, prices), signal topics, `max_input_chars` |
  | `securegpt.yaml` | Gateway and token URLs per environment, API version, deployments |
@@ -406,35 +352,37 @@ index 0b4ae8f3fd90d30c09ea2572e5aceecbddcc2f28..4b9698909af3c9082a273ab4a9cc72ca
  | `azure.yaml` | Azure SQL server, database, schemas; ADLS account, container, root (placeholders) |
  | `app_publish.yaml` | Metric categories, RiskTypes regex rules, confidence rules, trend and loan metrics |
  | `source_labels.yaml` | Readable names for sections and concepts |
-@@ -207,18 +206,16 @@ versioned with the code.
- 
+@@ -207,18 +206,16 @@
+
  ## 8. LLM layer
- 
+
 -**Providers** (`config/llm.yaml`, D-039, D-047). One profile per provider with three roles; `LLM_PROVIDER`
 -selects it, default `securegpt`:
-+**Models** (`config/llm.yaml`, D-039). The SecureGPT gateway (Azure OpenAI) with three roles:
- 
+-
 -| Role | Used for | securegpt | anthropic | runware |
 -|---|---|---|---|---|
 -| extractor | Signal votes, text-metric first pass, news grouping and relevance, activity summaries, risk scores | gpt-5-nano | Claude Haiku 5.5 | DeepSeek V4 Flash |
 -| tiebreaker | Signal tie-breaks, second model of the dual check | gpt-5-mini | Claude Sonnet 5.5 | Claude Haiku 5.5 |
 -| synthesis | Behavioral, strategic & risk, key insights, follow-ups, metric relevance | gpt-5-mini | Claude Sonnet 5.5 | Claude Sonnet 5.5 |
+-
+-`runware` reaches all three through Runware's OpenAI-compatible gateway (`clients/runware.py`,
+-`config/runware.yaml`); the SecureGPT and Runware clients share the OpenAI response handling
+-(`clients/openai_chat.py`). All three clients implement `complete_json` with structured outputs (strict JSON schema; every output
++**Models** (`config/llm.yaml`, D-039). The SecureGPT gateway (Azure OpenAI) with three roles:
++
 +| Role | Used for | Model |
 +|---|---|---|
 +| extractor | Signal votes, text-metric first pass, news grouping and relevance, activity summaries, risk scores | gpt-5-nano |
 +| tiebreaker | Signal tie-breaks, second model of the dual check | gpt-5-mini |
 +| synthesis | Behavioral, strategic & risk, key insights, follow-ups, metric relevance | gpt-5-mini |
- 
--`runware` reaches all three through Runware's OpenAI-compatible gateway (`clients/runware.py`,
--`config/runware.yaml`); the SecureGPT and Runware clients share the OpenAI response handling
--(`clients/openai_chat.py`). All three clients implement `complete_json` with structured outputs (strict JSON schema; every output
++
 +The client (`clients/securegpt.py`, response handling in `clients/openai_chat.py`) implements
 +`complete_json` with structured outputs (strict JSON schema; every output
  schema is checked against strict-mode rules in a test). Errors are classified:
  `LLMError` fails one item (refusal, truncation, content filter, request too large);
  `LLMSetupError` (bad credentials, unknown model or deployment) stops LLM use for the run, and
-@@ -227,7 +224,7 @@ the stages fall back to rules (`signals`) or fail (`textmetrics`, `insights`).
- 
+@@ -227,7 +224,7 @@
+
  **Cache** (`enrich/llm.cached_call`). Every call is stored in `llm_call`, keyed by a hash of
  task, prompt version, model, effort, system prompt, user prompt and schema; an unchanged input
 -is never sent twice, and each provider keeps its own entries. Output is schema-validated before
@@ -442,7 +390,7 @@ index 0b4ae8f3fd90d30c09ea2572e5aceecbddcc2f28..4b9698909af3c9082a273ab4a9cc72ca
  it is cached; an invalid output is recorded as an error and asked again next run. On SQL Server
  the cache row commits in its own transaction, so a stage that rolls back keeps calls already
  paid for.
-@@ -371,10 +368,8 @@ because the service echoes the key.
+@@ -371,10 +368,8 @@
  | `AZURE_ENV` | from `azure.yaml` | dv / pp / pr |
  | `AZURE_SQL_CLIENT_ID`, `AZURE_SQL_CLIENT_SECRET` | – | Azure SQL service principal |
  | `ADLS_CLIENT_ID`, `ADLS_CLIENT_SECRET` | – | ADLS service principal |
@@ -1960,115 +1908,19 @@ index 3086c05aeb651d26017162a880ab530e7e757dfd..b10ca39ad96dcae5c26515af724d85b5
      src = ("Comparable Systemwide Properties\nThree Months Ended September 30, 2025\n"
             "RevPAR Occupancy\nWorldwide (2) $ 131.43 0.5 % 71.5 % (0.3) % pts. $ 183.71 0.9 %")  # fmt: skip
      q = "Comparable Systemwide Properties ... Worldwide (2) $ 131.43 0.5 % 71.5 %"
-diff --git a/capability_contract.json b/capability_contract.json
-index 0567ebb7031a7e8cf517dac6948f365c18bfd4aa..968467b77d72caaea644f683f500b04b4b93974c 100644
---- a/capability_contract.json
-+++ b/capability_contract.json
-@@ -6,7 +6,7 @@
-   "rules": [
-     "本登记的描述性内容须核对当前实现；不得把模板示例、计划或某次历史运行作为当前交付证明。",
-     "描述性事实核对当前实现、配置、测试、committed artifacts 或可重复运行结果；规范性政策核对有效项目授权与政策依据，混合语句拆开处理；active 不使实现观察自动成为政策。",
--    "CLAUDE.md 的开发约定、docs/decisions.md 的已接受决定、docs/PLAN.md 的规划以及 docs/schema-contract.md 应用库部分继续在各自范围内有效；本 contract 登记选定承诺，interact 展开行为，用户指南提供正式入口。后续决定仅替代其明确覆盖的旧范围，历史记录和内部表说明不代表当前对外能力。",
-+    "CONTRIBUTING.md 的开发约定、docs/decisions.md 的已接受决定、docs/PLAN.md 的规划以及 docs/schema-contract.md 应用库部分继续在各自范围内有效；本 contract 登记选定承诺，interact 展开行为，用户指南提供正式入口。后续决定仅替代其明确覆盖的旧范围，历史记录和内部表说明不代表当前对外能力。",
-     "只登记值得明确保留的公开承诺、边界、职责和调用行为，并在 statement 中指出既有公开承诺或已接受政策依据。纯实现或测试观察通常优先写入 interact.md，不自动升级为长期支持或拒绝政策；新增长期承诺按项目已有授权与持久化规则采纳。",
-     "没有适用内容时按现有结构准确表达不适用及已检查范围与原因，不编造条目或消费者。Not applicable 表示确实不适用，Not configured 表示适用机制尚未配置，尚未确认表示证据不足；这些说明不增加或替换状态枚举。",
-     "test_anchor 是证据指针，不是正文作者；不从测试自动生成 statement 或 status，也不从本 contract 生成 CLI、MCP、OpenAPI 或 handler；实际调用指向真实公开接口及其正式参考。",
-@@ -23,7 +23,7 @@
-         "anchor_id": "CAPABILITY.configured_pipeline",
-         "type": "capability",
-         "status": "active",
--        "statement": "依据 CLAUDE.md Commands、docs/OPERATIONS.md §1 及 D-034，CLI 按配置选择公司、阶段或 job，并报告任务结果；单独选择阶段要求调用方准备输入，不承诺自动补依赖或一次运行全新数据。",
-+        "statement": "依据 CONTRIBUTING.md Commands、docs/OPERATIONS.md §1 及 D-034，CLI 按配置选择公司、阶段或 job，并报告任务结果；单独选择阶段要求调用方准备输入，不承诺自动补依赖或一次运行全新数据。",
-         "audience": [
-           "operator",
-           "agent"
-@@ -77,7 +77,7 @@
-         "anchor_id": "BOUNDARY.company_identity",
-         "type": "capability_boundary",
-         "status": "active",
--        "statement": "依据 CLAUDE.md 与 D-006，正式配置的公司固定 CIK；ticker 与旧 ticker 是选择/显示标识。SEC ticker 发生重分配时保留固定 CIK 的主体，不把 ticker 当成永久身份。",
-+        "statement": "依据 CONTRIBUTING.md 与 D-006，正式配置的公司固定 CIK；ticker 与旧 ticker 是选择/显示标识。SEC ticker 发生重分配时保留固定 CIK 的主体，不把 ticker 当成永久身份。",
-         "audience": [
-           "maintainer",
-           "operator"
-@@ -90,7 +90,7 @@
-         "anchor_id": "BOUNDARY.validation_scope",
-         "type": "capability_boundary",
-         "status": "active",
--        "statement": "依据 CLAUDE.md 的业务输出校验要求及 D-044，表格指标须通过适用的单元格、期间和口径检查，被拒绝的候选不从其他单元格猜补。测试只证明指定检查范围；引文存在、数值匹配和模型同意不证明全部语义正确，llm_call 缓存也不等于已采纳业务结果。",
-+        "statement": "依据 CONTRIBUTING.md 的业务输出校验要求及 D-044，表格指标须通过适用的单元格、期间和口径检查，被拒绝的候选不从其他单元格猜补。测试只证明指定检查范围；引文存在、数值匹配和模型同意不证明全部语义正确，llm_call 缓存也不等于已采纳业务结果。",
-         "audience": [
-           "data_user",
-           "maintainer",
-@@ -122,7 +122,7 @@
-         "anchor_id": "RESPONSIBILITY.bff_owned_state",
-         "type": "responsibility_boundary",
-         "status": "active",
--        "statement": "依据 CLAUDE.md 的 BFF 边界、D-037 和 docs/schema-contract.md，管线不接管应用 logo、收藏、最近访问及用户 flag；发布保持用户指向的旧问题身份。外部 BFF 展示与消费契约须单独对齐。",
-+        "statement": "依据 CONTRIBUTING.md 的 BFF 边界、D-037 和 docs/schema-contract.md，管线不接管应用 logo、收藏、最近访问及用户 flag；发布保持用户指向的旧问题身份。外部 BFF 展示与消费契约须单独对齐。",
-         "audience": [
-           "integrator",
-           "maintainer"
-@@ -137,7 +137,7 @@
-         "anchor_id": "BEHAVIOR.phase_confirmation",
-         "type": "agent_behavior",
-         "status": "active",
--        "statement": "依据 CLAUDE.md Conventions，启动新的产品 Phase 前列出计划与拟改文件并等待确认；计划未覆盖的决定记录到 docs/decisions.md，完成的 checklist 更新 docs/PLAN.md。这不把已授权的日常修复或文档同步重新定义为新 Phase。",
-+        "statement": "依据 CONTRIBUTING.md Conventions，启动新的产品 Phase 前列出计划与拟改文件并等待确认；计划未覆盖的决定记录到 docs/decisions.md，完成的 checklist 更新 docs/PLAN.md。这不把已授权的日常修复或文档同步重新定义为新 Phase。",
-         "audience": [
-           "maintainer",
-           "agent",
-diff --git a/docs/business_user_guide.md b/docs/business_user_guide.md
-index 40b39b6bef787ac7c7bd6d9e0c78d5b0bcad1ba9..2d293482748dd5a561077f15f4f0a38e84dd3026 100644
---- a/docs/business_user_guide.md
-+++ b/docs/business_user_guide.md
-@@ -16,7 +16,7 @@
- | `review`、`review approve/reject` | 有署名的人工复核；OPERATIONS §10b，命令实际参数以 CLI help 为准。 |
- | `init-db` | 本地 SQLite 建表/补列；服务器库使用 OPERATIONS §10 和 `deploy/sql/`。混合配置的成功退出不证明应用库已初始化，分支见 interact §3。 |
- | 应用数据库表 | `schema-contract.md` 应用库部分、`schema_app.py`；供外部 BFF 读取，重点核对当前版本、关联及 source 字段。 |
--| 开发与维护 | `CLAUDE.md`、`TECHNICAL.md`、`decisions.md`、`PLAN.md`，以及 [TESTING.md](../TESTING.md)。计划不是当前实现证明。 |
-+| 开发与维护 | `CONTRIBUTING.md`、`TECHNICAL.md`、`decisions.md`、`PLAN.md`，以及 [TESTING.md](../TESTING.md)。计划不是当前实现证明。 |
-
- HTTP API、MCP server 与 Web UI：**Not applicable — 本仓库的交付入口是 CLI 和应用表，
- 未包含这些服务实现**。外部 BFF 的 API 地址和部署接入资料：尚未确认，仓库内不足以核实。
 diff --git a/TESTING.md b/TESTING.md
-index f6b864665a6906ab48f5d38262599b276d1f9f9b..3edb410099adf8f9bcd2b34a11d6d6983728eb6e 100644
+index fc93c18c95d899fde82be50cf2f8d7c52f31f1f8..e12b4504496a22ca12eaa32a32c0eb03822f2de8 100644
 --- a/TESTING.md
 +++ b/TESTING.md
-@@ -2,7 +2,7 @@
-
- ## 0. Canonical Test Entrypoints
-
--仓库根目录是默认工作目录。命令源为 `CLAUDE.md` Commands、`pyproject.toml`、
-+仓库根目录是默认工作目录。命令源为 `CONTRIBUTING.md` Commands、`pyproject.toml`、
- `deploy/harness/pipeline.yaml` 和现有脚本；本文汇集其验证范围，不另建 runner。
- Python 包声明 >=3.11；既有开发约定、Dockerfile 与 Harness skeleton 使用 3.14。
- “兼容性声明 >=3.11”不等于每个解释器都有本轮测试结果，也没有已配置的多版本 CI 矩阵。
-diff --git a/AGENTS.md b/AGENTS.md
-index 6a1128e5ce68dbccea6b67d054df54228c9c31b1..5b74ca4fef1493ea2055ef38fa0ec95bb9c8f6aa 100644
---- a/AGENTS.md
-+++ b/AGENTS.md
-@@ -4,7 +4,7 @@
-
- | 来源 | 范围与使用方式 |
+@@ -43,10 +43,9 @@
+ | 检查入口 | 环境与副作用 |
  |---|---|
--| [CLAUDE.md](CLAUDE.md) | 已有开发约定、阶段确认、配置归属、fixture/prompt/golden 和 BFF 边界；本入口保留这些政策，不因新增文件改换权威。 |
-+| [CONTRIBUTING.md](CONTRIBUTING.md) | 已有开发约定、阶段确认、配置归属、fixture/prompt/golden 和 BFF 边界；本入口保留这些政策，不因新增文件改换权威。 |
- | [docs/PLAN.md](docs/PLAN.md) | 产品计划与 checklist；待确认/未来 Phase 不证明功能已实现。 |
- | [docs/decisions.md](docs/decisions.md) | 已接受选择、理由和后续替代；后续决定只替代明确覆盖的范围，历史实测记录不等于当前环境验收。 |
- | [docs/schema-contract.md](docs/schema-contract.md) | 应用表写入/读取约定；后半部内部表仅供审计排错，历史待对齐项要结合后续决定与实现核查。 |
-@@ -92,12 +92,12 @@
+ | `.venv/bin/python scripts/securegpt_smoke.py` | 公司网络内检查网关与模型，产生真实请求。 |
+-| `.venv/bin/python scripts/runware_smoke.py` | 该网关的凭据与余额；真实模型请求，不写业务数据库。 |
+ | `.venv/bin/python scripts/azure_smoke.py` | 公司网络内检查 SQL / ADLS 权限与读写，不改业务表。 |
 
- 以下是当前既有政策的路由，不另立第二套定义：
+-DDL 重新导出见 OPERATIONS §10 的 `scripts/export_app_ddl.py`；模型比较见 §8。
++DDL 重新导出见 OPERATIONS §10 的 `scripts/export_app_ddl.py`。
+ 这些入口依各自脚本写文件或访问服务，不属于默认离线 suite。
 
--- **Owner-declared — CLAUDE.md、已接受 decisions，仓库开发范围**：新 Phase 先列计划/文件并确认；
-+- **Owner-declared — CONTRIBUTING.md、已接受 decisions，仓库开发范围**：新 Phase 先列计划/文件并确认；
-   计划未覆盖的决定先记录选项和理由；完成 checklist 后更新 PLAN。已授权的文档同步不因此变成新 Phase。
- - **Owner-declared — 同上**：固定 CIK；指标、公式、行业组由配置维护；每个 coverage gap 有说明；
-   外部访问走 clients；业务模型输出按任务进行 schema/证据校验；数据写入保持自然键幂等；
-   不修改外部 BFF 仓库，契约问题记到原 schema-contract。
--- **Owner-declared — CLAUDE.md / OPERATIONS §6**：prompt 变化用新版本；grounding 变化提升
-+- **Owner-declared — CONTRIBUTING.md / OPERATIONS §6**：prompt 变化用新版本；grounding 变化提升
-   `GROUNDING_VERSION`；依原入口导出并审查 golden diff；信号误报补回归用例。
- - **Machine-enforced — pyproject.toml / conftest / .gitattributes**：Python >=3.11、ruff 规则与格式、
-   mypy strict、pytest 范围及 socket 拦截、文本换行归一化；具体命令见 TESTING。
+ ## 1. Testing Philosophy

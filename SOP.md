@@ -4,7 +4,7 @@
 
 本页只提供稳定流程入口，操作正文仍在 [docs/OPERATIONS.md](docs/OPERATIONS.md)。
 政策范围见 [AGENTS.md](AGENTS.md#authority-map)，测试命令与层级见 [TESTING.md](TESTING.md)。
-不在这里复制容易漂移的完整命令、模型名或部署参数。
+日常命令、模型名和部署参数留在专题正文；本页列出生产发布入口。
 
 ## Available SOPs
 
@@ -17,7 +17,12 @@
 | 应用表对接 | 核对公开表、当前版本和关联，保留 BFF 自有数据 | schema-contract 应用库部分；schema_app.py；D-037 | 映射与 ID 测试及实际消费者验收分开记录 |
 | 数据库/原始存储部署 | 填环境配置，审阅 DDL/权限，运行原 smoke 流程 | OPERATIONS §10；config/azure.yaml；deploy/sql/ | 真实目标环境结果；本地 init-db 不能替代服务器迁移 |
 | 容器与计划任务 | 审查镜像、持久化路径和部署占位符 | Dockerfile；deploy/openshift/README.md；Harness skeleton | 实际构建/部署及目标环境运行证据，文件存在不是完成 |
-| 生产分支发布 | 应用原 main→prod 转换、扫描、测试与发布流程 | TESTING 的生产分支发布入口；main 分支的原开发约定 | 生成分支内容和文档引用正确，扫描与必要测试通过，按授权发布并读回 |
+| 生产分支发布 | 应用原 main→prod 转换、扫描、测试与发布流程 | TESTING 的生产分支发布入口；AGENTS.md 的开发约定 | 生成分支内容和文档引用正确，扫描与必要测试通过，按授权发布并读回 |
+
+main 的 `scripts/release_prod.py` 会写 Git 历史，须有对应发布授权；命令入口如下：
+
+- `.venv/bin/python scripts/release_prod.py --push`：生成、扫描、检查并提交生产树，再推送 prod。
+- 失败工作树按原流程修复并提交后，用 `.venv/bin/python scripts/release_prod.py --refresh` 更新转换补丁；再次发布仍需重新检查。
 
 ## Failure, Rollback, and Escalation
 
@@ -28,8 +33,9 @@
 仓库没有可承诺的一键全局回滚。
 
 main 分支的发布脚本遇到补丁冲突、受限词或测试失败时会保留其 worktree，按既有修复/refresh 流程处理。
-新增或修改文档时，同步核对现有 prod 补丁对开发入口引用的转换；生产文档继续引用实际存在的
-开发约定，不能为绕过扫描而抹掉权威来源。转换后的引用、受限词扫描和本地检查都要验证，
+新增或修改文档时，同步核对现有 prod 补丁；main 与 prod 均以 `AGENTS.md` 为开发约定正文，
+无需生成另一份规则文件。生产文档须引用实际存在的来源，不能为绕过扫描而抹掉权威来源。
+转换后的引用、受限词扫描和本地检查都要验证，
 普通 main 文档验收不替代该步骤；本地转换通过也不证明目标环境部署已完成。
 
 命令/配置问题依 OPERATIONS 排查；BFF 接口争议沿用 schema-contract，超出已接受政策的选择

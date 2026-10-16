@@ -6,7 +6,7 @@
   "rules": [
     "本登记的描述性内容须核对当前实现；不得把模板示例、计划或某次历史运行作为当前交付证明。",
     "描述性事实核对当前实现、配置、测试、committed artifacts 或可重复运行结果；规范性政策核对有效项目授权与政策依据，混合语句拆开处理；active 不使实现观察自动成为政策。",
-    "CLAUDE.md 的开发约定、docs/decisions.md 的已接受决定、docs/PLAN.md 的规划以及 docs/schema-contract.md 应用库部分继续在各自范围内有效；本 contract 登记选定承诺，interact 展开行为，用户指南提供正式入口。后续决定仅替代其明确覆盖的旧范围，历史记录和内部表说明不代表当前对外能力。",
+    "AGENTS.md 的开发约定、docs/decisions.md 的已接受决定、docs/PLAN.md 的规划以及 docs/schema-contract.md 应用库部分继续在各自范围内有效；本 contract 登记选定承诺，interact 展开行为，用户指南提供正式入口。后续决定仅替代其明确覆盖的旧范围，历史记录和内部表说明不代表当前对外能力。",
     "只登记值得明确保留的公开承诺、边界、职责和调用行为，并在 statement 中指出既有公开承诺或已接受政策依据。纯实现或测试观察通常优先写入 interact.md，不自动升级为长期支持或拒绝政策；新增长期承诺按项目已有授权与持久化规则采纳。",
     "没有适用内容时按现有结构准确表达不适用及已检查范围与原因，不编造条目或消费者。Not applicable 表示确实不适用，Not configured 表示适用机制尚未配置，尚未确认表示证据不足；这些说明不增加或替换状态枚举。",
     "test_anchor 是证据指针，不是正文作者；不从测试自动生成 statement 或 status，也不从本 contract 生成 CLI、MCP、OpenAPI 或 handler；实际调用指向真实公开接口及其正式参考。",
@@ -23,7 +23,7 @@
         "anchor_id": "CAPABILITY.configured_pipeline",
         "type": "capability",
         "status": "active",
-        "statement": "依据 CLAUDE.md Commands、docs/OPERATIONS.md §1 及 D-034，CLI 按配置选择公司、阶段或 job，并报告任务结果；单独选择阶段要求调用方准备输入，不承诺自动补依赖或一次运行全新数据。",
+        "statement": "依据 docs/OPERATIONS.md §1 及 D-034，CLI 按配置选择公司、阶段或 job，并报告任务结果；单独选择阶段要求调用方准备输入，不承诺自动补依赖或一次运行全新数据。",
         "audience": [
           "operator",
           "agent"
@@ -77,7 +77,7 @@
         "anchor_id": "BOUNDARY.company_identity",
         "type": "capability_boundary",
         "status": "active",
-        "statement": "依据 CLAUDE.md 与 D-006，正式配置的公司固定 CIK；ticker 与旧 ticker 是选择/显示标识。SEC ticker 发生重分配时保留固定 CIK 的主体，不把 ticker 当成永久身份。",
+        "statement": "依据 AGENTS.md 与 D-006，正式配置的公司固定 CIK；ticker 与旧 ticker 是选择/显示标识。SEC ticker 发生重分配时保留固定 CIK 的主体，不把 ticker 当成永久身份。",
         "audience": [
           "maintainer",
           "operator"
@@ -90,7 +90,7 @@
         "anchor_id": "BOUNDARY.validation_scope",
         "type": "capability_boundary",
         "status": "active",
-        "statement": "依据 CLAUDE.md 的业务输出校验要求及 D-044，表格指标须通过适用的单元格、期间和口径检查，被拒绝的候选不从其他单元格猜补。测试只证明指定检查范围；引文存在、数值匹配和模型同意不证明全部语义正确，llm_call 缓存也不等于已采纳业务结果。",
+        "statement": "依据 AGENTS.md 的业务输出校验要求及 D-044，表格指标须通过适用的单元格、期间和口径检查，被拒绝的候选不从其他单元格猜补。测试只证明指定检查范围；引文存在、数值匹配和模型同意不证明全部语义正确，llm_call 缓存也不等于已采纳业务结果。",
         "audience": [
           "data_user",
           "maintainer",
@@ -122,7 +122,7 @@
         "anchor_id": "RESPONSIBILITY.bff_owned_state",
         "type": "responsibility_boundary",
         "status": "active",
-        "statement": "依据 CLAUDE.md 的 BFF 边界、D-037 和 docs/schema-contract.md，管线不接管应用 logo、收藏、最近访问及用户 flag；发布保持用户指向的旧问题身份。外部 BFF 展示与消费契约须单独对齐。",
+        "statement": "依据 AGENTS.md 的 BFF 边界、D-037 和 docs/schema-contract.md，管线不接管应用 logo、收藏、最近访问及用户 flag；发布保持用户指向的旧问题身份。外部 BFF 展示与消费契约须单独对齐。",
         "audience": [
           "integrator",
           "maintainer"
@@ -137,7 +137,7 @@
         "anchor_id": "BEHAVIOR.phase_confirmation",
         "type": "agent_behavior",
         "status": "active",
-        "statement": "依据 CLAUDE.md Conventions，启动新的产品 Phase 前列出计划与拟改文件并等待确认；计划未覆盖的决定记录到 docs/decisions.md，完成的 checklist 更新 docs/PLAN.md。这不把已授权的日常修复或文档同步重新定义为新 Phase。",
+        "statement": "依据 AGENTS.md 的 Project-specific Conventions，启动新的产品 Phase 前列出计划与拟改文件并等待确认；计划未覆盖的决定记录到 docs/decisions.md，完成的 checklist 更新 docs/PLAN.md。这不把已授权的日常修复或文档同步重新定义为新 Phase。",
         "audience": [
           "maintainer",
           "agent",
