@@ -14,7 +14,7 @@
 | `run` | 按公司/阶段或 `--job` 执行；阶段配置见 `config/jobs.yaml`。单独 publish 同样需要公司选择。 |
 | `runs`、`coverage-report`、`dq-report`、`audit-insights` | 运行状态、指标缺口、质量发现、抽样证据审计；报告默认写 `data/reports/`。 |
 | `review`、`review approve/reject` | 有署名的人工复核；OPERATIONS §10b，命令实际参数以 CLI help 为准。 |
-| `init-db` | 本地 SQLite 建表/补列；服务器库使用 OPERATIONS §10 和 `deploy/sql/`。 |
+| `init-db` | 本地 SQLite 建表/补列；服务器库使用 OPERATIONS §10 和 `deploy/sql/`。混合配置的成功退出不证明应用库已初始化，分支见 interact §3。 |
 | 应用数据库表 | `schema-contract.md` 应用库部分、`schema_app.py`；供外部 BFF 读取，重点核对当前版本、关联及 source 字段。 |
 | 开发与维护 | `CLAUDE.md`、`TECHNICAL.md`、`decisions.md`、`PLAN.md`，以及 [TESTING.md](../TESTING.md)。计划不是当前实现证明。 |
 
@@ -86,6 +86,9 @@ uw-pipeline run --ticker MAR --stage publish
 
 查看 CLI 退出码及摘要，并通过 `runs`、`dq-report`、`coverage-report` 分别核对任务、质量和覆盖。
 DQ Error 本身不会让 dq 阶段失败；无缺口说明的报告也不是程序异常。
+`dq-report` 未指定 `--run-id` 时要求找到成功的 DQ 任务；显式指定 ID 则直接查询发现，
+不存在或未执行过 DQ 的运行也可能得到 `no findings` 报告。空结果只表示未查到发现，
+需要结合运行和 DQ 任务状态判断是否真正做过检查。
 PRELIMINARY 表示初步来源，NM 与缺失/零不同；外部展示应按正式表契约处理。
 人工判断要核对公司、财年/期间、单位、来源和当前版本，不只看“有数据”。
 

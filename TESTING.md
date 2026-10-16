@@ -30,9 +30,11 @@ Python 包声明 >=3.11；既有开发约定、Dockerfile 与 Harness skeleton �
   实际模型运行有成本，不能用 FakeLLM 的 PASS 代替。
 - 新的真实部署/网关：使用原 `scripts/*_smoke.py` 和 OPERATIONS 的对应步骤；必须记录环境、
   凭据权限及副作用，不能用历史 smoke 记录作为当次结果。
-- 生产分支发布：使用 `scripts/release_prod.py` 的补丁、受限词扫描与四项检查。
-  它会创建 worktree、commit，带 `--push` 会写远端，**不是文档检查或只读测试命令**。
-  本次新增文档对 prod 的影响见 architecture 的 Change propagation。
+- 生产分支发布：沿用 main 分支的发布流程，执行补丁转换、受限词扫描与四项检查。
+  main 中的具体入口是 `scripts/release_prod.py`，转换补丁是 `scripts/prod.patch`。
+  该发布流程会创建 worktree、commit，带 `--push` 会写远端，**不是文档检查或只读测试命令**。
+  文档变更也可能影响 prod 转换，见 architecture 的 Change propagation；需用实际补丁生成内容，
+  核对生产入口引用、受限词扫描及原发布脚本的本地检查。
 
 ## 1. Testing Philosophy
 
@@ -115,11 +117,14 @@ SQL Server 脚本会创建固定名称容器、network、镜像及测试数据�
 
 - 自动化 anchor alignment 未配置；人工/临时结构检查不构成长期 CI。
 - 本仓库没有外部 BFF 的真实消费测试，Azure/网关/ADLS 真实验收与本地 suite 分开。
-- `init-db` 非 SQLite 拒绝路径没有专门 CLI 回归，见 contract 中该项缺口。
+- `init-db` 的管线库拒绝、双 SQLite 初始化和非 SQLite 应用库跳过分支没有专门 CLI 回归，
+  见 contract 中该项缺口；底层 ensure_schema 的保护不能代替这些分支覆盖。
+- `dq-report` 默认查找失败与显式 ID 的空结果路径没有专门 CLI 回归；阶段生成 findings 的
+  测试不证明命令会验证 run 的存在性或 DQ 执行状态。一次性控制流探针不等于长期回归覆盖。
 - publish 在 LLM 失败后继续、同次与独立 metricdetail 的差异、人工决定后的整条重建/发布链，
   有相关组件测试和实现依据，但没有逐项专门的完整 CLI 组合测试；不得以组件 PASS 代替。
 - 应用层运行检查没有多进程同时启动的原子互斥测试；规划中的 worker/并发不是已覆盖能力。
-- prod 发布需更新既有补丁以处理新增文档中的受限词和开发入口引用；文档同步不执行发布。
+- 生产转换的本地扫描/测试不证明目标环境部署已验收；实际发布仍遵循原授权与运维流程。
 
 ## 8. Lessons Learned
 

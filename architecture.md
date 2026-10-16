@@ -128,8 +128,10 @@ metricdetail 的规则部分单独调用可运行，但同次运行若包含且�
 ## 9. Artifacts and Side Effects
 
 已提交的 fixtures、golden 和 `deploy/sql/` 是可审查材料；golden 不等于本轮真实模型结果。
-普通运行会发网络请求、产生模型费用、写原始存储与数据库。`init-db` 会创建或补齐本地 SQLite
-表列，拒绝把同一动作应用到服务器数据库。数据库 DDL 由 `scripts/export_app_ddl.py` 导出，
+普通运行会发网络请求、产生模型费用、写原始存储与数据库。`init-db` 不迁移服务器数据库：
+管线库非 SQLite 时退出 1；管线库为 SQLite 时先初始化它，随后只在应用库也为 SQLite 时
+初始化应用库，否则跳过该步骤并正常返回。成功退出不能证明非 SQLite 应用库已就绪。
+各分支见 [interact.md](interact.md#3-cross-cutting-user-visible-invariants)。数据库 DDL 由 `scripts/export_app_ddl.py` 导出，
 共享环境迁移按既有运维约定审阅执行。测试隔离及清理见 [TESTING.md](TESTING.md)。
 
 ## 10. Extension Points and Architecture Debt
@@ -151,4 +153,4 @@ metricdetail 的规则部分单独调用可运行，但同次运行若包含且�
 | 增删阶段或改变执行顺序 | CLI、StageRunner、DEPENDS、jobs 配置、同次运行失败传播及独立重跑前提 | 编排与 CLI 场景；不把各阶段分别成功当成完整运行成功 |
 | 管线/应用 schema、版本 ID 或发布字段 | upsert/AppWriter、关联、DDL、BFF 读取与用户引用 | publish 场景；涉及 DB 代码时补 SQL Server 集成与真实接口对齐 |
 | 人工复核 | review_decision → 后续 insight 输入 / DQ 队列 → 重建洞察并再次 publish | 复核测试；已有应用输出不是即时撤回 |
-| 新文件或正文中的发布受限词 | `scripts/release_prod.py` 扫描全部 tracked 文件；现有 `scripts/prod.patch` 未覆盖这九个新文件 | 发布前审查生成的 prod 内容并按既有流程更新补丁；main 文档检查不能证明 prod 发布通过 |
+| 新文件或正文中的发布受限词 | main 分支的发布脚本扫描全部 tracked 文件；main 中的 `scripts/prod.patch` 同步转换开发入口及文档引用 | 按 TESTING 的发布入口生成 prod 内容，核对引用、受限词扫描和本地检查；main 文档检查不能代替生产转换验证 |

@@ -104,7 +104,7 @@
         "anchor_id": "BOUNDARY.local_schema_init",
         "type": "capability_boundary",
         "status": "active",
-        "statement": "依据 docs/OPERATIONS.md §10 和 D-040，init-db 仅用于本地 SQLite；服务器数据库使用经审阅的 deploy/sql/ 脚本。CLI 与 ensure_schema 都拒绝对非 SQLite 使用本地初始化路径。",
+        "statement": "依据 docs/OPERATIONS.md §10 和 D-040，本地初始化不承担服务器数据库迁移；服务器数据库使用经审阅的 deploy/sql/ 脚本。init-db 的管线库和应用库分支不同，具体行为见 interact.md；成功退出不保证非 SQLite 应用库已经初始化。",
         "audience": [
           "maintainer",
           "agent",
@@ -112,7 +112,7 @@
         ],
         "test_anchor": null,
         "test_status": "not_automated",
-        "untested_reason": "尚无专门覆盖 init-db 拒绝非 SQLite 的 CLI 自动化测试；实现依据是 cli.py:init_db 和 clients/db.py:ensure_schema，SQL Server 集成测试不能代替此分支覆盖。",
+        "untested_reason": "尚无专门覆盖 init-db 的管线库拒绝、双 SQLite 初始化及非 SQLite 应用库跳过分支的 CLI 自动化测试；实现依据是 cli.py:init_db 和 clients/db.py:ensure_schema，底层保护及 SQL Server 集成测试不能代替这些分支覆盖。",
         "pending_since": "2026-10-16",
         "since": "2026-10-16"
       }

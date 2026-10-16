@@ -80,7 +80,11 @@
 - **User action or request**：`uw-pipeline dq-report`、`uw-pipeline review`，
   再用 `uw-pipeline review reject <id> --reviewer '姓名' --note '依据'`（或 approve）。
 - **Directly observable result**：DQ 写入报告；review 列出争议信号/恒等式错误及证据；成功决定输出结果和署名。
-- **Failure / degradation / escalation**：无 DQ 结果时报告命令返回 1；无待复核项时 review 显示 Nothing to review。
+- **Failure / degradation / escalation**：未指定 `--run-id` 时，dq-report 查找最新的成功 DQ 任务；
+  找不到才返回 1 且不生成报告。显式指定 `--run-id` 时直接查询该 ID 的 findings，不先验证运行
+  是否存在或是否执行过 DQ；查询为空也会正常返回并写出 `Severity: no findings`。
+  该文字仅表示没有查到发现，不能作为这一轮执行并通过质量检查的证据。
+  无待复核项时 review 显示 Nothing to review。
   空署名或无效/已处理 ID 被拒绝并给出下一步。恒等式条目的 approve/reject 记录处理决定，不改写数值。
 - **Acceptance assertion**：被拒绝的信号退出后续洞察输入和复核队列；不会即时删除既有洞察或应用内容，
   后续需按任务输入重新生成及发布。DQ Error 不自动阻止发布，也不使 dq 任务失败。
@@ -93,7 +97,16 @@
 <!-- capability-anchor: BOUNDARY.local_schema_init -->
 
 公司选择依据配置和固定 CIK，原 ticker 别名可映射到同一主体；未知 ticker 不静默新增。
-`init-db` 只为本地 SQLite 创建/补齐表，遇到服务器数据库会拒绝并指向已有 DDL/运维入口。
+`init-db` 不承担服务器数据库迁移。当前 CLI 对管线库和应用库的处理不同：
+
+| 管线数据库 | 应用数据库 | 当前行为 |
+|---|---|---|
+| SQLite | SQLite | 依次初始化两者；完成时正常返回。 |
+| 非 SQLite | 任意类型 | 提示使用 `deploy/sql/` 和运维入口，退出码 1；不进入应用库初始化。 |
+| SQLite | 非 SQLite | 先初始化管线库，再跳过应用库初始化；正常返回，不给出非 SQLite 应用库的拒绝提示。 |
+
+成功退出不证明非 SQLite 应用库已就绪。底层 `ensure_schema` 自身拒绝非 SQLite engine，
+但 CLI 在第三种配置中不会对应用库调用它；不能把底层保护概括成 CLI 对两套数据库的统一拒绝。
 `SUCCEEDED`、publish 成功、DQ 报告和业务验收分别表达不同事实，不能互换。
 证据为 `tests/test_company_stage.py`、`clients/db.py:ensure_schema`、`cli.py:init_db` 及上列场景测试。
 
@@ -117,6 +130,7 @@
 | XBRL 与新闻稿提供同一期间指标 | 结构化值优先；文本作为核对或补缺，PRELIMINARY 不覆盖已有 XBRL/NM。 |
 | 人工拒绝信号、已有洞察已发布 | 后续输入排除该信号；已有内容不自动撤回，需重建及发布。 |
 | DQ 发现 Error、publish 已完成 | 质量问题可查询，但不会自动回滚已发布数据。 |
+| 显式查询不存在或未执行过 DQ 的 run ID | dq-report 可正常写出 `no findings`；需要另查运行及 DQ 任务状态，不能把空结果当成检查通过。 |
 
 相应实现见 `jobs/orchestrator.py`、`run_text_metrics.py`、`run_dq.py`、`enrich/package.py`；
 证据层级及尚未覆盖的组合见 [TESTING.md](TESTING.md)。
