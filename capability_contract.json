@@ -1,0 +1,182 @@
+{
+  "schema_version": "0.1.0",
+  "status": "active",
+  "purpose": "prof360 已有公开约定与责任边界的选定登记；依据原开发约定、已接受决定和应用库规范。active 表示当前登记状态，不代表真实环境验收完成。",
+  "source_language": "zh-CN",
+  "rules": [
+    "本登记的描述性内容须核对当前实现；不得把模板示例、计划或某次历史运行作为当前交付证明。",
+    "描述性事实核对当前实现、配置、测试、committed artifacts 或可重复运行结果；规范性政策核对有效项目授权与政策依据，混合语句拆开处理；active 不使实现观察自动成为政策。",
+    "CLAUDE.md 的开发约定、docs/decisions.md 的已接受决定、docs/PLAN.md 的规划以及 docs/schema-contract.md 应用库部分继续在各自范围内有效；本 contract 登记选定承诺，interact 展开行为，用户指南提供正式入口。后续决定仅替代其明确覆盖的旧范围，历史记录和内部表说明不代表当前对外能力。",
+    "只登记值得明确保留的公开承诺、边界、职责和调用行为，并在 statement 中指出既有公开承诺或已接受政策依据。纯实现或测试观察通常优先写入 interact.md，不自动升级为长期支持或拒绝政策；新增长期承诺按项目已有授权与持久化规则采纳。",
+    "没有适用内容时按现有结构准确表达不适用及已检查范围与原因，不编造条目或消费者。Not applicable 表示确实不适用，Not configured 表示适用机制尚未配置，尚未确认表示证据不足；这些说明不增加或替换状态枚举。",
+    "test_anchor 是证据指针，不是正文作者；不从测试自动生成 statement 或 status，也不从本 contract 生成 CLI、MCP、OpenAPI 或 handler；实际调用指向真实公开接口及其正式参考。",
+    "future 或 proposed 行为必须使用明确的非 active 状态，不得呈现为当前可用能力。",
+    "Markdown 文档只用 `<!-- capability-anchor: <ANCHOR_ID> -->` 引用稳定 anchor_id；marker 名称与 ANCHOR_ID 大小写敏感，ANCHOR_ID 必须匹配 `[A-Za-z0-9_.-]+`；目标 checker 可容忍 comment 内空白差异，但不得用 JSON path、数组位置或 schema 内部路径代替 anchor ID。",
+    "其他 anchor、ref、contract 或 wiki link 形式不受支持，不能建立 alignment 引用；本通用协议不保证任何消费者会穷举发现或拒绝未知 alias。",
+    "Anchor 引用只证明结构上引用了已登记 ID，不单独证明句子级绑定、业务语义或实现已完成。",
+    "deprecated anchor 必须保留原始语义登记，且不得复用于其他含义。",
+    "显式使用 test_anchor: null 的契约必须同时记录非空、具体的 untested_reason 与非空 pending_since；这只登记覆盖缺口，不表示声明已经验证。"
+  ],
+  "contracts": {
+    "capabilities": [
+      {
+        "anchor_id": "CAPABILITY.configured_pipeline",
+        "type": "capability",
+        "status": "active",
+        "statement": "依据 CLAUDE.md Commands、docs/OPERATIONS.md §1 及 D-034，CLI 按配置选择公司、阶段或 job，并报告任务结果；单独选择阶段要求调用方准备输入，不承诺自动补依赖或一次运行全新数据。",
+        "audience": [
+          "operator",
+          "agent"
+        ],
+        "test_anchor": "tests/test_company_stage.py::test_run_all_company_stage",
+        "test_status": "automated",
+        "since": "2026-10-16"
+      },
+      {
+        "anchor_id": "CAPABILITY.sourced_metrics",
+        "type": "capability",
+        "status": "active",
+        "statement": "依据 D-032/D-042/D-044 和 docs/schema-contract.md 的来源约定，财务结果保留期间/来源信息，结构化事实优先；初步文本值用于补缺、已有结构化值用于核对。仅有指标配置不承诺每家公司每期都有结果。",
+        "audience": [
+          "data_user",
+          "integrator"
+        ],
+        "test_anchor": "tests/test_text_metrics.py::test_stage_writes_preliminary_and_crosschecks",
+        "test_status": "automated",
+        "since": "2026-10-16"
+      },
+      {
+        "anchor_id": "CAPABILITY.app_publish",
+        "type": "capability",
+        "status": "active",
+        "statement": "依据 D-037 与 docs/schema-contract.md 应用表写入/读取约定，publish 把当前管线结果映射到应用库；同一对象的映射和应用行仍存在时重跑保持 ID。KeyInsights、StrategicRisk、FollowUpQuestions 的新版本另建行并停用旧版本；其他表可删除过期行，外部删行后的重建不承诺原 ID。publish 成功不证明所有上游刷新、DQ 无 Error 或外部 BFF 完成验收。",
+        "audience": [
+          "integrator",
+          "operator"
+        ],
+        "test_anchor": "tests/test_publish.py::test_republish_is_idempotent_and_new_versions_retire_old_rows",
+        "test_status": "automated",
+        "since": "2026-10-16"
+      },
+      {
+        "anchor_id": "CAPABILITY.named_review",
+        "type": "capability",
+        "status": "active",
+        "statement": "依据 D-045 与 docs/OPERATIONS.md §10b，CLI 提供争议信号/恒等式问题的有署名人工决定；被拒绝信号从后续洞察输入排除。决定不自动修正指标、撤回旧洞察或重新发布。",
+        "audience": [
+          "operator",
+          "reviewer"
+        ],
+        "test_anchor": "tests/test_governance.py::test_review_needs_a_name_and_a_valid_id_and_rejected_signals_leave_the_input",
+        "test_status": "automated",
+        "since": "2026-10-16"
+      }
+    ],
+    "capability_boundaries": [
+      {
+        "anchor_id": "BOUNDARY.company_identity",
+        "type": "capability_boundary",
+        "status": "active",
+        "statement": "依据 CLAUDE.md 与 D-006，正式配置的公司固定 CIK；ticker 与旧 ticker 是选择/显示标识。SEC ticker 发生重分配时保留固定 CIK 的主体，不把 ticker 当成永久身份。",
+        "audience": [
+          "maintainer",
+          "operator"
+        ],
+        "test_anchor": "tests/test_company_stage.py::test_pinned_cik_beats_reassigned_ticker",
+        "test_status": "automated",
+        "since": "2026-10-16"
+      },
+      {
+        "anchor_id": "BOUNDARY.validation_scope",
+        "type": "capability_boundary",
+        "status": "active",
+        "statement": "依据 CLAUDE.md 的业务输出校验要求及 D-044，表格指标须通过适用的单元格、期间和口径检查，被拒绝的候选不从其他单元格猜补。测试只证明指定检查范围；引文存在、数值匹配和模型同意不证明全部语义正确，llm_call 缓存也不等于已采纳业务结果。",
+        "audience": [
+          "data_user",
+          "maintainer",
+          "reviewer"
+        ],
+        "test_anchor": "tests/test_table_reader.py::test_wrong_cells_are_withheld",
+        "test_status": "automated",
+        "since": "2026-10-16"
+      },
+      {
+        "anchor_id": "BOUNDARY.local_schema_init",
+        "type": "capability_boundary",
+        "status": "active",
+        "statement": "依据 docs/OPERATIONS.md §10 和 D-040，init-db 仅用于本地 SQLite；服务器数据库使用经审阅的 deploy/sql/ 脚本。CLI 与 ensure_schema 都拒绝对非 SQLite 使用本地初始化路径。",
+        "audience": [
+          "maintainer",
+          "agent",
+          "reviewer"
+        ],
+        "test_anchor": null,
+        "test_status": "not_automated",
+        "untested_reason": "尚无专门覆盖 init-db 拒绝非 SQLite 的 CLI 自动化测试；实现依据是 cli.py:init_db 和 clients/db.py:ensure_schema，SQL Server 集成测试不能代替此分支覆盖。",
+        "pending_since": "2026-10-16",
+        "since": "2026-10-16"
+      }
+    ],
+    "responsibility_boundaries": [
+      {
+        "anchor_id": "RESPONSIBILITY.bff_owned_state",
+        "type": "responsibility_boundary",
+        "status": "active",
+        "statement": "依据 CLAUDE.md 的 BFF 边界、D-037 和 docs/schema-contract.md，管线不接管应用 logo、收藏、最近访问及用户 flag；发布保持用户指向的旧问题身份。外部 BFF 展示与消费契约须单独对齐。",
+        "audience": [
+          "integrator",
+          "maintainer"
+        ],
+        "test_anchor": "tests/test_publish.py::test_question_flag_target_is_stable",
+        "test_status": "automated",
+        "since": "2026-10-16"
+      }
+    ],
+    "agent_behaviors": [
+      {
+        "anchor_id": "BEHAVIOR.phase_confirmation",
+        "type": "agent_behavior",
+        "status": "active",
+        "statement": "依据 CLAUDE.md Conventions，启动新的产品 Phase 前列出计划与拟改文件并等待确认；计划未覆盖的决定记录到 docs/decisions.md，完成的 checklist 更新 docs/PLAN.md。这不把已授权的日常修复或文档同步重新定义为新 Phase。",
+        "audience": [
+          "maintainer",
+          "agent",
+          "reviewer"
+        ],
+        "test_anchor": null,
+        "test_status": "not_automated",
+        "untested_reason": "这是人和 Agent 的协作政策，当前测试没有审批或任务授权执行器；须由任务记录与人工 review 核对，不能声称机器已强制执行。",
+        "pending_since": "2026-10-16",
+        "since": "2026-10-16"
+      }
+    ],
+    "documents": [
+      {
+        "anchor_id": "DOC.interact",
+        "type": "document",
+        "status": "active",
+        "statement": "interact.md 按本 contract rules 的范围规则展开用户可观察行为、交互语义与验收。",
+        "audience": [
+          "business_user",
+          "agent",
+          "reviewer"
+        ],
+        "document_path": "interact.md",
+        "language": "zh-CN"
+      },
+      {
+        "anchor_id": "DOC.business_user_guide",
+        "type": "document",
+        "status": "active",
+        "statement": "docs/business_user_guide.md 按本 contract rules 的范围规则提供使用说明、正式文档与接口目录及必要补充；成熟项目可使用短桥接页。",
+        "audience": [
+          "business_user",
+          "agent",
+          "reviewer"
+        ],
+        "document_path": "docs/business_user_guide.md",
+        "language": "zh-CN"
+      }
+    ]
+  }
+}

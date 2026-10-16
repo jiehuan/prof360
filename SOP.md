@@ -1,0 +1,35 @@
+# Standard Operating Procedures
+
+## Purpose and Authority
+
+本页只提供稳定流程入口，操作正文仍在 [docs/OPERATIONS.md](docs/OPERATIONS.md)。
+政策范围见 [AGENTS.md](AGENTS.md#authority-map)，测试命令与层级见 [TESTING.md](TESTING.md)。
+不在这里复制容易漂移的完整命令、模型名或部署参数。
+
+## Available SOPs
+
+| 场景 | Action | Authority / Source | Acceptance |
+|---|---|---|---|
+| 日常运行与中断恢复 | 选择已配置 job/公司，检查任务与质量结果 | OPERATIONS §1；config/jobs.yaml；interact 的运行场景 | 任务结果、失败原因和 DQ/coverage 各自核对，不能只看一个成功标记 |
+| 新公司、指标或行业组 | 固定 CIK、配置口径并核实来源/缺口 | OPERATIONS §2–5；既有开发约定；config/ | 对应测试及实际受影响公司结果，缺口有说明 |
+| prompt 或校验变化 | 按版本政策更新，审查来源与输出差异 | OPERATIONS §6；decisions；TESTING 的模型入口 | 新旧结果及 golden diff 可解释，未测 live 不作已验证声明 |
+| 人工复核 | 从当前队列查看证据并记录有署名的决定 | OPERATIONS §10b；interact 的质量/复核场景 | 有效决定保存；后续输入正确过滤；已有应用结果需另行重建/发布 |
+| 应用表对接 | 核对公开表、当前版本和关联，保留 BFF 自有数据 | schema-contract 应用库部分；schema_app.py；D-037 | 映射与 ID 测试及实际消费者验收分开记录 |
+| 数据库/原始存储部署 | 填环境配置，审阅 DDL/权限，运行原 smoke 流程 | OPERATIONS §10；config/azure.yaml；deploy/sql/ | 真实目标环境结果；本地 init-db 不能替代服务器迁移 |
+| 容器与计划任务 | 审查镜像、持久化路径和部署占位符 | Dockerfile；deploy/openshift/README.md；Harness skeleton | 实际构建/部署及目标环境运行证据，文件存在不是完成 |
+| 生产分支发布 | 应用原 main→prod 转换、扫描、测试与发布流程 | scripts/release_prod.py；scripts/prod.patch；原开发入口 | 生成分支内容和文档引用正确，扫描与必要测试通过，按授权发布并读回 |
+
+## Failure, Rollback, and Escalation
+
+失败时保留实际错误与运行/任务 ID，按已有恢复条件处理。未结束的中断 job 只有满足心跳、
+窗口及相同输入列表才续跑；已结束的失败运行不是同一恢复路径。
+数据库写入有自然键幂等和按公司事务，但整个 run 不自动回滚；不得用 DELETE-all-then-insert
+修复。应用 ID 映射和用户引用不能当临时垃圾清除，数据库恢复依真实环境已有备份/迁移方案，
+仓库没有可承诺的一键全局回滚。
+
+发布脚本冲突、受限词或测试失败时会保留其 worktree，按既有修复/refresh 流程处理。
+九份新增文档不在原 prod 补丁覆盖范围内，原开发入口名称及正文受限词需要在下一次发布前
+按生产分支规则转换；普通 main 文档验收不替代该步骤。不要为绕过扫描而抹掉权威来源。
+
+命令/配置问题依 OPERATIONS 排查；BFF 接口争议沿用 schema-contract，超出已接受政策的选择
+沿用 decisions。未确认的真实权限、迁移分工和对外语义先明确边界，不猜测责任人或外部承诺。
