@@ -113,7 +113,7 @@
 ```
 uw-pipeline/
 ├── pyproject.toml
-├── CLAUDE.md                     # 项目约定（见 §11）
+├── AGENTS.md                     # 项目约定（见 §11）
 ├── docs/
 │   ├── PLAN.md                   # 本文件
 │   ├── decisions.md              # 决策记录
@@ -402,7 +402,7 @@ uw-pipeline dq-report --run-id <id>
 **验收**：schema-contract.md 经人工确认；差距项都有处理方案。
 
 ### Phase 1 — 骨架 + SEC 客户端 + 公司主数据
-- [x] 项目骨架、settings、CLI、ruff/mypy/pytest 配置、CLAUDE.md
+- [x] 项目骨架、settings、CLI、ruff/mypy/pytest 配置、项目开发约定（当前入口 `AGENTS.md`）
 - [x] `clients/sec.py`：UA、限速、重试、本地/ADLS 缓存
 - [x] `companies.yaml`：初始清单 = 前端已出现的公司（MAR、LUV、F、PFE、JPM、M、LUMN、PARA、ENPH）
 - [x] ticker → CIK → submissions → 写入 `company`；判定 `industry_group`
@@ -763,16 +763,11 @@ uw-pipeline dq-report --run-id <id>
 
 ---
 
-## 11. 给 Claude Code 的工作约定（写入 CLAUDE.md）
+## 11. 项目开发约定
 
-- 每个 Phase 开始前先列出要改动的文件和计划，等待确认后再动手
-- 单测不得访问外网；新增外部调用必须同时加 fixture
-- 新的 XBRL tag 映射、指标公式、行业分组规则一律写进 `config/`，不硬编码
-- LLM 输出永远不能直接写库，必须经过 schema + grounding 校验
-- 数据库写入必须幂等；禁止 `DELETE` 全表后重插
-- 不修改 BFF 仓库，发现契约问题记录到 `docs/schema-contract.md`
-- 密钥只从环境变量读取，不写入代码、日志或 fixture
-- 每完成一个 checklist 项，更新本文件对应的勾选框
+开发约定统一维护在 [AGENTS.md](../AGENTS.md#project-specific-conventions)，适用于人和 Agent。
+本节保留计划入口；阶段确认、测试隔离、配置归属、模型校验、幂等写入、BFF 边界、秘密保护
+和 checklist 更新等原有规则均由该正文承接，详细操作仍见 OPERATIONS 和 TESTING。
 
 ---
 

@@ -9,7 +9,7 @@ done; Phase 10 planned, on hold). Related documents:
 | `docs/decisions.md` | Every design decision with its reason (D-001 … D-046), cited below as D-xxx |
 | `docs/OPERATIONS.md` | Day-to-day operations, troubleshooting (Chinese) |
 | `docs/schema-contract.md` | Application tables as the BFF reads them |
-| `CLAUDE.md` | Commands and coding conventions |
+| [AGENTS.md](../AGENTS.md) | Shared coding conventions and task routing; verification commands in TESTING.md |
 
 ## 1. What it does
 
