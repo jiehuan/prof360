@@ -49,6 +49,7 @@ def _rows(engine):
 def test_run_all_company_stage(sec_routes: respx.MockRouter, cli_env) -> None:
     result = CliRunner().invoke(app, ["run", "--all", "--stage", "company"])
     assert result.exit_code == 0, result.output
+    assert "SUCCEEDED: succeeded=9; dq=not run" in result.output  # no dq stage in this run
     rows = _rows(cli_env)
     assert len(rows) == 9
     for row in rows:

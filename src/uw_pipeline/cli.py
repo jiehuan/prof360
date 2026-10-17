@@ -10,7 +10,7 @@ from enum import StrEnum
 from typing import Annotated
 
 import typer
-from sqlalchemy import Engine, select
+from sqlalchemy import Connection, Engine, func, select
 
 from uw_pipeline.clients.db import app_engine, ensure_schema, pipeline_engine
 from uw_pipeline.compute.coverage import company_coverage, load_notes, render_markdown
@@ -136,8 +136,10 @@ def run(
             outcome = orch.execute(run_id, runner)
             orch.add_stats(run_id, {"usage_last_start": runner.usage(started)})
     counts = ", ".join(f"{k.lower()}={v}" for k, v in sorted(outcome.counts.items()))
-    typer.echo(f"run {run_id} {outcome.status}: {counts}")
     with engine.connect() as conn:
+        dq, flagged = _dq_status(conn, run_id)
+        hint = " (uw-pipeline dq-report)" if flagged else ""
+        typer.echo(f"run {run_id} {outcome.status}: {counts}; {dq}{hint}")
         failed = conn.execute(
             select(pipeline_task.c.ticker, pipeline_task.c.stage, pipeline_task.c.status,
                    pipeline_task.c.detail)
@@ -149,6 +151,34 @@ def run(
         typer.echo(f"  {status} {t} [{st}]: {detail}", err=True)
     if outcome.status != "SUCCEEDED":
         raise typer.Exit(code=1)
+
+
+def _dq_status(conn: Connection, run_id: int) -> tuple[str, int]:
+    """The data-quality outcome of a run and its Error + Warning count. A run whose dq stage did
+    not run says so, so "no findings" is never read as "not checked"; dq findings never fail
+    the task, so a SUCCEEDED run can still have Errors."""
+    tasks: dict[str, int] = dict(conn.execute(
+        select(pipeline_task.c.status, func.count())
+        .where(pipeline_task.c.run_id == run_id, pipeline_task.c.stage == "dq")
+        .group_by(pipeline_task.c.status)
+    ).all())  # fmt: skip
+    if not tasks:
+        return "dq=not run", 0
+    done, total = tasks.get("SUCCEEDED", 0), sum(tasks.values())
+    if done == 0:
+        if tasks.keys() & {"PENDING", "RUNNING"}:
+            return "dq=pending", 0
+        states = ", ".join(f"{k.lower()}={v}" for k, v in sorted(tasks.items()))
+        return f"dq=not run ({states})", 0
+    found: dict[str, int] = dict(conn.execute(
+        select(dq_finding.c.severity, func.count())
+        .where(dq_finding.c.run_id == run_id).group_by(dq_finding.c.severity)
+    ).all())  # fmt: skip
+    errors, warnings = found.get("Error", 0), found.get("Warning", 0)
+    text = f"dq={ {'Error': errors, 'Warning': warnings} }"
+    if done < total:
+        text += f" ({done} of {total} companies checked)"
+    return text, errors + warnings
 
 
 @app.command()
@@ -170,8 +200,9 @@ def runs(limit: Annotated[int, typer.Option(help="Runs to show")] = 10) -> None:
             cost = usage.get("llm_cost_estimate", usage.get("llm_cost_usd_estimate", 0))
             symbol = {"USD": "$", "EUR": "€"}.get(usage.get("llm_cost_currency", "USD"), "")
             ended = f"{r['finished_at']:%H:%M}" if r["finished_at"] else "running"
+            dq = _dq_status(conn, r["run_id"])[0]
             typer.echo(
-                f"{r['run_id']:>5} {r['job']:<8} {r['status']:<9} starts={r['starts']} "
+                f"{r['run_id']:>5} {r['job']:<8} {r['status']:<9} {dq} starts={r['starts']} "
                 f"{r['started_at']:%Y-%m-%d %H:%M} -> {ended} "
                 f"tasks={stats.get('tasks', {})} llm={symbol}{cost}"
             )

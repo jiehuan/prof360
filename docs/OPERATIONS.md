@@ -8,7 +8,7 @@
 |---|---|
 | `uw-pipeline run --job nightly` | 定时任务。nightly 在美东 23:30 运行，morning 在 05:30 运行，阶段定义在 `config/jobs.yaml` |
 | `uw-pipeline run --ticker MAR --stage compute` | 手动运行指定公司的指定阶段，`--stage` 可以写多次 |
-| `uw-pipeline runs` | 列出最近的运行，以及最近一次里失败或被跳过的任务和原因 |
+| `uw-pipeline runs` | 列出最近的运行，以及最近一次里失败或被跳过的任务和原因。每次运行旁边显示数据质量结果：`dq={'Error': 1, 'Warning': 3}`；没跑 dq 阶段的显示 `dq=not run`。运行成功不代表质量通过：dq 查出 Error 时任务仍是 SUCCEEDED，详情看 `dq-report` |
 | `uw-pipeline dq-report` | 生成数据质量报告，写到 `data/reports/dq-run<id>.md` |
 | `uw-pipeline coverage-report` | 生成 XBRL 指标覆盖率报告，并列出没有说明原因的缺口 |
 | `uw-pipeline run --stage publish` | 把当前结果写进应用库（nightly、morning、news 三个 job 末尾都会跑） |

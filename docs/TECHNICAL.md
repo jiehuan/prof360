@@ -139,6 +139,12 @@ same-day cache; `--force` refetches and ignores input hashes.
 **Run statistics** (`pipeline_run.stats_json`, shown by `uw-pipeline runs`): task counts, SEC
 requests, Alpha Vantage calls, LLM calls, tokens and estimated cost per model.
 
+**Data-quality status** (`uw-pipeline runs` and the summary line `run` prints at the end): each
+run shows `dq={'Error': n, 'Warning': m}` from its own dq findings, `dq=not run` when the run
+had no dq stage (or it was skipped or failed), `dq=pending` while it waits, and "(k of n
+companies checked)" when only some companies were checked. dq findings never fail a task, so a
+SUCCEEDED run can have Errors; the summary then points to `uw-pipeline dq-report`.
+
 ## 6. Data model
 
 ### Pipeline database (`schema.py`, 36 tables)
