@@ -35,11 +35,13 @@ class Stage(StrEnum):
     company = "company"
     facts = "facts"
     compute = "compute"
+    market = "market"
     documents = "documents"
     transcripts = "transcripts"
     news = "news"
     textmetrics = "textmetrics"
     governance = "governance"
+    legal = "legal"
     signals = "signals"
     insights = "insights"
     metricdetail = "metricdetail"
@@ -50,9 +52,9 @@ class Stage(StrEnum):
 
 # Default order for manual runs (scheduled jobs list their stages in config/jobs.yaml).
 STAGE_ORDER = [
-    Stage.company, Stage.facts, Stage.compute, Stage.documents,
+    Stage.company, Stage.facts, Stage.compute, Stage.market, Stage.documents,
     Stage.transcripts, Stage.news, Stage.scores, Stage.textmetrics, Stage.governance,
-    Stage.signals,
+    Stage.legal, Stage.signals,
     Stage.insights,
     Stage.metricdetail, Stage.publish, Stage.dq,
 ]  # fmt: skip
@@ -119,6 +121,7 @@ def run(
         max_attempts=jobs_cfg.max_attempts,
         resume_within=timedelta(hours=jobs_cfg.resume_within_hours),
         heartbeat_every=timedelta(minutes=jobs_cfg.heartbeat_minutes),
+        parallel=jobs_cfg.parallel,
     )
     try:
         run_id, resumed = orch.start(
@@ -336,7 +339,7 @@ def dq_report(
 review_app = typer.Typer(
     no_args_is_help=False,
     add_completion=False,
-    help="Human review of disputed signals and identity breaks (D-045).",
+    help="Human review of disputed signals, identity breaks and new legal matters (D-045).",
 )
 app.add_typer(review_app, name="review")
 

@@ -73,6 +73,24 @@ def test_q4_and_cash_flow_quarters_are_derived_from_ytd() -> None:
     assert values(out[out["tag"] == "Revenues"], "FY") == {(2025, 0): (100, "REPORTED")}
 
 
+def test_share_counts_are_not_derived() -> None:
+    """A weighted-average share count is not additive: no Q4 = FY - 9M, no quarters from YTD
+    (Phase 15c: Southwest's Q4 came out as 0 and 7M shares before this)."""
+    shares = [
+        fact("Diluted", "2025-01-01", "2025-03-31", 600),
+        fact("Diluted", "2025-04-01", "2025-06-30", 590),
+        fact("Diluted", "2025-01-01", "2025-06-30", 595),
+        fact("Diluted", "2025-07-01", "2025-09-30", 580),
+        fact("Diluted", "2025-01-01", "2025-09-30", 590),
+        fact("Diluted", "2025-01-01", "2025-12-31", 585, form="10-K"),
+    ]
+    out = standardize(frame(*[r | {"unit": "shares"} for r in shares]), DEC)
+    assert values(out, "Q") == {(2025, 1): (600, "REPORTED"), (2025, 2): (590, "REPORTED"),
+                                (2025, 3): (580, "REPORTED")}  # fmt: skip
+    assert values(out, "FY") == {(2025, 0): (585, "REPORTED")}
+    assert values(out, "YTD") == {}
+
+
 def test_q4_from_quarter_sum_when_9m_missing() -> None:
     facts = frame(
         fact("Revenues", "2025-01-01", "2025-03-31", 10),

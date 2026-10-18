@@ -38,6 +38,20 @@ ADDED_COLUMNS = {
     "TranscriptRiskFlag": ["Category"],
     "TranscriptToneAnalysis": ["CompanyId", "Quarter"],
 }
+# Columns added to pipeline tables after they were first deployed; the full pipeline script
+# adds them to an existing table (CREATE TABLE ... IF missing does not).
+PIPELINE_ADDED_COLUMNS = {
+    "board_composition": [
+        "fees_fiscal_year",
+        "audit_fees",
+        "audit_related_fees",
+        "tax_fees",
+        "other_fees",
+        "dual_class",
+        "ceo_name",
+        "ceo_since",
+    ],  # Phase 15f
+}
 # Columns whose foreign key pointed to a table the pipeline replaced (not built any more).
 REPLACED_REFERENCES = ["alpha_Transcripts", "alpha_run", "alpha_NewsArticle"]
 TABLE_DOCS = {
@@ -154,10 +168,12 @@ def changes() -> str:
     return "\n".join(parts)
 
 
-def full(md: MetaData, schema: str, what: str) -> str:
+def full(md: MetaData, schema: str, what: str,
+         added: dict[str, list[str]] | None = None) -> str:  # fmt: skip
     parts = [HEADER, f"-- {what}", "", _schema(schema), ""]
     for table in md.sorted_tables:
-        parts += [_create(table, schema), *_indexes(table, schema), ""]
+        new_cols = [_add_column(table, c, schema) for c in (added or {}).get(table.name, [])]
+        parts += [_create(table, schema), *new_cols, *_indexes(table, schema), ""]
     return "\n".join(parts)
 
 
@@ -170,7 +186,7 @@ def main() -> None:
                                     "application (Users, UserHistory, ...) are not included."),
         "pipeline_schema_full.sql": full(pipeline_metadata, PIPELINE_SCHEMA, "The pipeline's own "
                                          "tables (raw facts, documents, LLM cache, runs, DQ). The "
-                                         "BFF does not read them."),
+                                         "BFF does not read them.", PIPELINE_ADDED_COLUMNS),
     }  # fmt: skip
     for name, text in outputs.items():
         (OUT / name).write_text(text, encoding="utf-8")

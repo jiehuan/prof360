@@ -130,8 +130,8 @@ class MetricDef(BaseModel):
     display_name: str
     description: str | None = None
     section: str
-    unit: Literal["USD", "ratio", "fraction"]
-    kind: Literal["formula", "growth", "text"] = "formula"
+    unit: Literal["USD", "ratio", "fraction", "days", "shares", "score"]
+    kind: Literal["formula", "growth", "text", "external"] = "formula"  # external: Phase 15
     formula: list[str] = Field(default_factory=list)
     optional: list[str] = Field(default_factory=list)
     nm_when: str | None = None
@@ -158,12 +158,14 @@ class MetricDef(BaseModel):
         elif self.kind == "text":
             if self.extraction is None:
                 raise ValueError(f"{self.code}: text metric needs `extraction`")
+        elif self.kind == "external":
+            pass  # written by another stage: market (prices, EPS) or documents (Form 4)
         elif not (self.base and self.compare):
             raise ValueError(f"{self.code}: growth metric needs `base` and `compare`")
         return self
 
     def inputs(self) -> set[str]:
-        if self.kind == "text":
+        if self.kind in ("text", "external"):
             return set()
         if self.kind == "growth":
             return {self.base} if self.base else set()

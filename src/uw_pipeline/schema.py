@@ -644,10 +644,47 @@ board_composition = Table(
     Column("ceo_is_chair", Boolean),
     Column("lead_independent_director", Unicode(200)),  # name; NULL when there is none
     Column("committees_json", UnicodeText, nullable=False),  # [{"name", "chair"}]
+    # Phase 15f (board_v2, D-050): the proxy's auditor fee table for its latest fiscal year (USD),
+    # more than one class of common stock with unequal votes, and the CEO's start year.
+    Column("fees_fiscal_year", Integer),
+    Column("audit_fees", Float(53)),
+    Column("audit_related_fees", Float(53)),
+    Column("tax_fees", Float(53)),
+    Column("other_fees", Float(53)),
+    Column("dual_class", Boolean),
+    Column("ceo_name", Unicode(200)),
+    Column("ceo_since", Integer),
     Column("evidence_json", UnicodeText, nullable=False),
     Column("model", Unicode(60), nullable=False),
     Column("prompt_version", Unicode(40), nullable=False),
     Column("input_hash", Unicode(64), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+)
+
+# Litigation and regulatory matters (Phase 15e, D-050), read by two models from the latest 10-K
+# and the 10-Qs after it; a matter is kept only where both models found it with the same type
+# and a quote found in the filing. Matched across filings by type and name; a matter first seen
+# after a company's first filing is NEW and goes to `uw-pipeline review`.
+legal_matter = Table(
+    "legal_matter",
+    metadata,
+    Column("company_id", Integer, ForeignKey("company.company_id"), primary_key=True),
+    Column("matter_key", Unicode(160), primary_key=True),  # type:name tokens
+    Column("matter_type", Unicode(30), nullable=False),
+    Column("name", Unicode(300), nullable=False),
+    Column("agency", Unicode(100)),
+    Column("status", Unicode(20), nullable=False),  # open | settled | dismissed | closed | unknown
+    Column("started", Unicode(30)),  # as the filing gives it ("March 2024", "2024")
+    Column("wells_notice", Boolean, nullable=False),
+    Column("accrual", Float(53)),  # USD
+    Column("quote", UnicodeText, nullable=False),  # from the latest filing that mentions it
+    Column("first_doc_id", Integer, ForeignKey("source_document.doc_id"), nullable=False),
+    Column("last_doc_id", Integer, ForeignKey("source_document.doc_id"), nullable=False),
+    Column("first_disclosed", Unicode(10), nullable=False),  # filed date of first_doc
+    Column("last_seen", Unicode(10), nullable=False),  # filed date of last_doc
+    Column("review_status", Unicode(20), nullable=False),  # BASELINE | NEW
+    Column("model", Unicode(60), nullable=False),
+    Column("prompt_version", Unicode(40), nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False),
 )
 
@@ -657,11 +694,70 @@ board_composition = Table(
 review_decision = Table(
     "review_decision",
     metadata,
-    Column("item_type", Unicode(20), primary_key=True),  # SIGNAL | IDENTITY
+    Column("item_type", Unicode(20), primary_key=True),  # SIGNAL | IDENTITY | MATTER
     Column("item_key", Unicode(100), primary_key=True),  # signal_key, or dq rule + period
     Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False),
     Column("decision", Unicode(10), nullable=False),  # APPROVED | REJECTED
     Column("reviewer", Unicode(100), nullable=False),
     Column("note", Unicode(1000)),
     Column("decided_at", DateTime(timezone=True), nullable=False),
+)
+
+# -- Market data (Phase 15a, decisions D-050) ---------------------------------------------------
+
+# Daily prices by symbol (the companies' tickers and the benchmark, SPY). `adjusted_close` is
+# split- and dividend-adjusted (returns, drops, volatility); `close` is as traded (market cap).
+market_daily = Table(
+    "market_daily",
+    metadata,
+    Column("symbol", Unicode(16), primary_key=True),
+    Column("trade_date", Unicode(10), primary_key=True),
+    Column("close", Float, nullable=False),
+    Column("adjusted_close", Float, nullable=False),
+    Column("volume", Float),
+    Column("raw_path", Unicode(500), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+)
+
+# Quarterly earnings per share against the consensus estimate (Alpha Vantage EARNINGS).
+earnings_report = Table(
+    "earnings_report",
+    metadata,
+    Column("symbol", Unicode(16), primary_key=True),
+    Column("fiscal_date_ending", Unicode(10), primary_key=True),
+    Column("reported_date", Unicode(10)),
+    Column("report_time", Unicode(20)),  # pre-market | post-market
+    Column("reported_eps", Float),
+    Column("estimated_eps", Float),
+    Column("surprise", Float),
+    Column("surprise_pct", Float),  # percent, as Alpha Vantage gives it
+    Column("raw_path", Unicode(500), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+)
+
+# Insiders' Form 4 transactions (Phase 15b, D-050): non-derivative lines of each filing.
+insider_transaction = Table(
+    "insider_transaction",
+    metadata,
+    Column("accession_no", Unicode(25), primary_key=True),
+    Column("line", Integer, primary_key=True),
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False, index=True),
+    Column("doc_id", Integer, ForeignKey("source_document.doc_id")),
+    Column("filed_at", Unicode(10), nullable=False),
+    Column("owner_cik", Unicode(10)),
+    Column("owner_name", Unicode(200)),
+    Column("is_director", Boolean, nullable=False),
+    Column("is_officer", Boolean, nullable=False),
+    Column("officer_title", Unicode(200)),
+    Column("is_ten_percent", Boolean, nullable=False),
+    Column("security_title", Unicode(200)),
+    Column("trade_date", Unicode(10)),
+    Column("code", Unicode(4)),  # S sale, P purchase, M, F, A, G, ...
+    Column("acquired_disposed", Unicode(1)),
+    Column("shares", Float),
+    Column("price", Float),
+    Column("shares_after", Float),
+    Column("direct", Boolean, nullable=False),
+    Column("is_10b5_1", Boolean, nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
 )

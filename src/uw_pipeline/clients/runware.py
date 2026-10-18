@@ -73,6 +73,8 @@ class RunwareClient:
         self._key = api_key
         self._http = http or httpx.Client(timeout=cfg.timeout_sec)
         self._sleep = sleep
+        # Called with (model, seconds) on status 429 (clients/llm_limits.py).
+        self.on_throttle: Callable[[str, float], None] | None = None
 
     def close(self) -> None:
         self._http.close()
@@ -102,7 +104,10 @@ class RunwareClient:
             if r.status_code in self.cfg.retry_statuses and attempt + 1 < self.cfg.max_attempts:
                 last = str(r.status_code)
                 log.info("Runware %s: %s, retrying", body["model"], r.status_code)
-                self._sleep(self._wait(attempt, r))
+                wait = self._wait(attempt, r)
+                if r.status_code == 429 and self.on_throttle:
+                    self.on_throttle(str(body["model"]), wait)
+                self._sleep(wait)
                 continue
             return r
         raise LLMError(f"Runware {body['model']}: gave up after {self.cfg.max_attempts} "

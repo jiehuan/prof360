@@ -17,6 +17,7 @@ from pydantic import BaseModel
 from sqlalchemy import Connection, desc, or_, select
 
 from uw_pipeline.compute.registry import MetricDef
+from uw_pipeline.enrich.legal import legal_matters
 from uw_pipeline.enrich.llm import ModelSpec, load_llm_config
 from uw_pipeline.enrich.sources import SourceRef
 from uw_pipeline.enrich.untrusted import data_block, one_line
@@ -125,6 +126,12 @@ def fmt_value(value: float | None, unit: str, status: str = "OK") -> str:
         return f"{value * 100:.1f}%"
     if unit == "ratio":
         return f"{value:.2f}x"
+    if unit == "days":
+        return f"{value:.0f} days"
+    if unit == "shares":
+        return f"{value / 1e6:,.1f}M shares"
+    if unit == "score":
+        return f"{value:.2f}"
     if abs(value) >= 1e9:
         return f"${value / 1e9:,.2f}B"
     if abs(value) >= 1e6:
@@ -146,6 +153,30 @@ def _cut(text: str, limit: int) -> str:
 # -- building ----------------------------------------------------------------------------------
 
 
+_MATTER_ORDER = ("securities_class_action", "derivative", "regulatory_investigation",
+                 "enforcement", "antitrust", "product_liability", "other")  # fmt: skip
+MAX_MATTERS = 15
+
+
+def legal_text(matters: list[dict[str, Any]]) -> str:
+    """Litigation and regulatory matters (Phase 15e), most significant first, each with the
+    filing's own words; the latest disclosed first within a type."""
+    ranked = sorted(matters, key=lambda m: m["last_seen"], reverse=True)
+    ranked.sort(key=lambda m: _MATTER_ORDER.index(m["matter_type"]))
+    lines = []
+    for m in ranked[:MAX_MATTERS]:
+        parts = [m["matter_type"].replace("_", " "), m["status"]]
+        if m["agency"]:
+            parts.append(m["agency"])
+        if m["started"]:
+            parts.append(f"began {m['started']}")
+        if m["accrual"]:
+            parts.append(f"accrued {m['accrual'] / 1e6:,.1f}M USD")
+        parts.append(f"last disclosed {m['last_seen']}")
+        lines.append(f'{m["name"]} ({"; ".join(parts)}). "{m["quote"][:400]}"')
+    return "\n".join(lines)
+
+
 def board_text(board: Any) -> str:
     """Board facts (D-045) with the proxy's own words, so insights can quote them."""
     evidence = json.loads(board["evidence_json"])
@@ -161,6 +192,18 @@ def board_text(board: Any) -> str:
         lines.append(f'{label}: {shown}. "{evidence.get(key, "")}"')
     for c in json.loads(board["committees_json"]):
         lines.append(f"{c['name']} chair: {c['chair']}")
+    if board.get("ceo_name"):  # board_v2 facts (Phase 15f)
+        since = f", CEO since {board['ceo_since']}" if board.get("ceo_since") else ""
+        lines.append(f'CEO: {board["ceo_name"]}{since}. "{evidence.get("ceo_name", "")}"')
+    if board.get("dual_class") is not None:
+        shown = "yes" if board["dual_class"] else "no"
+        lines.append(f'Dual-class common stock: {shown}. "{evidence.get("dual_class", "")}"')
+    if board.get("audit_fees") is not None:
+        parts = [("Audit", "audit_fees"), ("audit-related", "audit_related_fees"),
+                 ("tax", "tax_fees"), ("other", "other_fees")]  # fmt: skip
+        fees = ", ".join(f"{label} {board[k] / 1e6:,.1f}M USD" for label, k in parts
+                         if board.get(k) is not None)  # fmt: skip
+        lines.append(f"Auditor fees FY{board['fees_fiscal_year']}: {fees}.")
     return "\n".join(lines)
 
 
@@ -267,6 +310,15 @@ def build_package(
             pkg.add(Source(id=f"E{e}", kind="DOCUMENT",
                            label=f"DEF 14A filed {board['filed_at']}, board composition",
                            text=text, doc_id=board["doc_id"]))  # fmt: skip
+
+    matters = legal_matters(conn, company_id)
+    if matters:
+        latest = max(matters, key=lambda m: m["last_seen"])
+        e += 1
+        pkg.add(Source(id=f"E{e}", kind="DOCUMENT",
+                       label=f"Litigation and regulatory matters in 10-K/10-Q filings through "
+                             f"{latest['last_seen']}",
+                       text=legal_text(matters), doc_id=latest["last_doc_id"]))  # fmt: skip
 
     transcripts = conn.execute(
         select(filing_section.c.text, source_document.c.doc_id, source_document.c.accession_no,

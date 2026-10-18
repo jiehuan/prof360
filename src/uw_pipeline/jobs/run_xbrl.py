@@ -13,7 +13,7 @@ import pandas as pd
 from sqlalchemy import Connection, Engine, and_, select
 
 from uw_pipeline.clients.sec import SecClient, pad_cik
-from uw_pipeline.compute.metrics import compute_metrics
+from uw_pipeline.compute.metrics import Value, compute_metrics
 from uw_pipeline.compute.registry import CompanyRegistry, Registry
 from uw_pipeline.config import CompanyConfig, IndustryConfig
 from uw_pipeline.extract.filings import Filing, filings_since, instance_name, periodic_filings
@@ -273,6 +273,7 @@ def compute_company(
     fye_mmdd: str,
     creg: CompanyRegistry,
     history_start: date | None = None,
+    stored: dict[str, dict[Any, Value]] | None = None,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
     # The fiscal-year label offset is learned from all facts, then pre-history is dropped.
     cal = learn_calendar(facts, fye_mmdd)
@@ -281,7 +282,7 @@ def compute_company(
     periods = standardize(facts, cal, restated)
     for note in restated:  # held at the basis of their fiscal year (D-046)
         log.info("restated after its year was reported, year's basis kept: %s", note)
-    return periods, compute_metrics(periods, creg)
+    return periods, compute_metrics(periods, creg, stored)
 
 
 def _definition_rows(registry: Registry) -> list[dict[str, Any]]:
@@ -301,6 +302,39 @@ def _definition_rows(registry: Registry) -> list[dict[str, Any]]:
     return list(rows.values())
 
 
+def fiscal_periods(conn: Connection, company_id: int) -> dict[tuple[str, int, int], str]:
+    """Fiscal periods and their end dates, as the compute stage stored them."""
+    out: dict[tuple[str, int, int], str] = {}
+    for r in conn.execute(
+        select(metric_value.c.period_type, metric_value.c.fiscal_year,
+               metric_value.c.fiscal_quarter, metric_value.c.period_end, metric_value.c.metric_code)
+        .where(metric_value.c.company_id == company_id,
+               metric_value.c.derivation.in_(RULE_DERIVATIONS),
+               metric_value.c.period_type.in_(("Q", "FY")))
+    ).all():  # fmt: skip
+        key = (r[0], r[1], r[2])
+        # Revenue's period end is authoritative; any metric fills periods without revenue.
+        if r[4] == "revenue" or key not in out:
+            out[key] = r[3]
+    return out
+
+
+def _market_values(conn: Connection, company_id: int) -> dict[str, dict[Any, Value]]:
+    """Market metrics the market stage stored (Phase 15a), for formulas such as Altman Z. A new
+    period gets them on the run after its prices are read."""
+    out: dict[str, dict[Any, Value]] = {}
+    for r in conn.execute(select(metric_value).where(
+        metric_value.c.company_id == company_id, metric_value.c.derivation == "MARKET"
+    )).mappings():  # fmt: skip
+        key = (r["period_type"], r["fiscal_year"], r["fiscal_quarter"])
+        out.setdefault(r["metric_code"], {})[key] = Value(
+            value=r["value"], status=r["value_status"], derivation="MARKET",
+            period_end=r["period_end"], accn=r["source_accn"] or "", filed="",
+            formula=r["formula"] or r["metric_code"], sources=(("market", "Alpha Vantage"),),
+        )  # fmt: skip
+    return out
+
+
 def run_compute_stage(
     companies: Sequence[CompanyConfig],
     registry: Registry,
@@ -317,9 +351,10 @@ def run_compute_stage(
             with engine.connect() as conn:
                 row = company_row(conn, cfg)
                 facts = read_facts(conn, row["company_id"])
+                stored = _market_values(conn, row["company_id"])
             creg = _company_registry(registry, industry, cfg, row)
             _, metrics = compute_company(
-                facts, row["fiscal_year_end"] or "1231", creg, cfg.history_start
+                facts, row["fiscal_year_end"] or "1231", creg, cfg.history_start, stored
             )
             stamp = now()
             out: list[dict[str, Any]] = []

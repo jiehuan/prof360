@@ -29,7 +29,7 @@ OUT = ROOT / "tests" / "fixtures" / "sec"
 KEEP_TICKERS = {"MAR", "LUV", "F", "PFE", "JPM", "M", "LUMN", "SKYD", "PSKY", "PARA", "ENPH"}
 KEEP_FILINGS = 5
 PERIODIC_LOOKBACK_DAYS = 400
-GOLDEN = {"MAR"}
+GOLDEN = {"MAR", "PFE"}
 
 _XBRLI = "{http://www.xbrl.org/2003/instance}"
 
@@ -137,6 +137,8 @@ def main() -> None:
                 continue
             accn = recent["accessionNumber"][i]
             folder = RAW / "filings" / cik_dir.name / accn
+            if not (folder / "index.json").exists():
+                continue  # the facts stage never needed this filing's instance
             names = json.loads((folder / "index.json").read_text())["directory"]["item"]
             name = instance_name([n["name"] for n in names], recent["primaryDocument"][i])
             if name is None:

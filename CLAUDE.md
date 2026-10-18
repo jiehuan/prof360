@@ -8,8 +8,9 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 
 ```bash
 .venv/bin/pip install -e ".[dev]"             # Python 3.14 venv (project supports >=3.11)
-.venv/bin/uw-pipeline run --all     # company -> facts -> compute -> documents -> transcripts
-                                     #   -> news -> scores -> textmetrics -> signals -> insights
+.venv/bin/uw-pipeline run --all     # company -> facts -> compute -> market -> documents
+                                     #   -> transcripts -> news -> scores -> textmetrics
+                                     #   -> governance -> legal -> signals -> insights
                                      #   -> metricdetail -> publish (app database) -> dq
 .venv/bin/uw-pipeline audit-insights # re-verify insight evidence (Phase 5 acceptance)
 .venv/bin/uw-pipeline run --job nightly   # scheduled job (config/jobs.yaml); resumes a dead run

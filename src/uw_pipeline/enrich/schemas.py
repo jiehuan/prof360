@@ -379,6 +379,17 @@ class Committee(BaseModel):
     quote: str = Field(description="Verbatim quote (<= 300 chars) naming the chair")
 
 
+class AuditFees(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    fiscal_year: int | None = Field(description="Fiscal year of the latest column of fees")
+    audit: float | None = Field(description="Audit fees for that year, in USD")
+    audit_related: float | None = Field(description="Audit-related fees, USD; 0 if shown as none")
+    tax: float | None = Field(description="Tax fees, USD; 0 if shown as none")
+    all_other: float | None = Field(description="All other fees, USD; 0 if shown as none")
+    quote: str = Field(description="Verbatim passage (<= 800 chars) of the fee table or text")
+
+
 class BoardFacts(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -394,3 +405,43 @@ class BoardFacts(BaseModel):
     )
     lead_quote: str = Field(description="Verbatim quote showing it; empty if none")
     committees: list[Committee]
+    # board_v2 (Phase 15f, D-050)
+    fees: AuditFees | None = Field(description="The auditor fee table; null if not in the excerpt")
+    dual_class: bool | None = Field(
+        description="More than one class of common stock with different voting rights per share"
+    )
+    dual_class_quote: str = Field(description="Verbatim quote showing it; empty if none")
+    ceo_name: str | None = Field(description="The chief executive officer's name as written")
+    ceo_since: int | None = Field(description="Year the current CEO became CEO")
+    ceo_quote: str = Field(description="Verbatim quote with the CEO's name and that year")
+
+
+# -- Litigation and regulatory matters (Phase 15e, D-050) ----------------------------------------
+
+MatterType = Literal[
+    "securities_class_action", "derivative", "regulatory_investigation", "enforcement",
+    "product_liability", "antitrust", "other",
+]  # fmt: skip
+MatterStatus = Literal["open", "settled", "dismissed", "closed", "unknown"]
+
+
+class LegalMatterRead(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(description="Case caption, or a short description of the matter")
+    matter_type: MatterType
+    agency: str | None = Field(description="Government body for a government matter, else null")
+    status: MatterStatus
+    started: str | None = Field(
+        description="When the suit was filed or the investigation began, as written "
+        "(e.g. 'March 2024' or '2024'); null if not stated"
+    )
+    wells_notice: bool = Field(description="The filing says a Wells notice was received")
+    accrual_usd: float | None = Field(description="Amount accrued for this matter, USD; or null")
+    quote: str = Field(description="Verbatim passage (<= 400 chars) describing the matter")
+
+
+class LegalMatters(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    matters: list[LegalMatterRead]

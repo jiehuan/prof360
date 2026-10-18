@@ -12,6 +12,7 @@
 #       A formula metric with `extraction` is text-extracted only for periods XBRL does not
 #         cover (e.g. an earnings release before the 10-Q); elsewhere the text value is only
 #         cross-checked against XBRL (release_check). Decisions D-042.
+# kind: external -> written by another stage (market data, Form 4), not computed (Phase 15).
 # kind: formula (default) -> `formula` is one expression or an ordered list of alternatives.
 #         The first alternative that evaluates wins. Names are concepts (concept_map.yaml)
 #         or earlier metric codes. Supported operators: + - * / and parentheses.
@@ -92,6 +93,34 @@ metric_sets:
     - rpo
   MANUFACTURING_OPERATING:
     - capacity_utilization
+  # Reporting quality and solvency (Phase 15c): non-financial groups.
+  REPORTING_QUALITY:
+    - receivables_days
+    - inventory_days
+    - accruals_ratio
+    - debt_due_1y
+    - debt_due_2y
+    - debt_due_3y
+    - debt_due_4y
+    - debt_due_5y
+    - debt_due_after_5y
+    - near_term_debt_coverage
+    - altman_z
+  # Market data (Phase 15a), every group: written by the market stage from daily prices and
+  # earnings estimates (Alpha Vantage), at each fiscal period end.
+  MARKET:
+    - market_cap
+    - volatility_90d
+    - max_drawdown_52w
+    - eps_surprise_pct
+    - insider_net_sales
+    - officer_sell_pct
+  # Every group (common_metric_sets in industry_groups.yaml).
+  CAPITAL_QUALITY:
+    - goodwill_to_equity
+    - goodwill_impairment
+    - sbc_to_revenue
+    - diluted_shares_growth_yoy
 
 metrics:
   # -- Financial -------------------------------------------------------------------------
@@ -272,6 +301,7 @@ metrics:
         US dollars. Use the worldwide (or total) comparable systemwide figure; not a region,
         brand, or owned/leased subset, and not a percentage change.
       keywords: [RevPAR]
+      dual_check: true   # displayed: both models must read the same cell value (Phase 15h)
       table:   # read by cell, checked mechanically (D-044)
         column: [RevPAR]
         scope: [[systemwide, system-wide]]
@@ -288,6 +318,7 @@ metrics:
         Comparable systemwide worldwide occupancy rate for the period (a percentage level such
         as 69.3%, not a change in percentage points).
       keywords: [occupancy]
+      dual_check: true   # displayed: both models must read the same cell value (Phase 15h)
       table:   # read by cell, checked mechanically (D-044)
         column: [Occupancy]
         scope: [[systemwide, system-wide]]
@@ -302,6 +333,7 @@ metrics:
         Comparable systemwide worldwide average daily rate for the period, in US dollars (a
         level, not a percentage change).
       keywords: [average daily rate, ADR]
+      dual_check: true   # displayed: both models must read the same cell value (Phase 15h)
       table:   # read by cell, checked mechanically (D-044)
         column: [Average Daily Rate, ADR]
         scope: [[systemwide, system-wide]]
@@ -545,3 +577,191 @@ metrics:
       keywords: [capacity utilization]
       table:
         column: [capacity utilization, capacity utilisation]
+
+  # -- Market data (Phase 15a) ------------------------------------------------------------------
+  # kind: external -> written by another stage, here the market stage (prices at the period
+  # end, Alpha Vantage); formulas may use them (Altman Z). Fractions: 0.30 = 30%.
+  - code: market_cap
+    display_name: Market Capitalization
+    description: Closing price on the last trading day of the period times shares outstanding
+      (cover page of the period's filing, else diluted weighted-average shares).
+    section: market
+    unit: USD
+    kind: external
+  - code: volatility_90d
+    display_name: Share Price Volatility (90 days)
+    description: Annualized standard deviation of daily returns over the 63 trading days to the
+      period end (split- and dividend-adjusted).
+    section: market
+    unit: fraction
+    kind: external
+  - code: max_drawdown_52w
+    display_name: Max Drawdown (52 weeks)
+    description: Largest fall from a high in the year to the period end (negative).
+    section: market
+    unit: fraction
+    kind: external
+  - code: eps_surprise_pct
+    display_name: EPS Surprise
+    description: Reported EPS against the consensus estimate, as a share of the estimate
+      (negative = a miss).
+    section: market
+    unit: fraction
+    kind: external
+    period_types: [Q]
+
+  # Insider trading (Phase 15b): written by the documents stage from Form 4 filings.
+  - code: insider_net_sales
+    display_name: Insider Net Open-Market Sales
+    description: Officers' and directors' open-market sales minus purchases in the quarter
+      (Form 4); option exercises, tax withholding, awards and gifts are left out.
+    section: market
+    unit: USD
+    kind: external
+    period_types: [Q]
+  - code: officer_sell_pct
+    display_name: Holdings Sold by Officers
+    description: Shares officers sold on the open market in the quarter as a share of their
+      holdings before those sales (Form 4).
+    section: market
+    unit: fraction
+    kind: external
+    period_types: [Q]
+
+  # -- Reporting quality and solvency (Phase 15c) ----------------------------------------------
+  # Days on the fiscal year (365); quarterly flows against a year-end balance would need their
+  # own day count, so these are annual only.
+  - code: receivables_days
+    display_name: Days Sales Outstanding
+    description: Trade receivables at year-end in days of annual revenue.
+    section: reporting_quality
+    unit: days
+    period_types: [FY]
+    formula: receivables / revenue * 365
+    nm_when: revenue <= 0
+  - code: inventory_days
+    display_name: Days Inventory Outstanding
+    description: Inventory at year-end in days of annual cost of goods sold.
+    section: reporting_quality
+    unit: days
+    period_types: [FY]
+    formula: inventory / cost_of_revenue * 365
+    nm_when: cost_of_revenue <= 0
+  - code: accruals_ratio
+    display_name: Accruals / Total Assets
+    description: Net income not backed by operating cash flow, as a share of total assets; high
+      values can signal aggressive accounting.
+    section: reporting_quality
+    unit: fraction
+    formula: (net_income - operating_cash_flow) / total_assets
+  - code: goodwill_to_equity
+    display_name: Goodwill / Equity
+    section: reporting_quality
+    unit: ratio
+    period_types: [FY]  # tagged in 10-Ks; few 10-Qs carry it
+    formula: goodwill / equity
+    nm_when: equity <= 0
+  - code: goodwill_impairment
+    display_name: Goodwill Impairment
+    section: reporting_quality
+    unit: USD
+    period_types: [FY]  # tagged in 10-Ks; few 10-Qs carry it
+    formula: goodwill_impairment
+  - code: sbc_to_revenue
+    display_name: Stock Compensation / Revenue
+    section: reporting_quality
+    unit: fraction
+    period_types: [FY]  # tagged in 10-Ks; few 10-Qs carry it
+    formula: sbc / revenue
+    nm_when: revenue <= 0
+  - code: diluted_shares
+    display_name: Diluted Shares (weighted average)
+    section: reporting_quality
+    unit: shares
+    period_types: [FY]  # weighted-average shares: 10-Ks give the year, not Q4
+    formula: diluted_shares
+    display: false
+  - code: diluted_shares_growth_yoy
+    display_name: Diluted Share Count Growth (YoY)
+    description: Dilution from share issuance; negative when buybacks shrink the share count.
+    section: reporting_quality
+    unit: fraction
+    period_types: [FY]  # weighted-average shares: 10-Ks give the year, not Q4
+    kind: growth
+    base: diluted_shares
+    compare: prior_year
+  - code: debt_due_1y
+    display_name: Debt Due Within 1 Year
+    description: Scheduled long-term debt repayments in the next twelve months (10-K note).
+    section: leverage
+    unit: USD
+    period_types: [FY]
+    formula: debt_due_1y
+  - code: debt_due_2y
+    display_name: Debt Due in Year 2
+    section: leverage
+    unit: USD
+    period_types: [FY]
+    formula: debt_due_2y
+    display: false  # only companies that tag the maturity schedule have years 2-5
+    insight_input: true
+  - code: debt_due_3y
+    display_name: Debt Due in Year 3
+    section: leverage
+    unit: USD
+    period_types: [FY]
+    formula: debt_due_3y
+    display: false
+    insight_input: true
+  - code: debt_due_4y
+    display_name: Debt Due in Year 4
+    section: leverage
+    unit: USD
+    period_types: [FY]
+    formula: debt_due_4y
+    display: false
+    insight_input: true
+  - code: debt_due_5y
+    display_name: Debt Due in Year 5
+    section: leverage
+    unit: USD
+    period_types: [FY]
+    formula: debt_due_5y
+    display: false
+    insight_input: true
+  - code: debt_due_after_5y
+    display_name: Debt Due After Year 5
+    section: leverage
+    unit: USD
+    period_types: [FY]
+    formula: debt_due_after_5y
+    display: false
+    insight_input: true
+  - code: near_term_debt_coverage
+    display_name: Debt Due in 1 Year / (Cash + Operating Cash Flow)
+    description: Above 1.0, the debt due within a year exceeds cash and short-term investments
+      plus a year of operating cash flow (refinancing risk).
+    section: leverage
+    unit: ratio
+    period_types: [FY]
+    formula: debt_due_1y / (cash + short_term_investments + operating_cash_flow)
+    optional: [short_term_investments]
+    nm_when: cash + short_term_investments + operating_cash_flow <= 0
+  # Altman Z-score (original public-manufacturer form): below 1.81 distress, above 2.99 safe.
+  # Uses the market stage's market cap; not meaningful for banks (not in their sets).
+  - code: altman_z
+    display_name: Altman Z-Score
+    description: 1.2 working capital/assets + 1.4 retained earnings/assets + 3.3 EBIT/assets +
+      0.6 market cap/liabilities + 1.0 revenue/assets. Below 1.81 signals distress.
+    section: reporting_quality
+    unit: score
+    period_types: [FY]
+    formula:  # without a total liabilities tag: assets - equity
+      - >-
+        1.2 * working_capital / total_assets + 1.4 * retained_earnings / total_assets
+        + 3.3 * ebit / total_assets + 0.6 * market_cap / total_liabilities
+        + revenue / total_assets
+      - >-
+        1.2 * working_capital / total_assets + 1.4 * retained_earnings / total_assets
+        + 3.3 * ebit / total_assets + 0.6 * market_cap / (total_assets - equity)
+        + revenue / total_assets

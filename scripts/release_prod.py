@@ -30,10 +30,13 @@ ROOT = Path(__file__).resolve().parents[1]
 PATCH = "scripts/prod.patch"
 SELF = "scripts/release_prod.py"
 FORBIDDEN = re.compile(
-    r"claude|anthropic|runware|deepseek|haiku|sonnet|\bopus\b|fable|gemini|grok|gpt-6|gpt@|"
+    r"claude|anthropic|runware|deepseek|haiku|sonnet|\bopus\b|fable|gemini|grok|gpt@|"
     r"co-authored|luna\b",
     re.IGNORECASE,
 )
+# The SecureGPT deployment gpt-6-luna (D-051) is allowed; "luna" elsewhere (Runware's
+# gpt@6-luna experiment) is not. gpt-6 itself is a SecureGPT model family since D-051.
+ALLOWED = re.compile(r"gpt-6-luna(?:-2026-09-22)?\b", re.IGNORECASE)
 VENV = ROOT / ".venv" / "bin"
 
 
@@ -63,7 +66,7 @@ def scan(tree: Path) -> list[str]:
         except (UnicodeDecodeError, FileNotFoundError):
             continue
         for n, line in enumerate(text.splitlines(), 1):
-            if FORBIDDEN.search(line):
+            if FORBIDDEN.search(ALLOWED.sub("", line)):
                 hits.append(f"{name}:{n}: {line.strip()[:120]}")
     return hits
 

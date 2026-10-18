@@ -406,7 +406,7 @@ def process_company(
             single = [c for c in got if c.metric_code not in dual_codes]
             double = [c for c in got if c.metric_code in dual_codes]
             other = candidates(second.values, convert, source, cal)[0] if second else []
-            checked, dropped = dual_checked(double, other)
+            checked, dropped = dual_checked(double, other, doc.label)
             stats.dual_dropped += dropped
             got = single + checked
         found += [(doc, c) for c in got if c.period_end >= start]
@@ -521,7 +521,9 @@ def _table_candidates(
                            cal)[0]  # fmt: skip
         dual_codes = {c for c, m in metrics.items() if m.extraction and m.extraction.dual_check}
         single = [c for c in got if c.metric_code not in dual_codes]
-        checked, dropped = dual_checked([c for c in got if c.metric_code in dual_codes], other)
+        checked, dropped = dual_checked(
+            [c for c in got if c.metric_code in dual_codes], other, doc.label
+        )
         stats.dual_dropped += dropped
         got = single + checked
     return [(doc, c) for c in got if c.period_end >= start]

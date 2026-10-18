@@ -5,6 +5,11 @@
 eight_k_items:
   "1.01": {category: Event Signals, subcategory: Material Agreement, severity: Info,
            title: Entered into a material definitive agreement}
+  "1.02": {category: Event Signals, subcategory: Material Contracts, severity: Info,
+           title: Terminated a material definitive agreement}
+  # Material cybersecurity incident, required since December 2023 (Phase 15d).
+  "1.05": {category: Risk & Legal, subcategory: Cybersecurity, severity: Warning,
+           title: Disclosed a material cybersecurity incident}
   "1.03": {category: Event Signals, subcategory: Bankruptcy, severity: Critical,
            title: Bankruptcy or receivership}
   "2.01": {category: Event Signals, subcategory: M&A, severity: Info,
@@ -27,7 +32,19 @@ eight_k_items:
            title: "Director or officer departure, election or appointment"}
 
 # 8-K items whose document body is downloaded (for evidence snippets and the 5.02 rules).
-fetch_body_items: ["1.03", "2.04", "2.06", "3.01", "4.01", "4.02", "5.02"]
+fetch_body_items: ["1.03", "1.05", "2.04", "2.06", "3.01", "4.01", "4.02", "5.02"]
+
+# Ownership filings others make about the company (Phase 15d). EDGAR lists them under the
+# company's own submissions; the documents stage registers them (metadata only). A Schedule
+# 13D means an investor with 5%+ intends to influence the company (activism); amendments update
+# an existing stake. Rule ids: 13d, 13d_amendment.
+ownership_forms:
+  "SCHEDULE 13D": &activist {category: Governance & Leadership, subcategory: Activist Investor,
+                             severity: Warning, title: An investor reported a 5%+ stake with intent to influence (Schedule 13D)}
+  "SC 13D": *activist
+  "SCHEDULE 13D/A": &activist_amendment {category: Governance & Leadership, subcategory: Activist Investor,
+                                         severity: Info, title: An activist investor amended its Schedule 13D}
+  "SC 13D/A": *activist_amendment
 
 # Item 5.02: escalate when the text names the CEO or CFO.
 leadership:
@@ -118,6 +135,89 @@ metrics:
     severity: Warning
     title: Less than two-thirds of the board is independent
     min_ratio: 0.667
+  # Phase 15f (board_v2): more than one class of common stock with unequal votes (control
+  # concentrated with a family or founders), and the auditor's non-audit work.
+  dual_class_shares:
+    category: Governance & Leadership
+    subcategory: Board Structure
+    severity: Info
+    title: Dual-class share structure
+  non_audit_fees:
+    category: Governance & Leadership
+    subcategory: Auditor
+    severity: Warning
+    title: Non-audit fees are a large share of fees paid to the auditor
+    min_share: 0.5         # (audit-related + tax + other) / total fees
+
+
+# Market signals (Phase 15a), from the market stage's daily prices (adjusted closes) and
+# earnings estimates. Rule ids: stock_drop, earnings_miss_drop.
+market:
+  benchmark: SPY
+  lookback_days: 1095        # three years of events
+  stock_drop:
+    category: Event Signals
+    subcategory: Stock Drop
+    severity: Warning
+    title: Shares fell 10% or more in a day, well beyond the market
+    min_drop: 0.10           # the day's return is at most -10% ...
+    min_excess: 0.08         # ... and at least 8 points below the benchmark's that day
+  earnings_miss_drop:
+    category: Event Signals
+    subcategory: Earnings Miss
+    severity: Warning
+    title: Shares fell after an earnings miss
+    days: 3                  # trading days after the report
+    min_drop: 0.08           # fall from the close before the report
+
+
+# Insider selling (Phase 15b), from the officers' and directors' Form 4 transactions. A cluster
+# is `min_insiders` different people selling on the open market within `window_days`; sales
+# under a Rule 10b5-1 plan are left out (pre-scheduled). Warning when a stock drop or an
+# earnings-miss drop follows within `escalate_days`. Rule id: insider_cluster_selling.
+insiders:
+  insider_cluster_selling:
+    category: Governance & Leadership
+    subcategory: Insider Trading
+    severity: Info
+    title: Several insiders sold shares on the open market within 30 days
+    min_insiders: 3
+    window_days: 30
+    escalate_days: 90
+    lookback_days: 1095
+
+# Litigation and regulatory matters (Phase 15e) from the legal stage: matters both models read
+# the same way from the latest 10-K and later 10-Qs. A signal for a matter still disclosed (in a
+# filing within `active_days`) that began within `lookback_days`, or is open with no start
+# date given; dismissed and closed matters raise none. Rule ids: legal_<type>.
+legal:
+  lookback_days: 730
+  active_days: 400
+  securities_class_action:
+    category: Risk & Legal
+    subcategory: Securities Litigation
+    severity: Critical
+    title: Securities class action
+  derivative:
+    category: Risk & Legal
+    subcategory: Shareholder Litigation
+    severity: Warning
+    title: Shareholder derivative suit
+  regulatory_investigation:
+    category: Risk & Legal
+    subcategory: Regulatory Investigation
+    severity: Warning
+    title: Government investigation
+  enforcement:
+    category: Risk & Legal
+    subcategory: Regulatory Enforcement
+    severity: Warning
+    title: Government enforcement action
+  wells_notice:          # an investigation in which the company received a Wells notice
+    category: Risk & Legal
+    subcategory: Regulatory Investigation
+    severity: Critical
+    title: Wells notice received
 
 # A metric crossing a threshold in its latest quarter (period: Q) or fiscal year (FY), in stored
 # units (fraction 0.05 = 5%, ratio 1.2 = 1.2x, USD); N/M values never fire (D-049). Example:
@@ -131,4 +231,25 @@ metrics:
 #     value: 1.0
 #     period: Q
 #     industries: [RETAIL]    # optional
-thresholds: []
+thresholds:
+  # Phase 15c: debt due within a year exceeds cash plus a year of operating cash flow.
+  - id: near_term_refinancing
+    category: Risk & Legal
+    subcategory: Liquidity & Leverage
+    severity: Warning
+    title: Debt due within a year exceeds cash plus operating cash flow
+    metric: near_term_debt_coverage
+    op: ">"
+    value: 1.0
+    period: FY
+
+  # Phase 15c: Altman Z-score (non-financial companies only; uses the market stage's market cap).
+  - id: altman_distress
+    category: Risk & Legal
+    subcategory: Balance Sheet
+    severity: Warning
+    title: Altman Z-score in the distress zone (below 1.81)
+    metric: altman_z
+    op: "<"
+    value: 1.81
+    period: FY

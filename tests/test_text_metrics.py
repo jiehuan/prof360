@@ -190,7 +190,9 @@ def test_stage_writes_preliminary_and_crosschecks(tmp_path) -> None:
         res = run_text_metrics_stage(cfgs, REG, IND, text_cfg, pair, storage, engine,
                                      now=lambda: NOW)  # fmt: skip
         assert res[0].ok, res
-    assert len(llm.calls) == 2  # tables + text; no dual check for MAR; the rerun is cached
+    # Tables by both models (RevPAR is displayed: dual check, Phase 15h) + text; the rerun is
+    # cached.
+    assert len(llm.calls) == 3
     with engine.connect() as c:
         rows = {
             (r.metric_code, r.fiscal_year, r.fiscal_quarter): (r.value, r.derivation)

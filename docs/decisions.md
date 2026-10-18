@@ -950,3 +950,106 @@ LLM runs until the end, then one comparison.
 - `uw-pipeline config check` validates config/ as a run does and lists company and industry
   settings; `config show --ticker X` prints a company's industry (and why), metrics, signals.
   Guide for editors: docs/CONFIGURATION.md.
+
+## 2026-10-18
+
+**D-050 D&O risk core layer: market data, insider trades, reporting quality, litigation (Phase 15).**
+- Open questions settled at the start ("go ahead with phase 15", recommended options): insider
+  trades from SEC Form 4, not AV INSIDER_TRANSACTIONS (authoritative, free, by CIK); stock drop
+  = one day -10% or worse and at least 8 points below SPY; app database option A (no schema
+  change: new metrics in MatrixData, new events through signals and insights into
+  StrategicRisk); litigation (15e) stays in Phase 15.
+- 15a market: AV TIME_SERIES_DAILY_ADJUSTED (full history, kept 7 years) and EARNINGS per
+  company plus SPY, in `market_daily` (by symbol) and `earnings_report`; OVERVIEW not used.
+  Market cap = quarter-end close x the cover page's shares outstanding (dei, dated up to 120 days
+  after the period end), else diluted weighted-average shares. Metrics (derivation MARKET,
+  metric kind `external`: written by another stage, skipped by compute): market_cap,
+  volatility_90d (63 daily returns, annualized), max_drawdown_52w, eps_surprise_pct. Stage
+  `market` runs after compute; Altman Z (compute) reads the stored market cap, so on a company's
+  first run it appears one run later. Signals stock_drop and earnings_miss_drop (-8% within 3
+  trading days of a miss). Acceptance: Ford 2024-07-25 -18.4% while SPY -0.5%, and the miss
+  (EPS 0.47 vs 0.68) on 2024-07-24.
+- 15b Form 4: originals only (4/A left out so no line counts twice); non-derivative lines. A
+  sale is under a 10b5-1 plan when a footnote it cites says so; when no line cites one, the
+  filing's 10b5-1 box applies to all lines (a filing ticks the box once for all its lines; the
+  tax-withholding line of a plan sale is not a plan sale). Form 4s the company files as an owner
+  of another issuer (JPMorgan as a 10% holder) are registered, not parsed. Metrics (derivation
+  FORM4): insider_net_sales (officers' and directors' open-market sales minus purchases, USD)
+  and officer_sell_pct (officers' shares sold / holdings before the sales). Signal
+  insider_cluster_selling: 3 or more officers or directors selling on the open market outside a
+  plan within 30 days; one signal per episode (30 days from its first sale, keyed on that date);
+  Warning when a stock drop or earnings-miss drop follows within 90 days. Acceptance: every
+  Form 4 EDGAR lists is registered (0 missing, 9 companies; 366 have derivative lines only); no
+  sale left unflagged has 10b5-1 anywhere in its filing.
+- 15c reporting quality: receivables and inventory days, accruals ratio, goodwill / equity and
+  impairment, SBC / revenue, diluted share growth, debt maturities, near-term debt coverage,
+  Altman Z (with total liabilities, or assets minus equity when that is not tagged). Coverage
+  counts short-term investments (ShortTermInvestments, MarketableSecuritiesCurrent,
+  OtherShortTermInvestments): without them Enphase (1.04B USD marketable securities) raised a
+  false refinancing Warning. The plan's DQ warnings became threshold signals
+  (near_term_refinancing > 1.0, altman_distress < 1.81) so they reach insights and the app; DQ
+  stays about data correctness. Share counts are not derived (Q4 = FY - 9M gave 0 shares).
+  Golden values: Marriott and Pfizer FY2025 10-K.
+- 15d: 8-K 1.05 (Warning) and 1.02 (Info). EDGAR lists both 13Ds about the company and 13Ds it
+  files about others (JPMorgan's about funds): only those whose index headers name the company
+  as SUBJECT COMPANY are kept; the signal names the filer.
+- 15e litigation: stage `legal` (after documents) reads the latest 10-K and the 10-Qs after it,
+  passages chosen by keyword groups (45K characters), with both models. A matter is kept when
+  its quote is in the filing and both models give it the same type; its start date and accrual
+  only when they are in the quote. Across filings a matter is the same by type and name (generic
+  legal words and the company's name ignored; all distinctive words of one name in the other),
+  by the same full start date, or by agency and subject; across types only with nearly the same
+  name (an investigation that became an enforcement action; the type follows the latest filing).
+  Everything in a company's first run is its baseline; a matter first seen later (or named
+  differently) is NEW and goes to `uw-pipeline review` (item type MATTER); a rejected matter
+  leaves signals and insights. Signals for matters still disclosed (last 400 days) that began in
+  the last 730 days, or are open with no date: securities class action and Wells notice
+  Critical; derivative suit, investigation, enforcement Warning. All matters go to insights as a
+  DOCUMENT source. Prompt written on MAR, F, LUV, M, ENPH; holdout PFE, JPM, LUMN: 41 matters, all
+  types correct on reading; quotes grounded by construction. Readings left unpaired are mostly
+  real ambiguity (cash-sweep suits as securities or consumer claims).
+- 15f: `board_v2` adds the auditor fee table (each amount checked at any unit; a category a
+  table splits into lines may be a sum of up to three numbers; the year must agree between the
+  models), dual-class shares, and the CEO's start year (the name in the quote or in the 1,500
+  characters before it). Chosen: columns on `board_composition` rather than a new `audit_facts`
+  table (same document, same two-model check, one row per company). The auditor's PCAOB ID
+  (dei:AuditorFirmId) decides auditor_change when both 10-Ks give it. Signals dual_class_shares
+  (Info) and non_audit_fees (Warning at 50% or more of the auditor's fees). Result: fees 7 of 8
+  proxies (JPM's are prose and the readings differ), dual class Ford only, CEO start year 5 of 8.
+- 15h: dual_check on RevPAR, occupancy and ADR. Marriott's 15 values unchanged, dual_dropped 0;
+  a disagreement is logged with both readings.
+- 15i: companies of a stage run in parallel threads (jobs.yaml `parallel`), on server databases
+  only (SQLite: one at a time). `LimitedClient` keeps per-model requests and tokens per minute
+  across threads: a request reserves its input plus max_tokens, the unused part comes back, and a
+  429 pauses that model for every worker. max_tokens per task per provider profile, set from
+  the profile's own measured outputs. Not done: calls within one company stay serial and inside the
+  stage's transaction (moving them out means restructuring each LLM stage); SecureGPT quotas are
+  unknown (rate_limits commented out); the 10-minute cold-start target is not measured (needs a
+  server database and a paid cold run).
+- App: metric categories Reporting Quality and Market & Trading; risk types Market and Insider
+  Trading; investigation words map to Regulatory & Policy; no app schema change. Pipeline
+  tables: market_daily, earnings_report, insider_transaction, legal_matter; board_composition
+  gains fee, dual-class and CEO columns.
+
+**D-051 SecureGPT: gpt-6 models, api-version 2025-04-01-preview, 500K tokens per minute.**
+- User decision (gateway's API catalogue, 2026-10-18): calls go to the deployment's chat
+  completions with `api-version=2025-04-01-preview` (was 2024-10-21) and keep OpenAI structured
+  outputs (`response_format` `json_schema`, strict) on every call. The gateway also lists the
+  Responses API (`/providers/openai/responses`); not used, chat completions already give strict
+  structured outputs and need no other change.
+- Models (user decision): gpt-6-luna-2026-09-22 for routine calls (extractor: signal votes,
+  first reads, news, scores) and gpt-6-sol-2026-09-22 as tie-breaker (second model of every
+  dual check). Synthesis (insights, follow-ups, metric relevance) uses gpt-6-sol, as it used
+  the tie-breaker model before. The gpt-5 deployments stay mapped in config/securegpt.yaml.
+  The model is part of the cache key: the first run after the switch asks every LLM task again.
+  Prices per million tokens, USD, entered in the EUR profile (user decisions): gpt-6-sol 2.00
+  input / 10.00 output; gpt-6-luna 0.10 / 0.50 for now, a third-party list price, until
+  SecureGPT's own is known.
+- `rate_limits`: 500,000 tokens per minute for each deployment (gpt-6-luna, gpt-6-sol), as
+  the user set. No requests-per-minute limit until the gateway team gives one; a 429 pauses
+  that model for every worker (D-050). If the 500K is one quota shared by both deployments
+  rather than each, halve the two values.
+- `reasoning_effort` stays off (`send_reasoning_effort: false`) until
+  `scripts/securegpt_smoke.py` on the work network shows the gateway passes it with the new
+  version; without it the models use their default effort.
+

@@ -5,7 +5,8 @@ Rules (PLAN §5.2):
 - Duration facts are classified by length: quarter (~3m), YTD 6m, YTD 9m, or fiscal year.
 - Quarterly flow values come from a reported 3-month fact. Otherwise they are derived from
   YTD differences (Q4 = FY - 9M, cash-flow quarters from cumulative YTD). Derived values are
-  marked DERIVED.
+  marked DERIVED. Only USD flows are derived; other units (share counts) are not additive and
+  keep reported periods only.
 - Reported 6m/9m YTD values are also emitted (period_type "YTD") so that quarters can be
   derived at concept level when a company switches tags between its 10-Qs and its 10-K.
 - Balance-sheet (instant) facts map to the fiscal quarter whose end they fall on. The Q4
@@ -198,6 +199,16 @@ def standardize(
                 continue
 
             direct = {fq: facts_by_period.get((fy, fq, 1)) for fq in range(1, 5)}
+            if next(iter(facts_by_period.values()))["unit"] != "USD":
+                # Not additive (a weighted-average share count, a per-share amount): quarters
+                # and years only as reported; Q4 = FY - 9M would be meaningless (Phase 15c).
+                for fq, reported in direct.items():
+                    if reported is not None:
+                        emit(reported, "Q", fq, reported["val"], "REPORTED")
+                annual = facts_by_period.get((fy, 4, 4))
+                if annual is not None:
+                    emit(annual, "FY", 0, annual["val"], "REPORTED")
+                continue
 
             def ytd(k: int, fy: int = fy, direct: Any = direct, fbp: Any = facts_by_period) -> Any:
                 """(value, source row) for the k-quarter YTD, or None."""

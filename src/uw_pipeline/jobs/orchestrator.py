@@ -14,10 +14,13 @@ A run is one execution of a job (a list of stages) for a list of companies. Each
 
 from __future__ import annotations
 
+import contextvars
+import itertools
 import json
 import logging
 import threading
 from collections.abc import Callable, Sequence
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -44,6 +47,9 @@ DEPENDS: dict[str, tuple[str, ...]] = {
     "company": (),
     "facts": ("company",),
     "compute": ("facts",),
+    # Prices and earnings estimates at the compute stage's period ends (Phase 15a). Compute
+    # does not wait for it: Altman Z uses the market cap of the previous market run.
+    "market": ("compute",),
     "documents": ("company",),
     "transcripts": ("compute",),
     "news": ("company",),
@@ -52,6 +58,8 @@ DEPENDS: dict[str, tuple[str, ...]] = {
     # Board composition from the proxy (D-045). Signals read it when present but do not wait
     # for it: a failed LLM call must not cost the rule signals.
     "governance": ("documents",),
+    # Litigation and regulatory matters (Phase 15e); like governance, signals do not wait.
+    "legal": ("documents",),
     "signals": ("compute", "documents"),
     "insights": ("signals", "textmetrics"),
     "metricdetail": ("compute", "insights"),
@@ -75,6 +83,8 @@ class JobsConfig(BaseModel):
     max_attempts: int = 2
     resume_within_hours: int = 12
     heartbeat_minutes: int = 5
+    # Phase 15i: companies run in parallel threads within these stages (stage -> workers).
+    parallel: dict[str, int] = {}
 
 
 def load_jobs_config(config_dir: Path) -> JobsConfig:
@@ -84,6 +94,9 @@ def load_jobs_config(config_dir: Path) -> JobsConfig:
         unknown = set(job.stages) - DEPENDS.keys()
         if unknown:
             raise ValueError(f"job {name}: unknown stages {sorted(unknown)}")
+    unknown = set(cfg.parallel) - DEPENDS.keys()
+    if unknown:
+        raise ValueError(f"parallel: unknown stages {sorted(unknown)}")
     return cfg
 
 
@@ -112,6 +125,8 @@ class Orchestrator:
         resume_within: timedelta = timedelta(hours=12),
         heartbeat_every: timedelta = timedelta(minutes=5),
         now: Callable[[], datetime] = lambda: datetime.now(UTC),
+        parallel: dict[str, int] | None = None,
+        allow_parallel: bool | None = None,
     ) -> None:
         self.engine = engine
         self.stale_after = stale_after
@@ -119,6 +134,10 @@ class Orchestrator:
         self.resume_within = resume_within
         self.heartbeat_every = heartbeat_every
         self.now = now
+        self.parallel = parallel or {}
+        # SQLite allows a single writer: there every stage runs one company at a time.
+        self.allow_parallel = (engine.dialect.name != "sqlite" if allow_parallel is None
+                               else allow_parallel)  # fmt: skip
 
     # -- starting / resuming -------------------------------------------------------------------
 
@@ -266,12 +285,12 @@ class Orchestrator:
         stages_in_run = set(json.loads(run["stages"]))
         status: dict[tuple[str, str], str] = {(t["ticker"], t["stage"]): t["status"] for t in tasks}
 
-        for t in tasks:
+        def run_task(t: Any) -> None:
             key = (t["ticker"], t["stage"])
             if status[key] in DONE:
-                continue
+                return
             if status[key] == "FAILED" and t["attempts"] >= self.max_attempts:
-                continue
+                return
             blocked = [
                 d for d in DEPENDS[t["stage"]]
                 if d in stages_in_run and status.get((t["ticker"], d)) != "SUCCEEDED"
@@ -280,7 +299,7 @@ class Orchestrator:
                 status[key] = "SKIPPED"
                 self._set(t["task_id"], run_id, status="SKIPPED",
                           detail=f"prerequisite not succeeded: {', '.join(blocked)}")  # fmt: skip
-                continue
+                return
             attempts = t["attempts"]
             while True:
                 attempts += 1
@@ -302,6 +321,26 @@ class Orchestrator:
                 if result.ok or attempts >= self.max_attempts or not _retryable(result):
                     break
                 log.warning("%s %s failed (%s); retrying", t["ticker"], t["stage"], result.detail)
+
+        # Stage-major order: a stage's tasks (one per company) are consecutive. They depend only
+        # on earlier stages, so they can run in parallel (Phase 15i).
+        for _, group in itertools.groupby(tasks, key=lambda t: t["stage"]):
+            batch = list(group)
+            workers = min(self.parallel.get(batch[0]["stage"], 1), len(batch))
+            if not self.allow_parallel or workers <= 1:
+                for t in batch:
+                    run_task(t)
+                continue
+            # Each task gets a copy of this thread's logging context (run and job fields).
+            contexts = [contextvars.copy_context() for _ in batch]
+            with ThreadPoolExecutor(max_workers=workers,
+                                    thread_name_prefix=batch[0]["stage"]) as pool:  # fmt: skip
+                list(
+                    pool.map(
+                        lambda pair: pair[0].run(run_task, pair[1]),
+                        zip(contexts, batch, strict=True),
+                    )
+                )
         return self._finish(run_id)
 
     def _finish(self, run_id: int) -> RunOutcome:

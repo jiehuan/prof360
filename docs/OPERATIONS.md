@@ -93,7 +93,7 @@
 ## 9. LLM：SecureGPT、Claude、Runware（D-039、D-047）
 
 - `config/llm.yaml` 里每个提供方有一套完整的模型配置（抽取、复核、综合、价格）。用环境变量 `LLM_PROVIDER` 选择，不设时用 `default_provider`（securegpt）：
-  - **securegpt**（公司网络内）：抽取 gpt-5-nano，复核和综合 gpt-5-mini。网关地址、api-version、部署名在 `config/securegpt.yaml`。
+  - **securegpt**（公司网络内）：日常调用 gpt-6-luna，复核和综合 gpt-6-sol（D-051；之前是 gpt-5-nano / gpt-5-mini）。价格（每百万 token，美元）：gpt-6-sol 输入 2.00、输出 10.00；gpt-6-luna 暂用第三方列出的 0.10 / 0.50，拿到 SecureGPT 的价格后替换。网关地址、api-version（2025-04-01-preview，结构化输出）、部署名在 `config/securegpt.yaml`。
   - **anthropic**（公司网络外开发和测试）：抽取 Claude Haiku 5.5，复核和综合 Claude Sonnet 5.5，需要 `ANTHROPIC_API_KEY`。
   - **runware**（经 Runware 网关，OpenAI 兼容接口）：抽取 DeepSeek V4 Flash（`deepseek:v4@flash`），复核 Claude Haiku 5.5，综合 Claude Sonnet 5.5，需要 `RUNWARE_API_KEY`，账户余额至少 $5。网关设置在 `config/runware.yaml`；先跑 `python scripts/runware_smoke.py`（每个模型、每种输出方式调用一次，不写数据库）。新增模型时，smoke test 显示只支持 JSON 模式的，写进 `output:`。
 - 每个提供方的缓存各自保留：切换回来时，输入没变的任务直接用缓存，不产生费用。
@@ -126,6 +126,16 @@
 - 每日模型费用上限：`LLM_DAILY_BUDGET`（默认 25，按当前提供方的币种）。超过后新调用逐项失败，次日运行再补，日志有 `daily LLM budget`。
 - 稳定性检查：`python scripts/stability_check.py --runs 3 MAR JPM`（真实调用，有费用）；`--faults` 检查超时、限流、无效输出是否安全失败（无费用）。记录在 `data/reports/stability-*.json`。结果里同一个值数字不同才是问题；某个值在一次运行里有、另一次没有，是校验没通过被扣下，属于覆盖率波动。
 - 贷款分类：两个模型都要读出同一个数才保存。两个模型读的层级不同（一个给整个批发贷款一行，另一个给分类）时，只要分类加起来等于那一行，就保存那一行（JPM 显示为 Wholesale / Loans retained）。
+
+## 10c. 市场、内部人、诉讼、并行（Phase 15，D-050）
+
+- 市场数据：`market` 阶段（在 compute 之后）用 Alpha Vantage 付费 key（`TIME_SERIES_DAILY_ADJUSTED` 全量和 `EARNINGS`），每家每天 2 次，另加 SPY；配额用完干净停止，下次运行续上。市值 = 季末收盘价 × 封面的流通股数（dei，期末后 120 天内），没有时用稀释加权股数。Altman Z 在 compute 里用上次 market 运行存下的市值，所以新公司第一次运行时 Altman Z 晚一次出现。
+- Form 4：在 documents 阶段，只取原件（4/A 不取，避免重复计算）。公司作为其他发行人的大股东提交的 Form 4（例如 JPM）只登记、不解析。集中卖出信号每段一条；之后 90 天内出现股价大跌或业绩不及预期后的下跌，升为 Warning。
+- 13D：EDGAR 的列表里也有公司自己就其他发行人提交的 13D，只保留 index headers 里 SUBJECT COMPANY 是本公司的。
+- 诉讼和监管调查：`legal` 阶段读最新 10-K 和之后的 10-Q，输入不变不重复调用。一家公司第一次运行找到的事项是基线；之后新出现的（或换了名字的已知事项）进 `uw-pipeline review`（类型 MATTER）。重复的旧事项驳回即可：被驳回的不再出信号，也不进洞察。两个模型类型不一致的不保存（日志里的 `unpaired`），多半是本来就有两种读法的事项。
+- 委托书 `board_v2`：审计费、双重股权、CEO 任期。JPM 的审计费是文字叙述，两个模型读法不同时为空，属于正常。
+- 并行：`config/jobs.yaml` 的 `parallel` 设各阶段同时处理几家公司，只在 Azure SQL 上生效（SQLite 一次一家）。SecureGPT 每个部署的 TPM 设为 50 万（`config/llm.yaml` 的 `rate_limits`，D-051）；RPM 网关团队给出后再加。出现 429 失败或数据库死锁时，先调小该阶段的 workers。
+- 按任务的 max_tokens（`task_max_tokens`，每个提供方各自配置）：用 `SELECT task, model, MAX(output_tokens) FROM llm_call GROUP BY task, model` 看最大输出（gpt-6 含推理 token），取约 2 倍。它不在缓存 key 里，改了不会重复调用；某任务出现截断（`llm_call.error`）时调大。
 
 ## 11. 常见故障
 

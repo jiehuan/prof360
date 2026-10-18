@@ -7,6 +7,7 @@ import hashlib
 import json
 import logging
 import os
+import threading
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
@@ -18,6 +19,7 @@ from pydantic import BaseModel
 from sqlalchemy import Connection, select
 
 from uw_pipeline.clients.llm import LLMClient, LLMError, LLMSetupError
+from uw_pipeline.clients.llm_limits import ModelLimits
 from uw_pipeline.enrich.untrusted import GUARD_PROMPT, neutralize
 from uw_pipeline.load.upsert import upsert
 from uw_pipeline.schema import llm_call
@@ -41,6 +43,10 @@ class ProviderProfile(BaseModel):
     synthesis: ModelSpec  # company-level tasks (insights.yaml)
     pricing: dict[str, tuple[float, float]] = {}  # per million tokens (input, output)
     pricing_currency: str = "USD"
+    # Phase 15i: per-model requests / tokens per minute shared by parallel workers, and a lower
+    # max_tokens per task (providers reserve max_tokens against the token quota).
+    rate_limits: dict[str, ModelLimits] = {}
+    task_max_tokens: dict[str, int] = {}
 
 
 class LLMConfig(BaseModel):
@@ -52,6 +58,8 @@ class LLMConfig(BaseModel):
     synthesis: ModelSpec
     pricing: dict[str, tuple[float, float]] = {}
     pricing_currency: str = "USD"
+    rate_limits: dict[str, ModelLimits] = {}
+    task_max_tokens: dict[str, int] = {}
     prompt_version: str
     tiebreak_prompt_version: str
     max_input_chars: int
@@ -123,6 +131,7 @@ class DailyBudget:
         self.limit, self.pricing, self.currency = limit, pricing, currency
         self.spent: float | None = None
         self.day: str | None = None
+        self._lock = threading.Lock()  # parallel workers share one budget (Phase 15i)
 
     def cost(self, model: str, input_tokens: int | None, output_tokens: int | None) -> float:
         price_in, price_out = self.pricing.get(model, (0.0, 0.0))
@@ -132,6 +141,10 @@ class DailyBudget:
         if self.limit <= 0:
             return
         day = now.astimezone(UTC).strftime("%Y-%m-%d")
+        with self._lock:
+            self._check(conn, day)
+
+    def _check(self, conn: Connection, day: str) -> None:
         if self.spent is None or self.day != day:
             start = datetime.strptime(day, "%Y-%m-%d").replace(tzinfo=UTC)
             rows = conn.execute(
@@ -146,8 +159,9 @@ class DailyBudget:
             )
 
     def add(self, model: str, input_tokens: int | None, output_tokens: int | None) -> None:
-        if self.spent is not None:
-            self.spent += self.cost(model, input_tokens, output_tokens)
+        with self._lock:
+            if self.spent is not None:
+                self.spent += self.cost(model, input_tokens, output_tokens)
 
 
 def cached_call(
@@ -202,9 +216,13 @@ def cached_call(
         except BudgetExceededError as exc:
             log.warning("%s on %s: %s", task, spec.model, exc)
             return None  # not stored: tomorrow's run asks again
+    # A task's own cap (Phase 15i) when lower than the model's: max_tokens is not in the cache
+    # key, so a cached answer stays valid when the cap changes.
+    caps: dict[str, int] = getattr(client, "task_max_tokens", None) or {}
+    max_tokens = min(spec.max_tokens, caps.get(task, spec.max_tokens))
     try:
         result = client.complete_json(
-            model=spec.model, effort=spec.effort, max_tokens=spec.max_tokens,
+            model=spec.model, effort=spec.effort, max_tokens=max_tokens,
             system=system, user=user, schema=schema,
         )  # fmt: skip
     except LLMError as exc:

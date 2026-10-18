@@ -18,13 +18,17 @@ environments:
     base_url: https://gateway.api.axaxl.com/securegptmodelhub/v1/providers/openai/deployments
 
 scope: "urn:grp:chatgpt"
-api_version: "2024-10-21"
-# gpt-5 models take `reasoning_effort`; older api-versions may reject it. Off until the smoke
-# test (scripts/securegpt_smoke.py) shows the gateway accepts it.
+# Chat completions with structured outputs (`json_schema`, strict) on every call. 2025-04-01-preview
+# is the version the gateway lists for these deployments (D-051; was 2024-10-21).
+api_version: "2025-04-01-preview"
+# This api-version takes `reasoning_effort` for reasoning models; off until the smoke test
+# (scripts/securegpt_smoke.py) shows the gateway passes it through.
 send_reasoning_effort: false
 # Model name used in config/llm.yaml and insights.yaml -> gateway deployment id.
 deployments:
-  gpt-5-nano-2025-08-07: gpt-5-nano-2025-08-07
+  gpt-6-luna-2026-09-22: gpt-6-luna-2026-09-22   # routine calls (extractor), D-051
+  gpt-6-sol-2026-09-22: gpt-6-sol-2026-09-22     # tie-breaker and synthesis
+  gpt-5-nano-2025-08-07: gpt-5-nano-2025-08-07   # previous models (D-039)
   gpt-5-mini-2025-08-07: gpt-5-mini-2025-08-07
 
 timeout_sec: 300

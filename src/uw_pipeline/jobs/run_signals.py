@@ -14,15 +14,19 @@ from sqlalchemy import Connection, Engine, select
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.clients.sec import SecClient
 from uw_pipeline.config import CompanyConfig, IndustryConfig
+from uw_pipeline.enrich.legal import legal_matters
 from uw_pipeline.enrich.llm import LLMConfig, LLMUnavailableError
-from uw_pipeline.extract.filings import instance_name
+from uw_pipeline.extract.filings import instance_name, ownership_parties
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.load.upsert import delete_keys, upsert
 from uw_pipeline.normalize.xbrl_facts import text_facts_from_instance
 from uw_pipeline.schema import (
     board_composition,
+    earnings_report,
     filing_section,
+    insider_transaction,
+    market_daily,
     metric_value,
     signal,
     signal_vote,
@@ -35,8 +39,12 @@ from uw_pipeline.signals.detect import (
     auditor_signals,
     board_signals,
     eight_k_signals,
+    insider_signals,
     keyword_signals,
+    legal_signals,
+    market_signals,
     metric_signals,
+    ownership_signals,
     pay_signals,
     threshold_signals,
 )
@@ -76,12 +84,14 @@ def _sections(conn: Connection, company_id: int) -> dict[int, dict[str, str]]:
     return out
 
 
-def _auditor_name(sec: SecClient, cik: str, accn: str, primary_doc: str) -> str | None:
+def _auditor(sec: SecClient, cik: str, accn: str, primary_doc: str) -> tuple[str | None, ...]:
+    """(dei:AuditorName, dei:AuditorFirmId) from the 10-K's XBRL instance."""
     name = instance_name(sec.filing_index(cik, accn), primary_doc)
     if name is None:
-        return None
+        return None, None
     xml = sec.filing_document(cik, accn, name).payload
-    return text_facts_from_instance(xml, ["dei:AuditorName"]).get("dei:AuditorName")
+    facts = text_facts_from_instance(xml, ["dei:AuditorName", "dei:AuditorFirmId"])
+    return facts.get("dei:AuditorName"), facts.get("dei:AuditorFirmId")
 
 
 def detect_company(
@@ -104,6 +114,7 @@ def detect_company(
     own_names = [n.split()[0] for n in (row["name"], row["legal_name"]) if n]
     detected = eight_k_signals(docs, sections, rules, own_names)
     detected += keyword_signals(docs, sections, rules)
+    detected += ownership_signals(docs, rules, _filers(sec, cik, docs, rules))
 
     votes: list[VoteRow] = []
     if voter is not None:
@@ -126,14 +137,10 @@ def detect_company(
         ).all()
     )
     ten_ks = [d for d in docs if d.form_type == "10-K" and d.doc_role == "PRIMARY"]
-    infos = [
-        auditor_info(
-            d,
-            _auditor_name(sec, cik, d.accession_no, primary_names[d.doc_id]),
-            sections.get(d.doc_id, {}).get("10K-AUDIT"),
-        )
-        for d in ten_ks
-    ]
+    infos = []
+    for d in ten_ks:
+        name, firm_id = _auditor(sec, cik, d.accession_no, primary_names[d.doc_id])
+        infos.append(auditor_info(d, name, sections.get(d.doc_id, {}).get("10K-AUDIT"), firm_id))
     detected += auditor_signals(infos)
 
     values = [
@@ -155,8 +162,48 @@ def detect_company(
               *threshold_signals(values, rules)]:  # fmt: skip
         detected.append(replace(s, doc_id=by_accn.get(s.accession_no or "")))
     detected += [replace(s, doc_id=board["doc_id"]) for s in governance] if board else []
+    market = _market(conn, cfg.symbols()[0], rules)
+    trades = [dict(r) for r in conn.execute(select(insider_transaction).where(
+        insider_transaction.c.company_id == company_id)).mappings()]  # fmt: skip
+    today = datetime.now(UTC).date().isoformat()
+    detected += market + insider_signals(trades, market, rules, today)
+    detected += legal_signals(legal_matters(conn, company_id), rules, today)
     detected = [d for d in detected if rules.allows(d.rule_id, group)]
     return company_id, detected, votes
+
+
+def _filers(sec: SecClient, cik: str, docs: list[Doc], rules: SignalRules) -> dict[str, str]:
+    """Investor names of the Schedule 13Ds about the company (index headers, cached)."""
+    out = {}
+    for d in docs:
+        if d.form_type in rules.ownership_forms:
+            raw = sec.filing_document(cik, d.accession_no, f"{d.accession_no}-index-headers.html")
+            _, name = ownership_parties(raw.payload.decode("utf-8", errors="replace"))
+            if name:
+                out[d.accession_no] = name
+    return out
+
+
+def _market(conn: Connection, symbol: str, rules: SignalRules) -> list[Detected]:
+    """Stock-drop and earnings-miss signals from the market stage's tables (Phase 15a)."""
+
+    def series(sym: str) -> list[tuple[str, float]]:
+        return [(d, p) for d, p in conn.execute(
+            select(market_daily.c.trade_date, market_daily.c.adjusted_close)
+            .where(market_daily.c.symbol == sym)
+        ).all()]  # fmt: skip
+
+    prices = series(symbol)
+    if not prices:
+        return []
+    earnings = [
+        dict(r)
+        for r in conn.execute(
+            select(earnings_report).where(earnings_report.c.symbol == symbol)
+        ).mappings()
+    ]
+    today = datetime.now(UTC).date().isoformat()
+    return market_signals(prices, series(rules.market.benchmark), earnings, rules, today)
 
 
 def _store_votes(conn: Connection, company_id: int, votes: list[VoteRow], now: datetime) -> None:

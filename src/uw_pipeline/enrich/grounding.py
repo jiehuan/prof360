@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import itertools
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -131,3 +132,18 @@ def ungrounded_numbers(text: str, quotes: Iterable[str], values: Iterable[float]
             continue
         missing.append(n.text)
     return missing
+
+
+_PLAIN_NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
+_UNITS = (1.0, 1e3, 1e6, 1e9)
+
+
+def amount_in(value: float, text: str, *, parts: int = 1) -> bool:
+    """A USD amount appears in the text at some unit (dollars, thousands, millions, billions),
+    within 0.5%; with `parts` > 1 it may also be the sum of that many of its numbers (a fee
+    category a table splits into lines). A zero needs no number: tables show it as a dash."""
+    if value == 0:
+        return True
+    numbers = [float(n.replace(",", "")) for n in _PLAIN_NUMBER.findall(text)][:30]
+    sums = [sum(c) for r in range(1, parts + 1) for c in itertools.combinations(numbers, r)]
+    return any(abs(n * k - value) <= max(0.5, abs(value) * 0.005) for n in sums for k in _UNITS)

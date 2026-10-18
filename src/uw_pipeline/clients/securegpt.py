@@ -76,6 +76,10 @@ class SecureGPTClient:
         self._sleep, self._clock = sleep, clock
         self._token: str | None = None
         self._token_until = 0.0
+        # Called with (model, seconds) when the gateway throttles a completion (status 429),
+        # so a shared rate limiter can hold every worker back (clients/llm_limits.py).
+        self.on_throttle: Callable[[str, float], None] | None = None
+        self._models = {d: m for m, d in cfg.deployments.items()}
 
     def close(self) -> None:
         self._http.close()
@@ -130,7 +134,10 @@ class SecureGPTClient:
             if r.status_code in self.cfg.retry_statuses and attempt + 1 < self.cfg.max_attempts:
                 last = str(r.status_code)
                 log.info("SecureGPT %s: %s, retrying", what, r.status_code)
-                self._sleep(self._wait(attempt, r))
+                wait = self._wait(attempt, r)
+                if r.status_code == 429 and self.on_throttle and what in self._models:
+                    self.on_throttle(self._models[what], wait)
+                self._sleep(wait)
                 continue
             return r
         raise LLMError(f"SecureGPT {what}: gave up after {self.cfg.max_attempts} attempts ({last})")

@@ -71,8 +71,8 @@ def test_llm_provider_profiles(monkeypatch) -> None:
     monkeypatch.delenv("LLM_PROVIDER", raising=False)
     default = load_llm_config(CONFIG_DIR)
     assert default.provider == "securegpt"
-    assert (default.extractor.model, default.tiebreaker.model) == (
-        "gpt-5-nano-2025-08-07", "gpt-5-mini-2025-08-07")  # fmt: skip
+    assert (default.extractor.model, default.tiebreaker.model, default.synthesis.model) == (
+        "gpt-6-luna-2026-09-22", "gpt-6-sol-2026-09-22", "gpt-6-sol-2026-09-22")  # fmt: skip
     assert default.pricing_currency == "EUR"
 
     claude = load_llm_config(CONFIG_DIR, "anthropic")

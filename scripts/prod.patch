@@ -23,13 +23,13 @@ index 527afcbd03102a401c4529903aa89f1fc601c566..326f71f294f0958ae49700124ff1e40c
 -RUNWARE_API_KEY=
  # LLM_ENABLED=false   # rules only
 diff --git a/CLAUDE.md b/CONTRIBUTING.md
-similarity index 96%
+similarity index 93%
 rename from CLAUDE.md
 rename to CONTRIBUTING.md
-index 2a5fe621e10485ce7a84e8106af191081a588f0d..86e60ab878ce058bbb49a529dc4e2ebcfa4ddff9 100644
+index 585561174469c2e7ec7e00c07f677f50c5db9bbc..387700b08aeb3827838d28e0f116cd8f1e06cd0b 100644
 --- a/CLAUDE.md
 +++ b/CONTRIBUTING.md
-@@ -24,11 +24,9 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
+@@ -27,11 +27,9 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
  .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy
  .venv/bin/python scripts/refresh_sec_fixtures.py   # rebuild SEC fixtures from data/raw
  .venv/bin/python scripts/securegpt_smoke.py         # SecureGPT gateway check (work network)
@@ -41,6 +41,12 @@ index 2a5fe621e10485ce7a84e8106af191081a588f0d..86e60ab878ce058bbb49a529dc4e2ebc
  ```
  
  Architecture, stages, data model and internals: `docs/TECHNICAL.md`.
+@@ -71,5 +69,3 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
+ - Signal and section rules live in `config/signal_rules.yaml` and `company_overrides/*.yaml`
+   (`sections:`); every false positive found becomes a test case in `tests/test_signals.py`.
+ 
+-Release to the SecureGPT-only `prod` branch: `.venv/bin/python scripts/release_prod.py --push`
+-(it stops on a patch conflict or a provider name; fix in its worktree, then `--refresh`).
 diff --git a/config/insights.yaml b/config/insights.yaml
 index 39a6ec1207ede1aeb873d234eb10587b130d5151..e007724f78e3d0c49347fd26477e4485dc176112 100644
 --- a/config/insights.yaml
@@ -55,7 +61,7 @@ index 39a6ec1207ede1aeb873d234eb10587b130d5151..e007724f78e3d0c49347fd26477e4485
  news_materiality:
    overall: 0.5
 diff --git a/config/llm.yaml b/config/llm.yaml
-index 5a0879f14ad112ca503b7a863b0aba8f660a1243..55c116d961928caadf11754f2beda9aa10928f39 100644
+index aa21943ac84a8d9955cac93b47472f9739c390dc..d9e8f2a804e91e6a131faadbe06e83284216b3b3 100644
 --- a/config/llm.yaml
 +++ b/config/llm.yaml
 @@ -2,13 +2,8 @@
@@ -74,10 +80,10 @@ index 5a0879f14ad112ca503b7a863b0aba8f660a1243..55c116d961928caadf11754f2beda9aa
  # The model is part of every cache key: each profile keeps its own cached results, and switching
  # re-uses them; a new model runs all LLM tasks again once.
  # `synthesis` is the model of the company-level tasks (config/insights.yaml).
-@@ -24,42 +19,6 @@ providers:
-     pricing:
-       gpt-5-nano-2025-08-07: [0.052, 0.378]
-       gpt-5-mini-2025-08-07: [0.240, 1.889]
+@@ -41,62 +36,6 @@ providers:
+       gpt-6-sol-2026-09-22: {tpm: 500000}
+     # task_max_tokens: lower max_tokens per task, from this profile's own llm_call
+     # output_tokens (reasoning included); see docs/OPERATIONS.md.
 -  anthropic:
 -    extractor: {model: claude-haiku-5-5, effort: low, max_tokens: 8000}
 -    tiebreaker: {model: claude-sonnet-5-5, effort: high, max_tokens: 16000}
@@ -88,6 +94,26 @@ index 5a0879f14ad112ca503b7a863b0aba8f660a1243..55c116d961928caadf11754f2beda9aa
 -      claude-haiku-5-5: [0.1, 0.5]    # prompts <= 100K tokens; longer prompts 0.5 / 2.5
 -      claude-sonnet-5-5: [2.0, 10.0]
 -      claude-opus-5-5: [4.0, 20.0]
+-    # Phase 15i: max_tokens per task, about twice the largest output (thinking included) in
+-    # llm_call on 2026-10-18; the model's own max_tokens applies when lower. Not in the cache
+-    # key: changing a value does not repeat cached calls.
+-    task_max_tokens:
+-      signals: 4000            # largest 750
+-      tiebreak: 4000           # 477
+-      transcript_tone: 3000    # 942
+-      news_events: 4000        # 1,367
+-      news_relevance: 6000     # 2,134
+-      news_risk: 8000          # 3,139
+-      board: 8000              # 3,454
+-      activity_summary: 8000   # 3,412
+-      table_metrics: 6000      # 2,393
+-      text_metrics: 12000      # 4,703
+-      legal_matters: 12000     # 5,164
+-      loan_book: 12000         # 5,353
+-      metric_detail: 14000     # 5,954
+-      followups: 14000         # 6,492
+-      behavioral: 18000        # 7,967
+-      key_insights: 22000      # 9,462
 -  runware:
 -    # Runware model ids. Extractor and tie-breaker are different models, so dual checks and
 -    # signal votes stay two independent reads.
@@ -181,7 +207,7 @@ index 26638f2f64a3f45f56c4819754ad965413547e13..634a0767cb348389b10706270c9d9c50
    # Azure SQL + ADLS (D-040; non-secret settings in config/azure.yaml)
    DATABASE_BACKEND: "azure_sql"
 diff --git a/docs/OPERATIONS.md b/docs/OPERATIONS.md
-index deadfa7eb3376e505d644e34623481938ae09cab..b972651c6be54990c8263eaf0ad0335bc47ab214 100644
+index 161151730a39f137f6c93c07a523f727428d70d3..80c92347e53efb96b255ce85c422c2468b3df8f3 100644
 --- a/docs/OPERATIONS.md
 +++ b/docs/OPERATIONS.md
 @@ -1,6 +1,6 @@
@@ -192,7 +218,7 @@ index deadfa7eb3376e505d644e34623481938ae09cab..b972651c6be54990c8263eaf0ad0335b
  
  ## 1. 日常运行
  
-@@ -68,7 +68,7 @@
+@@ -77,7 +77,7 @@
  
  ## 7. 详情弹窗数据（Phase 8，D-036）
  
@@ -201,7 +227,7 @@ index deadfa7eb3376e505d644e34623481938ae09cab..b972651c6be54990c8263eaf0ad0335b
  - 章节的可读名称、公式里概念的名称在 `config/source_labels.yaml`。新增章节代码或概念时在这里加一项，否则界面上会直接显示代码。
  - 银行的 5 年历史由 `config/industry_groups.yaml` 的 `mdna_history_years` 控制，只保存旧 10-K 的 MD&A。
  - 贷款组合的口径在 `config/text_extraction.yaml` 的 `loan_portfolio`。只保留两个模型一致、且原文给出余额的类别，不会从百分比反推余额。
-@@ -78,20 +78,15 @@
+@@ -87,20 +87,15 @@
  - `publish` 阶段把管线结果写进应用库（`APP_DATABASE_URL`，dev 是 `data/app.db`）。管线不写 `Company.logo` 和用户相关的表。重跑只写有变化的行。
  - 应用库的映射规则（指标分类、风险类型、confidence）在 `config/app_publish.yaml`。如果 `RiskTypes` 里出现 "Other"，在 `risk_types` 里加一条规则即可，重新 publish 不需要 LLM。
  - 新闻相关性：公司别名在 `config/companies.yaml` 的 `news_aliases`；排除规则和 LLM 判断在 `config/news.yaml`。新闻阶段的 `pruned` 是按当前规则删掉的旧文章数。
@@ -213,11 +239,11 @@ index deadfa7eb3376e505d644e34623481938ae09cab..b972651c6be54990c8263eaf0ad0335b
 +## 9. LLM：SecureGPT（D-039）
  
 -- `config/llm.yaml` 里每个提供方有一套完整的模型配置（抽取、复核、综合、价格）。用环境变量 `LLM_PROVIDER` 选择，不设时用 `default_provider`（securegpt）：
--  - **securegpt**（公司网络内）：抽取 gpt-5-nano，复核和综合 gpt-5-mini。网关地址、api-version、部署名在 `config/securegpt.yaml`。
+-  - **securegpt**（公司网络内）：日常调用 gpt-6-luna，复核和综合 gpt-6-sol（D-051；之前是 gpt-5-nano / gpt-5-mini）。gpt-6 的价格暂用第三方列出的 gpt-6-luna 价格（两个模型都按 0.10 / 0.50 每百万 token），拿到 SecureGPT 的价格后替换；sol 实际可能更贵，预算会少算。网关地址、api-version（2025-04-01-preview，结构化输出）、部署名在 `config/securegpt.yaml`。
 -  - **anthropic**（公司网络外开发和测试）：抽取 Claude Haiku 5.5，复核和综合 Claude Sonnet 5.5，需要 `ANTHROPIC_API_KEY`。
 -  - **runware**（经 Runware 网关，OpenAI 兼容接口）：抽取 DeepSeek V4 Flash（`deepseek:v4@flash`），复核 Claude Haiku 5.5，综合 Claude Sonnet 5.5，需要 `RUNWARE_API_KEY`，账户余额至少 $5。网关设置在 `config/runware.yaml`；先跑 `python scripts/runware_smoke.py`（每个模型、每种输出方式调用一次，不写数据库）。新增模型时，smoke test 显示只支持 JSON 模式的，写进 `output:`。
 -- 每个提供方的缓存各自保留：切换回来时，输入没变的任务直接用缓存，不产生费用。
-+- 模型配置在 `config/llm.yaml`：抽取 gpt-5-nano，复核和综合 gpt-5-mini，以及价格。网关地址、api-version、部署名在 `config/securegpt.yaml`。
++- 模型配置在 `config/llm.yaml`：日常调用 gpt-6-luna，复核和综合 gpt-6-sol（D-051；之前是 gpt-5-nano / gpt-5-mini），以及价格。gpt-6 的价格暂用第三方列出的 gpt-6-luna 价格（两个模型都按 0.10 / 0.50 每百万 token），拿到 SecureGPT 的价格后替换；sol 实际可能更贵，预算会少算。网关地址、api-version（2025-04-01-preview，结构化输出）、部署名在 `config/securegpt.yaml`。
  - 凭证只放环境变量：`SECUREGPT_CLIENT_ID`、`SECUREGPT_CLIENT_SECRET`、`SECUREGPT_SUBSCRIPTION_KEY`，环境用 `SECUREGPT_ENV`（dv / pp / pr）。
 -- 切换或更换环境前先跑 `python scripts/securegpt_smoke.py`：每个模型调用一次，并测试网关是否接受 `reasoning_effort`；接受的话把 `send_reasoning_effort` 改为 true。
 +- 更换环境或模型前先跑 `python scripts/securegpt_smoke.py`：每个模型调用一次，并测试网关是否接受 `reasoning_effort`；接受的话把 `send_reasoning_effort` 改为 true。
@@ -227,7 +253,7 @@ index deadfa7eb3376e505d644e34623481938ae09cab..b972651c6be54990c8263eaf0ad0335b
  
  ## 10. Azure SQL 和 ADLS（D-040）
  
-@@ -141,5 +136,5 @@
+@@ -160,5 +155,5 @@
  ## 12. 密钥和费用
  
  - 密钥只放在 `.env`（本地，已被 git 忽略）或 OpenShift Secret 中，**不要写进代码、日志或测试数据**。Alpha Vantage 的报错消息里会带 key，客户端已经做了脱敏。
@@ -235,7 +261,7 @@ index deadfa7eb3376e505d644e34623481938ae09cab..b972651c6be54990c8263eaf0ad0335b
 +- 提交前检查：用 `git grep --cached` 搜索 SecureGPT 订阅 key 和 Alpha Vantage key 的前几位，应该没有任何结果。
  - LLM 调用会按输入哈希缓存，输入不变时不会再次调用。每晚的费用只来自内容发生变化的公司。可以用 `runs` 查看每次运行的估算费用。
 diff --git a/docs/PLAN.md b/docs/PLAN.md
-index e05b93326477f869b0de730605d8cd119c0c9f56..60e350ee0a20d86003f68339f5ab9b60cfbf102b 100644
+index 4695137b20769fd3fac89f24a3de0d8cb05e92c1..93df1f20d28e1a18566159750b4d14f1bdf9e6df 100644
 --- a/docs/PLAN.md
 +++ b/docs/PLAN.md
 @@ -1,6 +1,6 @@
@@ -311,7 +337,7 @@ index e05b93326477f869b0de730605d8cd119c0c9f56..60e350ee0a20d86003f68339f5ab9b60
  
  **验收**：
  - 9 家公司全部写入应用库；无变化时重跑写入 0 行
-@@ -718,15 +718,15 @@ uw-pipeline dq-report --run-id <id>
+@@ -743,15 +743,15 @@ uw-pipeline dq-report --run-id <id>
  |---|---|---|---|
  | sec | company、facts、documents | SEC 每秒 10 次（所有 pod 共用一个 IP / User-Agent） | 少量 worker + 全局令牌桶（8/秒） |
  | av | news、transcripts | AV 每分钟配额 | 全局令牌桶 |
@@ -330,7 +356,7 @@ index e05b93326477f869b0de730605d8cd119c0c9f56..60e350ee0a20d86003f68339f5ab9b60
  
  #### 10.E 必须先改的代码结构
  - **事务缩短**：现在每个阶段把一家公司的网络和 LLM 调用都放在同一个数据库事务里，可能持续几分钟。改成"先读输入（短事务）→ 在事务外调用 SEC / AV / LLM → 一次性写结果（短事务）"。这是并行的前提，也是改动最大的一步。
-@@ -736,13 +736,13 @@ uw-pipeline dq-report --run-id <id>
+@@ -761,13 +761,13 @@ uw-pipeline dq-report --run-id <id>
  - **数据库**：SQLite 无法并发写，必须换 Azure SQL；在拿到权限前用本地 Postgres 开发和压测。
  
  #### 10.F LLM 的 Batch 化（夜间）
@@ -347,7 +373,7 @@ index e05b93326477f869b0de730605d8cd119c0c9f56..60e350ee0a20d86003f68339f5ab9b60
  - 结论：23:30 开始，约 03:00 前完成，满足次日早上更新的要求；早上 05:30 的补跑处理失败项和晚到的申报。
  - 首次回补 4,000 家：companyfacts / submissions 用 SEC 批量包，不逐家请求；文件下载约 6 万次请求，约 2 小时；Tier 1 的洞察用 Batch。
  
-@@ -763,7 +763,7 @@ uw-pipeline dq-report --run-id <id>
+@@ -788,7 +788,7 @@ uw-pipeline dq-report --run-id <id>
  
  ---
  
@@ -356,7 +382,7 @@ index e05b93326477f869b0de730605d8cd119c0c9f56..60e350ee0a20d86003f68339f5ab9b60
  
  - 每个 Phase 开始前先列出要改动的文件和计划，等待确认后再动手
  - 单测不得访问外网；新增外部调用必须同时加 fixture
-@@ -782,8 +782,8 @@ uw-pipeline dq-report --run-id <id>
+@@ -807,8 +807,8 @@ uw-pipeline dq-report --run-id <id>
  暂时不用管
  2. Alpha Vantage 订阅档位与限速？
  现在用 free key（存于本地 `.env` 的 `ALPHAVANTAGE_API_KEY`）。之后是75call/min
@@ -368,7 +394,7 @@ index e05b93326477f869b0de730605d8cd119c0c9f56..60e350ee0a20d86003f68339f5ab9b60
  每个SIC在yaml里分开计划，可以同一个SIC用同一批metrics
  5. Adjusted EBITDA 展示计算值即可，还是必须用公司公布值？
 diff --git a/docs/TECHNICAL.md b/docs/TECHNICAL.md
-index 0b4ae8f3fd90d30c09ea2572e5aceecbddcc2f28..4b9698909af3c9082a273ab4a9cc72ca997bcc05 100644
+index ab482b1e7772b372d1b7c361e19cf97c019a3d66..eb032c486cd152c86c41876f74940aff201624f9 100644
 --- a/docs/TECHNICAL.md
 +++ b/docs/TECHNICAL.md
 @@ -9,7 +9,7 @@ done; Phase 10 planned, on hold). Related documents:
@@ -398,32 +424,32 @@ index 0b4ae8f3fd90d30c09ea2572e5aceecbddcc2f28..4b9698909af3c9082a273ab4a9cc72ca
  | `extract/` | Company metadata, filing lists from submissions |
  | `normalize/` | XBRL facts, fiscal periods (restatement basis), HTML to text, table grids (`table_grid.py`), section splitting, news normalisation |
  | `compute/` | Metric registry (from `config/metrics.yaml`), formulas, coverage |
-@@ -198,7 +198,6 @@ versioned with the code.
+@@ -212,7 +212,6 @@ versioned with the code.
  | `scores.yaml` | News and transcript risk scoring |
- | `llm.yaml` | Provider profiles (models, effort, token limits, prices), signal topics, `max_input_chars` |
+ | `llm.yaml` | Provider profiles (models, effort, token limits, prices, `rate_limits`, `task_max_tokens`), signal topics, `max_input_chars` |
  | `securegpt.yaml` | Gateway and token URLs per environment, API version, deployments |
 -| `runware.yaml` | Runware base URL, output mode per model, `reasoning_effort` models, retries |
  | `azure.yaml` | Azure SQL server, database, schemas; ADLS account, container, root (placeholders) |
  | `app_publish.yaml` | Metric categories, RiskTypes regex rules, confidence rules, trend and loan metrics |
  | `source_labels.yaml` | Readable names for sections and concepts |
-@@ -207,18 +206,16 @@ versioned with the code.
+@@ -221,18 +220,16 @@ versioned with the code.
  
  ## 8. LLM layer
  
--**Providers** (`config/llm.yaml`, D-039, D-047). One profile per provider with three roles; `LLM_PROVIDER`
+-**Providers** (`config/llm.yaml`, D-039, D-047, D-051). One profile per provider with three roles; `LLM_PROVIDER`
 -selects it, default `securegpt`:
-+**Models** (`config/llm.yaml`, D-039). The SecureGPT gateway (Azure OpenAI) with three roles:
++**Models** (`config/llm.yaml`, D-039, D-051). The SecureGPT gateway (Azure OpenAI) with three roles:
  
 -| Role | Used for | securegpt | anthropic | runware |
 -|---|---|---|---|---|
--| extractor | Signal votes, text-metric first pass, news grouping and relevance, activity summaries, risk scores | gpt-5-nano | Claude Haiku 5.5 | DeepSeek V4 Flash |
--| tiebreaker | Signal tie-breaks, second model of the dual check | gpt-5-mini | Claude Sonnet 5.5 | Claude Haiku 5.5 |
--| synthesis | Behavioral, strategic & risk, key insights, follow-ups, metric relevance | gpt-5-mini | Claude Sonnet 5.5 | Claude Sonnet 5.5 |
+-| extractor | Signal votes, text-metric first pass, news grouping and relevance, activity summaries, risk scores | gpt-6-luna | Claude Haiku 5.5 | DeepSeek V4 Flash |
+-| tiebreaker | Signal tie-breaks, second model of the dual check | gpt-6-sol | Claude Sonnet 5.5 | Claude Haiku 5.5 |
+-| synthesis | Behavioral, strategic & risk, key insights, follow-ups, metric relevance | gpt-6-sol | Claude Sonnet 5.5 | Claude Sonnet 5.5 |
 +| Role | Used for | Model |
 +|---|---|---|
-+| extractor | Signal votes, text-metric first pass, news grouping and relevance, activity summaries, risk scores | gpt-5-nano |
-+| tiebreaker | Signal tie-breaks, second model of the dual check | gpt-5-mini |
-+| synthesis | Behavioral, strategic & risk, key insights, follow-ups, metric relevance | gpt-5-mini |
++| extractor | Signal votes, text-metric first pass, news grouping and relevance, activity summaries, risk scores | gpt-6-luna |
++| tiebreaker | Signal tie-breaks, second model of the dual check | gpt-6-sol |
++| synthesis | Behavioral, strategic & risk, key insights, follow-ups, metric relevance | gpt-6-sol |
  
 -`runware` reaches all three through Runware's OpenAI-compatible gateway (`clients/runware.py`,
 -`config/runware.yaml`); the SecureGPT and Runware clients share the OpenAI response handling
@@ -433,7 +459,7 @@ index 0b4ae8f3fd90d30c09ea2572e5aceecbddcc2f28..4b9698909af3c9082a273ab4a9cc72ca
  schema is checked against strict-mode rules in a test). Errors are classified:
  `LLMError` fails one item (refusal, truncation, content filter, request too large);
  `LLMSetupError` (bad credentials, unknown model or deployment) stops LLM use for the run, and
-@@ -227,7 +224,7 @@ the stages fall back to rules (`signals`) or fail (`textmetrics`, `insights`).
+@@ -241,7 +238,7 @@ the stages fall back to rules (`signals`) or fail (`textmetrics`, `insights`).
  
  **Cache** (`enrich/llm.cached_call`). Every call is stored in `llm_call`, keyed by a hash of
  task, prompt version, model, effort, system prompt, user prompt and schema; an unchanged input
@@ -442,7 +468,7 @@ index 0b4ae8f3fd90d30c09ea2572e5aceecbddcc2f28..4b9698909af3c9082a273ab4a9cc72ca
  it is cached; an invalid output is recorded as an error and asked again next run. On SQL Server
  the cache row commits in its own transaction, so a stage that rolls back keeps calls already
  paid for.
-@@ -371,10 +368,8 @@ because the service echoes the key.
+@@ -395,10 +392,8 @@ because the service echoes the key.
  | `AZURE_ENV` | from `azure.yaml` | dv / pp / pr |
  | `AZURE_SQL_CLIENT_ID`, `AZURE_SQL_CLIENT_SECRET` | – | Azure SQL service principal |
  | `ADLS_CLIENT_ID`, `ADLS_CLIENT_SECRET` | – | ADLS service principal |
@@ -455,7 +481,7 @@ index 0b4ae8f3fd90d30c09ea2572e5aceecbddcc2f28..4b9698909af3c9082a273ab4a9cc72ca
  | `LLM_DAILY_BUDGET` | 25 | New LLM spend per day in the profile's currency; 0 = unlimited |
  | `ALPHAVANTAGE_CALLS_PER_MINUTE`, `ALPHAVANTAGE_DAILY_QUOTA` | 5, 25 | Paid plan: 75 and 0 (unlimited) |
 diff --git a/docs/decisions.md b/docs/decisions.md
-index 33e19a47e42e5fbc6d3e32f676464ac4cc1979cf..9df70ebea0d84cb4b3a71873af7507f83cd198e6 100644
+index 1b3fc9cdec610ecd6e5f067c38c668d6a4290a55..82f82b081c9bfc524996d92c8e2c640b6f7d2350 100644
 --- a/docs/decisions.md
 +++ b/docs/decisions.md
 @@ -220,7 +220,7 @@ has no exhibit; this is logged.
@@ -757,7 +783,7 @@ index 33e19a47e42e5fbc6d3e32f676464ac4cc1979cf..9df70ebea0d84cb4b3a71873af7507f8
  - User request: per company, which industry it belongs to; per industry, which metrics and
    insights it tracks; new metrics and insights; in YAML or JSON. "Insights" means what the
 diff --git a/pyproject.toml b/pyproject.toml
-index badeff572574c39da29876dc08eb0702d47a503d..7741d692771c6d5e41b7e21b85b7048e6a4b538f 100644
+index 0df7ca8673e935675e5b5c33244a56bf14ec6c8a..a2439538bc086dfd80e431be75dd80f30222ec59 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -17,7 +17,6 @@ dependencies = [
@@ -1159,10 +1185,10 @@ index 1a3df7e1af03389b1b2c9295e0310788d7a523b6..ae4a441804f958060c4170c21f4c7e2e
          t = t.split("\n", 1)[1] if "\n" in t else ""
 diff --git a/src/uw_pipeline/clients/runware.py b/src/uw_pipeline/clients/runware.py
 deleted file mode 100644
-index fe1b69e17127706484bd433a415d35bb680719bb..0000000000000000000000000000000000000000
+index b480a3bbfb9bca4aa68eef24fb4ee009707714eb..0000000000000000000000000000000000000000
 --- a/src/uw_pipeline/clients/runware.py
 +++ /dev/null
-@@ -1,153 +0,0 @@
+@@ -1,158 +0,0 @@
 -"""Runware client: OpenAI-compatible chat completions for many hosted models (D-047).
 -
 -Same interface as ClaudeClient (`complete_json`), so stages do not change. POST
@@ -1238,6 +1264,8 @@ index fe1b69e17127706484bd433a415d35bb680719bb..00000000000000000000000000000000
 -        self._key = api_key
 -        self._http = http or httpx.Client(timeout=cfg.timeout_sec)
 -        self._sleep = sleep
+-        # Called with (model, seconds) on status 429 (clients/llm_limits.py).
+-        self.on_throttle: Callable[[str, float], None] | None = None
 -
 -    def close(self) -> None:
 -        self._http.close()
@@ -1267,7 +1295,10 @@ index fe1b69e17127706484bd433a415d35bb680719bb..00000000000000000000000000000000
 -            if r.status_code in self.cfg.retry_statuses and attempt + 1 < self.cfg.max_attempts:
 -                last = str(r.status_code)
 -                log.info("Runware %s: %s, retrying", body["model"], r.status_code)
--                self._sleep(self._wait(attempt, r))
+-                wait = self._wait(attempt, r)
+-                if r.status_code == 429 and self.on_throttle:
+-                    self.on_throttle(str(body["model"]), wait)
+-                self._sleep(wait)
 -                continue
 -            return r
 -        raise LLMError(f"Runware {body['model']}: gave up after {self.cfg.max_attempts} "
@@ -1317,7 +1348,7 @@ index fe1b69e17127706484bd433a415d35bb680719bb..00000000000000000000000000000000
 -            raise LLMError(f"Runware {model}: {r.status_code} {error_text(r)}")
 -        return chat_result(r.json(), model)
 diff --git a/src/uw_pipeline/clients/securegpt.py b/src/uw_pipeline/clients/securegpt.py
-index 8b65258353d61f4936d77db581e75733c4232110..07a9e7ea265e35b85cdbd984db1bc7d5c6659dbe 100644
+index 13f4ee53c4c8acaf6af42286fa3c324eaa4efb42..407473e1bbde769e3735fe053d232e2a3e79cb62 100644
 --- a/src/uw_pipeline/clients/securegpt.py
 +++ b/src/uw_pipeline/clients/securegpt.py
 @@ -1,6 +1,6 @@
@@ -1329,10 +1360,10 @@ index 8b65258353d61f4936d77db581e75733c4232110..07a9e7ea265e35b85cdbd984db1bc7d5
  
  - token: POST token_url with Client_Id / Client_Secret / scope / Ocp-Apim-Subscription-Key
 diff --git a/src/uw_pipeline/enrich/llm.py b/src/uw_pipeline/enrich/llm.py
-index c9f89cca7fce37417cfedcaf682f9305a3f1786f..3cd8c18ceb61d17eb87bd1a301ff7287628acc68 100644
+index 02d6a2981a4f97185488374ee40d5525fb7a398a..6f9f6bb9891f79ef7c0935caaabc8d581495ce4c 100644
 --- a/src/uw_pipeline/enrich/llm.py
 +++ b/src/uw_pipeline/enrich/llm.py
-@@ -12,7 +12,6 @@ from datetime import UTC, datetime
+@@ -13,7 +13,6 @@ from datetime import UTC, datetime
  from pathlib import Path
  from typing import Any
  
@@ -1340,7 +1371,7 @@ index c9f89cca7fce37417cfedcaf682f9305a3f1786f..3cd8c18ceb61d17eb87bd1a301ff7287
  import yaml
  from pydantic import BaseModel
  from sqlalchemy import Connection, select
-@@ -46,7 +45,7 @@ class ProviderProfile(BaseModel):
+@@ -52,7 +51,7 @@ class ProviderProfile(BaseModel):
  class LLMConfig(BaseModel):
      """llm.yaml with the active provider's profile filled in."""
  
@@ -1349,7 +1380,7 @@ index c9f89cca7fce37417cfedcaf682f9305a3f1786f..3cd8c18ceb61d17eb87bd1a301ff7287
      extractor: ModelSpec
      tiebreaker: ModelSpec
      synthesis: ModelSpec
-@@ -87,11 +86,6 @@ class LLMUnavailableError(Exception):
+@@ -95,11 +94,6 @@ class LLMUnavailableError(Exception):
      """Credentials or request setup are wrong; stop using the LLM for this run."""
  
  
@@ -1361,7 +1392,7 @@ index c9f89cca7fce37417cfedcaf682f9305a3f1786f..3cd8c18ceb61d17eb87bd1a301ff7287
  def _store(conn: Connection, row: dict[str, Any]) -> None:
      """Write an llm_call row. On a server database it commits on its own, so a later failure in
      the stage's transaction cannot roll back answers already paid for. (SQLite allows a single
-@@ -213,14 +207,6 @@ def cached_call(
+@@ -231,14 +225,6 @@ def cached_call(
          return None
      except LLMSetupError as exc:
          raise LLMUnavailableError(str(exc)) from exc
@@ -1377,21 +1408,22 @@ index c9f89cca7fce37417cfedcaf682f9305a3f1786f..3cd8c18ceb61d17eb87bd1a301ff7287
               "output_tokens": result.output_tokens}  # fmt: skip
      if budget is not None:
 diff --git a/src/uw_pipeline/jobs/stages.py b/src/uw_pipeline/jobs/stages.py
-index 02620b2ff82d06ec7a2a3ed3cb9d9f6ea55ac79c..a0ce38eb3d812704d9b4e5da38a5b559389846f7 100644
+index 98d1585747272842d740d6c4954feab80879af01..65a7abb4dc231b5875ed74ab4dbc23f8ff2702fc 100644
 --- a/src/uw_pipeline/jobs/stages.py
 +++ b/src/uw_pipeline/jobs/stages.py
-@@ -11,9 +11,8 @@ from sqlalchemy import Engine, func, select
+@@ -13,10 +13,9 @@ from sqlalchemy import Engine, func, select
  
  from uw_pipeline.clients.alphavantage import AlphaVantageClient
  from uw_pipeline.clients.db import app_engine, ensure_schema
 -from uw_pipeline.clients.llm import ClaudeClient, LLMClient
 +from uw_pipeline.clients.llm import LLMClient
+ from uw_pipeline.clients.llm_limits import LimitedClient
  from uw_pipeline.clients.ratelimit import TokenBucket
 -from uw_pipeline.clients.runware import RunwareClient, load_runware_config
  from uw_pipeline.clients.sec import SecClient
  from uw_pipeline.clients.securegpt import SecureGPTClient, load_securegpt_config
  from uw_pipeline.clients.storage import make_storage
-@@ -101,26 +100,15 @@ class StageRunner:
+@@ -124,26 +123,15 @@ class StageRunner:
              s = self.settings
              cfg = load_llm_config(s.config_dir, s.llm_provider)
              client: LLMClient | None = None
@@ -1425,8 +1457,8 @@ index 02620b2ff82d06ec7a2a3ed3cb9d9f6ea55ac79c..a0ce38eb3d812704d9b4e5da38a5b559
 +                    subscription_key=s.securegpt_subscription_key.get_secret_value(),
 +                )  # fmt: skip
              if client is not None:
-                 # Daily spend cap in the profile's currency (D-043); 0 = unlimited.
-                 client.budget = DailyBudget(s.llm_daily_budget, cfg.pricing,  # type: ignore[attr-defined]
+                 # Per-model RPM / TPM limits shared by parallel workers (Phase 15i).
+                 if cfg.rate_limits:
 diff --git a/src/uw_pipeline/logs.py b/src/uw_pipeline/logs.py
 index 94ecc992bf23093a6fb4759c975b588b5c46bc3d..3d1554d23f5dac2246d03325b0a4ff12ca877c17 100644
 --- a/src/uw_pipeline/logs.py
@@ -1554,7 +1586,7 @@ index 14bd6359bcc3399921969c03e1079dbb10edcdec..00000000000000000000000000000000
 - }
 -}
 diff --git a/tests/test_config.py b/tests/test_config.py
-index 6e50798835b1f128a8fb4a03332cd50efb6870cf..c7079a5ad110241c7abfc1f0f8784d274c60945e 100644
+index 8f00f58f774c863ed25660bceb2c32a6fa5bf9b8..f9135123e2db9b2b0d0f5b64d991e56938abcdd5 100644
 --- a/tests/test_config.py
 +++ b/tests/test_config.py
 @@ -61,8 +61,7 @@ def test_unknown_group_reference_rejected() -> None:
@@ -1568,7 +1600,7 @@ index 6e50798835b1f128a8fb4a03332cd50efb6870cf..c7079a5ad110241c7abfc1f0f8784d27
  
      from uw_pipeline.enrich.llm import load_llm_config
 @@ -75,14 +74,9 @@ def test_llm_provider_profiles(monkeypatch) -> None:
-         "gpt-5-nano-2025-08-07", "gpt-5-mini-2025-08-07")  # fmt: skip
+         "gpt-6-luna-2026-09-22", "gpt-6-sol-2026-09-22", "gpt-6-sol-2026-09-22")  # fmt: skip
      assert default.pricing_currency == "EUR"
  
 -    claude = load_llm_config(CONFIG_DIR, "anthropic")
@@ -1576,7 +1608,7 @@ index 6e50798835b1f128a8fb4a03332cd50efb6870cf..c7079a5ad110241c7abfc1f0f8784d27
 -        "claude-haiku-5-5", "claude-sonnet-5-5", "claude-sonnet-5-5")  # fmt: skip
 -    assert claude.prompt_version == default.prompt_version  # shared settings stay
 -    assert load_insights_config(CONFIG_DIR, "anthropic").synthesis.model == "claude-sonnet-5-5"
-+    assert load_insights_config(CONFIG_DIR).synthesis.model == "gpt-5-mini-2025-08-07"
++    assert load_insights_config(CONFIG_DIR).synthesis.model == "gpt-6-sol-2026-09-22"
  
 -    monkeypatch.setenv("LLM_PROVIDER", "anthropic")
 -    assert load_llm_config(CONFIG_DIR).provider == "anthropic"
@@ -1623,10 +1655,10 @@ index fc36e8ae6c56a757faec1a9c2d5996090685f7f3..2f0dae6faf0db56923f73d926d6f8a6f
      with pytest.raises(LLMUnavailableError):
          _call(conn, FakeLLM(bad_setup), user="other")
 diff --git a/tests/test_phase3_stages.py b/tests/test_phase3_stages.py
-index 3ea581d66c80cb72f5d418be5a085ed4ee1cdc08..557c43d02049f58a4dcba1c46c3ba3e05cf24700 100644
+index 3617a480c1b01c7b2bd98b12af71c441695d4c3a..87cb055341ba0ace3abc55216d20eb1528e39da0 100644
 --- a/tests/test_phase3_stages.py
 +++ b/tests/test_phase3_stages.py
-@@ -161,14 +161,10 @@ def test_signals_with_llm_vote_and_no_calls_on_rerun(env) -> None:
+@@ -179,14 +179,10 @@ def test_signals_with_llm_vote_and_no_calls_on_rerun(env) -> None:
  
  
  def test_llm_auth_failure_falls_back_to_rules(env) -> None:

@@ -192,10 +192,14 @@ def _formula_value(
         }
         if metric.nm_when:
             nm_names = _names(metric.nm_when)
-            if all(key in known.get(n, {}) and known[n][key].value is not None for n in nm_names):
-                nm_env = {n: known[n][key].value for n in nm_names}
-                if _eval(ast.parse(metric.nm_when, mode="eval"), nm_env):  # type: ignore[arg-type]
-                    return _combine(parts, None, "NM", expr)
+            nm_env = {n: 0.0 for n in nm_names if n in metric.optional} | {
+                n: known[n][key].value
+                for n in nm_names
+                if key in known.get(n, {}) and known[n][key].value is not None
+            }
+            nm_expr = ast.parse(metric.nm_when, mode="eval")
+            if set(nm_env) == set(nm_names) and _eval(nm_expr, nm_env):  # type: ignore[arg-type]
+                return _combine(parts, None, "NM", expr)
         try:
             value = _eval(ast.parse(expr, mode="eval"), env)
         except _Undefined:
@@ -225,14 +229,18 @@ def _growth_value(
 
 
 def compute_metrics(
-    periods: pd.DataFrame, registry: CompanyRegistry
+    periods: pd.DataFrame,
+    registry: CompanyRegistry,
+    stored: Mapping[str, dict[PeriodKey, Value]] | None = None,
 ) -> dict[str, dict[PeriodKey, Value]]:
-    """All applicable metrics for one company, keyed by metric code then period."""
+    """All applicable metrics for one company, keyed by metric code then period. `stored`:
+    values other stages wrote (market metrics, Phase 15a) that formulas may use."""
     known: dict[str, dict[PeriodKey, Value]] = dict(concept_values(periods, registry))
+    known |= dict(stored or {})
     results: dict[str, dict[PeriodKey, Value]] = {}
     for metric in registry.metrics:
-        if metric.kind == "text":
-            continue  # extracted from filing text by the LLM stage, not computed here
+        if metric.kind in ("text", "external"):
+            continue  # written by the text-metrics, market or documents stage, not here
         inputs = metric.inputs()
         keys = sorted({k for n in inputs for k in known.get(n, {})})
         values: dict[PeriodKey, Value] = {}

@@ -6,6 +6,7 @@ its quote is found in the source and the number, as written, appears in the quot
 
 from __future__ import annotations
 
+import logging
 import re
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
@@ -19,6 +20,8 @@ from uw_pipeline.compute.registry import MetricDef
 from uw_pipeline.enrich.grounding import is_grounded, normalize
 from uw_pipeline.enrich.schemas import ExtractedValue, LoanSegment
 from uw_pipeline.normalize.periods import FiscalCalendar
+
+log = logging.getLogger(__name__)
 
 SCALES = {"units": 1.0, "thousands": 1e3, "millions": 1e6, "billions": 1e9}
 # Values from two models (dual check) or two sources agree within this relative tolerance.
@@ -59,6 +62,7 @@ def select_chunks(
     *,
     keep_first: bool = False,
     per_group: int = 2,
+    round_robin: bool = False,
 ) -> list[int]:
     """Indexes of chunks to send, in document order, within `max_chars`.
 
@@ -66,6 +70,8 @@ def select_chunks(
     mentioned rarely (e.g. "net yield on interest-earning assets") is not crowded out by a
     frequent one (e.g. "CET1"). Remaining room goes to the chunks with the most mentions.
     `keep_first` always includes chunk 0 (the top of a press release has the headline numbers).
+    `round_robin` takes every group's best chunk before any group's second, so the last groups
+    are not cut off when the groups' chunks together exceed `max_chars`.
     """
     lows = [c.lower() for c in chunks]
 
@@ -73,11 +79,16 @@ def select_chunks(
         return sum(lows[i].count(w.lower()) for w in words)
 
     order: list[int] = [0] if keep_first and chunks else []
-    for words in keyword_groups:
-        ranked = sorted(
-            (i for i in range(len(chunks)) if hits(i, words)), key=lambda i: -hits(i, words)
-        )
-        order += ranked[:per_group]
+    best = [
+        sorted((i for i in range(len(chunks)) if hits(i, words)), key=lambda i: -hits(i, words))[
+            :per_group
+        ]
+        for words in keyword_groups
+    ]
+    if round_robin:
+        order += [r[k] for k in range(per_group) for r in best if k < len(r)]
+    else:
+        order += [i for r in best for i in r]
     all_words = [w for g in keyword_groups for w in g]
     order += sorted(
         (i for i in range(len(chunks)) if hits(i, all_words)), key=lambda i: -hits(i, all_words)
@@ -219,9 +230,10 @@ def agree(a: float, b: float) -> bool:
 
 
 def dual_checked(
-    first: Sequence[Candidate], second: Sequence[Candidate]
+    first: Sequence[Candidate], second: Sequence[Candidate], label: str = ""
 ) -> tuple[list[Candidate], int]:
-    """Values both models found with the same metric, period and (nearly) the same number."""
+    """Values both models found with the same metric, period and (nearly) the same number.
+    Each value dropped is logged with both readings (Phase 15h)."""
     other = {(c.metric_code, c.key): c for c in second}
     kept, dropped = [], 0
     for c in first:
@@ -230,6 +242,9 @@ def dual_checked(
             kept.append(c)
         else:
             dropped += 1
+            log.info("%s %s %s: models disagree (extractor %s, tie-breaker %s); not kept",
+                     label, c.metric_code, c.key, c.value,
+                     match.value if match else "no value")  # fmt: skip
     return kept, dropped
 
 

@@ -5,15 +5,13 @@
 jobs:
   # 23:30 ET: SEC accepts filings until 22:00 ET, so the evening's filings are included.
   nightly:
-    stages: [company, facts, compute, documents, transcripts, scores, textmetrics, governance,
-             signals, insights,
-             metricdetail, publish, dq]
+    stages: [company, facts, compute, market, documents, transcripts, scores, textmetrics,
+             governance, legal, signals, insights, metricdetail, publish, dq]
     refresh_sec: true   # nightly and morning share a UTC date; never reuse the earlier fetch
   # 05:30 ET catch-up: late filings and anything that failed overnight.
   morning:
-    stages: [company, facts, compute, documents, transcripts, scores, textmetrics, governance,
-             signals, insights,
-             metricdetail, publish, dq]
+    stages: [company, facts, compute, market, documents, transcripts, scores, textmetrics,
+             governance, legal, signals, insights, metricdetail, publish, dq]
     refresh_sec: true
   # Every 6 hours, once a premium Alpha Vantage key is configured (NEWS_SENTIMENT is premium).
   news:
@@ -29,3 +27,15 @@ resume_within_hours: 12
 heartbeat_minutes: 5
 # Attempts per task across the whole run, including resumes.
 max_attempts: 2
+
+# Phase 15i: companies run in parallel threads within these stages (stage: workers). LLM calls
+# stay under the provider's quota through `rate_limits` in config/llm.yaml. Server databases
+# only: on SQLite (local development) every stage runs one company at a time.
+parallel:
+  textmetrics: 4
+  governance: 4
+  legal: 4
+  signals: 4
+  insights: 4
+  metricdetail: 4
+  scores: 2

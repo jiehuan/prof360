@@ -41,6 +41,7 @@ code. Decisions D-016 and D-049 explain the design.
 | Add a keyword signal | `signal_rules.yaml` | an entry under `keywords` (2.4); `industries` to limit it |
 | Add a metric threshold signal | `signal_rules.yaml` | an entry under `thresholds` (2.4) |
 | Change an 8-K item's severity or title | `signal_rules.yaml` | `eight_k_items` |
+| Change a market, insider, 13D or litigation signal (threshold, window, severity) | `signal_rules.yaml` | `market`, `insiders`, `ownership_forms`, `legal` (2.4) |
 | Explain a missing metric | `coverage_notes.yaml` | a note per company and metric (or `"*"`) |
 
 ### 2.1 A company's industry
@@ -88,7 +89,8 @@ groups:
     display_name: Total Debt / Revenue
     section: leverage                # financial | liquidity | leverage | cash_flow |
                                      # operational | fi_performance | loan_portfolio
-    unit: ratio                      # USD | ratio (1.2 = 1.2x) | fraction (0.05 = 5%)
+    unit: ratio                      # USD | ratio (1.2 = 1.2x) | fraction (0.05 = 5%) |
+                                     # days | shares | score
     formula: total_debt / revenue    # concepts or earlier metric codes; + - * / ( )
     nm_when: revenue <= 0            # optional: shown as N/M when true
 ```
@@ -98,6 +100,7 @@ groups:
 | `formula` (default) | `formula`: one expression, or a list of alternatives (the first that evaluates wins); `optional`: names counted as 0 when missing; `x_py` = x a year earlier | `net_income / ((total_assets + total_assets_py) / 2)` |
 | `growth` | `base` (metric code), `compare`: `prior_quarter` or `prior_year` | revenue growth |
 | `text` | `extraction`: `definition` (exact scope, what to exclude), `keywords`; optional `dual_check: true` (two models must agree), `table` (read by cell from a table) | RevPAR, NIM |
+| `external` | none: written by another stage (market data, Form 4); listing it in a set shows it | market_cap, insider_net_sales |
 
 Other fields: `description`, `period_types: [Q, FY]`, `display: false` (computed but hidden),
 `insight_input: true` (hidden but used in insights). The header of `metrics.yaml` describes
@@ -133,6 +136,18 @@ thresholds:
     industries: [RETAIL]             # optional
 ```
 
+Other signal sections in `signal_rules.yaml` (D-050) take the same `category`, `subcategory`,
+`severity` and `title`, plus their own settings, and each can be set per industry with
+`signal_params` under its rule id:
+
+| Section | Rule ids | Settings |
+|---|---|---|
+| `market` | `stock_drop`, `earnings_miss_drop` | `min_drop`, `min_excess` (vs `benchmark`); `days` after a miss |
+| `insiders` | `insider_cluster_selling` | `min_insiders`, `window_days`, `escalate_days`, `lookback_days` |
+| `ownership_forms` | `13d`, `13d_amendment` | per form (`SCHEDULE 13D`, `SC 13D/A`, ...) |
+| `legal` | `legal_securities_class_action`, `legal_derivative`, `legal_regulatory_investigation`, `legal_enforcement`, `legal_wells_notice` | `lookback_days`, `active_days` (whole section) |
+| `metrics` | `dual_class_shares`, `non_audit_fees`, board rules | `min_share`, `min_ratio` |
+
 Section codes: `10K-1A` risk factors, `10K-3` legal proceedings, `10K-7` MD&A, `10K-9A`
 controls, `10K-AUDIT` auditor's report, `10Q-I-2` MD&A, `10Q-I-4` controls, `10Q-II-1` legal,
 `10Q-II-1A` risk factor update, `8K-<item>` 8-K items. `pattern` is a regular expression
@@ -160,7 +175,8 @@ around a match. Test a new pattern on a real filing first.
 | Different insight tasks per industry, or a new kind of insight | Behavioral, strategic & risk, key insights and follow-up questions run for every company; their wording is in versioned prompts. |
 | Changing a prompt | Prompts live in `src/uw_pipeline/enrich/prompts/`; a change needs a new version and a review of the golden outputs. |
 | Functions in formulas (min, max, abs, if) | Formulas support + - * /, unary minus, parentheses; comparisons only in `nm_when`. |
-| Units other than USD, ratio, fraction; periods other than quarter and fiscal year | Fixed in the metric model and the period logic. |
+| Units other than USD, ratio, fraction, days, shares, score; periods other than quarter and fiscal year | Fixed in the metric model and the period logic. |
+| A new market, insider or litigation metric (`kind: external`) | Written by the market or documents stage in code. |
 | A new section code or document type | Section splitting is in code. |
 | New data sources, a new LLM provider | Clients live in `src/uw_pipeline/clients/`. |
 | App database tables or columns | Schema changes go through `schema_app.py` and the reviewed DDL in `deploy/sql/`. |

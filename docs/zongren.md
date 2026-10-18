@@ -40,3 +40,9 @@
 - 应用表没有改动，app_schema_changes.sql 和 app_schema_full.sql 不变。
 - 如果已经执行过 pipeline_schema_full.sql：重新执行一次即可。脚本只创建不存在的表，已有的表和数据不受影响。权限沿用第 2 步，不需要新的授权。
 - 应用库里 metrics 会多 3 行（ROA、ROE、贷款损失准备率），由管线发布时写入，不需要你处理。
+
+【更新 2026-10-18（Phase 15）】
+- 管线表新增 4 张：market_daily（每日股价）、earnings_report（季度 EPS 和预期）、insider_transaction（内部人 Form 4 交易）、legal_matter（诉讼和监管事项）；board_composition 加 8 列（审计费、双重股权、CEO 任期）。共 40 张。
+- 应用表没有改动，app_schema_changes.sql 和 app_schema_full.sql 不变。
+- 请重新执行一次 pipeline_schema_full.sql：新表会被创建，board_composition 的新列由脚本里的 IF COL_LENGTH ... ALTER TABLE ADD 加上（可为空，已有行不受影响）。这一步需要 uw_pipeline schema 上的 ALTER 权限，日常运行仍然不需要。
+- 应用库会多出两个指标类别（Reporting Quality、Market & Trading）和对应的 metrics 行，RiskTypes 可能多出 Market、Insider Trading，都由管线发布时写入，不需要你处理。

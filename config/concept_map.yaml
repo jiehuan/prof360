@@ -44,6 +44,11 @@ concepts:
     tags:
       - us-gaap:CashAndCashEquivalentsAtCarryingValue
       - us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents
+  short_term_investments:   # Phase 15c: liquidity beside cash (marketable securities)
+    tags:
+      - us-gaap:ShortTermInvestments
+      - us-gaap:MarketableSecuritiesCurrent
+      - us-gaap:OtherShortTermInvestments
   current_assets:
     tags: [us-gaap:AssetsCurrent]
   current_liabilities:
@@ -118,3 +123,35 @@ concepts:
       - us-gaap:FinancingReceivableAllowanceForCreditLosses
   # Remaining performance obligations (ASC 606): contracted revenue not yet recognised.
   rpo: {tags: [us-gaap:RevenueRemainingPerformanceObligation]}
+  # Reporting quality and solvency (Phase 15c).
+  total_liabilities: {tags: [us-gaap:Liabilities]}
+  retained_earnings: {tags: [us-gaap:RetainedEarningsAccumulatedDeficit]}
+  receivables:
+    tags: [us-gaap:AccountsReceivableNetCurrent, us-gaap:ReceivablesNetCurrent,
+           us-gaap:AccountsNotesAndLoansReceivableNetCurrent]
+  inventory: {tags: [us-gaap:InventoryNet]}
+  cost_of_revenue:
+    tags: [us-gaap:CostOfGoodsAndServicesSold, us-gaap:CostOfRevenue, us-gaap:CostOfGoodsSold]
+  goodwill: {tags: [us-gaap:Goodwill]}
+  goodwill_impairment: {tags: [us-gaap:GoodwillImpairmentLoss]}
+  sbc:
+    tags: [us-gaap:ShareBasedCompensation, us-gaap:AllocatedShareBasedCompensationExpense]
+  diluted_shares:
+    unit: shares
+    tags: [us-gaap:WeightedAverageNumberOfDilutedSharesOutstanding]
+  # Shares outstanding on the filing's cover page (dated a few weeks after the period end);
+  # the market stage multiplies the period-end price by it (Phase 15a).
+  cover_shares_outstanding:
+    unit: shares
+    tags: [dei:EntityCommonStockSharesOutstanding]
+  # Scheduled repayments of long-term debt as of the fiscal year-end (10-K note).
+  # Fallback for the next twelve months: the current portion of long-term debt on the balance
+  # sheet (the same amount; most companies stopped tagging the maturity schedule).
+  debt_due_1y:
+    tags: [us-gaap:LongTermDebtMaturitiesRepaymentsOfPrincipalInNextTwelveMonths,
+           us-gaap:LongTermDebtCurrent, us-gaap:LongTermDebtAndCapitalLeaseObligationsCurrent]
+  debt_due_2y: {tags: [us-gaap:LongTermDebtMaturitiesRepaymentsOfPrincipalInYearTwo]}
+  debt_due_3y: {tags: [us-gaap:LongTermDebtMaturitiesRepaymentsOfPrincipalInYearThree]}
+  debt_due_4y: {tags: [us-gaap:LongTermDebtMaturitiesRepaymentsOfPrincipalInYearFour]}
+  debt_due_5y: {tags: [us-gaap:LongTermDebtMaturitiesRepaymentsOfPrincipalInYearFive]}
+  debt_due_after_5y: {tags: [us-gaap:LongTermDebtMaturitiesRepaymentsOfPrincipalAfterYearFive]}

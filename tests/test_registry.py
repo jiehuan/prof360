@@ -32,6 +32,10 @@ def test_metric_list_comes_from_group_config(reg, industry) -> None:
         "international_revenue",  # BANK_REGULATORY
         "ceo_total_comp", "ceo_comp_actually_paid", "neo_avg_total_comp", "tsr_value_100",
         "peer_tsr_value_100",  # GOVERNANCE (every group)
+        "goodwill_to_equity", "goodwill_impairment", "sbc_to_revenue", "diluted_shares",
+        "diluted_shares_growth_yoy",  # CAPITAL_QUALITY (every group)
+        "market_cap", "volatility_90d", "max_drawdown_52w", "eps_surprise_pct",
+        "insider_net_sales", "officer_sell_pct",  # MARKET (every group, external)
     }  # fmt: skip
     assert jpm.concepts["revenue"] == [TagRef(tag="us-gaap:RevenuesNetOfInterestExpense")]
     # Capital ratios: JPM's override tags, firm-wide Standardized, unit pure (D-042).

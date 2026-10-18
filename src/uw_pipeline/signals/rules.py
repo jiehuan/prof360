@@ -74,6 +74,10 @@ class IndependenceRule(SignalSpec):
     min_ratio: float = 2 / 3  # independent directors / board size
 
 
+class NonAuditFeeRule(SignalSpec):
+    min_share: float = 0.5  # non-audit fees / total fees paid to the auditor
+
+
 class ThresholdRule(SignalSpec):
     """A metric crossing a threshold in its latest period (D-049). Values in stored units:
     fraction 0.05 = 5%, ratio 1.2 = 1.2x, USD."""
@@ -86,6 +90,55 @@ class ThresholdRule(SignalSpec):
     industries: list[str] | None = None  # only these industry groups (default: all)
 
 
+class DropRule(SignalSpec):
+    min_drop: float = 0.10  # the day's return at most -min_drop
+    min_excess: float = 0.08  # and at least this far below the benchmark's return
+
+
+class MissRule(SignalSpec):
+    days: int = 3  # trading days after the earnings report
+    min_drop: float = 0.08  # cumulative fall from the close before the report
+
+
+class ClusterRule(SignalSpec):
+    min_insiders: int = 3
+    window_days: int = 30
+    escalate_days: int = 90  # Warning when a stock drop or earnings-miss drop follows
+    lookback_days: int = 1095
+
+
+class InsiderRules(BaseModel):
+    """Insider-selling signals (Phase 15b)."""
+
+    insider_cluster_selling: ClusterRule | None = None
+
+
+class MarketRules(BaseModel):
+    """Market signals (Phase 15a)."""
+
+    benchmark: str = "SPY"
+    lookback_days: int = 1095
+    stock_drop: DropRule | None = None
+    earnings_miss_drop: MissRule | None = None
+
+
+LEGAL_TYPES = ("securities_class_action", "derivative", "regulatory_investigation", "enforcement",
+               "wells_notice")  # fmt: skip
+
+
+class LegalRules(BaseModel):
+    """Litigation and regulatory matter signals (Phase 15e), by matter type; rule ids
+    legal_<type>. Product-liability, antitrust and other matters reach insights, not signals."""
+
+    lookback_days: int = 730  # began (or, with no date given, is open) within this window
+    active_days: int = 400  # still disclosed in a filing within this window
+    securities_class_action: SignalSpec | None = None
+    derivative: SignalSpec | None = None
+    regulatory_investigation: SignalSpec | None = None
+    enforcement: SignalSpec | None = None
+    wells_notice: SignalSpec | None = None  # an investigation with a Wells notice
+
+
 class MetricRules(BaseModel):
     negative_equity: SignalSpec
     buybacks_with_negative_equity: BuybackRule
@@ -93,6 +146,8 @@ class MetricRules(BaseModel):
     # Board composition from the proxy (D-045).
     ceo_chair_without_lead_director: SignalSpec | None = None
     board_independence: IndependenceRule | None = None
+    dual_class_shares: SignalSpec | None = None  # Phase 15f
+    non_audit_fees: NonAuditFeeRule | None = None  # Phase 15f
 
 
 class SignalRules(BaseModel):
@@ -102,6 +157,10 @@ class SignalRules(BaseModel):
     keywords: list[KeywordRule]
     metrics: MetricRules
     thresholds: list[ThresholdRule] = Field(default_factory=list)
+    ownership_forms: dict[str, SignalSpec] = Field(default_factory=dict)  # 13D (Phase 15d)
+    market: MarketRules = Field(default_factory=MarketRules)  # Phase 15a
+    insiders: InsiderRules = Field(default_factory=InsiderRules)  # Phase 15b
+    legal: LegalRules = Field(default_factory=LegalRules)  # Phase 15e
 
     def rule_ids(self) -> set[str]:
         """Ids an industry can exclude or parameterize. `8k_5.02` also covers the role-specific
@@ -113,6 +172,10 @@ class SignalRules(BaseModel):
             | {k.id for k in self.keywords}
             | metric
             | {t.id for t in self.thresholds}
+            | {ownership_rule_id(f) for f in self.ownership_forms}
+            | {k for k in ("stock_drop", "earnings_miss_drop") if getattr(self.market, k)}
+            | ({"insider_cluster_selling"} if self.insiders.insider_cluster_selling else set())
+            | {f"legal_{t}" for t in LEGAL_TYPES if getattr(self.legal, t)}
         )
 
     def _scoped(self) -> dict[str, list[str]]:
@@ -169,6 +232,12 @@ class SignalRules(BaseModel):
             self.for_group(g)  # parameter values must validate
 
 
+def ownership_rule_id(form: str) -> str:
+    """`SCHEDULE 13D` / `SC 13D` -> 13d; amendments -> 13d_amendment."""
+    base = form.upper().replace("SCHEDULE ", "").replace("SC ", "")
+    return base.removesuffix("/A").lower() + ("_amendment" if base.endswith("/A") else "")
+
+
 def _families(rule_id: str) -> list[str]:
     """`8k_5.02_cfo_departure` -> [`8k_5.02_cfo`, `8k_5.02`, `8k`]."""
     parts = rule_id.split("_")
@@ -184,6 +253,15 @@ def _spec_of(data: dict[str, Any], rule_id: str) -> dict[str, Any]:
         if r["id"] == rule_id:
             found: dict[str, Any] = r
             return found
+    if rule_id in ("stock_drop", "earnings_miss_drop") and data["market"].get(rule_id):
+        market: dict[str, Any] = data["market"][rule_id]
+        return market
+    if rule_id == "insider_cluster_selling" and data["insiders"].get(rule_id):
+        insiders: dict[str, Any] = data["insiders"][rule_id]
+        return insiders
+    if rule_id.startswith("legal_") and data["legal"].get(rule_id[6:]):
+        legal: dict[str, Any] = data["legal"][rule_id[6:]]
+        return legal
     if data["metrics"].get(rule_id) is not None:
         spec = data["metrics"][rule_id]
         return spec

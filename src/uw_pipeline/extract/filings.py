@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -117,3 +118,17 @@ def exhibit_by_type(index_html: bytes, doc_type: str) -> str | None:
             if links:
                 return str(links[0]).rsplit("/", 1)[-1].split("?")[0]
     return None
+
+
+def ownership_parties(header: str) -> tuple[int | None, str | None]:
+    """(subject company CIK, filer name) from a filing's index headers. A company's EDGAR
+    listing holds Schedule 13Ds about it and the ones it files about others (Phase 15d)."""
+    i, j = header.find("SUBJECT COMPANY"), header.find("FILED BY")
+    if i < 0 or j < 0:
+        return None, None
+    subject = header[i:j] if i < j else header[i:]
+    filer = header[j:i] if j < i else header[j:]
+    cik = re.search(r"CENTRAL INDEX KEY:\s*(\d+)", subject)
+    name = re.search(r"COMPANY CONFORMED NAME:\s*([^\n<]+)", filer)
+    return (int(cik.group(1)) if cik else None,
+            html.unescape(name.group(1)).strip() if name else None)  # fmt: skip

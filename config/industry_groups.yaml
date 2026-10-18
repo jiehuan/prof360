@@ -16,7 +16,7 @@ default_group: UNCLASSIFIED
 
 # Traits (decisions D-043): business-model properties that decide metric sets. A group's sets
 # are its `metric_sets`, plus `common_metric_sets`, plus the sets of each of its `traits`.
-common_metric_sets: [GOVERNANCE]
+common_metric_sets: [GOVERNANCE, CAPITAL_QUALITY, MARKET]
 trait_metric_sets:
   bank: [BANK_CORE, BANK_REGULATORY]
   lodging: [HOTEL_OPERATING]
@@ -32,21 +32,21 @@ groups:
   HOTELS:
     label: Hotels & Lodging
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
     traits: [lodging]
   AIRLINES:
     label: Airlines
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
   AUTOMOTIVE:
     label: Automotive Manufacturing
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
     traits: [manufacturing, captive_finance]
   PHARMA:
     label: Pharmaceuticals
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
   BANKS:
     label: Banks
     is_financial: true
@@ -70,20 +70,20 @@ groups:
   RETAIL:
     label: Retail
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
   TELECOM:
     label: Telecommunications
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
     traits: [contract_revenue]
   MEDIA:
     label: Media & Broadcasting
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
   SEMICONDUCTORS:
     label: Semiconductors & Related Devices
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
     traits: [contract_revenue]
 
 # Exact SIC codes (MVP companies).

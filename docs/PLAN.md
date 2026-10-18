@@ -582,9 +582,22 @@ uw-pipeline dq-report --run-id <id>
 
 ---
 
-### Phase 15 — D&O 风险核心层：市场数据、内部人交易、财报质量、诉讼（2026-10-15 计划，待确认）
+### Phase 15 — D&O 风险核心层：市场数据、内部人交易、财报质量、诉讼（2026-10-18，D-050）
 
 **目标**：补上证券集体诉讼最主要的驱动因素（股价大跌、业绩不及预期、内部人卖出、披露和会计问题、诉讼与监管调查），先在现有 9 家公司上做完并验证，再进入 Phase 16 扩大范围。应用库结构不变（方案 A）：新指标进 `MatrixData`，新事件经信号和洞察进 `StrategicRisk`。
+
+#### 完成情况（2026-10-18，D-050）
+- [x] 15a 市场数据：`market` 阶段（日线复权价、EARNINGS、SPY），market_cap / volatility_90d / max_drawdown_52w / eps_surprise_pct；stock_drop、earnings_miss_drop（Ford 2024-07-25 验收通过）
+- [x] 15b Form 4：`insider_transaction`，insider_net_sales / officer_sell_pct，insider_cluster_selling（每段集中卖出一条信号）；条数与 EDGAR 一致，10b5-1 按行判断
+- [x] 15c 财报质量和偿债：新概念与指标，MAR / PFE golden 值；DQ 告警改为阈值信号 near_term_refinancing、altman_distress
+- [x] 15d 8-K 1.05 / 1.02；13D 只保留以本公司为标的的文件（index headers 的 SUBJECT COMPANY）
+- [x] 15e 诉讼和监管调查：`legal` 阶段、`legal_matter`、`legal_matters_v1`、跨期合并、复核队列（MATTER）、信号、洞察输入；留出 PFE / JPM / LUMN 41 条类型全部正确
+- [x] 15f 审计费、双重股权、CEO 任期（`board_v2`，加列到 `board_composition`）；审计师 PCAOB ID
+- [x] 15g 发布配置（新类别、Market / Insider Trading 风险类型）、DDL、文档、测试
+- [x] 15h RevPAR / 入住率 / ADR 双模型；MAR 15 个值不变
+- [x] 15i 阶段内多家公司并行（`jobs.yaml` 的 `parallel`，仅服务器数据库）、按模型的 RPM / TPM 限速、按任务的 max_tokens
+- [x] SecureGPT：api-version 2025-04-01-preview（结构化输出），日常调用 gpt-6-luna、复核和综合 gpt-6-sol，每个部署 TPM 50 万（D-051）
+- [ ] 15i 待办：公司内部的调用并行、LLM 调用移出事务；SecureGPT 的 RPM、gpt-6-luna 的正式价格（暂用第三方列出的价格）和按任务 max_tokens；冷启动 10 分钟验收（需服务器数据库和一次付费冷启动）
 
 #### 15a 市场数据（Alpha Vantage）
 - 新端点：`OVERVIEW`（市值、股本、beta，每周一次）、`TIME_SERIES_DAILY`（日收盘价和成交量，每天一次）、`EARNINGS`（实际 EPS、预期 EPS、差额；有新财报时才取），外加一个市场基准（SPY）用来算相对跌幅。
@@ -685,14 +698,14 @@ uw-pipeline dq-report --run-id <id>
 **验收标准**：100 家公司全部跑通；通用核心层每家都有值或有说明；每个行业组的 golden 值核对通过；首次回补费用和时长记录在 run 统计；夜间增量在时间窗口内完成。
 
 #### Phase 15 / 16 待确认
-1. 内部人交易来源：SEC Form 4（建议：权威、免费、按 CIK）还是 AV `INSIDER_TRANSACTIONS`。
-2. 股价大跌阈值：单日 ≥ 10% 且相对 SPY ≥ 8%（建议），或只用绝对跌幅。
-3. 应用库：方案 A（不改结构，建议）还是方案 B（股价图、诉讼清单、内部人明细、治理面板的新表，需 BFF 和前端配合）。
+1. ~~内部人交易来源~~：SEC Form 4（D-050）。
+2. ~~股价大跌阈值~~：单日 ≥ 10% 且相对 SPY ≥ 8%（D-050）。
+3. ~~应用库~~：方案 A，不改结构（D-050）。
 4. Alpha Vantage 付费版是否可用（Phase 15 起就需要）。
-5. 诉讼和监管调查（15e）放在 Phase 15，还是推迟到 Phase 16 之后。
+5. ~~诉讼和监管调查~~：放在 Phase 15（D-050）。
 6. 覆盖率说明改为行业组级。
 7. S&P 100 名单的基准日期，以及之后谁负责季度核对。
-8. SecureGPT 各部署的 TPM / RPM 配额（dv / pp / pr），以及 APIM 订阅是否另有限额。
+8. SecureGPT 各部署的 RPM 配额（dv / pp / pr），以及 APIM 订阅是否另有限额（TPM 已定为每个部署 50 万，D-051）。
 
 ---
 

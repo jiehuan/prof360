@@ -182,6 +182,17 @@ def test_auditor_tenure_and_change() -> None:
     assert [s.rule_id for s in auditor_signals([new, same])] == ["auditor"]
 
 
+def test_auditor_change_by_pcaob_firm_id() -> None:
+    # Phase 15f: the firm ID decides when both 10-Ks give it, whatever the name's spelling.
+    a = auditor_info(ten_k(1, "2025-02-10"), "PricewaterhouseCoopers LLP", None, "238")
+    b = auditor_info(ten_k(2, "2026-02-10"), "PwC", None, "238")
+    out = auditor_signals([a, b])
+    assert [s.rule_id for s in out] == ["auditor"]
+    assert "(PCAOB ID 238)" in out[0].description
+    c = auditor_info(ten_k(3, "2027-02-10"), "PwC", None, "185")
+    assert [s.rule_id for s in auditor_signals([b, c])] == ["auditor", "auditor_change"]
+
+
 def q(code, fy, fq, value, end="2026-06-30"):
     return {"metric_code": code, "period_type": "Q", "fiscal_year": fy, "fiscal_quarter": fq,
             "value": value, "period_end": end, "source_accn": "acc"}  # fmt: skip
@@ -206,3 +217,27 @@ def test_negative_equity_survives_a_preliminary_quarter() -> None:
     out = metric_signals(values, RULES)
     assert [s.rule_id for s in out] == ["negative_equity", "buybacks_with_negative_equity"]
     assert "FY2026 Q2" in out[0].description
+
+
+def test_cybersecurity_and_terminated_agreement_8k_items() -> None:
+    out = eight_k_signals([eight_k(1, "1.05"), eight_k(2, "1.02,9.01")], {}, RULES)
+    assert {(s.rule_id, s.severity, s.subcategory) for s in out} == {
+        ("8k_1.05", "Warning", "Cybersecurity"),
+        ("8k_1.02", "Info", "Material Contracts"),
+    }
+    assert "1.05" in RULES.fetch_body_items  # the body is kept as evidence
+
+
+def test_schedule_13d_filed_about_the_company() -> None:
+    from uw_pipeline.signals.detect import Doc, ownership_signals
+
+    docs = [
+        Doc(1, "SCHEDULE 13D", "PRIMARY", "0001-26-1", "2026-09-01", None, None),
+        Doc(2, "SC 13D/A", "PRIMARY", "0001-26-2", "2026-10-01", None, None),
+        Doc(3, "SCHEDULE 13G", "PRIMARY", "0001-26-3", "2026-10-02", None, None),
+    ]  # passive
+    out = ownership_signals(docs, RULES)
+    assert [(s.rule_id, s.severity, s.event_date) for s in out] == [
+        ("13d", "Warning", "2026-09-01"),
+        ("13d_amendment", "Info", "2026-10-01"),
+    ]

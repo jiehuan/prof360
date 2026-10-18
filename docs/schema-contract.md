@@ -59,6 +59,10 @@
   | COMPUTED | 公式计算 | 可加 tooltip |
   | LLM_EXTRACTED | 从文件文本中抽取 | 标注"文本抽取"，`evidence` 可用作 tooltip |
   | PRELIMINARY | 来自财报新闻稿，10-Q 尚未提交 | **必须标"初步"**，10-Q 入库后会自动替换 |
+  | MARKET | 由每日股价和一致预期 EPS 计算（市值、波动率、回撤、EPS 超预期幅度；D-050） | 可加 tooltip "市场数据" |
+  | FORM4 | 由内部人的 Form 4 汇总（内部人净卖出、高管卖出比例；D-050） | 可加 tooltip "Form 4" |
+
+- **新指标类别（D-050）**：`Reporting Quality`（应收 / 存货周转天数、应计、商誉、债务到期、Altman Z 等）和 `Market & Trading`（市值、波动率、回撤、EPS 超预期、内部人交易）。表结构不变，新指标作为 MatrixData 的新行；新事件（股价大跌、内部人集中卖出、13D、诉讼和监管调查）经信号和洞察进入 StrategicRisk，RiskTypes 可能新增 Market、Insider Trading。
 
 - **溯源**：`source_document.url` 指向 SEC 或 AV 的原始文件。`insight_evidence` 给出每条洞察的原文片段，以及对应的文件和章节。
 
