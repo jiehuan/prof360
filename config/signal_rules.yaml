@@ -50,7 +50,8 @@ leadership:
     appointment: Info
 
 # Keyword rules over filing sections. `sections` are section-code prefixes. A match is dropped
-# when its sentence also matches `exclude`.
+# when its sentence also matches `exclude`. `industries: [GROUP, ...]` limits a rule to those
+# industry groups (default: every group). Guide: docs/CONFIGURATION.md.
 keywords:
   - id: going_concern
     category: Risk & Legal
@@ -117,3 +118,17 @@ metrics:
     severity: Warning
     title: Less than two-thirds of the board is independent
     min_ratio: 0.667
+
+# A metric crossing a threshold in its latest quarter (period: Q) or fiscal year (FY), in stored
+# units (fraction 0.05 = 5%, ratio 1.2 = 1.2x, USD); N/M values never fire (D-049). Example:
+#   - id: thin_liquidity
+#     category: Risk & Legal
+#     subcategory: Liquidity & Leverage
+#     severity: Warning
+#     title: Current ratio below 1.0
+#     metric: current_ratio
+#     op: "<"                 # < <= > >=
+#     value: 1.0
+#     period: Q
+#     industries: [RETAIL]    # optional
+thresholds: []

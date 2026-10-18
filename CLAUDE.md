@@ -19,6 +19,8 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 .venv/bin/uw-pipeline run --ticker MAR --force       # ignore same-day raw cache / input hash
 .venv/bin/uw-pipeline coverage-report                # data/reports/coverage-<date>.md
 .venv/bin/uw-pipeline review                          # disputed signals / identity breaks; approve|reject
+.venv/bin/uw-pipeline config check                    # validate config/ as a run would (D-049)
+.venv/bin/uw-pipeline config show --ticker MAR        # a company's industry, metrics and signals; guide: docs/CONFIGURATION.md
 .venv/bin/python scripts/stability_check.py --faults MAR   # failure handling (--runs 3: live, costs)
 .venv/bin/pytest -q
 .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy

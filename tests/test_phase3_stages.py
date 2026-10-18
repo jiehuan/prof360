@@ -253,3 +253,31 @@ def test_resplit_removes_sections_no_longer_found(env) -> None:
                 section_chunk.c.section_id.not_in(select(filing_section.c.section_id)))
         ).scalar_one()  # fmt: skip
     assert codes == ["10K-1A"] and orphans == 0
+
+
+def test_industry_excluding_signals_turns_them_off(env, tmp_path) -> None:
+    """D-049: an industry that excludes the 8-K 5.02 family gets none of its signals, and the
+    signals stage deletes the ones stored before."""
+    import shutil
+
+    import yaml
+
+    from uw_pipeline.config import load_industry_config
+
+    engine, sec, _ = env
+    _run(engine, sec)
+    with engine.connect() as conn:
+        before = {r.rule_id for r in conn.execute(select(signal))}
+    assert any(r.startswith("8k_5.02") for r in before)
+    config = tmp_path / "config"
+    shutil.copytree(CONFIG_DIR, config)
+    groups = yaml.safe_load((config / "industry_groups.yaml").read_text())
+    groups["groups"]["AUTOMOTIVE"]["exclude_signals"] = ["8k_5.02"]
+    (config / "industry_groups.yaml").write_text(yaml.safe_dump(groups))
+    cfg = [CompanyConfig(ticker="ACME", cik=CIK)]
+    res = run_signals_stage(cfg, sec, load_signal_rules(config), engine,
+                            industry=load_industry_config(config))  # fmt: skip
+    assert all(r.ok for r in res), res
+    with engine.connect() as conn:
+        after = {r.rule_id for r in conn.execute(select(signal))}
+    assert after == {r for r in before if not r.startswith("8k_5.02")}

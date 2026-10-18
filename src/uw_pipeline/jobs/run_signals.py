@@ -13,7 +13,7 @@ from sqlalchemy import Connection, Engine, select
 
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.clients.sec import SecClient
-from uw_pipeline.config import CompanyConfig
+from uw_pipeline.config import CompanyConfig, IndustryConfig
 from uw_pipeline.enrich.llm import LLMConfig, LLMUnavailableError
 from uw_pipeline.extract.filings import instance_name
 from uw_pipeline.jobs.run_company import TaskResult
@@ -38,6 +38,7 @@ from uw_pipeline.signals.detect import (
     keyword_signals,
     metric_signals,
     pay_signals,
+    threshold_signals,
 )
 from uw_pipeline.signals.rules import SignalRules
 from uw_pipeline.signals.vote import Voter, VoteRow, merge
@@ -89,8 +90,12 @@ def detect_company(
     rules: SignalRules,
     conn: Connection,
     voter: Voter | None = None,
+    industry: IndustryConfig | None = None,
 ) -> tuple[int, list[Detected], list[VoteRow]]:
     row = company_row(conn, cfg)
+    # The company's industry decides which signals are tracked and their parameters (D-049).
+    group = industry.groups.get(row["industry_group"]) if industry else None
+    rules = rules.for_group(group)
     company_id, cik = row["company_id"], row["cik"]
     docs = _docs(conn, company_id)
     sections = _sections(conn, company_id)
@@ -146,9 +151,11 @@ def detect_company(
     ).mappings().first()  # fmt: skip
     governance = (board_signals(dict(board), board["filed_at"], board["accession_no"], rules)
                   if board else [])  # fmt: skip
-    for s in [*metric_signals(quarterly, rules), *pay_signals(values, rules)]:
+    for s in [*metric_signals(quarterly, rules), *pay_signals(values, rules),
+              *threshold_signals(values, rules)]:  # fmt: skip
         detected.append(replace(s, doc_id=by_accn.get(s.accession_no or "")))
     detected += [replace(s, doc_id=board["doc_id"]) for s in governance] if board else []
+    detected = [d for d in detected if rules.allows(d.rule_id, group)]
     return company_id, detected, votes
 
 
@@ -203,20 +210,26 @@ def run_signals_stage(
     engine: Engine,
     *,
     llm: tuple[LLMClient, LLMConfig] | None = None,
+    industry: IndustryConfig | None = None,
     now: Callable[[], datetime] = lambda: datetime.now(UTC),
 ) -> list[TaskResult]:
-    """Rule signals, with rule + LLM voting on judgment signals when `llm` is given."""
+    """Rule signals, with rule + LLM voting on judgment signals when `llm` is given. With
+    `industry`, each company gets its industry's signals and parameters (D-049)."""
     results: list[TaskResult] = []
     for cfg in companies:
         try:
             with engine.begin() as conn:
                 voter = Voter(llm[0], llm[1], rules, conn, now) if llm else None
                 try:
-                    company_id, detected, votes = detect_company(cfg, sec, rules, conn, voter)
+                    company_id, detected, votes = detect_company(
+                        cfg, sec, rules, conn, voter, industry
+                    )
                 except LLMUnavailableError as exc:
                     log.error("LLM unavailable, continuing with rules only: %s", exc)
                     llm = None
-                    company_id, detected, votes = detect_company(cfg, sec, rules, conn, None)
+                    company_id, detected, votes = detect_company(
+                        cfg, sec, rules, conn, None, industry
+                    )
                 stamp = now()
                 _store_votes(conn, company_id, votes, stamp)
                 rows = list(

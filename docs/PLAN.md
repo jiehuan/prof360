@@ -696,6 +696,18 @@ uw-pipeline dq-report --run-id <id>
 
 ---
 
+### Phase 18 — 行业归属、行业跟踪的指标和信号（2026-10-17，D-049）
+
+直接编辑 `config/`；说明见 `docs/CONFIGURATION.md`。
+- [x] 公司归属行业：`companies.yaml` 的 `industry` + `industry_reason`
+- [x] 行业不跟踪的指标（被依赖的作为隐藏辅助指标照算）和信号（`8k_5.02` 覆盖其 CEO/CFO 子类），行业专属的信号参数：`industry_groups.yaml`
+- [x] 指标阈值信号（`thresholds`）；关键词和阈值信号可用 `industries` 限定行业：`signal_rules.yaml`
+- [x] `uw-pipeline config check` / `config show --ticker`；所有引用在运行前校验
+- [ ] 判断类问题（规则 + 模型投票）只能按信号 id 关闭，不能新定义（答案类型写在代码和 prompt 里）
+- [ ] 洞察任务（behavioral、strategic & risk、key insights、follow-ups）对所有行业相同，不能按行业开关
+
+---
+
 ### Phase 10 — 扩展到约 4,000 家公司：分层与并行处理（2026-10-13 计划，未开始）
 
 **已定**：分层处理，约 800 家全量（Tier 1），约 3,200 家轻量（Tier 2，洞察按需生成）。本阶段先只做设计，不抓取、不抽取；实现前用模拟客户端做压测。

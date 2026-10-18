@@ -924,3 +924,29 @@ LLM runs until the end, then one comparison.
   wrong cells (MAR FY2025 RevPAR, occupancy, ADR missing) and 24% of key insights failed
   grounding; insights took 44 minutes (long answers past the 300 s timeout, retried). OpenAI
   models on Runware need `max_completion_tokens` (config `max_completion_tokens_prefixes`).
+
+**D-049 Industry membership, tracked metrics and signals, by editing config/ (Phase 18, 2026-10-17).**
+- User request: per company, which industry it belongs to; per industry, which metrics and
+  insights it tracks; new metrics and insights; in YAML or JSON. "Insights" means what the
+  pipeline already tracks (user clarification): the risk signals (8-K items, keyword rules,
+  metric and board rules, judgment questions).
+- Options: a separate override directory merged on top of config/ (built first: suits edits
+  outside code review and ConfigMaps in deployment), or editing config/ directly. User decision:
+  edit config/ directly; config changes go through PRs, so one place is simpler. The override
+  layer was removed before commit.
+- What was missing and is now in the existing files: `industry` + `industry_reason` per company
+  (companies.yaml; checked before the SIC code); `exclude_metrics`, `exclude_signals` and
+  `signal_params` per group (industry_groups.yaml); metric `thresholds` and `industries` on
+  keyword and threshold rules (signal_rules.yaml). New metrics, concepts, keyword rules, groups
+  and SIC mappings were already editable.
+- An excluded metric that another tracked metric needs is computed as a hidden helper. A family
+  id such as `8k_5.02` excludes its CEO/CFO variants. Signals are filtered after detection by
+  rule id, so the stage's stale-signal deletion removes signals an industry stops tracking.
+  Parameters are checked by field name and type.
+- Not covered: judgment questions can be excluded by id but not defined (answer types live in
+  code and the prompt); insight tasks are the same for every industry.
+- App database: no schema change (user choice (a)): SIC_Preferences stays per SIC; a company in
+  another industry shows the metrics it has data for.
+- `uw-pipeline config check` validates config/ as a run does and lists company and industry
+  settings; `config show --ticker X` prints a company's industry (and why), metrics, signals.
+  Guide for editors: docs/CONFIGURATION.md.

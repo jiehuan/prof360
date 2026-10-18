@@ -36,7 +36,17 @@ class CompanyConfig(BaseModel):
     # Symbols Alpha Vantage files this company under, newest first (default: the ticker). After a
     # ticker change AV keeps older news and transcripts under the old symbol.
     av_symbols: list[str] = Field(default_factory=list)
+    # Industry group regardless of SIC (D-049), e.g. when SEC's SIC code is too coarse; the
+    # reason is required and shown by `uw-pipeline config show`.
+    industry: str | None = None
+    industry_reason: str | None = None
     notes: str | None = None
+
+    @model_validator(mode="after")
+    def _industry_reason(self) -> CompanyConfig:
+        if self.industry and not (self.industry_reason or "").strip():
+            raise ValueError(f"{self.ticker}: `industry` needs an `industry_reason`")
+        return self
 
     def symbols(self) -> list[str]:
         return self.av_symbols or [self.ticker]
@@ -87,6 +97,12 @@ class IndustryGroup(BaseModel):
     # Years of older 10-Ks whose MD&A is kept for text-metric history (Phase 8, e.g. 5 years of
     # NIM / CET1 / NPL for banks). 0 = only the documents in the normal text window.
     mdna_history_years: int = 0
+    # What this industry does not track (D-049): metrics from its sets (still computed, hidden,
+    # when another tracked metric needs them) and signals by rule id (`8k_5.02` covers its CEO /
+    # CFO variants); `signal_params` sets rule fields for this industry only.
+    exclude_metrics: list[str] = Field(default_factory=list)
+    exclude_signals: list[str] = Field(default_factory=list)
+    signal_params: dict[str, dict[str, Any]] = Field(default_factory=dict)
 
 
 class SicRange(BaseModel):
@@ -119,8 +135,19 @@ class IndustryConfig(BaseModel):
             raise ValueError(f"unknown industry group(s) referenced: {sorted(unknown)}")
         return self
 
-    def classify(self, sic: int | None) -> tuple[IndustryGroup, str]:
-        """Return (group, how) where how is 'sic', 'range' or 'default'."""
+    def check_companies(self, companies: list[CompanyConfig]) -> None:
+        unknown = {c.ticker: c.industry for c in companies
+                   if c.industry and c.industry not in self.groups}  # fmt: skip
+        if unknown:
+            raise ValueError(f"companies.yaml: unknown industry group(s) {unknown}")
+
+    def classify(
+        self, sic: int | None, company: CompanyConfig | None = None
+    ) -> tuple[IndustryGroup, str]:
+        """Return (group, how) where how is 'company' (the company's `industry` in
+        companies.yaml, D-049), 'sic', 'range' or 'default'."""
+        if company is not None and company.industry:
+            return self.groups[company.industry], "company"
         if sic is not None:
             if sic in self.sic:
                 return self.groups[self.sic[sic]], "sic"

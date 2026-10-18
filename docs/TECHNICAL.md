@@ -191,13 +191,13 @@ versioned with the code.
 
 | File | Controls |
 |---|---|
-| `companies.yaml` | Companies: pinned CIK, display ticker, former tickers, `history_start`, `news_aliases`, `av_symbols` |
+| `companies.yaml` | Companies: pinned CIK, display ticker, former tickers, `history_start`, `news_aliases`, `av_symbols`, `industry` (D-049) |
 | `company_overrides/*.yaml` | Company metrics and `sections:` rules (JPM, MAR) |
-| `industry_groups.yaml` | SIC → industry group, metric sets, `traits`, `trait_metric_sets`, `common_metric_sets` (governance), `is_financial`, `mdna_history_years` |
+| `industry_groups.yaml` | SIC → industry group, metric sets, `traits`, `trait_metric_sets`, `common_metric_sets` (governance), `is_financial`, `mdna_history_years`, `exclude_metrics` / `exclude_signals` / `signal_params` (D-049) |
 | `metrics.yaml` | Metric definitions, formulas (`x_py` = a year earlier), text and table extraction specs (`table:` column, scope, excluded rows), `insight_input`, `metric_sets` |
 | `concept_map.yaml` | Concept → candidate XBRL tags (with dimensions) |
 | `coverage_notes.yaml` | Reason for every metric gap `coverage-report` shows |
-| `signal_rules.yaml` | 8-K item mapping, keyword and role rules, board rules, `fetch_body_items` |
+| `signal_rules.yaml` | 8-K item mapping, keyword and role rules, board rules, metric `thresholds`, `industries` per rule (D-049), `fetch_body_items` |
 | `text_extraction.yaml` | Text-metric chunk budget, effort, loan portfolio settings |
 | `insights.yaml` | Insight tasks, package limits, `news_materiality` gate |
 | `news.yaml` | De-duplication thresholds, mention filter, relevance verdict |

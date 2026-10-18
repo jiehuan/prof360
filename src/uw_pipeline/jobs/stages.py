@@ -57,9 +57,11 @@ class StageRunner:
         cfg_dir = settings.config_dir
         self.companies = {c.ticker: c for c in load_companies(cfg_dir)}
         self.industry = load_industry_config(cfg_dir)
+        self.industry.check_companies(list(self.companies.values()))
         self.registry = load_registry(cfg_dir)
         self.registry.check_groups(self.industry.groups.values())
         self.signal_rules = load_signal_rules(cfg_dir)
+        self.signal_rules.check_groups(self.industry.groups.values())
         self.storage = make_storage(settings)
         self._sec: SecClient | None = None
         self._av: AlphaVantageClient | None = None
@@ -178,7 +180,9 @@ class StageRunner:
         if stage == "governance":
             return lambda c: run_governance_stage(c, self.llm, self.storage, e)
         if stage == "signals":
-            return lambda c: run_signals_stage(c, self.sec, self.signal_rules, e, llm=self.llm)
+            return lambda c: run_signals_stage(
+                c, self.sec, self.signal_rules, e, llm=self.llm, industry=ind
+            )
         if stage == "dq":
             return lambda c: run_dq_stage(
                 c, reg, ind, load_dq_config(s.config_dir), s.config_dir, e, run_id=self.run_id

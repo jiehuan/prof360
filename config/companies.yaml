@@ -1,6 +1,8 @@
 # MVP company list: one company per SIC code (see docs/decisions.md D-007).
 # `cik` is pinned and authoritative. Tickers get reassigned, so they are only checked against
 # SEC's ticker list and a mismatch is logged, never followed.
+# `industry: GROUP` with `industry_reason: "..."` puts a company in an industry group of
+# industry_groups.yaml regardless of its SIC code (D-049; guide: docs/CONFIGURATION.md).
 companies:
   - ticker: MAR
     cik: 1048286

@@ -455,7 +455,7 @@ index 0b4ae8f3fd90d30c09ea2572e5aceecbddcc2f28..4b9698909af3c9082a273ab4a9cc72ca
  | `LLM_DAILY_BUDGET` | 25 | New LLM spend per day in the profile's currency; 0 = unlimited |
  | `ALPHAVANTAGE_CALLS_PER_MINUTE`, `ALPHAVANTAGE_DAILY_QUOTA` | 5, 25 | Paid plan: 75 and 0 (unlimited) |
 diff --git a/docs/decisions.md b/docs/decisions.md
-index 2977a1efe49cb574ef403c5b08e0a12b1bedee78..38e2508ec27ab18ff18d304c7949e435cdaeacf3 100644
+index 33e19a47e42e5fbc6d3e32f676464ac4cc1979cf..9df70ebea0d84cb4b3a71873af7507f83cd198e6 100644
 --- a/docs/decisions.md
 +++ b/docs/decisions.md
 @@ -220,7 +220,7 @@ has no exhibit; this is logged.
@@ -700,7 +700,7 @@ index 2977a1efe49cb574ef403c5b08e0a12b1bedee78..38e2508ec27ab18ff18d304c7949e435
  
  **D-045 Board composition, review.**
  - The documents stage downloads the latest proxy (DEF 14A). The new `governance` stage (after
-@@ -878,49 +858,10 @@ LLM runs until the end, then one comparison.
+@@ -878,53 +858,14 @@ LLM runs until the end, then one comparison.
  - `scripts/stability_check.py`: N live runs on a database copy with an empty cache, compared
    (Jira T2); `--faults` runs timeout, rate-limit and invalid-schema clients: all three failed
    closed (no exception, nothing stored, earlier values kept).
@@ -713,7 +713,7 @@ index 2977a1efe49cb574ef403c5b08e0a12b1bedee78..38e2508ec27ab18ff18d304c7949e435
 +  roll-up rule in D-044. A run on the work network is still open (PLAN Phase 14).
  - Not done: tables in the pipeline schema only, no app tables changed; deploy/sql/
    pipeline_schema_full.sql gains board_composition and review_decision.
--
+ 
 -## 2026-10-15
 -
 -**D-047 Runware as a third LLM provider.**
@@ -752,6 +752,10 @@ index 2977a1efe49cb574ef403c5b08e0a12b1bedee78..38e2508ec27ab18ff18d304c7949e435
 -  wrong cells (MAR FY2025 RevPAR, occupancy, ADR missing) and 24% of key insights failed
 -  grounding; insights took 44 minutes (long answers past the 300 s timeout, retried). OpenAI
 -  models on Runware need `max_completion_tokens` (config `max_completion_tokens_prefixes`).
+-
+ **D-049 Industry membership, tracked metrics and signals, by editing config/ (Phase 18, 2026-10-17).**
+ - User request: per company, which industry it belongs to; per industry, which metrics and
+   insights it tracks; new metrics and insights; in YAML or JSON. "Insights" means what the
 diff --git a/pyproject.toml b/pyproject.toml
 index badeff572574c39da29876dc08eb0702d47a503d..7741d692771c6d5e41b7e21b85b7048e6a4b538f 100644
 --- a/pyproject.toml

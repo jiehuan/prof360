@@ -7,7 +7,8 @@ import logging
 import os
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
-from typing import Annotated
+from pathlib import Path
+from typing import Annotated, Any
 
 import typer
 from sqlalchemy import Connection, Engine, func, select
@@ -24,6 +25,7 @@ from uw_pipeline.logs import log_context, setup_logging
 from uw_pipeline.schema import company, dq_finding, metric_value, pipeline_run, pipeline_task
 from uw_pipeline.schema_app import app_metadata
 from uw_pipeline.settings import Settings
+from uw_pipeline.signals.rules import load_signal_rules
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 log = logging.getLogger("uw_pipeline")
@@ -418,3 +420,91 @@ def init_db() -> None:
 
 if __name__ == "__main__":
     app()
+
+
+config_app = typer.Typer(
+    no_args_is_help=True,
+    add_completion=False,
+    help="Validate the configuration and show what a company tracks (D-049).",
+)
+app.add_typer(config_app, name="config")
+
+
+def _config_dir() -> Path:
+    return Path(os.environ.get("CONFIG_DIR") or "config")
+
+
+def _load_all(config_dir: Path) -> tuple[Any, Any, Any, Any]:
+    """Companies, industries, metric registry and signal rules, cross-checked as a run does."""
+    companies = load_companies(config_dir)
+    industry = load_industry_config(config_dir)
+    industry.check_companies(companies)
+    registry = load_registry(config_dir)
+    registry.check_groups(industry.groups.values())
+    rules = load_signal_rules(config_dir)
+    rules.check_groups(industry.groups.values())
+    return companies, industry, registry, rules
+
+
+@config_app.command("check")
+def config_check() -> None:
+    """Validate config/ the way a run does, and list the company and industry settings."""
+    try:
+        companies, industry, _, rules = _load_all(_config_dir())
+    except ValueError as exc:  # pydantic ValidationError is a ValueError
+        typer.echo(f"INVALID: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo("valid")
+    for c in companies:
+        if c.industry:
+            typer.echo(f"  company {c.ticker} -> {c.industry} ({c.industry_reason})")
+    for g in industry.groups.values():
+        parts = [f"not tracked: metrics {g.exclude_metrics}" if g.exclude_metrics else "",
+                 f"signals {g.exclude_signals}" if g.exclude_signals else "",
+                 f"params {sorted(g.signal_params)}" if g.signal_params else ""]  # fmt: skip
+        if any(parts):
+            typer.echo(f"  industry {g.code}: " + ", ".join(p for p in parts if p))
+    for rule_id, scope in sorted(rules._scoped().items()):
+        typer.echo(f"  signal {rule_id}: only {scope}")
+
+
+@config_app.command("show")
+def config_show(ticker: Annotated[str, typer.Option("--ticker")]) -> None:
+    """A company's effective industry, metrics and signals, and where each setting comes from."""
+    try:
+        companies, industry, registry, rules = _load_all(_config_dir())
+    except ValueError as exc:
+        typer.echo(f"INVALID: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    cfg = next((c for c in companies if c.ticker == ticker.upper()), None)
+    if cfg is None:
+        raise typer.BadParameter(f"{ticker} is not in companies.yaml")
+    sic: int | None = None
+    try:  # the SIC code SEC reported, from the company stage's last run
+        engine = pipeline_engine(Settings())
+        with engine.connect() as conn:
+            code = conn.execute(
+                select(company.c.sic_code).where(company.c.cik == f"{cfg.cik:010d}")
+            ).scalar()
+        sic = int(code) if code else None
+    except Exception:  # no pipeline database yet
+        sic = None
+    group, how = industry.classify(sic, cfg)
+    typer.echo(f"{cfg.ticker} (CIK {cfg.cik}, SIC {sic or 'unknown until the company stage runs'})")
+    source = f"companies.yaml: {cfg.industry_reason}" if how == "company" else f"by {how}"
+    typer.echo(f"industry: {group.code} - {group.label}  [{source}]")
+    shown = [m for m in registry.for_company(cfg.ticker, group).metrics if m.display]
+    typer.echo(f"metrics tracked ({len(shown)}):")
+    for m in shown:
+        typer.echo(f"  {m.code:<32} {m.display_name}")
+    if group.exclude_metrics:
+        typer.echo(f"metrics not tracked by {group.code}: {group.exclude_metrics}")
+    tracked = sorted(r for r in rules.rule_ids() if rules.allows(r, group))
+    scoped = rules._scoped()
+    typer.echo(f"signals tracked ({len(tracked)}):")
+    for r in tracked:
+        params = group.signal_params.get(r)
+        typer.echo(f"  {r}" + (f"  [only {scoped[r]}]" if r in scoped else "")
+                   + (f"  params {params}" if params else ""))  # fmt: skip
+    if group.exclude_signals:
+        typer.echo(f"signals not tracked by {group.code}: {group.exclude_signals}")

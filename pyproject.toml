@@ -67,6 +67,7 @@ select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
 "tests/test_insights.py" = ["E501"]  # canned LLM outputs
 "tests/test_dq.py" = ["E501"]  # synthetic rows
 "tests/test_table_reader.py" = ["E501"]  # answer tables read from filings
+"tests/test_config_tracking.py" = ["E501"]  # inline YAML
 
 [tool.mypy]
 python_version = "3.11"

@@ -51,6 +51,15 @@
 2. 在 `sic:` 下加精确的 SIC 映射。范围映射只作兜底。
 3. 保险业目前设为非 FI（D-008）。如果业务方要求改，修改 `is_financial` 即可。
 
+## 4a. 公司归哪个行业、行业跟踪哪些指标和信号（D-049）
+
+直接修改 `config/` 里的文件，完整说明（能改什么、怎么改、不能改什么）见 `docs/CONFIGURATION.md`。
+- 公司归属行业：`companies.yaml` 里该公司加 `industry` 和 `industry_reason`，不再按 SIC 分类。
+- 行业不跟踪的指标、信号和信号参数：`industry_groups.yaml` 里该行业的 `exclude_metrics`、`exclude_signals`、`signal_params`。
+- 新信号只用于部分行业：`signal_rules.yaml` 的关键词规则或 `thresholds`（指标阈值信号）加 `industries`。
+- 改完先跑 `uw-pipeline config check`，再用 `uw-pipeline config show --ticker X` 看这家公司实际的行业、指标和信号。配置有错时运行不会开始。
+- 下一次运行生效：不再跟踪的指标会从管线库和应用库删除，不再跟踪的信号会被删掉；新的文本指标和信号会对相关公司调用 LLM。
+
 ## 5. 公司特有的设置
 
 文件放在 `config/company_overrides/<TICKER>.yaml`：

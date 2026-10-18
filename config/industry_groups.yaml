@@ -1,8 +1,16 @@
 # SIC code -> industry group -> metric list. All companies with the same SIC share the same
 # metrics. The lists are curated here (see metrics.yaml header), not generated at run time.
-# Lookup order: exact `sic`, then `sic_ranges` (first match), then `default_group`.
+# Lookup order: a company's `industry` in companies.yaml, then exact `sic`, then `sic_ranges`
+# (first match), then `default_group`.
 # `is_financial` controls whether FI-only modules (NIM, CET1, NPL, loan portfolio) get data.
 # `metric_sets` refer to metrics.yaml; `metrics` adds individual metric codes.
+# What a group does not track (D-049; guide: docs/CONFIGURATION.md):
+#   exclude_metrics: [codes]      metrics from its sets it drops (a metric another tracked
+#                                 metric needs is still computed, hidden)
+#   exclude_signals: [rule ids]   signals from signal_rules.yaml it drops; `8k_5.02` also drops
+#                                 8k_5.02_cfo_departure etc. (`uw-pipeline config show` lists ids)
+#   signal_params: {rule id: {field: value}}   rule fields for this group only, e.g.
+#                                 {pay_vs_performance: {min_pay_growth: 0.5}}
 
 default_group: UNCLASSIFIED
 

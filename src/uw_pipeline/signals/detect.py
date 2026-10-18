@@ -426,6 +426,34 @@ def pay_signals(values: Sequence[Mapping[str, Any]], rules: SignalRules) -> list
     ]
 
 
+_OPS = {"<": lambda a, b: a < b, "<=": lambda a, b: a <= b, ">": lambda a, b: a > b,
+        ">=": lambda a, b: a >= b}  # fmt: skip
+
+
+def threshold_signals(values: Sequence[Mapping[str, Any]], rules: SignalRules) -> list[Detected]:
+    """User-defined threshold rules (D-049): the metric's latest quarter (or fiscal year) value
+    crossing the threshold. `values`: the company's metric_value rows; N/M values never fire.
+    Values are in stored units (fraction 0.05 = 5%, ratio 1.2 = 1.2x, USD)."""
+    out = []
+    for rule in rules.thresholds:
+        rows = [v for v in values if v["metric_code"] == rule.metric
+                and v["period_type"] == rule.period]  # fmt: skip
+        if not rows:
+            continue
+        latest = max(rows, key=lambda v: (v["fiscal_year"], v["fiscal_quarter"]))
+        if latest["value"] is None or not _OPS[rule.op](latest["value"], rule.value):
+            continue
+        label = (f"FY{latest['fiscal_year']}" if rule.period == "FY"
+                 else f"FY{latest['fiscal_year']} Q{latest['fiscal_quarter']}")  # fmt: skip
+        out.append(_from_spec(
+            rule, rule.id,
+            description=(f"{rule.metric} was {latest['value']:,.4g} at {label} "
+                         f"({latest['period_end']}), {rule.op} {rule.value:,.4g}."),
+            event_date=latest["period_end"], accession_no=latest["source_accn"], key_extra=label,
+        ))  # fmt: skip
+    return out
+
+
 def board_signals(board: Mapping[str, Any] | None, proxy_date: str, accession_no: str | None,
                   rules: SignalRules) -> list[Detected]:  # fmt: skip
     """Board composition signals from the latest proxy (D-045). Only facts both models agreed

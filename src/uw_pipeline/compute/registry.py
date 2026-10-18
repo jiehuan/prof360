@@ -224,7 +224,7 @@ class Registry(BaseModel):
         codes = {m.code for m in self.metrics}
         for g in groups:
             unknown_sets = set(g.metric_sets) - self.metric_sets.keys()
-            unknown_codes = set(g.metrics) - codes
+            unknown_codes = (set(g.metrics) | set(g.exclude_metrics)) - codes
             if unknown_sets or unknown_codes:
                 raise ValueError(
                     f"industry group {g.code}: unknown metric sets {sorted(unknown_sets)} "
@@ -243,6 +243,8 @@ class Registry(BaseModel):
         by_code = {m.code: m for m in catalog}
         wanted = {c for s in group.metric_sets for c in self.metric_sets[s]}
         wanted |= set(group.metrics) | {m.code for m in override.metrics}
+        wanted -= set(group.exclude_metrics)  # not tracked for this industry (D-049)
+        tracked = set(wanted)
         # Pull in helper metrics that wanted metrics depend on.
         stack = list(wanted)
         while stack:
@@ -250,7 +252,13 @@ class Registry(BaseModel):
                 if dep not in wanted:
                     wanted.add(dep)
                     stack.append(dep)
-        metrics = [m for m in catalog if m.code in wanted]  # catalog order = dependency order
+        metrics = [  # catalog order = dependency order
+            m.model_copy(update={"display": False, "insight_input": False})
+            if m.code in group.exclude_metrics and m.code not in tracked
+            else m  # removed by the industry but needed by another metric: a hidden helper
+            for m in catalog
+            if m.code in wanted
+        ]
         return CompanyRegistry(concepts=concepts, units=units, metrics=metrics)
 
 
