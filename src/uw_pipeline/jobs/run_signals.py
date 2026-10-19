@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import re
 from collections.abc import Callable, Sequence
 from dataclasses import replace
 from datetime import UTC, datetime
@@ -84,6 +85,21 @@ def _sections(conn: Connection, company_id: int) -> dict[int, dict[str, str]]:
     return out
 
 
+_FILER = re.compile(r"/edgar/data/(\d+)/")
+
+
+def _filer_ciks(conn: Connection, company_id: int) -> dict[str, str]:
+    """Accession -> the CIK it was filed under (a predecessor registrant's filings are under
+    the predecessor's CIK, Phase 16), from the document URL."""
+    out = {}
+    for accn, url in conn.execute(select(source_document.c.accession_no, source_document.c.url)
+                                  .where(source_document.c.company_id == company_id)):  # fmt: skip
+        m = _FILER.search(url or "")
+        if m:
+            out[accn] = m.group(1).zfill(10)
+    return out
+
+
 def _auditor(sec: SecClient, cik: str, accn: str, primary_doc: str) -> tuple[str | None, ...]:
     """(dei:AuditorName, dei:AuditorFirmId) from the 10-K's XBRL instance."""
     name = instance_name(sec.filing_index(cik, accn), primary_doc)
@@ -114,7 +130,8 @@ def detect_company(
     own_names = [n.split()[0] for n in (row["name"], row["legal_name"]) if n]
     detected = eight_k_signals(docs, sections, rules, own_names)
     detected += keyword_signals(docs, sections, rules)
-    detected += ownership_signals(docs, rules, _filers(sec, cik, docs, rules))
+    filer = _filer_ciks(conn, company_id)
+    detected += ownership_signals(docs, rules, _filers(sec, filer, cik, docs, rules))
 
     votes: list[VoteRow] = []
     if voter is not None:
@@ -139,7 +156,8 @@ def detect_company(
     ten_ks = [d for d in docs if d.form_type == "10-K" and d.doc_role == "PRIMARY"]
     infos = []
     for d in ten_ks:
-        name, firm_id = _auditor(sec, cik, d.accession_no, primary_names[d.doc_id])
+        name, firm_id = _auditor(sec, filer.get(d.accession_no, cik), d.accession_no,
+                                 primary_names[d.doc_id])  # fmt: skip
         infos.append(auditor_info(d, name, sections.get(d.doc_id, {}).get("10K-AUDIT"), firm_id))
     detected += auditor_signals(infos)
 
@@ -172,12 +190,14 @@ def detect_company(
     return company_id, detected, votes
 
 
-def _filers(sec: SecClient, cik: str, docs: list[Doc], rules: SignalRules) -> dict[str, str]:
+def _filers(sec: SecClient, filer: dict[str, str], cik: str, docs: list[Doc],
+            rules: SignalRules) -> dict[str, str]:  # fmt: skip
     """Investor names of the Schedule 13Ds about the company (index headers, cached)."""
     out = {}
     for d in docs:
         if d.form_type in rules.ownership_forms:
-            raw = sec.filing_document(cik, d.accession_no, f"{d.accession_no}-index-headers.html")
+            raw = sec.filing_document(filer.get(d.accession_no, cik), d.accession_no,
+                                      f"{d.accession_no}-index-headers.html")  # fmt: skip
             _, name = ownership_parties(raw.payload.decode("utf-8", errors="replace"))
             if name:
                 out[d.accession_no] = name

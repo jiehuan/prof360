@@ -29,8 +29,9 @@ heartbeat_minutes: 5
 max_attempts: 2
 
 # Phase 15i: companies run in parallel threads within these stages (stage: workers). LLM calls
-# stay under the provider's quota through `rate_limits` in config/llm.yaml. Server databases
-# only: on SQLite (local development) every stage runs one company at a time.
+# stay under the provider's quota through `rate_limits` in config/llm.yaml. On SQLite (local
+# development) only insights and metricdetail run in parallel (short transactions, D-052); the
+# other stages run one company at a time there.
 parallel:
   textmetrics: 4
   governance: 4

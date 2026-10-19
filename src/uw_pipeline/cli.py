@@ -246,9 +246,8 @@ def coverage_report(
                     select(metric_value).where(metric_value.c.company_id == row["company_id"])
                 ).mappings()
             ]
-            reports.append(
-                company_coverage(cfg.ticker, creg.metrics, values, notes.get(cfg.ticker, {}))
-            )
+            mine = notes.for_company(cfg.ticker, row["industry_group"])
+            reports.append(company_coverage(cfg.ticker, creg.metrics, values, mine))
     today = datetime.now(UTC).date().isoformat()
     out = settings.data_dir / "reports" / f"coverage-{today}.md"
     out.parent.mkdir(parents=True, exist_ok=True)

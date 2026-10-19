@@ -98,7 +98,7 @@ class ExtractedValue(BaseModel):
 
     metric_code: str
     value: str = Field(description="The number exactly as written in the excerpt, e.g. 69.3")
-    unit: Literal["percent", "basis_points", "usd"]
+    unit: Literal["percent", "basis_points", "usd", "count"]
     scale: Scale = Field(description="From the table header or text, e.g. 'in millions'")
     period_start: str | None = Field(
         description="First day of the period, YYYY-MM-DD; null for point_in_time"

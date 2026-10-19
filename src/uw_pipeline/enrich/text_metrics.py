@@ -145,6 +145,8 @@ def to_metric_value(ext: ExtractedValue, metric: MetricDef) -> float | None:
         return None
     if metric.unit == "USD" and ext.unit == "usd":
         return raw * SCALES[ext.scale]
+    if metric.unit == "count" and ext.unit == "count":  # members, vehicles, barrels (Phase 16)
+        return raw * SCALES[ext.scale]
     return None
 
 
@@ -155,7 +157,7 @@ PeriodKey = tuple[str, int, int]
 
 # Period lengths in days (end - start) accepted for each kind; anything else (e.g. a merger stub
 # period shown in a quarter column) is not stored.
-_LENGTHS = {"quarter": (75, 105), "year": (350, 380)}
+_LENGTHS = {"quarter": (75, 115), "year": (350, 380)}  # 16-week fourth quarters (Phase 16)
 
 
 def period_keys(
@@ -193,6 +195,7 @@ class Candidate:
     period_end: str
     value: float
     evidence: str
+    step: float = 0.0  # precision as printed, in stored units ("$1.8 billion": 1e8)
 
 
 def candidates(
@@ -221,12 +224,37 @@ def candidates(
             rejected += 1
             continue
         assert value is not None
-        out += [Candidate(ext.metric_code, k, ext.period_end, value, ext.evidence) for k in keys]
+        step = printed_step(ext.value, value)
+        out += [Candidate(ext.metric_code, k, ext.period_end, value, ext.evidence, step)
+                for k in keys]  # fmt: skip
     return out, rejected
+
+
+def printed_step(number_text: str, value: float) -> float:
+    """The precision a number was printed with, in the stored unit: "1.8" billions -> 1e8,
+    "3,781" millions -> 1e6."""
+    raw = parse_number(number_text)
+    if not raw:
+        return 0.0
+    digits = number_text.strip().rstrip("%)").split(".")
+    decimals = len(re.sub(r"\D", "", digits[1])) if len(digits) > 1 else 0
+    return abs(value / raw) * 10.0**-decimals
 
 
 def agree(a: float, b: float) -> bool:
     return abs(a - b) <= AGREE_REL * max(abs(a), abs(b), 1e-9)
+
+
+def matches_release(reported: float, candidate: Candidate) -> bool:
+    """A release figure agrees with the XBRL value within the tolerance, or is that value
+    rounded the way the release printed it ("$1.8 billion" for 1,777 million; D-052)."""
+    if agree(reported, candidate.value):
+        return True
+    step = candidate.step
+    if step <= 0 or step > abs(candidate.value):  # no precision, or a figure below its step
+        return False
+    rounded = round(reported / step) * step
+    return abs(rounded - candidate.value) <= 1e-9 * max(abs(candidate.value), 1.0)
 
 
 def dual_checked(

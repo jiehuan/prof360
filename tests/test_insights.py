@@ -39,13 +39,13 @@ CALL_2 = (
 )
 
 
-def _seed(engine):
+def _seed(engine, cid=1, cik="0001048286", ticker="MAR", name="MARRIOTT"):
     with engine.begin() as c:
         c.execute(insert(company).values(
-            company_id=1, cik="0001048286", ticker="MAR", name="Marriott", legal_name="MARRIOTT",
+            company_id=cid, cik=cik, ticker=ticker, name=name.title(), legal_name=name,
             industry_group="HOTELS", is_financial=False, is_active=True, fiscal_year_end="1231",
             source_url="u", source_hash="h", raw_path="p", last_refreshed_at=NOW))  # fmt: skip
-        mv = dict(company_id=1, period_type="Q", fiscal_year=2026, fiscal_quarter=2,
+        mv = dict(company_id=cid, period_type="Q", fiscal_year=2026, fiscal_quarter=2,
                   period_end="2026-06-30", value_status="OK", derivation="REPORTED",
                   formula="f", source_tags="{}", source_accn="a", computed_at=NOW)  # fmt: skip
         c.execute(insert(metric_value), [
@@ -54,7 +54,7 @@ def _seed(engine):
             mv | {"metric_code": "debt_to_equity", "value": None, "value_status": "NM", "unit": "ratio"},
         ])  # fmt: skip
         c.execute(insert(signal).values(
-            signal_key="k1", company_id=1, rule_id="negative_equity", category="Risk & Legal",
+            signal_key=f"k{cid}", company_id=cid, rule_id="negative_equity", category="Risk & Legal",
             subcategory="Balance Sheet", severity="Warning",
             title="Stockholders' equity is negative; debt-to-equity is not meaningful",
             description="d", event_date="2026-06-30", snippet=None, method="RULE",
@@ -63,10 +63,11 @@ def _seed(engine):
                 (2, "EARNINGS_CALL", "TRANSCRIPT", "AV-MAR-2026Q1", "2026-05-06", "2026-03-31", "TRANSCRIPT", CALL_1),
                 (3, "EARNINGS_CALL", "TRANSCRIPT", "AV-MAR-2026Q2", "2026-08-03", "2026-06-30", "TRANSCRIPT", CALL_2)]  # fmt: skip
         for doc_id, form, stype, accn, filed, pend, code, text in docs:
+            doc_id += 10 * (cid - 1)
             c.execute(insert(source_document).values(
-                doc_id=doc_id, company_id=1, source_type=stype, form_type=form, doc_role="PRIMARY",
-                accession_no=accn, doc_name="d", filed_at=filed, period_end=pend, url="u",
-                content_hash="h"))  # fmt: skip
+                doc_id=doc_id, company_id=cid, source_type=stype, form_type=form,
+                doc_role="PRIMARY", accession_no=f"{accn}-{cid}", doc_name="d", filed_at=filed,
+                period_end=pend, url="u", content_hash="h"))  # fmt: skip
             c.execute(insert(filing_section).values(
                 doc_id=doc_id, section_code=code, start_offset=0, char_count=len(text),
                 text=text, text_hash="h"))  # fmt: skip
@@ -274,3 +275,48 @@ def test_numbers_in_metric_names_are_input() -> None:
     assert numbers_ok(text, [Cited(pay, "$26.0M")], pkg, GroundingStats(), "t")
     assert not numbers_ok(["CEO pay rose to $31M."], [Cited(pay, "$26.0M")], pkg,
                           GroundingStats(), "t")  # fmt: skip
+
+
+def test_companies_run_in_parallel_on_a_sqlite_file(tmp_path) -> None:
+    """D-052: the stage commits its writes before each model call, so two companies' calls
+    overlap on a SQLite file instead of the second waiting for the first one's transaction."""
+    import threading
+    import time
+    from concurrent.futures import ThreadPoolExecutor
+
+    from uw_pipeline.clients.db import make_engine
+
+    engine = make_engine(f"sqlite:///{tmp_path / 'i.db'}")
+    metadata.create_all(engine)
+    _seed(engine)
+    _seed(engine, cid=2, cik="0001585689", ticker="HLT", name="HILTON")
+    lock, state = threading.Lock(), {"now": 0, "peak": 0}
+
+    def slow(model, user):
+        with lock:
+            state["now"] += 1
+            state["peak"] = max(state["peak"], state["now"])
+        time.sleep(0.3)
+        with lock:
+            state["now"] -= 1
+        return answer(model, user)
+
+    llm = FakeLLM(slow)
+    args = (load_registry(CONFIG_DIR), load_industry_config(CONFIG_DIR),
+            (llm, load_llm_config(CONFIG_DIR)), load_insights_config(CONFIG_DIR),
+            load_source_labels(CONFIG_DIR), engine)  # fmt: skip
+    companies = [CompanyConfig(ticker="MAR", cik=1048286), CompanyConfig(ticker="HLT", cik=1585689)]
+    started = time.monotonic()
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(lambda c: run_insights_stage([c], *args, now=lambda: NOW)[0],
+                                companies))  # fmt: skip
+    elapsed = time.monotonic() - started
+    assert all(r.ok for r in results), results
+    assert state["peak"] == 2 and len(llm.calls) == 8  # four calls each, two at a time
+    # 1.2 s of calls per company: together ~1.3 s; one after the other (the second waiting on
+    # the first one's transaction) ~2.1 s.
+    assert elapsed < 1.8, elapsed
+    with engine.connect() as c:
+        per_company = dict(c.execute(select(insight.c.company_id, func.count())
+                                     .group_by(insight.c.company_id)).all())  # fmt: skip
+    assert per_company == {1: 4, 2: 4}

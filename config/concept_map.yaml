@@ -21,7 +21,14 @@ concepts:
     by_group:
       # Banks report "total net revenue" (net of interest expense). us-gaap:Revenues means
       # something different for JPM and stops in 2025, so mixing the two would distort growth.
-      BANKS: [us-gaap:RevenuesNetOfInterestExpense]
+      BANKS: [us-gaap:RevenuesNetOfInterestExpense, us-gaap:Revenues]
+      # Phase 16: broker-dealers report net revenues; utilities total operating revenues
+      # (regulated and unregulated). For BAC, C, COF, USB and BNY us-gaap:Revenues is net
+      # revenue (net interest income + noninterest income).
+      BROKER_DEALERS: [us-gaap:RevenuesNetOfInterestExpense, us-gaap:Revenues,
+                       us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax]  # BLK 2025
+      UTILITIES: [us-gaap:RegulatedAndUnregulatedOperatingRevenue, us-gaap:Revenues,
+                  us-gaap:RevenueFromContractWithCustomerIncludingAssessedTax]
   net_income:
     tags:
       - us-gaap:NetIncomeLoss
@@ -40,6 +47,12 @@ concepts:
       - us-gaap:DepreciationDepletionAndAmortization
       - us-gaap:DepreciationAndAmortization
       - us-gaap:DepreciationAmortizationAndAccretionNet
+  # Phase 16: some report depreciation and intangible amortization separately (MSFT, ABBV).
+  depreciation: {tags: [us-gaap:Depreciation, us-gaap:DepreciationNonproduction]}
+  # Bank net revenue parts (bank_net_revenue).
+  nii_parts: {tags: [us-gaap:InterestIncomeExpenseNet]}
+  nonii_parts: {tags: [us-gaap:NoninterestIncome]}
+  amortization_intangibles: {tags: [us-gaap:AmortizationOfIntangibleAssets]}
   cash:
     tags:
       - us-gaap:CashAndCashEquivalentsAtCarryingValue
@@ -58,6 +71,11 @@ concepts:
     tags:
       - us-gaap:DebtAndCapitalLeaseObligations
       - us-gaap:LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities
+      - us-gaap:DebtLongtermAndShorttermCombinedAmount   # Phase 16 (ORCL)
+  # Phase 16: long-term debt including current maturities, and all current debt (commercial
+  # paper and current maturities), each with their own siblings in total_debt.
+  ltd_total: {tags: [us-gaap:LongTermDebt]}
+  debt_current: {tags: [us-gaap:DebtCurrent]}
   ltdcl_noncurrent:
     tags: [us-gaap:LongTermDebtAndCapitalLeaseObligations]
   ltdcl_current:
@@ -81,14 +99,21 @@ concepts:
       - us-gaap:InterestExpense
       - us-gaap:InterestExpenseNonoperating
       - us-gaap:InterestExpenseDebt
+      - us-gaap:InterestAndDebtExpense
+      # Phase 16: cash interest paid where no interest expense is tagged (CAT, GE, NEE keep it
+      # in their own tags); close to the expense for most issuers.
+      - us-gaap:InterestPaidNet
   operating_cash_flow:
-    tags: [us-gaap:NetCashProvidedByUsedInOperatingActivities]
+    tags: [us-gaap:NetCashProvidedByUsedInOperatingActivities,
+           us-gaap:NetCashProvidedByUsedInOperatingActivitiesContinuingOperations]  # DIS FY2024
   capex:
     tags:
       - us-gaap:PaymentsToAcquirePropertyPlantAndEquipment
       - us-gaap:PaymentsToAcquireProductiveAssets
   buybacks:
-    tags: [us-gaap:PaymentsForRepurchaseOfCommonStock]
+    tags: [us-gaap:PaymentsForRepurchaseOfCommonStock,
+           us-gaap:StockRepurchasedDuringPeriodValue,          # Phase 16 (MS)
+           us-gaap:TreasuryStockValueAcquiredCostMethod]
   dividends_paid:
     tags: [us-gaap:PaymentsOfDividends, us-gaap:PaymentsOfDividendsCommonStock]
 
@@ -129,7 +154,10 @@ concepts:
   receivables:
     tags: [us-gaap:AccountsReceivableNetCurrent, us-gaap:ReceivablesNetCurrent,
            us-gaap:AccountsNotesAndLoansReceivableNetCurrent]
-  inventory: {tags: [us-gaap:InventoryNet]}
+  inventory:
+    tags: [us-gaap:InventoryNet,
+           us-gaap:InventoryNetOfAllowancesCustomerAdvancesAndProgressBillings,  # BA
+           us-gaap:PublicUtilitiesInventory]                                     # utilities
   cost_of_revenue:
     tags: [us-gaap:CostOfGoodsAndServicesSold, us-gaap:CostOfRevenue, us-gaap:CostOfGoodsSold]
   goodwill: {tags: [us-gaap:Goodwill]}
@@ -155,3 +183,31 @@ concepts:
   debt_due_4y: {tags: [us-gaap:LongTermDebtMaturitiesRepaymentsOfPrincipalInYearFour]}
   debt_due_5y: {tags: [us-gaap:LongTermDebtMaturitiesRepaymentsOfPrincipalInYearFive]}
   debt_due_after_5y: {tags: [us-gaap:LongTermDebtMaturitiesRepaymentsOfPrincipalAfterYearFive]}
+  # Industry modules (Phase 16, D-052).
+  research_development:
+    tags: [us-gaap:ResearchAndDevelopmentExpense,
+           us-gaap:ResearchAndDevelopmentExpenseExcludingAcquiredInProcessCost,
+           us-gaap:ResearchAndDevelopmentExpenseSoftwareExcludingAcquiredInProcessCost]
+  gross_profit: {tags: [us-gaap:GrossProfit]}
+  # Contract liabilities (deferred revenue) on the balance sheet.
+  deferred_revenue:
+    tags: [us-gaap:ContractWithCustomerLiabilityCurrent, us-gaap:DeferredRevenueCurrent,
+           us-gaap:ContractWithCustomerLiability]
+  deposits: {tags: [us-gaap:Deposits]}
+  afs_unrealized_loss:
+    tags: [us-gaap:AvailableForSaleDebtSecuritiesGrossUnrealizedLoss,
+           us-gaap:AvailableForSaleSecuritiesGrossUnrealizedLoss]
+  htm_unrecognized_loss:
+    tags: [us-gaap:HeldToMaturitySecuritiesAccumulatedUnrecognizedHoldingLoss,
+           us-gaap:HeldToMaturitySecuritiesUnrecognizedHoldingLoss]
+  net_investment_income: {tags: [us-gaap:NetInvestmentIncome]}
+  warranty_total: {tags: [us-gaap:ProductWarrantyAccrual, us-gaap:StandardProductWarrantyAccrual]}
+  warranty_current: {tags: [us-gaap:ProductWarrantyAccrualClassifiedCurrent]}
+  warranty_noncurrent: {tags: [us-gaap:ProductWarrantyAccrualNoncurrent]}
+  # Non-current pension and retiree-benefit liabilities on the balance sheet (the funded
+  # status is tagged by plan, not as one total).
+  pension_liability:
+    tags: [us-gaap:PensionAndOtherPostretirementDefinedBenefitPlansLiabilitiesNoncurrent,
+           us-gaap:PensionAndOtherPostretirementAndPostemploymentBenefitPlansLiabilitiesNoncurrent,
+           us-gaap:DefinedBenefitPensionPlanLiabilitiesNoncurrent]
+  regulatory_assets: {tags: [us-gaap:RegulatoryAssetsNoncurrent]}

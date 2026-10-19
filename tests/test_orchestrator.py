@@ -263,3 +263,17 @@ def test_parallel_only_on_a_server_database(engine) -> None:
     runner, state = _concurrency_runner("facts")
     assert orch.execute(run_id, runner).status == "SUCCEEDED"
     assert state["peak"]["facts"] == (1 if sqlite else 3)
+
+
+def test_short_transaction_stages_run_in_parallel_on_a_sqlite_file(tmp_path) -> None:
+    # D-052: insights and metricdetail keep no transaction open while waiting for the model, so
+    # on a SQLite file their companies run together; other stages stay one at a time.
+    engine = create_engine(f"sqlite:///{tmp_path / 'p.db'}")
+    metadata.create_all(engine)
+    orch = Orchestrator(engine, now=Clock(), max_attempts=1,
+                        parallel={"facts": 3, "insights": 3})  # fmt: skip
+    assert not orch.allow_parallel
+    run_id, _ = orch.start("nightly", ["company", "facts", "insights"], ["A", "B", "C"])
+    runner, state = _concurrency_runner("insights")
+    assert orch.execute(run_id, runner).status == "SUCCEEDED"
+    assert state["peak"]["insights"] == 3 and state["peak"]["facts"] == 1

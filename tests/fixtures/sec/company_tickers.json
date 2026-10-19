@@ -1,55 +1,175 @@
 {
  "0": {
+  "cik_str": 1045810,
+  "ticker": "NVDA",
+  "title": "NVIDIA CORP"
+ },
+ "1": {
+  "cik_str": 320193,
+  "ticker": "AAPL",
+  "title": "Apple Inc."
+ },
+ "2": {
+  "cik_str": 789019,
+  "ticker": "MSFT",
+  "title": "MICROSOFT CORP"
+ },
+ "3": {
+  "cik_str": 104169,
+  "ticker": "WMT",
+  "title": "Walmart Inc."
+ },
+ "4": {
+  "cik_str": 2488,
+  "ticker": "AMD",
+  "title": "ADVANCED MICRO DEVICES INC"
+ },
+ "5": {
   "cik_str": 19617,
   "ticker": "JPM",
   "title": "JPMORGAN CHASE & CO"
  },
- "1": {
+ "6": {
+  "cik_str": 1403161,
+  "ticker": "V",
+  "title": "VISA INC."
+ },
+ "7": {
+  "cik_str": 1141391,
+  "ticker": "MA",
+  "title": "Mastercard Inc"
+ },
+ "8": {
+  "cik_str": 909832,
+  "ticker": "COST",
+  "title": "COSTCO WHOLESALE CORP /NEW"
+ },
+ "9": {
+  "cik_str": 858877,
+  "ticker": "CSCO",
+  "title": "CISCO SYSTEMS, INC."
+ },
+ "10": {
+  "cik_str": 21344,
+  "ticker": "KO",
+  "title": "COCA COLA CO"
+ },
+ "11": {
+  "cik_str": 80424,
+  "ticker": "PG",
+  "title": "PROCTER & GAMBLE Co"
+ },
+ "12": {
+  "cik_str": 70858,
+  "ticker": "BAC",
+  "title": "BANK OF AMERICA CORP /DE/"
+ },
+ "13": {
+  "cik_str": 895421,
+  "ticker": "MS",
+  "title": "MORGAN STANLEY"
+ },
+ "14": {
+  "cik_str": 886982,
+  "ticker": "GS",
+  "title": "GOLDMAN SACHS GROUP INC"
+ },
+ "15": {
+  "cik_str": 1108524,
+  "ticker": "CRM",
+  "title": "Salesforce, Inc."
+ },
+ "16": {
+  "cik_str": 100885,
+  "ticker": "UNP",
+  "title": "UNION PACIFIC CORP"
+ },
+ "17": {
   "cik_str": 78003,
   "ticker": "PFE",
   "title": "PFIZER INC"
  },
- "2": {
+ "18": {
+  "cik_str": 753308,
+  "ticker": "NEE",
+  "title": "NEXTERA ENERGY INC"
+ },
+ "19": {
+  "cik_str": 1035267,
+  "ticker": "ISRG",
+  "title": "INTUITIVE SURGICAL INC"
+ },
+ "20": {
+  "cik_str": 12927,
+  "ticker": "BA",
+  "title": "BOEING CO"
+ },
+ "21": {
+  "cik_str": 936468,
+  "ticker": "LMT",
+  "title": "LOCKHEED MARTIN CORP"
+ },
+ "22": {
+  "cik_str": 927628,
+  "ticker": "COF",
+  "title": "CAPITAL ONE FINANCIAL CORP"
+ },
+ "23": {
+  "cik_str": 1613103,
+  "ticker": "MDT",
+  "title": "Medtronic plc"
+ },
+ "24": {
   "cik_str": 1048286,
   "ticker": "MAR",
   "title": "MARRIOTT INTERNATIONAL INC /MD/"
  },
- "3": {
+ "25": {
+  "cik_str": 1326160,
+  "ticker": "DUK",
+  "title": "Duke Energy CORP"
+ },
+ "26": {
+  "cik_str": 1090727,
+  "ticker": "UPS",
+  "title": "UNITED PARCEL SERVICE INC"
+ },
+ "27": {
   "cik_str": 37996,
   "ticker": "F",
   "title": "FORD MOTOR CO"
  },
- "4": {
+ "28": {
   "cik_str": 2041610,
   "ticker": "SKYD",
   "title": "Skydance Corp"
  },
- "5": {
+ "29": {
   "cik_str": 92380,
   "ticker": "LUV",
   "title": "SOUTHWEST AIRLINES CO"
  },
- "6": {
+ "30": {
   "cik_str": 794367,
   "ticker": "M",
   "title": "Macy's, Inc."
  },
- "7": {
+ "31": {
   "cik_str": 18926,
   "ticker": "LUMN",
   "title": "Lumen Technologies, Inc."
  },
- "8": {
+ "32": {
   "cik_str": 1463101,
   "ticker": "ENPH",
   "title": "Enphase Energy, Inc."
  },
- "9": {
+ "33": {
   "cik_str": 1826011,
   "ticker": "PARA",
   "title": "Banzai International, Inc."
  },
- "10": {
+ "34": {
   "cik_str": 2041610,
   "ticker": "PSKY",
   "title": "Skydance Corp"

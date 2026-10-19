@@ -12,18 +12,15 @@ from uw_pipeline.config import (
 
 def test_mvp_company_list() -> None:
     companies = load_companies(CONFIG_DIR)
-    assert [c.ticker for c in companies] == [
-        "MAR",
-        "LUV",
-        "F",
-        "PFE",
-        "JPM",
-        "M",
-        "LUMN",
-        "SKYD",
-        "ENPH",
-    ]
-    assert all(c.cik for c in companies), "every MVP company pins its CIK"
+    assert [c.ticker for c in companies][:9] == [
+        "MAR", "LUV", "F", "PFE", "JPM", "M", "LUMN", "SKYD", "ENPH",
+    ]  # fmt: skip
+    # Phase 16: the S&P 100 (100 companies; GOOGL and GOOG are one) plus seven MVP companies.
+    assert len(companies) == 107 and {"AAPL", "GOOGL", "BRK.B", "XOM"} <= {
+        c.ticker for c in companies
+    }
+    assert all(c.cik for c in companies), "every company pins its CIK"
+    assert len({c.cik for c in companies}) == len(companies), "one entry per CIK"
 
 
 def test_duplicate_ticker_rejected() -> None:
@@ -40,7 +37,7 @@ def test_duplicate_ticker_rejected() -> None:
         (6035, "BANKS", "range", True),
         (6211, "BROKER_DEALERS", "range", True),
         (6331, "INSURANCE", "range", False),
-        (6798, "UNCLASSIFIED", "default", False),  # REITs are not FI
+        (6798, "REIT", "range", False),  # REITs are not FI (Phase 16 group)
         (None, "UNCLASSIFIED", "default", False),
     ],
 )

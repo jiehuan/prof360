@@ -100,15 +100,19 @@ _REQUEST_TOO_LARGE = ("prompt is too long", "context length", "context_length", 
                       "maximum context", "string_above_max_length")  # fmt: skip
 
 
-def _store(conn: Connection, row: dict[str, Any]) -> None:
-    """Write an llm_call row. On a server database it commits on its own, so a later failure in
-    the stage's transaction cannot roll back answers already paid for. (SQLite allows a single
-    writer, so there it stays in the caller's transaction.)"""
-    if conn.dialect.name == "sqlite":
+def _store(conn: Connection, row: dict[str, Any], commit: bool = False) -> None:
+    """Write an llm_call row so that a later failure in the stage cannot roll back answers
+    already paid for. `commit`: the caller works in short transactions (D-052), so the row is
+    committed on the caller's connection. Otherwise it commits on its own connection on a server
+    database; SQLite allows a single writer, so there it stays in the caller's transaction."""
+    if commit:
         upsert(conn, llm_call, [row], key_cols=["input_hash"])
-        return
-    with conn.engine.begin() as own:
-        upsert(own, llm_call, [row], key_cols=["input_hash"])
+        conn.commit()
+    elif conn.dialect.name == "sqlite":
+        upsert(conn, llm_call, [row], key_cols=["input_hash"])
+    else:
+        with conn.engine.begin() as own:
+            upsert(own, llm_call, [row], key_cols=["input_hash"])
 
 
 @functools.cache
@@ -176,12 +180,17 @@ def cached_call(
     schema: dict[str, Any],
     now: datetime,
     validate: Callable[[Any], Any] | None = None,
+    commit: bool = False,
 ) -> dict[str, Any] | None:
     """Structured LLM call, reused from `llm_call` when the same inputs were seen before.
 
     Returns None when the model gave no usable output (refusal, truncation, bad JSON, or output
     that fails `validate`, usually the output model's `model_validate`); the error is stored and
-    the call is retried on the next run instead of the bad output being reused."""
+    the call is retried on the next run instead of the bad output being reused.
+
+    `commit` (stages in short transactions, D-052): the caller's pending writes are committed
+    before the model is called and the answer right after, so no transaction stays open while
+    waiting for the model and other companies can write meanwhile (parallel workers on SQLite)."""
     # Source text is data (D-044): invisible characters made visible, and the data rule
     # appended to the system prompt; its version is part of the stored prompt version.
     user = neutralize(user)
@@ -206,7 +215,8 @@ def cached_call(
         if validate is None or _valid(validate, out):
             return out
         # Stored before validation was checked here: forget it so the next run asks again.
-        _store(conn, row | {"output_json": None, "error": "output failed schema validation"})
+        _store(conn, row | {"output_json": None, "error": "output failed schema validation"},
+               commit)  # fmt: skip
         return None
 
     budget: DailyBudget | None = getattr(client, "budget", None)
@@ -220,6 +230,8 @@ def cached_call(
     # key, so a cached answer stays valid when the cap changes.
     caps: dict[str, int] = getattr(client, "task_max_tokens", None) or {}
     max_tokens = min(spec.max_tokens, caps.get(task, spec.max_tokens))
+    if commit:
+        conn.commit()  # the stage's finished writes; nothing stays locked during the call
     try:
         result = client.complete_json(
             model=spec.model, effort=spec.effort, max_tokens=max_tokens,
@@ -227,7 +239,7 @@ def cached_call(
         )  # fmt: skip
     except LLMError as exc:
         log.warning("%s on %s: %s", task, spec.model, exc)
-        _store(conn, row | {"error": str(exc)[:500]})
+        _store(conn, row | {"error": str(exc)[:500]}, commit)
         return None
     except LLMSetupError as exc:
         raise LLMUnavailableError(str(exc)) from exc
@@ -236,7 +248,7 @@ def cached_call(
     except anthropic.BadRequestError as exc:
         if any(m in str(exc).lower() for m in _REQUEST_TOO_LARGE):
             log.warning("%s on %s: request too large: %s", task, spec.model, exc)
-            _store(conn, row | {"error": f"request too large: {str(exc)[:450]}"})
+            _store(conn, row | {"error": f"request too large: {str(exc)[:450]}"}, commit)
             return None
         raise LLMUnavailableError(str(exc)) from exc
     usage = {"served_model": result.model, "input_tokens": result.input_tokens,
@@ -245,10 +257,10 @@ def cached_call(
         budget.add(spec.model, result.input_tokens, result.output_tokens)
     if validate is not None and not _valid(validate, result.output):
         log.warning("%s on %s: output failed schema validation", task, spec.model)
-        _store(conn, row | usage | {"output_json": None,
-                                    "error": "output failed schema validation"})  # fmt: skip
+        bad = {"output_json": None, "error": "output failed schema validation"}
+        _store(conn, row | usage | bad, commit)
         return None
-    _store(conn, row | usage | {"output_json": json.dumps(result.output), "error": None})
+    _store(conn, row | usage | {"output_json": json.dumps(result.output), "error": None}, commit)
     return result.output
 
 

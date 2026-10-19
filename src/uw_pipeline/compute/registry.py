@@ -130,7 +130,7 @@ class MetricDef(BaseModel):
     display_name: str
     description: str | None = None
     section: str
-    unit: Literal["USD", "ratio", "fraction", "days", "shares", "score"]
+    unit: Literal["USD", "ratio", "fraction", "days", "shares", "score", "count"]
     kind: Literal["formula", "growth", "text", "external"] = "formula"  # external: Phase 15
     formula: list[str] = Field(default_factory=list)
     optional: list[str] = Field(default_factory=list)

@@ -1,0 +1,246 @@
+{
+ "cik": "0001613103",
+ "entityType": "operating",
+ "sic": "3845",
+ "sicDescription": "Electromedical & Electrotherapeutic Apparatus",
+ "ownerOrg": "08 Industrial Applications and Services",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Medtronic plc",
+ "tickers": [
+  "MDT"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "000000000",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "0424",
+ "stateOfIncorporation": "",
+ "stateOfIncorporationDescription": "",
+ "addresses": {
+  "mailing": {
+   "street1": "BUILDING TWO PARKMORE BUSINESS PARK WEST",
+   "street2": null,
+   "city": "GALWAY",
+   "stateOrCountry": null,
+   "zipCode": "H91 4K49",
+   "stateOrCountryDescription": null,
+   "isForeignLocation": 1,
+   "foreignStateTerritory": null,
+   "country": "Ireland",
+   "countryCode": "L2"
+  },
+  "business": {
+   "street1": "BUILDING TWO PARKMORE BUSINESS PARK WEST",
+   "street2": null,
+   "city": "GALWAY",
+   "stateOrCountry": null,
+   "zipCode": "H91 4K49",
+   "stateOrCountryDescription": null,
+   "isForeignLocation": 1,
+   "foreignStateTerritory": null,
+   "country": "Ireland",
+   "countryCode": "L2"
+  }
+ },
+ "phone": "01135314381700",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "Medtronic Ltd",
+   "from": "2015-01-15T05:00:00.000Z",
+   "to": "2015-01-15T05:00:00.000Z"
+  },
+  {
+   "name": "Medtronic Holdings Ltd",
+   "from": "2014-07-14T04:00:00.000Z",
+   "to": "2014-11-21T05:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001984186-26-000010",
+    "0001560409-26-000011",
+    "0001999371-26-022971",
+    "0001999371-26-022968",
+    "0001959173-26-007405",
+    "0001628280-26-060473",
+    "0001628280-26-044354",
+    "0001628280-26-011107",
+    "0001628280-25-053988"
+   ],
+   "filingDate": [
+    "2026-10-16",
+    "2026-10-16",
+    "2026-10-16",
+    "2026-10-16",
+    "2026-10-15",
+    "2026-09-03",
+    "2026-06-18",
+    "2026-02-24",
+    "2025-11-25"
+   ],
+   "reportDate": [
+    "2026-10-15",
+    "2026-10-15",
+    "",
+    "2026-10-15",
+    "",
+    "2026-07-31",
+    "2026-04-24",
+    "2026-01-23",
+    "2025-10-24"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-17T02:02:07.000Z",
+    "2026-10-17T02:00:50.000Z",
+    "2026-10-17T00:21:24.000Z",
+    "2026-10-17T00:18:01.000Z",
+    "2026-10-16T01:00:26.000Z",
+    "2026-09-04T00:18:22.000Z",
+    "2026-06-19T00:27:27.000Z",
+    "2026-02-25T02:18:20.000Z",
+    "2025-11-26T02:18:41.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "34",
+    "33",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "4",
+    "SCHEDULE 13G/A",
+    "4",
+    "144",
+    "10-Q",
+    "10-K",
+    "10-Q",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "001-43183",
+    "001-36820",
+    "001-36820",
+    "001-36820",
+    "001-36820",
+    "001-36820"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "261466286",
+    "261463608",
+    "261358599",
+    "261103134",
+    "26671847",
+    "251521519"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "SCHEDULE 13G/A",
+    "4",
+    "144",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    5135,
+    5116,
+    7580,
+    5930,
+    17940,
+    14455910,
+    25656285,
+    15313502,
+    14916679
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/wk-form4_1792188125.xml",
+    "xslF345X06/wk-form4_1792188048.xml",
+    "xslSCHEDULE_13G_X02/primary_doc.xml",
+    "xslF345X06/ownership.xml",
+    "xsl144X01/primary_doc.xml",
+    "mdt-20260731.htm",
+    "mdt-20260424.htm",
+    "mdt-20260123.htm",
+    "mdt-20251024.htm"
+   ],
+   "primaryDocDescription": [
+    "FORM 4",
+    "FORM 4",
+    "",
+    "FORM 4",
+    "",
+    "10-Q",
+    "10-K",
+    "10-Q",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

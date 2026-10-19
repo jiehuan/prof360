@@ -20,9 +20,10 @@ designed in and tested:
 
 - **Traceable.** Every value and insight links to a document (accession, URL, section) or
   metric row. LLM output is stored only after schema validation and grounding (§8).
-- **Industry-aware.** Metric sets are curated per industry group in `config/`, plus trait
-  sets (bank, lodging, contract revenue, manufacturing, captive finance) a group opts into;
-  bank modules (NIM, CET1, NPL, loan book) never appear for non-banks.
+- **Industry-aware.** Metric sets are curated per industry group in `config/` (24 groups
+  for the S&P 100, D-052), plus trait sets (bank, lodging, contract revenue, manufacturing,
+  captive finance) a group opts into; bank modules (NIM, CET1, NPL, loan book) never appear
+  for non-banks.
 - **Idempotent.** Natural-key upserts; a rerun on unchanged input writes nothing and calls no
   LLM.
 - **Incremental.** Raw responses are cached; LLM calls are cached by input hash; insights are
@@ -178,6 +179,13 @@ Conventions:
   `market`) or FORM4 (owned by `documents`). Each stage deletes only the rows it owns that the
   current rules no longer produce, so a 10-Q value replaces a PRELIMINARY one (D-019, D-032,
   D-050). Metrics of kind `external` are written by another stage and skipped by compute.
+  Formulas may use stored market and text values (Altman Z, a product's share of revenue);
+  a new one is picked up by the next run's compute (D-050, D-052).
+- Fiscal periods: a fact's quarter comes from the company's own 10-Q quarter ends when they
+  are known (12/12/12/16-week years such as Costco and PepsiCo), otherwise from the fiscal
+  year end with a 52/53-week tolerance (`normalize/periods.py`, D-052).
+- Predecessor registrants: `predecessor_ciks` (holding-company reorganizations, e.g. XOM,
+  BLK) adds the old CIK's company facts, filings and Form 4s to the company (D-052).
 - `xbrl_fact` keeps only the tags the registry uses, keyed by `fact_key` (a hash, because a
   nullable start date breaks SQL uniqueness) (D-015).
 - Insight sets are versioned by input hash (inputs, prompts, model, `GROUNDING_VERSION`); a new
@@ -199,12 +207,12 @@ versioned with the code.
 
 | File | Controls |
 |---|---|
-| `companies.yaml` | Companies: pinned CIK, display ticker, former tickers, `history_start`, `news_aliases`, `av_symbols`, `industry` (D-049) |
+| `companies.yaml` | Companies: pinned CIK, display ticker, former tickers, `history_start`, `news_aliases`, `av_symbols`, `industry` (D-049), `predecessor_ciks` (D-052) |
 | `company_overrides/*.yaml` | Company metrics and `sections:` rules (JPM, MAR) |
 | `industry_groups.yaml` | SIC → industry group, metric sets, `traits`, `trait_metric_sets`, `common_metric_sets` (governance), `is_financial`, `mdna_history_years`, `exclude_metrics` / `exclude_signals` / `signal_params` (D-049) |
 | `metrics.yaml` | Metric definitions, formulas (`x_py` = a year earlier), text and table extraction specs (`table:` column, scope, excluded rows, `dual_check`), `kind: external` (market and Form 4 metrics, D-050), `insight_input`, `metric_sets` |
 | `concept_map.yaml` | Concept → candidate XBRL tags (with dimensions) |
-| `coverage_notes.yaml` | Reason for every metric gap `coverage-report` shows |
+| `coverage_notes.yaml` | Reason for every metric gap `coverage-report` shows: per company, or per industry group under `groups:` (`"*"` = every company, D-052) |
 | `signal_rules.yaml` | 8-K item mapping, keyword and role rules, board rules, metric `thresholds`, `industries` per rule (D-049), `fetch_body_items`; `ownership_forms` (13D), `market`, `insiders`, `legal` (D-050) |
 | `text_extraction.yaml` | Text-metric chunk budget, effort, loan portfolio settings |
 | `insights.yaml` | Insight tasks, package limits, `news_materiality` gate |
@@ -267,7 +275,8 @@ which also invalidates the cache; then run `scripts/export_golden.py` and review
   rounding allowed) or appear as written in a cited item; digits match only as whole numbers.
   Years, quarter numbers and small counts are ignored.
 - Text-metric values are kept only if the quote is in the source, the number is in the quote,
-  the unit fits and the period length fits (quarter 75–105 days, year 350–380).
+  the unit fits and the period length fits (quarter 75–115 days, so a 16-week fourth
+  quarter passes; year 350–380).
 - Failing items are dropped and logged; drop rates go to `llm_task_stat` (DQ alerts above 20%).
 - `GROUNDING_VERSION` (`jobs/run_insights.py`, now 7) is part of the insight input hash: bump
   it when grounding rules change, and cached outputs are re-checked without new LLM calls.
@@ -449,10 +458,12 @@ scripts/test_mssql.sh --all               # whole suite on SQL Server 2022 in Do
 | Limitation | Effect | Where it is tracked |
 |---|---|---|
 | Restatements: a quarter restated after its year keeps the year's basis until the year is restated too | Old quarters show the basis they were first reported on; DQ flags quarters ≠ year | D-035, D-046 |
+| A fourth quarter whose year and nine months are on different bases (a fiscal year restated in between) is N/M | Restated years (19 of 107 companies since 2022) lose that quarter until the nine months are restated too | D-052 |
 | Live stability: values never differed across runs, but some are withheld in one run and stored in another | Coverage of rarely-tabled figures (AUM, LCR, VaR quarters) can vary when a new filing arrives | D-046 |
-| One database transaction per company and stage includes the network and LLM calls | Fine for one process; must be split before parallel workers | PLAN 10.E |
+| One database transaction per company and stage includes the network and LLM calls (except insights and metricdetail: short transactions, D-052) | The other LLM stages run one company at a time on SQLite and hold locks during calls on Azure SQL | PLAN 10.E, 15i |
 | SQLite allows one writer | Jobs are serialised by the global run lock | D-034, D-041 |
-| SEC data is fetched per company on every scheduled run | Fine for 9 companies; daily index and bulk files needed at scale | PLAN Phase 10 |
+| SEC data is fetched per company on every scheduled run | Fine for 107 companies; daily index and bulk files needed at scale | PLAN Phase 10 |
+| Market cap uses the registrant's diluted share count at the price of one share class | Understated where classes trade at different prices or convert (GOOGL, V, BRK.B) | D-052 |
 | Transcripts have no public URL | Insights resting only on transcripts have a title but no link or date | D-036 |
 | SecureGPT not yet run on the work network | `reasoning_effort` off; production gateway URL assumed; quality and cost unmeasured | D-039, PLAN Phase 11 |
 | Azure settings are placeholders | No run on Azure SQL / ADLS yet | D-040, PLAN Phase 12 |

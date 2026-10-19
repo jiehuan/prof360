@@ -163,7 +163,9 @@ def _shares(conn: Connection, company_id: int, period: tuple[str, int, int],
 
 def _surprise(rows: list[Any], end: str) -> tuple[float, Any] | None:
     for r in rows:
-        if abs((date.fromisoformat(r["fiscal_date_ending"]) - date.fromisoformat(end)).days) > 10:
+        # AV dates a quarter at its month end; a 12-week quarter ends up to ~3 weeks earlier
+        # (Costco's Q3 on May 10, AV "2026-05-31", Phase 16). Quarters are 84+ days apart.
+        if abs((date.fromisoformat(r["fiscal_date_ending"]) - date.fromisoformat(end)).days) > 25:
             continue
         if r["reported_eps"] is None or not r["estimated_eps"]:
             return None

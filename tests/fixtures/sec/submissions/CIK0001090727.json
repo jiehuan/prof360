@@ -1,0 +1,235 @@
+{
+ "cik": "0001090727",
+ "entityType": "operating",
+ "sic": "4210",
+ "sicDescription": "Trucking & Courier Services (No Air)",
+ "ownerOrg": "01 Energy & Transportation",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "UNITED PARCEL SERVICE INC",
+ "tickers": [
+  "UPS"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "582480149",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "55 GLENLAKE PARKWAY NE",
+   "street2": null,
+   "city": "ATLANTA",
+   "stateOrCountry": "GA",
+   "zipCode": "30328",
+   "stateOrCountryDescription": "GA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "55 GLENLAKE PARKWAY NE",
+   "street2": null,
+   "city": "ATLANTA",
+   "stateOrCountry": "GA",
+   "zipCode": "30328",
+   "stateOrCountryDescription": "GA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "4048286000",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001225208-26-007662",
+    "0001225208-26-007661",
+    "0001225208-26-007660",
+    "0001225208-26-007659",
+    "0001628280-26-059609",
+    "0001628280-26-053249",
+    "0001628280-26-031154",
+    "0001628280-26-008432",
+    "0001628280-25-049661"
+   ],
+   "filingDate": [
+    "2026-09-03",
+    "2026-09-03",
+    "2026-09-03",
+    "2026-09-03",
+    "2026-08-31",
+    "2026-08-05",
+    "2026-05-06",
+    "2026-02-17",
+    "2025-11-05"
+   ],
+   "reportDate": [
+    "2026-09-01",
+    "2026-09-01",
+    "2026-09-01",
+    "2026-09-01",
+    "2026-08-31",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-09-03T22:02:23.000Z",
+    "2026-09-03T22:00:23.000Z",
+    "2026-09-03T22:00:20.000Z",
+    "2026-09-03T22:00:18.000Z",
+    "2026-08-31T20:37:13.000Z",
+    "2026-08-05T19:48:32.000Z",
+    "2026-05-06T19:00:22.000Z",
+    "2026-02-17T18:13:40.000Z",
+    "2025-11-05T21:54:46.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "4",
+    "4",
+    "3",
+    "8-K",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "",
+    "001-15451",
+    "001-15451",
+    "001-15451",
+    "001-15451",
+    "001-15451"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "",
+    "261347104",
+    "261243124",
+    "26947829",
+    "26639164",
+    "251454882"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "5.02,7.01,9.01",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "4",
+    "3",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    5515,
+    5383,
+    5374,
+    14600,
+    300964,
+    11064226,
+    9719148,
+    23270056,
+    14288513
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc3.xml",
+    "ups-20260831.htm",
+    "ups-20260630.htm",
+    "ups-20260331.htm",
+    "ups-20251231.htm",
+    "ups-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "",
+    "",
+    "",
+    "",
+    "8-K",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

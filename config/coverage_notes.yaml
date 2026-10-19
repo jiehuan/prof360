@@ -91,3 +91,361 @@ MAR:
   inventory_days: >-
     Marriott is asset-light (management and franchise fees) and has not reported inventory since
     FY2012; days inventory outstanding does not apply.
+
+# Phase 16 (S&P 100, D-052). Industry-group notes apply to every company of the group; group
+# "*" to every company. A company's own note wins.
+groups:
+  "*":
+    goodwill_impairment: >-
+      Tagged only in years with a goodwill impairment; no tag means none was recorded (Phase
+      16).
+    buybacks: >-
+      Tagged only for periods with share repurchases; some companies repurchase in some quarters
+      only, and some (utilities, Tesla, Boeing) not at all.
+    buyback_intensity: >-
+      Follows buybacks: no value for periods without repurchases.
+    debt_due_1y: >-
+      Not tagged when no long-term debt matures within a year, or when the company tags neither
+      the maturity schedule nor the current portion of long-term debt.
+    near_term_debt_coverage: Needs debt due within a year; see the debt_due_1y note.
+  SOFTWARE_INTERNET:
+    inventory_days: >-
+      Software, internet and IT-services companies hold little or no inventory and report no
+      cost of goods sold for it.
+  PAYMENTS:
+    inventory_days: Payment networks hold no inventory.
+  MEDIA:
+    inventory_days: No merchandise inventory; content and programming assets are not inventory.
+  REIT:
+    inventory_days: REITs hold no inventory.
+  TRANSPORT:
+    inventory_days: >-
+      Railroads, parcel and freight carriers hold only supplies, with costs reported by type
+      rather than as cost of goods sold.
+  UTILITIES:
+    inventory_days: >-
+      Fuel and materials inventory has no matching cost of goods sold; utilities report costs by
+      type (fuel, purchased power, operations).
+  TELECOM:
+    inventory_days: >-
+      Costs are reported by type (cost of services, cost of equipment), not as one cost of goods
+      sold.
+  PHARMA:
+    operating_income: >-
+      No operating income line on the income statement (income before taxes only); EBIT and
+      EBITDA use pre-tax income + interest expense.
+  ENERGY:
+    operating_income: >-
+      The oil majors present revenues and costs by type and income before taxes, with no
+      operating income line; EBITDA uses pre-tax income + interest expense + D&A.
+
+# Phase 16 companies (gaps checked against their companyfacts on 2026-10-18).
+AAPL:
+  interest_expense: >-
+    Interest expense is no longer tagged after FY2023; Apple reports it within other
+    income/(expense), net.
+  interest_coverage: Needs interest expense; see its note.
+  goodwill_to_equity: No goodwill on the balance sheet.
+ACN:
+  rnd_to_revenue: >-
+    R&D is disclosed annually in the 10-K text only; no income statement line, so quarters have
+    no value.
+ADBE:
+  long_term_debt: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+AMD:
+  ebitda_computed: D&A is tagged only in the annual cash flow statement, so quarters have no value.
+AMZN:
+  rnd_to_revenue: >-
+    Amazon reports technology and infrastructure expense, not research and development.
+ANET:
+  total_debt: No borrowings outstanding in the periods shown (no debt tagged).
+  long_term_debt: No borrowings outstanding in the periods shown (no debt tagged).
+  debt_to_equity: No borrowings outstanding in the periods shown (no debt tagged).
+  interest_expense: No borrowings outstanding in the periods shown (no debt tagged).
+  interest_coverage: No borrowings outstanding in the periods shown (no debt tagged).
+AXP:
+  loan_loss_reserve_ratio: >-
+    Card Member loans are tagged with American Express's own tags; no standard total-loans tag
+    (Phase 16 follow-up: company concept).
+  unrealized_loss_to_equity: >-
+    Gross unrealized losses on securities not tagged with the standard tags since 2019.
+BKNG:
+  receivables_days: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+  gross_margin: No cost of revenue or gross profit line (online travel agency).
+  rnd_to_revenue: >-
+    No research and development line; Booking reports technology costs within operating
+    expenses.
+  deferred_revenue: >-
+    No contract liabilities tagged (travel is mostly paid at the property or recognised at
+    booking).
+  deferred_revenue_growth_yoy: Needs deferred revenue; see its note.
+BNY:
+  loan_loss_reserve_ratio: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  sbc_to_revenue: Share-based compensation tagged in some years only.
+BRK.B:
+  market_cap: >-
+    Several share classes: the cover page and diluted share counts are tagged by class, so
+    market cap (and what depends on it) needs per-class shares (Phase 16 follow-up).
+  diluted_shares_growth_yoy: >-
+    Several share classes: the cover page and diluted share counts are tagged by class, so
+    market cap (and what depends on it) needs per-class shares (Phase 16 follow-up).
+  total_debt: >-
+    Debt is tagged by Berkshire's business groups (insurance and other; railroad, utilities and
+    energy) with its own tags.
+  debt_to_equity: Needs total debt; see its note.
+  sbc_to_revenue: Berkshire does not grant share-based compensation.
+  net_investment_income: >-
+    Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+C:
+  loan_loss_reserve_ratio: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  sbc_to_revenue: Share-based compensation not tagged with the standard tags since 2012.
+CAT:
+  total_debt: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  long_term_debt: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  debt_to_equity: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  interest_expense: >-
+    Interest expense is not tagged with the standard tags; the fallback, cash interest paid, is
+    tagged annually only.
+  interest_coverage: Needs interest expense; see its note.
+COF:
+  unrealized_loss_to_equity: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+COP:
+  capex: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+  free_cash_flow: Needs capital expenditures; see its note.
+  receivables_days: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+  goodwill_to_equity: No goodwill on the balance sheet.
+CSCO:
+  ebitda_computed: D&A is tagged only in the annual cash flow statement, so quarters have no value.
+CVX:
+  long_term_debt: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  sbc_to_revenue: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+DE:
+  operating_income: >-
+    No operating income line on the income statement; EBIT and EBITDA use pre-tax income +
+    interest expense.
+  current_assets: Unclassified balance sheet (equipment operations and financial services combined).
+  current_liabilities: Unclassified balance sheet.
+  current_ratio: Unclassified balance sheet.
+  working_capital: Unclassified balance sheet.
+  total_debt: >-
+    Debt is not tagged as one total with the standard tags (Deere reports equipment operations
+    and financial services separately).
+  long_term_debt: Debt is not tagged as one total with the standard tags.
+  debt_to_equity: Needs total debt; see its note.
+  receivables_days: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+  inventory_days: No cost of goods sold line under the standard tags (costs are reported by type).
+  altman_z: Needs working capital (unclassified balance sheet).
+  pension_liability: Pension liabilities are tagged by plan only, not as one balance sheet total.
+EMR:
+  operating_income: >-
+    No operating income line on the income statement; EBIT and EBITDA use pre-tax income +
+    interest expense.
+  ebitda_computed: Interest expense is not tagged with the standard tags after FY2021.
+  interest_expense: Interest expense is not tagged with the standard tags after FY2021.
+  interest_coverage: Needs interest expense; see its note.
+  altman_z: Needs EBIT, which needs interest expense; see its note.
+GD:
+  interest_expense: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  interest_coverage: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  inventory_days: No cost of goods sold line under the standard tags (costs are reported by type).
+GE:
+  operating_income: >-
+    No operating income line on the income statement; EBIT and EBITDA use pre-tax income +
+    interest expense.
+  ebitda_computed: >-
+    Interest expense (cash interest paid) is tagged annually only, so quarters have no value.
+  interest_expense: >-
+    Interest expense is not tagged with the standard tags; the fallback, cash interest paid, is
+    tagged annually only.
+  interest_coverage: Needs interest expense; see its note.
+  inventory_days: No cost of goods sold line under the standard tags (costs are reported by type).
+  pension_liability: Pension liabilities are tagged by plan only, not as one balance sheet total.
+GEV:
+  "*": >-
+    Spun off from GE on 2024-04-02; its own filings (with carve-out comparatives from 2022) do
+    not yet fill the five-year and eight-quarter windows.
+GM:
+  total_debt: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  debt_to_equity: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  long_term_debt: >-
+    Debt is tagged as one total including GM Financial; no non-current long-term debt tag.
+  interest_expense: >-
+    Interest expense is not tagged with the standard tags; the fallback, cash interest paid, is
+    tagged annually only.
+  interest_coverage: Needs interest expense; see its note.
+  inventory_days: No cost of goods sold line under the standard tags (costs are reported by type).
+  warranty_reserve: Warranty reserve not tagged with the standard tags.
+GOOGL:
+  market_cap: >-
+    Several share classes: the cover page and diluted share counts are tagged by class, so
+    market cap (and what depends on it) needs per-class shares (Phase 16 follow-up).
+  altman_z: >-
+    Several share classes: the cover page and diluted share counts are tagged by class, so
+    market cap (and what depends on it) needs per-class shares (Phase 16 follow-up).
+  diluted_shares_growth_yoy: >-
+    Several share classes: the cover page and diluted share counts are tagged by class, so
+    market cap (and what depends on it) needs per-class shares (Phase 16 follow-up).
+IBM:
+  operating_income: >-
+    No operating income line on the income statement; EBIT and EBITDA use pre-tax income +
+    interest expense.
+INTU:
+  gross_margin: No cost of goods sold line under the standard tags (costs are reported by type).
+ISRG:
+  total_debt: No borrowings outstanding in the periods shown (no debt tagged).
+  long_term_debt: No borrowings outstanding in the periods shown (no debt tagged).
+  debt_to_equity: No borrowings outstanding in the periods shown (no debt tagged).
+  interest_expense: No borrowings outstanding in the periods shown (no debt tagged).
+  interest_coverage: No borrowings outstanding in the periods shown (no debt tagged).
+  ebitda_computed: D&A is tagged only in the annual cash flow statement, so quarters have no value.
+LIN:
+  inventory_days: No cost of goods sold line under the standard tags (costs are reported by type).
+  warranty_reserve: No product warranty reserve (industrial gases).
+LLY:
+  capex: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+  free_cash_flow: Needs capital expenditures; see its note.
+  ebitda_computed: Interest expense is missing in some quarters (see interest_expense).
+  interest_expense: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  interest_coverage: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+LMT:
+  ebitda_computed: D&A is tagged only in some quarters' cash flow statements.
+  warranty_reserve: No product warranty reserve tagged (government contracts).
+LOW:
+  receivables_days: Receivables are not material and tagged in some years only.
+MCD:
+  gross_margin: No cost of goods sold line under the standard tags (costs are reported by type).
+  inventory_days: No cost of goods sold line under the standard tags (costs are reported by type).
+MMM:
+  warranty_reserve: Warranty reserve tagged through FY2024 only.
+MO:
+  interest_expense: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  interest_coverage: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  sbc_to_revenue: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+MU:
+  interest_coverage: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+NEE:
+  capex: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+  free_cash_flow: Needs capital expenditures; see its note.
+NFLX:
+  receivables_days: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+  goodwill_to_equity: No goodwill on the balance sheet.
+NOW:
+  total_debt: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  debt_to_equity: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  long_term_debt: Non-current long-term debt not tagged with the standard tag after 2021.
+  interest_coverage: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+ORCL:
+  gross_margin: No cost of goods sold line under the standard tags (costs are reported by type).
+  long_term_debt: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+  total_debt: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  debt_to_equity: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+PANW:
+  total_debt: No debt tagged after FY2023 (the convertible notes were settled).
+  debt_to_equity: No debt tagged since 2023.
+  long_term_debt: No non-current long-term debt tagged.
+  interest_coverage: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+PLTR:
+  total_debt: No borrowings tagged after 2021.
+  long_term_debt: No borrowings tagged after 2021.
+  debt_to_equity: No borrowings tagged after 2021.
+  interest_expense: No interest expense tagged after 2023.
+  interest_coverage: No interest expense tagged after 2023.
+  goodwill_to_equity: Goodwill not tagged after 2022.
+PM:
+  interest_expense: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  interest_coverage: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  sbc_to_revenue: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+QCOM:
+  long_term_debt: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+RTX:
+  interest_expense: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  interest_coverage: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  inventory_days: No cost of goods sold line under the standard tags (costs are reported by type).
+SBUX:
+  gross_margin: No cost of goods sold line under the standard tags (costs are reported by type).
+  inventory_days: No cost of goods sold line under the standard tags (costs are reported by type).
+SNDK:
+  "*": >-
+    Spun off from Western Digital in February 2025; its own filings (with carve-out
+    comparatives) do not yet fill the five-year and eight-quarter windows.
+SO:
+  receivables_days: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+  sbc_to_revenue: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+  regulatory_assets: >-
+    Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+TMO:
+  gross_margin: No cost of goods sold line under the standard tags (costs are reported by type).
+  inventory_days: No cost of goods sold line under the standard tags (costs are reported by type).
+TMUS:
+  total_debt: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  long_term_debt: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+  debt_to_equity: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+TSLA:
+  long_term_debt: >-
+    No non-current long-term debt tag; Tesla tags total long-term debt including the current
+    portion.
+  pension_liability: Tesla has no defined benefit pension plans.
+UBER:
+  gross_margin: No cost of revenue line under the standard tags (costs are reported by type).
+  deferred_revenue: Contract liabilities not tagged after 2023.
+  deferred_revenue_growth_yoy: Needs deferred revenue; see its note.
+UNP:
+  goodwill_to_equity: No goodwill on the balance sheet.
+  pension_liability: Pension liabilities are tagged by plan only, not as one balance sheet total.
+USB:
+  loan_loss_reserve_ratio: >-
+    Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
+V:
+  market_cap: >-
+    Several share classes: the cover page and diluted share counts are tagged by class, so
+    market cap (and what depends on it) needs per-class shares (Phase 16 follow-up).
+  altman_z: >-
+    Several share classes: the cover page and diluted share counts are tagged by class, so
+    market cap (and what depends on it) needs per-class shares (Phase 16 follow-up).
+  diluted_shares_growth_yoy: >-
+    Several share classes: the cover page and diluted share counts are tagged by class, so
+    market cap (and what depends on it) needs per-class shares (Phase 16 follow-up).
+VZ:
+  capex: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+  free_cash_flow: Needs capital expenditures; see its note.
+  sbc_to_revenue: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+WFC:
+  loan_loss_reserve_ratio: >-
+    Total loans are not tagged with a standard undimensioned tag since 2019 (Phase 16 follow-up:
+    company concept).
+XOM:
+  inventory_days: No cost of goods sold line under the standard tags (costs are reported by type).
+  goodwill_to_equity: No goodwill on the balance sheet.
+  sbc_to_revenue: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
+  diluted_shares_growth_yoy: >-
+    Diluted weighted-average shares are not tagged with the standard tag since 2013.

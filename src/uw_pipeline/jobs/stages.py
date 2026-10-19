@@ -142,8 +142,9 @@ class StageRunner:
                     client = RunwareClient(load_runware_config(s.config_dir), api_key=key)
             elif s.anthropic_api_key is not None:
                 client = ClaudeClient(
-                    s.anthropic_api_key.get_secret_value(), workspace_id=s.anthropic_workspace_id
-                )
+                    s.anthropic_api_key.get_secret_value(), workspace_id=s.anthropic_workspace_id,
+                    timeout=s.anthropic_timeout_sec,
+                )  # fmt: skip
             if client is not None:
                 # Per-model RPM / TPM limits shared by parallel workers (Phase 15i).
                 if cfg.rate_limits:

@@ -58,6 +58,7 @@ from uw_pipeline.enrich.text_metrics import (
     candidates,
     dual_checked,
     loan_key,
+    matches_release,
     select_chunks,
 )
 from uw_pipeline.enrich.untrusted import data_block
@@ -436,10 +437,10 @@ def process_company(
                     {"company_id": company_id, "accession_no": doc.accession_no,
                      "metric_code": code, "period_type": key[0], "fiscal_year": key[1],
                      "fiscal_quarter": key[2], "release_value": c.value,
-                     "xbrl_value": reported, "agrees": agree(reported, c.value),
+                     "xbrl_value": reported, "agrees": matches_release(reported, c),
                      "checked_at": now}
                 )  # fmt: skip
-                if agree(reported, c.value):
+                if matches_release(reported, c):
                     stats.crosscheck_ok += 1
                 else:
                     stats.crosscheck_mismatch += 1
@@ -470,8 +471,8 @@ def process_company(
             kept=stats.identity_checked - stats.identity_dropped, created_at=now))  # fmt: skip
     keys = ["company_id", "metric_code", "period_type", "fiscal_year", "fiscal_quarter"]
     upsert(conn, metric_value, out, key_cols=keys)
-    upsert(conn, release_check, checks,
-           key_cols=["company_id", "accession_no", *keys[1:]])  # fmt: skip
+    check_keys = ["accession_no", *keys[1:]]
+    upsert(conn, release_check, checks, key_cols=["company_id", *check_keys])
     if stats.extracted or stats.rejected:
         conn.execute(
             insert(llm_task_stat).values(
@@ -495,6 +496,16 @@ def process_company(
         delete_keys(conn, metric_value, keys[1:], stale,
                     metric_value.c.company_id == company_id,
                     metric_value.c.derivation.in_(LLM_DERIVATIONS))  # fmt: skip
+    # Checks follow the current reading too (D-052): one this run no longer makes (the value
+    # is read differently, from a later release, or XBRL has the period as N/M) is dropped.
+    made = {tuple(r[k] for k in check_keys) for r in checks}
+    old = [tuple(e) for e in conn.execute(
+        select(*(release_check.c[k] for k in check_keys))
+        .where(release_check.c.company_id == company_id)
+    ).all() if tuple(e) not in made]  # fmt: skip
+    if old and not incomplete:
+        delete_keys(conn, release_check, check_keys, old,
+                    release_check.c.company_id == company_id)  # fmt: skip
 
     if group.code in text_cfg.loan_portfolio.groups:
         resolver = SourceResolver(conn, row, labels) if labels else None

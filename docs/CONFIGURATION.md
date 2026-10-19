@@ -31,6 +31,7 @@ code. Decisions D-016 and D-049 explain the design.
 |---|---|---|
 | Add a company | `companies.yaml` | `ticker`, `cik` (pinned; the ticker is only for display), `display_name`, `news_aliases` |
 | Put a company in an industry, whatever its SIC code | `companies.yaml` | `industry: GROUP` and `industry_reason: "..."` (required) |
+| Keep a company's history across a new parent registrant | `companies.yaml` | `predecessor_ciks: [old CIK]` (D-052) |
 | Create an industry, or map SIC codes to one | `industry_groups.yaml` | a group under `groups` (`label`, `is_financial`, `metric_sets`); codes under `sic` |
 | Choose an industry's metrics | `industry_groups.yaml` | `metric_sets`, `metrics` (add codes), `exclude_metrics` (drop codes), `traits` |
 | Define a new metric | `metrics.yaml` | an entry under `metrics` (2.3), then add it to a set or an industry |
@@ -42,7 +43,7 @@ code. Decisions D-016 and D-049 explain the design.
 | Add a metric threshold signal | `signal_rules.yaml` | an entry under `thresholds` (2.4) |
 | Change an 8-K item's severity or title | `signal_rules.yaml` | `eight_k_items` |
 | Change a market, insider, 13D or litigation signal (threshold, window, severity) | `signal_rules.yaml` | `market`, `insiders`, `ownership_forms`, `legal` (2.4) |
-| Explain a missing metric | `coverage_notes.yaml` | a note per company and metric (or `"*"`) |
+| Explain a missing metric | `coverage_notes.yaml` | a note per company and metric (or `"*"`), or per industry under `groups:` (2.6) |
 
 ### 2.1 A company's industry
 
@@ -90,7 +91,7 @@ groups:
     section: leverage                # financial | liquidity | leverage | cash_flow |
                                      # operational | fi_performance | loan_portfolio
     unit: ratio                      # USD | ratio (1.2 = 1.2x) | fraction (0.05 = 5%) |
-                                     # days | shares | score
+                                     # days | shares | score | count
     formula: total_debt / revenue    # concepts or earlier metric codes; + - * / ( )
     nm_when: revenue <= 0            # optional: shown as N/M when true
 ```
@@ -154,7 +155,31 @@ controls, `10K-AUDIT` auditor's report, `10Q-I-2` MD&A, `10Q-I-4` controls, `10Q
 searched in the section text, case-insensitive; `exclude` is checked against the sentence
 around a match. Test a new pattern on a real filing first.
 
-### 2.5 Other settings
+### 2.5 Company history across registrants
+
+A holding-company reorganization gives a company a new CIK (ExxonMobil 2026, BlackRock 2024):
+the ticker moves to the new registrant, while the history, the latest 10-K and proxy may still
+be the old registrant's. `cik` is the new one; `predecessor_ciks` lists the old ones, and the
+facts, documents and signals stages read their filings too. A company with `history_start`
+(successor-only history after a merger, D-012) reads its own filings only.
+
+### 2.6 Coverage notes
+
+`coverage-report` flags every metric short of 5 fiscal years and 8 quarters without a note.
+
+```yaml
+# coverage_notes.yaml
+groups:
+  "*":                       # every company
+    goodwill_impairment: Tagged only in years with an impairment.
+  SOFTWARE_INTERNET:         # every company of the group
+    inventory_days: Software companies hold little or no inventory.
+MSFT:                        # one company; wins over its group's note
+  "*": Explains every gap of this company.
+  gross_margin: ...
+```
+
+### 2.7 Other settings
 
 | File | Controls |
 |---|---|
@@ -175,7 +200,7 @@ around a match. Test a new pattern on a real filing first.
 | Different insight tasks per industry, or a new kind of insight | Behavioral, strategic & risk, key insights and follow-up questions run for every company; their wording is in versioned prompts. |
 | Changing a prompt | Prompts live in `src/uw_pipeline/enrich/prompts/`; a change needs a new version and a review of the golden outputs. |
 | Functions in formulas (min, max, abs, if) | Formulas support + - * /, unary minus, parentheses; comparisons only in `nm_when`. |
-| Units other than USD, ratio, fraction, days, shares, score; periods other than quarter and fiscal year | Fixed in the metric model and the period logic. |
+| Units other than USD, ratio, fraction, days, shares, score, count; periods other than quarter and fiscal year | Fixed in the metric model and the period logic. |
 | A new market, insider or litigation metric (`kind: external`) | Written by the market or documents stage in code. |
 | A new section code or document type | Section splitting is in code. |
 | New data sources, a new LLM provider | Clients live in `src/uw_pipeline/clients/`. |

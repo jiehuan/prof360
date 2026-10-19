@@ -55,8 +55,12 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
 - All external calls (HTTP, LLM, DB) go through `src/uw_pipeline/clients/` so tests can swap them.
 - Companies are identified by pinned CIK in `config/companies.yaml`; tickers are display-only.
 - Metric lists per industry group are curated in `config/metrics.yaml` (metric_sets) and
-  `config/industry_groups.yaml`; never generate them at run time.
-- Every metric gap shown by `coverage-report` needs a note in `config/coverage_notes.yaml`.
+  `config/industry_groups.yaml`; never generate them at run time. One exception (PLAN 17g): a
+  company outside every industry group gets curated metric sets chosen by the LLM, never new
+  metrics; the choice is validated, stored and reviewable.
+- Every metric gap shown by `coverage-report` needs a note in `config/coverage_notes.yaml` for
+  companies in the development sample (PLAN 17a′); beyond it, gaps are tracked as per-group
+  rates.
 - Golden values come from the filing itself (XBRL instance / document), not from estimates.
 - LLM: prompts in `src/uw_pipeline/enrich/prompts/{task}_v{N}.md`; any change gets a new
   version. Calls go through `enrich/llm.cached_call` (cached by input hash). Outputs are

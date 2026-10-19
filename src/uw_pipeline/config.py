@@ -48,6 +48,14 @@ class CompanyConfig(BaseModel):
             raise ValueError(f"{self.ticker}: `industry` needs an `industry_reason`")
         return self
 
+    def registrant_ciks(self, cik: str) -> list[str]:
+        """The company's CIK (10 digits) and its predecessor registrants' (Phase 16), whose
+        filings hold its earlier history. A successor-only company (`history_start`, D-012)
+        reads its own filings only."""
+        if self.history_start is not None:
+            return [cik]
+        return [cik, *(str(c).zfill(10) for c in self.predecessor_ciks if str(c).zfill(10) != cik)]
+
     def symbols(self) -> list[str]:
         return self.av_symbols or [self.ticker]
 

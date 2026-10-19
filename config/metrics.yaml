@@ -122,13 +122,93 @@ metric_sets:
     - sbc_to_revenue
     - diluted_shares_growth_yoy
 
+  # -- Industry modules (Phase 16, D-052) -------------------------------------------------
+  # Non-bank financials: returns and leverage instead of liquidity / EBITDA.
+  FINANCIAL_CORE:
+    - revenue
+    - revenue_growth_yoy
+    - net_income
+    - equity
+    - total_debt
+    - debt_to_equity
+    - roa
+    - roe
+    - assets_to_equity
+    - buybacks
+    - buyback_intensity
+  PRODUCT_MARGINS:
+    - gross_margin
+    - rnd_to_revenue
+  SOFTWARE_OPERATING:
+    - gross_margin
+    - rnd_to_revenue
+    - deferred_revenue
+    - deferred_revenue_growth_yoy
+  PHARMA_OPERATING:
+    - gross_margin
+    - rnd_to_revenue
+    - top_product_revenue
+    - top_product_share
+  MANAGED_CARE_OPERATING:
+    - medical_cost_ratio
+    - medical_members
+  BANK_DEPOSITS:
+    - deposits
+    - deposit_growth_yoy
+    - uninsured_deposits
+    - uninsured_deposit_share
+    - cre_loans
+    - cre_loan_share
+    - securities_unrealized_loss
+    - unrealized_loss_to_equity
+  ASSET_MANAGEMENT:
+    - aum
+    - net_flows
+  PAYMENTS_OPERATING:
+    - payments_volume
+  INSURANCE_OPERATING:
+    - net_investment_income
+  RETAIL_OPERATING:
+    - gross_margin
+    - comparable_sales_growth
+  STAPLES_OPERATING:
+    - gross_margin
+    - organic_sales_growth
+  ENERGY_OPERATING:
+    - production_boe_per_day
+  UTILITY_OPERATING:
+    - regulatory_assets
+  TELECOM_OPERATING:
+    - postpaid_phone_net_adds
+    - postpaid_phone_churn
+  AUTO_OPERATING:
+    - vehicle_deliveries
+    - warranty_reserve
+    - pension_liability
+  INDUSTRIAL_OPERATING:
+    - warranty_reserve
+    - pension_liability
+  TRANSPORT_OPERATING:
+    - operating_ratio
+    - pension_liability
+
 metrics:
   # -- Financial -------------------------------------------------------------------------
+  # Phase 16: a bank's net revenue where no total is tagged (BNY quarters). Concept names of
+  # its own, so the bank metrics of the same name are not pulled into every company's list.
+  - code: bank_net_revenue
+    display_name: Net Revenue (net interest income + noninterest income)
+    section: financial
+    unit: USD
+    formula: nii_parts + nonii_parts
+    display: false
   - code: revenue
     display_name: Total Revenue
     section: financial
     unit: USD
-    formula: revenue
+    formula:
+      - revenue
+      - bank_net_revenue
   - code: revenue_growth_qoq
     display_name: Revenue Growth (QoQ)
     section: financial
@@ -156,10 +236,17 @@ metrics:
     formula: operating_income
   - code: ebitda_computed
     display_name: EBITDA (computed)
-    description: Operating income + D&A. Not the company's non-GAAP Adjusted EBITDA.
+    description: >-
+      Operating income + D&A; without an operating income line (pharma, oil majors), pre-tax
+      income + interest expense + D&A. Not the company's non-GAAP Adjusted EBITDA.
     section: financial
     unit: USD
-    formula: operating_income + d_and_a
+    formula:
+      - operating_income + d_and_a
+      - operating_income + depreciation + amortization_intangibles
+      - pretax_income + interest_expense + d_and_a
+      - pretax_income + interest_expense + depreciation + amortization_intangibles
+    optional: [amortization_intangibles]
   - code: ebit
     display_name: EBIT
     description: Operating income; falls back to pre-tax income + interest expense.
@@ -210,6 +297,10 @@ metrics:
       - debt_total_reported
       - ltdcl_noncurrent + ltdcl_current + short_term_borrowings
       - ltd_noncurrent + ltd_current + short_term_borrowings + finance_lease_liabilities
+      # Phase 16: all current debt (DebtCurrent) with the non-current long-term debt (PEP), or
+      # long-term debt including current maturities plus short-term borrowings (TSLA).
+      - ltd_noncurrent + debt_current + finance_lease_liabilities
+      - ltd_total + short_term_borrowings + finance_lease_liabilities
       # Non-current only, used when the family has no current sibling. Understates debt;
       # dq_rules.yaml debt_completeness reports it.
       - ltdcl_noncurrent + short_term_borrowings
@@ -765,3 +856,285 @@ metrics:
         1.2 * working_capital / total_assets + 1.4 * retained_earnings / total_assets
         + 3.3 * ebit / total_assets + 0.6 * market_cap / (total_assets - equity)
         + revenue / total_assets
+
+  # -- Industry modules (Phase 16, D-052): XBRL first; text metrics are read from the MD&A and
+  # earnings releases and need two reads to agree (dual_check). ----------------------------
+  - code: gross_margin
+    display_name: Gross Margin
+    section: financial
+    unit: fraction
+    formula:
+      - gross_profit / revenue
+      - (revenue - cost_of_revenue) / revenue
+    nm_when: revenue <= 0
+  - code: rnd_to_revenue
+    display_name: R&D / Revenue
+    section: operational
+    unit: fraction
+    formula: research_development / revenue
+    nm_when: revenue <= 0
+  - code: deferred_revenue
+    display_name: Deferred Revenue (Contract Liabilities)
+    section: financial
+    unit: USD
+    formula: deferred_revenue
+  - code: deferred_revenue_growth_yoy
+    display_name: Deferred Revenue Growth (YoY)
+    section: financial
+    unit: fraction
+    kind: growth
+    base: deferred_revenue
+    compare: prior_year
+  - code: operating_ratio
+    display_name: Operating Ratio
+    description: Operating expenses / revenue (1 - operating margin); lower is better.
+    section: operational
+    unit: fraction
+    formula: (revenue - operating_income) / revenue
+    nm_when: revenue <= 0
+  - code: warranty_reserve
+    display_name: Product Warranty Reserve
+    section: operational
+    unit: USD
+    formula:
+      - warranty_total
+      - warranty_current + warranty_noncurrent
+    optional: [warranty_noncurrent]
+  - code: pension_liability
+    display_name: Pension & Retiree Benefit Liabilities
+    description: Non-current liabilities for pensions and other retiree benefits (underfunding).
+    section: leverage
+    unit: USD
+    period_types: [FY]
+    formula: pension_liability
+  - code: regulatory_assets
+    display_name: Regulatory Assets (non-current)
+    section: financial
+    unit: USD
+    formula: regulatory_assets
+  - code: assets_to_equity
+    display_name: Total Assets / Equity
+    section: leverage
+    unit: ratio
+    formula: total_assets / equity
+    nm_when: equity <= 0
+  - code: net_investment_income
+    display_name: Net Investment Income
+    section: fi_performance
+    unit: USD
+    formula: net_investment_income
+  - code: deposits
+    display_name: Total Deposits
+    section: fi_performance
+    unit: USD
+    formula: deposits
+  - code: deposit_growth_yoy
+    display_name: Deposit Growth (YoY)
+    section: fi_performance
+    unit: fraction
+    kind: growth
+    base: deposits
+    compare: prior_year
+  - code: securities_unrealized_loss
+    display_name: Unrealized Losses on AFS and HTM Securities
+    section: fi_performance
+    unit: USD
+    formula:
+      - afs_unrealized_loss + htm_unrecognized_loss
+      - afs_unrealized_loss
+      - htm_unrecognized_loss
+    display: false
+    insight_input: true
+  - code: unrealized_loss_to_equity
+    display_name: Unrealized Securities Losses / Equity
+    section: fi_performance
+    unit: fraction
+    formula: securities_unrealized_loss / equity
+    nm_when: equity <= 0
+  - code: uninsured_deposits
+    display_name: Estimated Uninsured Deposits
+    section: fi_performance
+    unit: USD
+    kind: text
+    display: false
+    insight_input: true
+    extraction:
+      definition: >-
+        Estimated uninsured deposits of the bank or banks at period end, in US dollars (deposits
+        above the FDIC insurance limit, as the filing estimates them). The firm total, not a
+        share, not deposits of one subsidiary when a total is given, not insured deposits.
+      keywords: [uninsured deposits, estimated uninsured]
+      dual_check: true
+  - code: uninsured_deposit_share
+    display_name: Uninsured Deposits / Total Deposits
+    section: fi_performance
+    unit: fraction
+    formula: uninsured_deposits / deposits
+  - code: cre_loans
+    display_name: Commercial Real Estate Loans
+    section: loan_portfolio
+    unit: USD
+    kind: text
+    display: false
+    insight_input: true
+    extraction:
+      definition: >-
+        Total commercial real estate loans at period end, in US dollars, as the filing totals
+        them (all CRE loan types: office, multifamily, retail, industrial, construction). Not
+        commitments or exposure including unfunded amounts, not one property type, not
+        residential mortgages.
+      keywords: [commercial real estate]
+      dual_check: true
+  - code: cre_loan_share
+    display_name: CRE Loans / Total Loans
+    section: loan_portfolio
+    unit: fraction
+    formula: cre_loans / total_loans
+  - code: net_flows
+    display_name: Net Client Flows
+    description: Long-term net inflows (asset managers) or net new client assets (wealth and brokerage).
+    section: fi_performance
+    unit: USD
+    kind: text
+    extraction:
+      definition: >-
+        Firm-wide net flows for the period, in US dollars: long-term net inflows for an asset
+        manager, or net new assets (net new client assets) for a wealth or brokerage firm.
+        Outflows are negative. Not total net flows including cash or money market when a
+        long-term figure is given, not a single product or region, not market appreciation.
+      keywords: [net inflows, net new assets, net flows, net new client assets]
+      dual_check: true
+  - code: payments_volume
+    display_name: Payments Volume
+    description: Payments volume (Visa) or gross dollar volume (Mastercard) over the network.
+    section: operational
+    unit: USD
+    kind: text
+    extraction:
+      definition: >-
+        Total payments volume processed over the company's network for the period, in US
+        dollars: "payments volume" (Visa) or "gross dollar volume (GDV)" (Mastercard). The
+        worldwide total, not a region, not processed transactions (a count), not growth.
+      keywords: [payments volume, gross dollar volume, GDV]
+      dual_check: true
+  - code: medical_cost_ratio
+    display_name: Medical Cost Ratio
+    description: Medical costs / premiums ("medical care ratio", "medical benefit ratio").
+    section: operational
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        The company-wide medical care ratio / medical benefit ratio / medical loss ratio for
+        the period (medical costs as a percentage of premiums). The consolidated or health
+        benefits segment ratio as reported; not a target, not a change in points.
+      keywords: [medical care ratio, medical benefit ratio, medical cost ratio, medical loss ratio, MBR]
+      dual_check: true
+  - code: medical_members
+    display_name: Medical Members
+    section: operational
+    unit: count
+    kind: text
+    extraction:
+      definition: >-
+        Total medical members (people with medical benefits through the company's health plans)
+        at period end, a count of people. The total across commercial, Medicare and Medicaid,
+        not one line of business, not pharmacy-benefit members, not people served by all
+        businesses.
+      keywords: [medical members, medical membership, people served, members]
+      dual_check: true
+  - code: comparable_sales_growth
+    display_name: Comparable Sales Growth
+    description: Change in sales at stores (and digital channels) open more than a year.
+    section: operational
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Total company comparable sales growth for the period ("comparable sales increased
+        4.2%"), a growth rate: give a decrease as a negative number. The total company or
+        total comparable figure; not a single country, segment or channel when a total is
+        given, not excluding fuel or currency when the reported total is also given.
+      keywords: [comparable sales, comp sales, comparable store sales, same-store sales]
+      dual_check: true
+  - code: organic_sales_growth
+    display_name: Organic Sales Growth
+    description: Revenue growth excluding currency, acquisitions and divestitures.
+    section: operational
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Total company organic revenue (net sales) growth for the period, a growth rate: give a
+        decline as a negative number. The total company figure, not a segment or region, not
+        volume or price alone.
+      keywords: [organic revenue, organic net revenue, organic sales, organic growth]
+      dual_check: true
+  - code: production_boe_per_day
+    display_name: Oil-Equivalent Production (boe per day)
+    section: operational
+    unit: count
+    kind: text
+    extraction:
+      definition: >-
+        Total net oil-equivalent production for the period in barrels of oil equivalent per
+        day (worldwide, all products). Not liquids or gas alone, not one region, not a
+        forecast. "4.6 million oil-equivalent barrels per day" is 4.6 in millions; "1,987
+        MBOED" is 1,987 in thousands.
+      keywords: [oil-equivalent, barrels of oil equivalent per day, boe per day, MBOED, MBoe/d, net production]
+      dual_check: true
+  - code: postpaid_phone_net_adds
+    display_name: Postpaid Phone Net Additions
+    section: operational
+    unit: count
+    kind: text
+    extraction:
+      definition: >-
+        Postpaid phone net additions (net adds) for the period, a count of subscribers;
+        negative for net losses. Total postpaid phone, not postpaid total including other
+        devices, not prepaid, not broadband.
+      keywords: [postpaid phone net additions, postpaid phone net adds, phone net adds]
+      dual_check: true
+  - code: postpaid_phone_churn
+    display_name: Postpaid Phone Churn
+    section: operational
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Postpaid phone churn for the period (monthly average), as a percentage. Postpaid phone
+        only; not total postpaid, not prepaid, not a change.
+      keywords: [postpaid phone churn, phone churn]
+      dual_check: true
+  - code: vehicle_deliveries
+    display_name: Vehicle Deliveries / Wholesales
+    section: operational
+    unit: count
+    kind: text
+    extraction:
+      definition: >-
+        Total vehicles delivered to customers or dealers (deliveries, or wholesale vehicle
+        sales / wholesales) for the period, worldwide, a count of vehicles. Not production,
+        not one region or model when a total is given, not retail registrations.
+      keywords: [deliveries, delivered, wholesale vehicle sales, wholesales, vehicle sales]
+      dual_check: true
+  - code: top_product_revenue
+    display_name: Largest Product Revenue
+    section: operational
+    unit: USD
+    kind: text
+    display: false
+    insight_input: true
+    extraction:
+      definition: >-
+        Revenue of the company's single largest product (by revenue) for the period, in US
+        dollars, as the product revenue table or text gives it (e.g. Keytruda, Humira). One
+        product's worldwide total; not a franchise or therapeutic area, not a region.
+      keywords: [product revenue, worldwide sales, net product sales, revenues by product]
+      dual_check: true
+  - code: top_product_share
+    display_name: Largest Product / Revenue
+    section: operational
+    unit: fraction
+    formula: top_product_revenue / revenue
+    nm_when: revenue <= 0

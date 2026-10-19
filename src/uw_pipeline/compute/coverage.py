@@ -63,13 +63,30 @@ class CompanyCoverage:
         return [(m, c) for m, c in self.metrics if c.status(m) in ("MISSING", "UNEXPLAINED")]
 
 
-def load_notes(config_dir: Path) -> dict[str, dict[str, str]]:
+@dataclass
+class CoverageNotes:
+    """coverage_notes.yaml: notes per company (ticker -> metric -> note, "*" for all its
+    metrics) and, from Phase 16, per industry group (`groups:` group -> metric -> note) for
+    gaps every company of a group shares; group "*" applies to every company. A company note
+    wins over its group's, a group's over "*"."""
+
+    companies: dict[str, dict[str, str]] = field(default_factory=dict)
+    groups: dict[str, dict[str, str]] = field(default_factory=dict)
+
+    def for_company(self, ticker: str, group: str | None) -> dict[str, str]:
+        return (self.groups.get("*", {}) | self.groups.get(group or "", {})
+                | self.companies.get(ticker.upper(), {}))  # fmt: skip
+
+
+def load_notes(config_dir: Path) -> CoverageNotes:
     path = config_dir / "coverage_notes.yaml"
     if not path.exists():
-        return {}
+        return CoverageNotes()
     with path.open(encoding="utf-8") as f:
         raw = yaml.safe_load(f) or {}
-    return {t.upper(): notes for t, notes in raw.items()}
+    groups = raw.pop("groups", None) or {}
+    return CoverageNotes({t.upper(): notes for t, notes in raw.items()},
+                         {g.upper(): notes for g, notes in groups.items()})  # fmt: skip
 
 
 def _quarter_window(latest: tuple[int, int], n: int) -> set[tuple[int, int]]:

@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     anthropic_api_key: SecretStr | None = None
     # Needed for user-level API keys that aren't scoped to a workspace.
     anthropic_workspace_id: str | None = None
+    # The longest one Claude call may take, retries included; past it the call fails and the
+    # run goes on (Phase 16).
+    anthropic_timeout_sec: float = Field(default=600.0, gt=0)
     # LLM provider profile in config/llm.yaml: securegpt | anthropic | runware
     # (default: default_provider).
     llm_provider: str | None = None

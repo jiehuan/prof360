@@ -9,11 +9,21 @@ from the environment. Tables are defined without a schema; an engine maps them t
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import yaml
 from pydantic import BaseModel
-from sqlalchemy import URL, Connection, Engine, MetaData, create_engine, inspect, make_url, text
+from sqlalchemy import (
+    URL,
+    Connection,
+    Engine,
+    MetaData,
+    create_engine,
+    event,
+    inspect,
+    make_url,
+    text,
+)
 from sqlalchemy.schema import CreateColumn, CreateSchema
 
 from uw_pipeline.schema import metadata
@@ -58,13 +68,24 @@ def load_azure_config(config_dir: Path) -> AzureConfig:
         return AzureConfig.model_validate(yaml.safe_load(f))
 
 
+def _sqlite_wal(dbapi_conn: Any, _record: Any) -> None:
+    """WAL journal mode (kept in the file once set)."""
+    dbapi_conn.execute("PRAGMA journal_mode=WAL")
+
+
 def make_engine(url: str | URL, schema: str | None = None) -> Engine:
     """Engine for `url`; with `schema`, unqualified tables live in that schema."""
     parsed = make_url(url)
     if parsed.get_backend_name() == "sqlite":
         if parsed.database and parsed.database != ":memory:":
             Path(parsed.database).parent.mkdir(parents=True, exist_ok=True)
-        engine = create_engine(parsed)
+            # Parallel workers write in short transactions (D-052): a writer waits up to 60 s
+            # for the lock instead of failing, and WAL lets readers and the writer proceed
+            # together.
+            engine = create_engine(parsed, connect_args={"timeout": 60})
+            event.listen(engine, "connect", _sqlite_wal)
+        else:
+            engine = create_engine(parsed)
     elif parsed.get_backend_name() == "mssql":
         engine = create_engine(parsed, fast_executemany=True, pool_pre_ping=True)
     else:

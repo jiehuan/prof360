@@ -1,0 +1,279 @@
+{
+ "cik": "0000895421",
+ "entityType": "operating",
+ "sic": "6211",
+ "sicDescription": "Security Brokers, Dealers & Flotation Companies",
+ "ownerOrg": "02 Finance",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "MORGAN STANLEY",
+ "tickers": [
+  "MS",
+  "MS-PK",
+  "MS-PE",
+  "MS-PA",
+  "MS-PF",
+  "MS-PI",
+  "MS-PL",
+  "MS-PO",
+  "MS-PP",
+  "MS-PQ"
+ ],
+ "exchanges": [
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE"
+ ],
+ "ein": "363145972",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "1585 BROADWAY",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10036",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "1585 BROADWAY",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10036",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "212-761-4000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "MORGAN STANLEY",
+   "from": "1999-11-23T05:00:00.000Z",
+   "to": "2026-10-16T04:00:00.000Z"
+  },
+  {
+   "name": "MORGAN STANLEY",
+   "from": "1999-11-23T05:00:00.000Z",
+   "to": "2026-10-16T04:00:00.000Z"
+  },
+  {
+   "name": "MORGAN STANLEY DEAN WITTER & CO",
+   "from": "1993-11-08T05:00:00.000Z",
+   "to": "2002-07-12T04:00:00.000Z"
+  },
+  {
+   "name": "MORGAN STANLEY DEAN WITTER DISCOVER & CO",
+   "from": "1997-06-19T04:00:00.000Z",
+   "to": "1998-03-18T05:00:00.000Z"
+  },
+  {
+   "name": "DEAN WITTER DISCOVER & CO",
+   "from": "1996-08-14T04:00:00.000Z",
+   "to": "1997-05-08T04:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001839882-26-051182",
+    "0001839882-26-051181",
+    "0001950047-26-010284",
+    "0001839882-26-051142",
+    "0001839882-26-051141",
+    "0000895421-26-000212",
+    "0000895421-26-000121",
+    "0000895421-26-000086",
+    "0000895421-25-000539"
+   ],
+   "filingDate": [
+    "2026-10-16",
+    "2026-10-16",
+    "2026-10-16",
+    "2026-10-16",
+    "2026-10-16",
+    "2026-08-04",
+    "2026-05-05",
+    "2026-02-19",
+    "2025-11-03"
+   ],
+   "reportDate": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-17T01:14:16.000Z",
+    "2026-10-17T01:12:51.000Z",
+    "2026-10-17T00:15:58.000Z",
+    "2026-10-16T22:04:36.000Z",
+    "2026-10-16T22:02:31.000Z",
+    "2026-08-05T00:04:32.000Z",
+    "2026-05-06T00:15:42.000Z",
+    "2026-02-20T02:42:18.000Z",
+    "2025-11-04T02:09:09.000Z"
+   ],
+   "act": [
+    "33",
+    "33",
+    "33",
+    "33",
+    "33",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "424B2",
+    "424B2",
+    "144",
+    "424B2",
+    "424B2",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "333-293641",
+    "333-293641",
+    "001-11758",
+    "333-293641",
+    "333-293641",
+    "001-11758",
+    "001-11758",
+    "001-11758",
+    "001-11758"
+   ],
+   "filmNumber": [
+    "261466951",
+    "261466942",
+    "261466260",
+    "261465463",
+    "261465441",
+    "261238462",
+    "26943398",
+    "26655181",
+    "251444156"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "424B2",
+    "424B2",
+    "144",
+    "424B2",
+    "424B2",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    1207871,
+    918537,
+    6056,
+    404867,
+    569613,
+    37395529,
+    32694594,
+    47397260,
+    37098650
+   ],
+   "isXBRL": [
+    1,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    1,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "ms19322_424b2-34696.htm",
+    "ms19507_424b2-34756.htm",
+    "xsl144X01/primary_doc.xml",
+    "ms19477_424b2-34493.htm",
+    "ms19526_424b2-34740.htm",
+    "ms-20260630.htm",
+    "ms-20260331.htm",
+    "ms-20251231.htm",
+    "ms-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "PRICING SUPPLEMENT NO. 19,322",
+    "PRICING SUPPLEMENT NO. 19,507",
+    "",
+    "PRELIMINARY PRICING SUPPLEMENT NO. 19,477",
+    "PRELIMINARY PRICING SUPPLEMENT NO. 19,526",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

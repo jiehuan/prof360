@@ -1,0 +1,241 @@
+{
+ "cik": "0001053507",
+ "entityType": "operating",
+ "sic": "6798",
+ "sicDescription": "Real Estate Investment Trusts",
+ "ownerOrg": "05 Real Estate & Construction",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "AMERICAN TOWER CORP /MA/",
+ "tickers": [
+  "AMT"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "650723837",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "222 BERKELEY STREET",
+   "street2": null,
+   "city": "BOSTON",
+   "stateOrCountry": "MA",
+   "zipCode": "02116",
+   "stateOrCountryDescription": "MA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "222 BERKELEY STREET",
+   "street2": null,
+   "city": "BOSTON",
+   "stateOrCountry": "MA",
+   "zipCode": "02116",
+   "stateOrCountryDescription": "MA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "6173757500",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "AMERICAN TOWER SYSTEMS CORP",
+   "from": "1998-02-13T05:00:00.000Z",
+   "to": "1998-05-08T04:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001053507-26-000149",
+    "0001053507-26-000147",
+    "0001053507-26-000145",
+    "0001193125-26-390605",
+    "0001193125-26-387901",
+    "0001053507-26-000133",
+    "0001053507-26-000099",
+    "0001053507-26-000035",
+    "0001053507-25-000149"
+   ],
+   "filingDate": [
+    "2026-10-05",
+    "2026-09-23",
+    "2026-09-18",
+    "2026-09-14",
+    "2026-09-10",
+    "2026-07-28",
+    "2026-04-28",
+    "2026-02-24",
+    "2025-10-28"
+   ],
+   "reportDate": [
+    "2026-10-01",
+    "2026-09-17",
+    "2026-09-17",
+    "2026-09-14",
+    "",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-06T00:07:09.000Z",
+    "2026-09-24T00:12:58.000Z",
+    "2026-09-18T16:50:18.000Z",
+    "2026-09-15T00:16:17.000Z",
+    "2026-09-11T00:15:51.000Z",
+    "2026-07-29T00:07:11.000Z",
+    "2026-04-29T00:11:25.000Z",
+    "2026-02-25T02:08:23.000Z",
+    "2025-10-29T00:10:32.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "34",
+    "34",
+    "33",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "3",
+    "8-K",
+    "8-K",
+    "424B2",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "001-14195",
+    "001-14195",
+    "333-287714",
+    "001-14195",
+    "001-14195",
+    "001-14195",
+    "001-14195"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "261388841",
+    "261377547",
+    "261371282",
+    "261211882",
+    "26907866",
+    "26671596",
+    "251424900"
+   ],
+   "items": [
+    "",
+    "",
+    "5.02,8.01,9.01",
+    "1.01,2.03,9.01",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "3",
+    "XBRL",
+    "XBRL",
+    "424B2",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    5074,
+    552199,
+    328614,
+    640977,
+    994281,
+    15246816,
+    9993497,
+    24447788,
+    14309000
+   ],
+   "isXBRL": [
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/wk-form4_1791230827.xml",
+    "xslF345X06/wk-form3_1790194375.xml",
+    "amt-20260917.htm",
+    "d156192d8k.htm",
+    "d116122d424b2.htm",
+    "amt-20260630.htm",
+    "amt-20260331.htm",
+    "amt-20251231.htm",
+    "amt-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "FORM 4",
+    "FORM 3",
+    "8-K",
+    "8-K",
+    "424B2",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

@@ -6,8 +6,11 @@ adding another implementation here.
 
 from __future__ import annotations
 
+import contextvars
 import json
 import logging
+import threading
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Protocol
 
@@ -53,9 +56,42 @@ class LLMClient(Protocol):
 
 
 class ClaudeClient:
-    def __init__(self, api_key: str, *, workspace_id: str | None = None) -> None:
+    def __init__(
+        self, api_key: str, *, workspace_id: str | None = None, timeout: float = 600.0
+    ) -> None:
         headers = {"anthropic-workspace-id": workspace_id} if workspace_id else None
-        self._client = anthropic.Anthropic(api_key=api_key, default_headers=headers)
+        self._make: Callable[[], Any] = lambda: anthropic.Anthropic(
+            api_key=api_key, default_headers=headers, timeout=timeout
+        )
+        self._client = self._make()
+        self._deadline = timeout
+
+    def _within_deadline(self, call: Callable[[Any], Any]) -> Any:
+        """Run one API call, giving up after `timeout` seconds in all, retries included (the
+        SDK's timeout bounds each socket read, not the call). A call past the deadline is left
+        on its own thread and later calls get a fresh client. Timers count only while the
+        machine is awake: in Phase 16 a laptop's idle sleep froze calls mid-flight (run
+        locally with `caffeinate -i`)."""
+        client = self._client
+        box: dict[str, Any] = {}
+
+        def run() -> None:
+            try:
+                box["value"] = call(client)
+            except BaseException as exc:  # handed to the caller below
+                box["error"] = exc
+
+        # Copy the context so log lines keep the run / ticker / stage fields.
+        worker = threading.Thread(target=contextvars.copy_context().run, args=(run,),
+                                  name="claude-call", daemon=True)  # fmt: skip
+        worker.start()
+        worker.join(self._deadline)
+        if worker.is_alive():
+            self._client = self._make()
+            raise LLMError(f"no answer within {self._deadline:.0f} s")
+        if "error" in box:
+            raise box["error"]
+        return box["value"]
 
     def complete_json(
         self,
@@ -68,19 +104,21 @@ class ClaudeClient:
         schema: dict[str, Any],
     ) -> LLMResult:
         # Plain dicts below; the SDK's TypedDict overloads are too narrow for mypy here.
-        create: Any = self._client.beta.messages.create
         fallback: dict[str, Any] = (
             {} if model.startswith(NO_FALLBACK_PREFIXES)
             else {"betas": [FALLBACK_BETA], "fallbacks": "default"}
         )  # fmt: skip
-        response = create(
-            model=model,
-            max_tokens=max_tokens,
-            output_config={"effort": effort, "format": {"type": "json_schema", "schema": schema}},
-            system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
-            messages=[{"role": "user", "content": user}],
-            **fallback,
-        )
+        response = self._within_deadline(
+            lambda client: client.beta.messages.create(
+                model=model,
+                max_tokens=max_tokens,
+                output_config={"effort": effort,
+                               "format": {"type": "json_schema", "schema": schema}},
+                system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+                messages=[{"role": "user", "content": user}],
+                **fallback,
+            )
+        )  # fmt: skip
         if response.stop_reason == "refusal":
             details = getattr(response, "stop_details", None)
             raise LLMError(f"{model} declined: {getattr(details, 'category', None)}")

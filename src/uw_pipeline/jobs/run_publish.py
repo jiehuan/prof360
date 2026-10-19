@@ -205,7 +205,8 @@ class Publisher:
                 formula: str | None) -> int:  # fmt: skip
         cat = self.cfg.metric_categories.get(section, section)
         cat_id = self._lookup(metric_category, section, {"categoryName": cat})
-        unit = {"USD": "USD", "fraction": "%", "ratio": "x", "days": "days", "shares": "shares"}
+        unit = {"USD": "USD", "fraction": "%", "ratio": "x", "days": "days", "shares": "shares",
+                "count": "count"}  # fmt: skip
         m = self.defs.get(code)
         return self.w.put(metrics, code, {
             "metric_name": name, "metric_category_Id": cat_id,

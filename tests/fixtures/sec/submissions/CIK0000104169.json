@@ -1,0 +1,246 @@
+{
+ "cik": "0000104169",
+ "entityType": "operating",
+ "sic": "5331",
+ "sicDescription": "Retail-Variety Stores",
+ "ownerOrg": "07 Trade & Services",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Walmart Inc.",
+ "tickers": [
+  "WMT"
+ ],
+ "exchanges": [
+  "Nasdaq"
+ ],
+ "ein": "710415188",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "0131",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "1 CUSTOMER DRIVE",
+   "street2": null,
+   "city": "BENTONVILLE",
+   "stateOrCountry": "AR",
+   "zipCode": "72716",
+   "stateOrCountryDescription": "AR",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "1 CUSTOMER DRIVE",
+   "street2": null,
+   "city": "BENTONVILLE",
+   "stateOrCountry": "AR",
+   "zipCode": "72716",
+   "stateOrCountryDescription": "AR",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "5012734000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "Walmart Inc.",
+   "from": "2018-01-31T05:00:00.000Z",
+   "to": "2026-10-16T04:00:00.000Z"
+  },
+  {
+   "name": "WAL MART STORES INC",
+   "from": "1994-02-14T05:00:00.000Z",
+   "to": "2018-01-30T05:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001696737-26-000021",
+    "0001886367-26-000029",
+    "0001992808-26-000029",
+    "0001959173-26-007368",
+    "0002058309-26-000019",
+    "0000104169-26-000154",
+    "0000104169-26-000102",
+    "0000104169-26-000055",
+    "0000104169-25-000191"
+   ],
+   "filingDate": [
+    "2026-10-16",
+    "2026-10-16",
+    "2026-10-16",
+    "2026-10-14",
+    "2026-10-08",
+    "2026-08-28",
+    "2026-05-29",
+    "2026-03-13",
+    "2025-12-03"
+   ],
+   "reportDate": [
+    "2026-10-15",
+    "2026-10-14",
+    "2026-10-15",
+    "",
+    "2026-10-06",
+    "2026-07-31",
+    "2026-04-30",
+    "2026-01-31",
+    "2025-10-31"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-17T00:42:51.000Z",
+    "2026-10-17T00:42:45.000Z",
+    "2026-10-17T00:42:40.000Z",
+    "2026-10-14T21:59:59.000Z",
+    "2026-10-09T00:56:37.000Z",
+    "2026-08-29T00:11:28.000Z",
+    "2026-05-30T00:17:26.000Z",
+    "2026-03-14T00:06:24.000Z",
+    "2025-12-04T02:45:34.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "33",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "4",
+    "4",
+    "144",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "001-06991",
+    "",
+    "001-06991",
+    "001-06991",
+    "001-06991",
+    "001-06991"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "261459395",
+    "",
+    "261340128",
+    "261044728",
+    "26752440",
+    "251547057"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "4",
+    "144",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    9034,
+    6008,
+    7330,
+    4982,
+    5554,
+    6311331,
+    5667908,
+    13080322,
+    7143599
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/wk-form4_1792183368.xml",
+    "xslF345X06/wk-form4_1792183363.xml",
+    "xslF345X06/wk-form4_1792183357.xml",
+    "xsl144X01/primary_doc.xml",
+    "xslF345X06/wk-form4_1791492995.xml",
+    "wmt-20260731.htm",
+    "wmt-20260430.htm",
+    "wmt-20260131.htm",
+    "wmt-20251031.htm"
+   ],
+   "primaryDocDescription": [
+    "FORM 4",
+    "FORM 4",
+    "FORM 4",
+    "",
+    "FORM 4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

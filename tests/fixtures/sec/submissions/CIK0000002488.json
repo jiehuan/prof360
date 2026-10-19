@@ -1,0 +1,251 @@
+{
+ "cik": "0000002488",
+ "entityType": "operating",
+ "sic": "3674",
+ "sicDescription": "Semiconductors & Related Devices",
+ "ownerOrg": "04 Manufacturing",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "ADVANCED MICRO DEVICES INC",
+ "tickers": [
+  "AMD"
+ ],
+ "exchanges": [
+  "Nasdaq"
+ ],
+ "ein": "941692300",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1226",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "2485 AUGUSTINE DRIVE",
+   "street2": null,
+   "city": "SANTA CLARA",
+   "stateOrCountry": "CA",
+   "zipCode": "95054",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "2485 AUGUSTINE DRIVE",
+   "street2": null,
+   "city": "SANTA CLARA",
+   "stateOrCountry": "CA",
+   "zipCode": "95054",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "(408) 749-4000",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001950047-26-010251",
+    "0000002488-26-000182",
+    "0000002488-26-000180",
+    "0001950047-26-009483",
+    "0000002488-26-000178",
+    "0000002488-26-000123",
+    "0000002488-26-000076",
+    "0000002488-26-000021",
+    "0000002488-26-000018",
+    "0000002488-25-000166"
+   ],
+   "filingDate": [
+    "2026-10-15",
+    "2026-09-28",
+    "2026-09-17",
+    "2026-09-15",
+    "2026-09-14",
+    "2026-08-05",
+    "2026-05-06",
+    "2026-02-04",
+    "2026-02-04",
+    "2025-11-05"
+   ],
+   "reportDate": [
+    "",
+    "2026-09-26",
+    "2026-09-15",
+    "",
+    "2026-09-10",
+    "2026-06-27",
+    "2026-03-28",
+    "2025-12-27",
+    "2025-12-27",
+    "2025-09-27"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-16T00:22:38.000Z",
+    "2026-09-29T00:16:47.000Z",
+    "2026-09-18T00:21:30.000Z",
+    "2026-09-16T00:21:07.000Z",
+    "2026-09-15T00:19:52.000Z",
+    "2026-08-05T01:40:01.000Z",
+    "2026-05-06T02:06:27.000Z",
+    "2026-02-05T01:06:57.000Z",
+    "2026-02-04T04:14:52.000Z",
+    "2025-11-05T04:07:50.000Z"
+   ],
+   "act": [
+    "33",
+    "34",
+    "",
+    "33",
+    "",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "144",
+    "8-K",
+    "4",
+    "144",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K/A",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "001-07882",
+    "001-07882",
+    "",
+    "001-07882",
+    "",
+    "001-07882",
+    "001-07882",
+    "001-07882",
+    "001-07882",
+    "001-07882"
+   ],
+   "filmNumber": [
+    "261463322",
+    "261417444",
+    "",
+    "261381053",
+    "",
+    "261240453",
+    "26945037",
+    "26597734",
+    "26595016",
+    "251451026"
+   ],
+   "items": [
+    "",
+    "3.02",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "144",
+    "XBRL",
+    "4",
+    "144",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    6758,
+    149652,
+    23967,
+    6249,
+    52877,
+    8588595,
+    7746282,
+    545192,
+    14078338,
+    8449469
+   ],
+   "isXBRL": [
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xsl144X01/primary_doc.xml",
+    "amd-20260926.htm",
+    "xslF345X06/wk-form4_1789676486.xml",
+    "xsl144X01/primary_doc.xml",
+    "xslF345X06/wk-form4_1789417189.xml",
+    "amd-20260627.htm",
+    "amd-20260328.htm",
+    "amd-20251227.htm",
+    "amd-20251227.htm",
+    "amd-20250927.htm"
+   ],
+   "primaryDocDescription": [
+    "",
+    "8-K",
+    "FORM 4",
+    "",
+    "FORM 4",
+    "10-Q",
+    "10-Q",
+    "10-K/A",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

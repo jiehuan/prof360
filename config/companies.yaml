@@ -1,8 +1,11 @@
-# MVP company list: one company per SIC code (see docs/decisions.md D-007).
+# Companies the pipeline covers: the 9 MVP companies, one per SIC code (D-007), then the
+# S&P 100 (Phase 16, D-052). The S&P 100 list is checked against the index each quarter.
 # `cik` is pinned and authoritative. Tickers get reassigned, so they are only checked against
 # SEC's ticker list and a mismatch is logged, never followed.
 # `industry: GROUP` with `industry_reason: "..."` puts a company in an industry group of
 # industry_groups.yaml regardless of its SIC code (D-049; guide: docs/CONFIGURATION.md).
+# `predecessor_ciks` lists the earlier registrant(s) after a holding-company reorganization;
+# their filings are read too (D-052).
 companies:
   - ticker: MAR
     cik: 1048286
@@ -52,3 +55,449 @@ companies:
     cik: 1463101
     display_name: Enphase Energy
     news_aliases: ["Enphase"]
+
+  # S&P 100 constituents as of 2026-09-21 (Phase 16, D-052). PFE and JPM are listed above.
+  # CIK pinned from SEC's ticker list on 2026-10-18; industry only where SIC is too coarse.
+  - ticker: AAPL
+    cik: 320193
+    display_name: "Apple"
+    news_aliases: ["Apple"]
+  - ticker: ABBV
+    cik: 1551152
+    display_name: "AbbVie"
+    news_aliases: ["AbbVie"]
+  - ticker: ABT
+    cik: 1800
+    display_name: "Abbott Laboratories"
+    news_aliases: ["Abbott"]
+    industry: MEDTECH
+    industry_reason: "Medical devices and diagnostics are most of sales (nutrition and branded generics the rest); SIC 2834 is pharmaceuticals"
+  - ticker: ACN
+    cik: 1467373
+    display_name: "Accenture"
+    news_aliases: ["Accenture"]
+    industry: SOFTWARE_INTERNET
+    industry_reason: "IT services and consulting; SIC 7389 is generic business services"
+  - ticker: ADBE
+    cik: 796343
+    display_name: "Adobe"
+    news_aliases: ["Adobe"]
+  - ticker: AMAT
+    cik: 6951
+    display_name: "Applied Materials"
+    news_aliases: ["Applied Materials"]
+  - ticker: AMD
+    cik: 2488
+    display_name: "Advanced Micro Devices"
+    news_aliases: ["AMD", "Advanced Micro Devices"]
+  - ticker: AMGN
+    cik: 318154
+    display_name: "Amgen"
+    news_aliases: ["Amgen"]
+  - ticker: AMT
+    cik: 1053507
+    display_name: "American Tower"
+    news_aliases: ["American Tower"]
+  - ticker: AMZN
+    cik: 1018724
+    display_name: "Amazon"
+    news_aliases: ["Amazon"]
+    industry: SOFTWARE_INTERNET
+    industry_reason: "Online marketplace and AWS cloud; SIC 5961 is catalog and mail-order retail"
+  - ticker: ANET
+    cik: 1596532
+    display_name: "Arista Networks"
+    news_aliases: ["Arista"]
+  - ticker: AVGO
+    cik: 1730168
+    display_name: "Broadcom"
+    news_aliases: ["Broadcom"]
+  - ticker: AXP
+    cik: 4962
+    display_name: "American Express"
+    news_aliases: ["American Express", "Amex"]
+    industry: BANKS
+    industry_reason: "Bank holding company (American Express National Bank) with card loans, deposits and CET1; SIC 6199 is finance services"
+  - ticker: BA
+    cik: 12927
+    display_name: "Boeing"
+    news_aliases: ["Boeing"]
+  - ticker: BAC
+    cik: 70858
+    display_name: "Bank of America"
+    news_aliases: ["Bank of America", "BofA"]
+  - ticker: BKNG
+    cik: 1075531
+    display_name: "Booking Holdings"
+    news_aliases: ["Booking Holdings", "Booking.com"]
+    industry: SOFTWARE_INTERNET
+    industry_reason: "Online travel platform (Booking.com, Priceline); SIC 4700 is transportation services"
+  - ticker: BLK
+    cik: 2012383
+    display_name: "BlackRock"
+    news_aliases: ["BlackRock"]
+    # BlackRock, Inc. (new parent, 2024 reorganization); earlier filings under the old CIK.
+    predecessor_ciks: [1364742]
+  - ticker: BMY
+    cik: 14272
+    display_name: "Bristol Myers Squibb"
+    news_aliases: ["Bristol Myers", "Bristol-Myers"]
+  - ticker: BNY
+    cik: 1390777
+    display_name: "BNY"
+    news_aliases: ["BNY", "Bank of New York"]
+  - ticker: BRK.B
+    cik: 1067983
+    display_name: "Berkshire Hathaway"
+    news_aliases: ["Berkshire"]
+    av_symbols: [BRK-B]   # SEC and Alpha Vantage write the class with a hyphen
+  - ticker: C
+    cik: 831001
+    display_name: "Citigroup"
+    news_aliases: ["Citigroup", "Citi"]
+  - ticker: CAT
+    cik: 18230
+    display_name: "Caterpillar"
+    news_aliases: ["Caterpillar"]
+  - ticker: CMCSA
+    cik: 1166691
+    display_name: "Comcast"
+    news_aliases: ["Comcast"]
+  - ticker: COF
+    cik: 927628
+    display_name: "Capital One"
+    news_aliases: ["Capital One"]
+  - ticker: COP
+    cik: 1163165
+    display_name: "ConocoPhillips"
+    news_aliases: ["ConocoPhillips"]
+  - ticker: COST
+    cik: 909832
+    display_name: "Costco"
+    news_aliases: ["Costco"]
+  - ticker: CRM
+    cik: 1108524
+    display_name: "Salesforce"
+    news_aliases: ["Salesforce"]
+  - ticker: CSCO
+    cik: 858877
+    display_name: "Cisco"
+    news_aliases: ["Cisco"]
+  - ticker: CVS
+    cik: 64803
+    display_name: "CVS Health"
+    news_aliases: ["CVS", "Aetna"]
+    industry: MANAGED_CARE
+    industry_reason: "Aetna health benefits and Caremark pharmacy benefits are most of revenue; SIC 5912 is drug stores"
+  - ticker: CVX
+    cik: 93410
+    display_name: "Chevron"
+    news_aliases: ["Chevron"]
+  - ticker: DE
+    cik: 315189
+    display_name: "Deere & Company"
+    news_aliases: ["Deere"]
+  - ticker: DELL
+    cik: 1571996
+    display_name: "Dell Technologies"
+    news_aliases: ["Dell"]
+  - ticker: DHR
+    cik: 313616
+    display_name: "Danaher"
+    news_aliases: ["Danaher"]
+    industry: MEDTECH
+    industry_reason: "Life-science tools and diagnostics sold to pharma, labs and hospitals; SIC 3823 is industrial instruments"
+  - ticker: DIS
+    cik: 1744489
+    display_name: "Walt Disney"
+    news_aliases: ["Disney"]
+    industry: MEDIA
+    industry_reason: "Media and entertainment (studios, streaming, networks) with parks; SIC 7990 is amusement and recreation"
+  - ticker: DUK
+    cik: 1326160
+    display_name: "Duke Energy"
+    news_aliases: ["Duke Energy"]
+  - ticker: EMR
+    cik: 32604
+    display_name: "Emerson Electric"
+    news_aliases: ["Emerson"]
+  - ticker: FDX
+    cik: 1048911
+    display_name: "FedEx"
+    news_aliases: ["FedEx"]
+  - ticker: GD
+    cik: 40533
+    display_name: "General Dynamics"
+    news_aliases: ["General Dynamics"]
+    industry: AEROSPACE_DEFENSE
+    industry_reason: "Defense contractor (submarines, combat systems, IT) and Gulfstream jets; SIC 3730 covers shipbuilding only"
+  - ticker: GE
+    cik: 40545
+    display_name: "GE Aerospace"
+    news_aliases: ["GE Aerospace"]
+    industry: AEROSPACE_DEFENSE
+    industry_reason: "GE Aerospace: jet engines and services since the 2024 separation; SIC 3600 is the former conglomerate's"
+  - ticker: GEV
+    cik: 1996810
+    display_name: "GE Vernova"
+    news_aliases: ["GE Vernova"]
+  - ticker: GILD
+    cik: 882095
+    display_name: "Gilead Sciences"
+    news_aliases: ["Gilead"]
+  - ticker: GM
+    cik: 1467858
+    display_name: "General Motors"
+    news_aliases: ["General Motors", "GM"]
+  - ticker: GOOGL
+    cik: 1652044
+    display_name: "Alphabet"
+    news_aliases: ["Alphabet", "Google"]
+    notes: One company with two share classes (GOOGL, GOOG); one CIK.
+  - ticker: GS
+    cik: 886982
+    display_name: "Goldman Sachs"
+    news_aliases: ["Goldman Sachs", "Goldman"]
+  - ticker: HD
+    cik: 354950
+    display_name: "Home Depot"
+    news_aliases: ["Home Depot"]
+  - ticker: IBM
+    cik: 51143
+    display_name: "IBM"
+    news_aliases: ["IBM"]
+    industry: SOFTWARE_INTERNET
+    industry_reason: "Software and consulting are most of revenue; SIC 3570 covers the smaller infrastructure business"
+  - ticker: INTC
+    cik: 50863
+    display_name: "Intel"
+    news_aliases: ["Intel"]
+  - ticker: INTU
+    cik: 896878
+    display_name: "Intuit"
+    news_aliases: ["Intuit"]
+  - ticker: ISRG
+    cik: 1035267
+    display_name: "Intuitive Surgical"
+    news_aliases: ["Intuitive Surgical"]
+  - ticker: JNJ
+    cik: 200406
+    display_name: "Johnson & Johnson"
+    news_aliases: ["Johnson & Johnson", "J&J"]
+  - ticker: KO
+    cik: 21344
+    display_name: "Coca-Cola"
+    news_aliases: ["Coca-Cola", "Coke"]
+  - ticker: LIN
+    cik: 1707925
+    display_name: "Linde"
+    news_aliases: ["Linde"]
+    industry: INDUSTRIALS
+    industry_reason: "Industrial gases and engineering; no materials group yet (Phase 17 plans CHEMICALS_MATERIALS)"
+  - ticker: LLY
+    cik: 59478
+    display_name: "Eli Lilly"
+    news_aliases: ["Eli Lilly", "Lilly"]
+  - ticker: LMT
+    cik: 936468
+    display_name: "Lockheed Martin"
+    news_aliases: ["Lockheed"]
+  - ticker: LOW
+    cik: 60667
+    display_name: "Lowe's"
+    news_aliases: ["Lowe's", "Lowe’s"]
+  - ticker: LRCX
+    cik: 707549
+    display_name: "Lam Research"
+    news_aliases: ["Lam Research"]
+    industry: SEMICONDUCTORS
+    industry_reason: "Wafer fabrication equipment, underwritten with the semiconductor industry like Applied Materials (SIC 3674)"
+  - ticker: MA
+    cik: 1141391
+    display_name: "Mastercard"
+    news_aliases: ["Mastercard"]
+    industry: PAYMENTS
+    industry_reason: "Card payment network; SIC 7389 is generic business services"
+  - ticker: MCD
+    cik: 63908
+    display_name: "McDonald's"
+    news_aliases: ["McDonald's", "McDonald’s"]
+  - ticker: MDLZ
+    cik: 1103982
+    display_name: "Mondelez International"
+    news_aliases: ["Mondelez", "Mondelēz"]
+  - ticker: MDT
+    cik: 1613103
+    display_name: "Medtronic"
+    news_aliases: ["Medtronic"]
+  - ticker: META
+    cik: 1326801
+    display_name: "Meta Platforms"
+    news_aliases: ["Meta Platforms", "Meta", "Facebook"]
+  - ticker: MMM
+    cik: 66740
+    display_name: "3M"
+    news_aliases: ["3M"]
+    industry: INDUSTRIALS
+    industry_reason: "Diversified industrial (safety, transportation, consumer); SIC 3841 reflects the health care business it spun off as Solventum in 2024"
+  - ticker: MO
+    cik: 764180
+    display_name: "Altria"
+    news_aliases: ["Altria"]
+  - ticker: MRK
+    cik: 310158
+    display_name: "Merck & Co."
+    news_aliases: ["Merck"]
+  - ticker: MS
+    cik: 895421
+    display_name: "Morgan Stanley"
+    news_aliases: ["Morgan Stanley"]
+  - ticker: MSFT
+    cik: 789019
+    display_name: "Microsoft"
+    news_aliases: ["Microsoft"]
+  - ticker: MU
+    cik: 723125
+    display_name: "Micron Technology"
+    news_aliases: ["Micron"]
+  - ticker: NEE
+    cik: 753308
+    display_name: "NextEra Energy"
+    news_aliases: ["NextEra"]
+  - ticker: NFLX
+    cik: 1065280
+    display_name: "Netflix"
+    news_aliases: ["Netflix"]
+    industry: MEDIA
+    industry_reason: "Streaming entertainment; SIC 7841 is video tape rental"
+  - ticker: NOW
+    cik: 1373715
+    display_name: "ServiceNow"
+    news_aliases: ["ServiceNow"]
+  - ticker: NVDA
+    cik: 1045810
+    display_name: "Nvidia"
+    news_aliases: ["Nvidia", "NVIDIA"]
+  - ticker: ORCL
+    cik: 1341439
+    display_name: "Oracle"
+    news_aliases: ["Oracle"]
+  - ticker: PANW
+    cik: 1327567
+    display_name: "Palo Alto Networks"
+    news_aliases: ["Palo Alto Networks"]
+    industry: SOFTWARE_INTERNET
+    industry_reason: "Security platform sold mostly as subscriptions and support; SIC 3577 dates from its appliance business"
+  - ticker: PEP
+    cik: 77476
+    display_name: "PepsiCo"
+    news_aliases: ["PepsiCo", "Pepsi"]
+  - ticker: PG
+    cik: 80424
+    display_name: "Procter & Gamble"
+    news_aliases: ["Procter & Gamble", "P&G"]
+  - ticker: PLTR
+    cik: 1321655
+    display_name: "Palantir Technologies"
+    news_aliases: ["Palantir"]
+  - ticker: PM
+    cik: 1413329
+    display_name: "Philip Morris International"
+    news_aliases: ["Philip Morris"]
+  - ticker: QCOM
+    cik: 804328
+    display_name: "Qualcomm"
+    news_aliases: ["Qualcomm"]
+    industry: SEMICONDUCTORS
+    industry_reason: "Chips and technology licensing; SIC 3663 is communications equipment"
+  - ticker: RTX
+    cik: 101829
+    display_name: "RTX"
+    news_aliases: ["RTX", "Raytheon", "Pratt & Whitney"]
+  - ticker: SBUX
+    cik: 829224
+    display_name: "Starbucks"
+    news_aliases: ["Starbucks"]
+  - ticker: SCHW
+    cik: 316709
+    display_name: "Charles Schwab"
+    news_aliases: ["Schwab"]
+  - ticker: SNDK
+    cik: 2023554
+    display_name: "Sandisk"
+    news_aliases: ["Sandisk", "SanDisk"]
+    industry: SEMICONDUCTORS
+    industry_reason: "NAND flash memory maker, underwritten like Micron (SIC 3674); SIC 3572 is storage devices"
+  - ticker: SO
+    cik: 92122
+    display_name: "Southern Company"
+    news_aliases: ["Southern Company", "Southern Co"]
+  - ticker: T
+    cik: 732717
+    display_name: "AT&T"
+    news_aliases: ["AT&T"]
+  - ticker: TMO
+    cik: 97745
+    display_name: "Thermo Fisher Scientific"
+    news_aliases: ["Thermo Fisher"]
+    industry: MEDTECH
+    industry_reason: "Life-science tools, diagnostics and pharma services; SIC 3829 is measuring devices"
+  - ticker: TMUS
+    cik: 1283699
+    display_name: "T-Mobile US"
+    news_aliases: ["T-Mobile"]
+  - ticker: TSLA
+    cik: 1318605
+    display_name: "Tesla"
+    news_aliases: ["Tesla"]
+  - ticker: TXN
+    cik: 97476
+    display_name: "Texas Instruments"
+    news_aliases: ["Texas Instruments"]
+  - ticker: UBER
+    cik: 1543151
+    display_name: "Uber"
+    news_aliases: ["Uber"]
+    industry: SOFTWARE_INTERNET
+    industry_reason: "Mobility and delivery platform; SIC 7389 is generic business services"
+  - ticker: UNH
+    cik: 731766
+    display_name: "UnitedHealth Group"
+    news_aliases: ["UnitedHealth", "Optum"]
+  - ticker: UNP
+    cik: 100885
+    display_name: "Union Pacific"
+    news_aliases: ["Union Pacific"]
+  - ticker: UPS
+    cik: 1090727
+    display_name: "United Parcel Service"
+    news_aliases: ["UPS", "United Parcel Service"]
+  - ticker: USB
+    cik: 36104
+    display_name: "U.S. Bancorp"
+    news_aliases: ["U.S. Bancorp", "US Bancorp", "U.S. Bank"]
+  - ticker: V
+    cik: 1403161
+    display_name: "Visa"
+    news_aliases: ["Visa"]
+    industry: PAYMENTS
+    industry_reason: "Card payment network; SIC 7389 is generic business services"
+  - ticker: VZ
+    cik: 732712
+    display_name: "Verizon"
+    news_aliases: ["Verizon"]
+  - ticker: WFC
+    cik: 72971
+    display_name: "Wells Fargo"
+    news_aliases: ["Wells Fargo"]
+  - ticker: WMT
+    cik: 104169
+    display_name: "Walmart"
+    news_aliases: ["Walmart"]
+  - ticker: XOM
+    cik: 2115436
+    display_name: "ExxonMobil"
+    news_aliases: ["ExxonMobil", "Exxon Mobil", "Exxon"]
+    # ExxonMobil Holdings Corp became the listed parent on 2026-07-01 (holding-company
+    # reorganization); earlier filings are Exxon Mobil Corp's.
+    predecessor_ciks: [34088]

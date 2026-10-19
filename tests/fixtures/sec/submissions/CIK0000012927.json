@@ -1,0 +1,237 @@
+{
+ "cik": "0000012927",
+ "entityType": "operating",
+ "sic": "3721",
+ "sicDescription": "Aircraft",
+ "ownerOrg": "04 Manufacturing",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "BOEING CO",
+ "tickers": [
+  "BA",
+  "BA-PA"
+ ],
+ "exchanges": [
+  "NYSE",
+  "NYSE"
+ ],
+ "ein": "910425694",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "929 LONG BRIDGE DRIVE",
+   "street2": null,
+   "city": "ARLINGTON",
+   "stateOrCountry": "VA",
+   "zipCode": "22202",
+   "stateOrCountryDescription": "VA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "929 LONG BRIDGE DRIVE",
+   "street2": null,
+   "city": "ARLINGTON",
+   "stateOrCountry": "VA",
+   "zipCode": "22202",
+   "stateOrCountryDescription": "VA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "7034146338",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001225208-26-007500",
+    "0001628280-26-059427",
+    "0001628280-26-058481",
+    "0001225208-26-007209",
+    "0001225208-26-007192",
+    "0001628280-26-050038",
+    "0001628280-26-026458",
+    "0001628280-26-004357",
+    "0001628280-25-047023"
+   ],
+   "filingDate": [
+    "2026-09-01",
+    "2026-08-28",
+    "2026-08-21",
+    "2026-08-19",
+    "2026-08-18",
+    "2026-07-28",
+    "2026-04-22",
+    "2026-01-30",
+    "2025-10-29"
+   ],
+   "reportDate": [
+    "2026-08-28",
+    "2026-08-24",
+    "2026-08-19",
+    "2026-08-17",
+    "2026-08-14",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-09-01T22:55:40.000Z",
+    "2026-08-28T20:43:54.000Z",
+    "2026-08-21T21:08:16.000Z",
+    "2026-08-19T22:03:21.000Z",
+    "2026-08-19T01:31:45.000Z",
+    "2026-07-28T17:16:22.000Z",
+    "2026-04-22T16:38:40.000Z",
+    "2026-01-30T19:24:40.000Z",
+    "2025-10-29T16:56:33.000Z"
+   ],
+   "act": [
+    "",
+    "34",
+    "34",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "8-K",
+    "8-K",
+    "4",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "001-00442",
+    "001-00442",
+    "",
+    "",
+    "001-00442",
+    "001-00442",
+    "001-00442",
+    "001-00442"
+   ],
+   "filmNumber": [
+    "",
+    "261341047",
+    "261305666",
+    "",
+    "",
+    "261210018",
+    "26882475",
+    "26582448",
+    "251428852"
+   ],
+   "items": [
+    "",
+    "1.01,2.03,9.01",
+    "5.02",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "XBRL",
+    "XBRL",
+    "4",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    5542,
+    3202071,
+    178419,
+    4606,
+    7162,
+    15646013,
+    11641028,
+    23057042,
+    12085397
+   ],
+   "isXBRL": [
+    0,
+    1,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    1,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/doc4.xml",
+    "ba-20260824.htm",
+    "ba-20260819.htm",
+    "xslF345X06/doc4.xml",
+    "xslF345X06/doc4.xml",
+    "ba-20260630.htm",
+    "ba-20260331.htm",
+    "ba-20251231.htm",
+    "ba-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "",
+    "8-K",
+    "8-K",
+    "",
+    "",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

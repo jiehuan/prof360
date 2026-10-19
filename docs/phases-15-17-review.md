@@ -1,12 +1,13 @@
 # Phases 15–17: D&O risk layer, S&P 100, path to ~98% of listed companies
 
-*Review draft, 2026-10-18. Branch `phase16`. Chinese version: `phases-15-17-review.zh.md`.*
+*Review draft, 2026-10-18 (updated after the first full Phase 16 run). Branch `phase16`. Chinese
+version: `phases-15-17-review.zh.md`.*
 
 | Phase | Goal | Status |
 |---|---|---|
 | 15 | Add the main drivers of D&O claims: market moves, insider trades, reporting quality, litigation | Done (decisions D-050, D-051) |
-| 16 | Scale from 9 companies to the S&P 100 (107 companies) | XBRL part done; first LLM pass running; quality checks pending (D-052) |
-| 17 | Industry groups for ~98% of US-listed operating companies (~4,100) | Plan only, not confirmed |
+| 16 | Scale from 9 companies to the S&P 100 (107 companies) | First full run done (XBRL and LLM); remaining: notes for 55 text-metric gaps, holdout checks, insight audit, stability check (D-052) |
+| 17 | Industry groups for ~98% of US-listed operating companies (~4,100) | Plan; development sample decided (226 companies), then freeze and go live for all |
 
 **What we'd like from you.** Challenge the decisions, thresholds and assumptions, not the
 wording. Section 7 lists the questions we most want answered; section 6 lists the risks we
@@ -14,6 +15,8 @@ already see. Please reference the section number (e.g. "§4.5") in each comment,
 the table in §8.
 
 Sources of record: `docs/PLAN.md` (Phases 15, 16, 17, 10), `docs/decisions.md` (D-049–D-052).
+New since the first draft: §4.3 (restatements, BlackRock, release checks, parallel insights),
+§4.4–4.6 (final numbers), §4.8, §5.7–5.9, risks 9–11, questions 9–11.
 
 ---
 
@@ -32,8 +35,8 @@ numbers are found in the source document.
 |---|---|---|
 | New data | Prices, earnings vs estimates, Form 4, 8-K items, 13D, litigation, auditor fees | 98 companies, 12 new industry groups, ~30 new module metrics |
 | New signals | Stock drop, earnings-miss drop, insider cluster selling, near-term refinancing, Altman distress, litigation, cyber (8-K 1.05), activist 13D, auditor change, dual class, non-audit fees | None (same rules, more companies) |
-| Evidence | Ford 2024-07-25 drop and miss detected; Form 4 count = EDGAR (0 missing); 41 holdout legal matters typed correctly | 0 unexplained XBRL gaps (from 1,351 at first run); 24 golden tests; 393 tests pass |
-| Open | Within-company parallel LLM calls; SecureGPT RPM and price; cold-start timing | LLM pass, text-metric holdout checks, insight audit, DQ, stability check |
+| Evidence | Ford 2024-07-25 drop and miss detected; Form 4 count = EDGAR (0 missing); 41 holdout legal matters typed correctly | 0 unexplained XBRL gaps (from 1,351 at first run); DQ errors 37 → 6; 24 golden tests; 406 tests pass; first LLM pass $13.32 |
+| Open | Within-company parallel LLM calls; SecureGPT RPM and price; cold-start timing | Notes for 55 text-metric gaps, text-metric holdout checks, insight audit, stability check |
 
 ---
 
@@ -93,7 +96,7 @@ application database schema (option A): new metrics go to `MatrixData`, new even
 
 ---
 
-## 4. Phase 16: S&P 100 (XBRL part done; LLM pass running)
+## 4. Phase 16: S&P 100 (first full run done)
 
 **Goal.** Every company gets the common core (XBRL core plus the Phase 15 layer) and an
 industry module, with no per-company customization.
@@ -142,8 +145,8 @@ when both reads agree.
 
 ### 4.3 Engineering changes (small; most work was configuration)
 
-Phase 16 so far: +1,760 / −129 lines outside test fixtures, of which config +1,361 and code
-+180.
+Phase 16 so far: +2,351 / −217 lines outside test fixtures, of which config +1,378 and code
++413 / −117.
 
 - **Fiscal calendars learned from 10-Qs.** Costco and PepsiCo use 12/12/12/16-week years;
   quarter ends fall up to three weeks before month end. Quarter ends now come from the
@@ -156,8 +159,26 @@ Phase 16 so far: +1,760 / −129 lines outside test fixtures, of which config +1
   without an operating income line (pre-tax income + interest + D&A).
 - **Coverage notes per industry group** (and `"*"` for all companies) instead of one note per
   company for gaps a whole industry shares.
-- **Claude client timeout** of 300 s per attempt (development only; it was the SDK's 10-minute
-  default and one stalled call held a run for 30 minutes).
+- **Claude call deadline** of 10 minutes per call, retries included (development only). The
+  long stalls in the first run turned out to be the laptop's idle sleep (the process freezes
+  and timers stop); long local runs now go under `caffeinate -i`.
+- **Restated years.** A fourth quarter is derived as year minus nine months. When a filing in
+  between restated a fiscal year (19 of 107 companies since 2022: spin-offs, discontinued
+  operations, presentation changes), that quarter carried the whole restatement, e.g. Bank of
+  America Q4 2025 revenue 31,180 against about 28,400 on the restated basis. Such a quarter is
+  now N/M, and so is anything computed from it; years keep their latest, restated value.
+  Rejected: keeping the wrong values (DQ could not see them), or deriving from the year as
+  first reported (stored years would then not match their quarters).
+- **BlackRock** tags total revenue as contract revenue; its `us-gaap:Revenues` facts (about
+  $11–13B a year) are not the total. Company override (`company_overrides/BLK.yaml`).
+- **Release vs XBRL checks.** A release that prints a rounded headline ("net income of $1.8
+  billion" for 1,777M) agrees when XBRL rounded the same way gives that figure. The release
+  definitions now ask for the exact table figure and name the line ("Net income attributable
+  to <company>", not "available to common shareholders", "profit" or adjusted). A check that a
+  new reading no longer makes is dropped.
+- **Parallel insights.** Insights and metricdetail commit their writes before each model call,
+  so no transaction is open while waiting for the model; on SQLite they now run 4 companies at
+  once (about 1 company a minute instead of one every 3.5 minutes).
 
 ### 4.4 Coverage method and result
 
@@ -166,35 +187,53 @@ fiscal years + 8 quarters per metric) → for each gap, look up what the company
 add the tag or formula in config (fixes every company that files that way), or write a note
 (per group if the whole industry lacks it) → rerun.
 
-| | First run | Now |
-|---|---|---|
-| Unexplained XBRL gaps | 1,351 | **0** |
-| Company × metric rows: OK / explained / no data yet | — | 3,575 / 479 / 96 |
+| | First run | After the XBRL loop | After the LLM pass |
+|---|---|---|---|
+| Unexplained XBRL gaps | 1,351 | **0** | **0** |
+| Company × metric rows: OK / explained / partial / none | — | 3,575 / 479 / 0 / 96 | 3,616 / 479 / 28 / 27 |
 
-The 96 rows with no data all depend on text extraction (the LLM pass): the text metrics
-themselves, ratios built on them, and CET1 / Tier 1 for 7 banks that don't tag them in XBRL.
+All 55 remaining gaps are text metrics or ratios built on them, e.g. uninsured deposits for 6
+of 8 banks, and comparable sales at Walmart. Each needs a note or a fix; that is the open
+coverage item.
 
 ### 4.5 Quality gates
 
 | Gate | Status |
 |---|---|
 | Golden values: 2 companies per new or changed module, each value typed from the 10-K / 10-Q | Done: 24 tests (e.g. Microsoft gross margin 225,465 / 331,839; Costco 16-week Q4 = 303,154 − 207,431) |
-| Full test suite, lint, types | 393 passed, 4 skipped; clean |
-| Text metrics: 2 holdout companies per metric | After the LLM pass |
-| `audit-insights` on 20 companies; DQ without errors; stability check on 5 | After the LLM pass |
+| Full test suite, lint, types | 406 passed, 4 skipped; clean |
+| DQ without errors | 37 errors after the first pass, 6 now (see below) |
+| Text metrics: 2 holdout companies per metric | Open |
+| `audit-insights` on 20 companies; stability check on 5 | Open |
 
-### 4.6 Run time and cost so far (local SQLite, one company at a time)
+DQ errors after the first full pass, and what removed them:
 
-| Step | Time |
+| Check | Compared | Errors | Fixed by | Left |
+|---|---|---|---|---|
+| Quarters add up to the year | 1,422 company × metric × year sets | 4 | BlackRock override; restated-year rule | 0 |
+| Release vs XBRL | about 2,200 values | 33 | rounding-aware comparison (11); tighter definitions (9); restated-year rule and dropping stale checks (7, all Bank of America) | 6 |
+
+The 6 left: Bank of America Q3 2025 revenue and net income (the release uses the restated
+basis; XBRL catches up with the Q3 2026 10-Q), and 4 GE Vernova quarters where the model took
+net income including minority interests. No stored value is affected: XBRL wins.
+
+### 4.6 Run time and cost (local SQLite)
+
+| Step, 107 companies | Time |
 |---|---|
-| Company + facts + compute, 107 companies | 10 min |
+| Company + facts + compute | 10 min |
 | Market + documents (26,844 Form 4s) | 84 min |
-| News | ~65 min |
-| LLM pass, as of 11:50 ET | $1.78 for news and most of scoring; text metrics, governance, legal and insights still to come |
+| News; scores | 66 min; 82 min |
+| Text metrics (first pass; rerun with the new definitions) | 159 min; 71 min |
+| Governance; legal; signals | 35 min; about 50 min; 23 min |
+| Insights: one at a time / 4 at a time | 3.5 min per company / 88 min for 95 companies |
+| Metricdetail (4 at a time); publish + DQ | 22 min; 3 min |
 
-Development LLM runs use **Claude Haiku 5.5 only** (cost decision). Production uses SecureGPT;
-the plan's estimate for a first full load of 100 companies there is $70–100, with a $40
-daily cap raised in earnings season. Final Phase 16 numbers will replace this section.
+**LLM cost of the first full pass: $13.32** (6,054 calls, 0 errors), all on **Claude Haiku
+5.5** (development only, cost decision). The same tokens at SecureGPT prices (insights at
+gpt-6-sol, the rest at gpt-6-luna) come to about **$116**, roughly $1.1 per company, above the
+plan's $70–100; second reads at gpt-6-sol would add some, and the gpt-6-luna price is still
+provisional.
 
 ### 4.7 Deferred (recorded in D-052)
 
@@ -206,6 +245,13 @@ daily cap raised in earnings season. Final Phase 16 numbers will replace this se
   counts per class.
 - Wells Fargo and American Express don't tag total loans with standard tags (company-specific
   concepts needed). The gap has a note.
+
+### 4.8 Not done yet in Phase 16
+
+- Notes (or fixes) for the 55 text-metric gaps (§4.4).
+- Text metrics: 2 holdout companies per metric checked against the filings.
+- `audit-insights` on 20 companies; stability check on 5; SQL Server test suite.
+- The 6 remaining DQ errors are explained; GE Vernova could get one more definition rule.
 
 ---
 
@@ -244,7 +290,10 @@ universe script suggests it, a person approves, reviewed quarterly) swaps in cas
 
 - **Phase 10 must come first:** tiered processing (about 800 companies full, 3,200 light,
   insights on demand) and multiple workers claiming tasks. Today one process runs the stages
-  in order; companies run in parallel only within a stage, and only on a server database.
+  in order; companies run in parallel only within a stage (every stage on a server database,
+  only insights and metricdetail on SQLite).
+- The remaining LLM stages (text metrics, governance, legal, signals, scores, news) move to
+  short transactions like insights, and independent calls within a company run together.
 - The list (~4,000 CIKs) is generated by a script, reviewed by a person and committed, never
   produced at run time; a quarterly diff report shows listings, delistings, SIC changes.
 - Alpha Vantage: ~8,000 calls per day, which needs the premium per-minute quota.
@@ -266,6 +315,48 @@ shipping companies (need TCE, fleet utilization). Foreign issuers would be a sep
 5. Whether new units (ounces, tonnes, pounds) are display-only or also used in growth and
    thresholds.
 
+### 5.7 Development sample: the 5 largest companies per industry (decided)
+
+Development uses a sample instead of ~4,000 companies: the 5 largest companies by revenue in
+each of the 38 groups (Phase 16's 24 plus Phase 17's 14). Measured on EDGAR data: **187
+companies** (Payments has only Visa and Mastercard under today's mapping), of which 68 are
+already among today's 107, so **119 new** and **226** in all. Scale is about Phase 16's.
+
+The list is reviewed by hand, not taken straight from the ranking:
+- Revenue ranking fails in some groups: SPACs have no revenue (use trust size); in brokers,
+  StoneX and Galaxy outrank KKR and Blackstone on gross trading revenue.
+- SIC misfits need `industry`: Nike (SIC 3021, rubber footwear, lands in chemicals), Cintas
+  (apparel SIC; uniform rental), Plains All American, Plains GP and HF Sinclair (SIC 4610
+  pipelines, land in transport; midstream energy and refining), Coinbase (lands in credit).
+- PayPal, Fiserv and FIS are not in Payments by SIC.
+
+### 5.8 Freeze after the sample, then go live for all companies (decided)
+
+Once the 226 companies pass the quality gates, the solution is no longer tuned per company:
+- Changes only at the general level: group SIC mappings, metric sets, tag candidates,
+  formulas, group-level coverage notes, DQ rules. Each change applies to the whole industry.
+- No company-level settings beyond the sample: no company overrides (like BlackRock's), no
+  company coverage notes; `industry` only for misfits found in the sample review or reported
+  by underwriters after go-live.
+- Beyond the sample, coverage gaps and DQ findings are tracked as per-group rates, not
+  explained company by company. A group with a high error rate points to a general rule to fix.
+- Prerequisites for going live: Phase 10 (tiers, multiple workers), short transactions in the
+  remaining LLM stages, Azure deployment with SecureGPT, Alpha Vantage premium.
+
+### 5.9 Companies outside every industry group: the LLM picks from curated metric sets (decided, PLAN 17g)
+
+When a user asks for a company that maps to no group (e.g. no SIC, BDCs, shipping):
+- One LLM call (SecureGPT) reads the business description (10-K Item 1 excerpt, SIC
+  description) and the existing groups and metric sets, and picks the closest group or some
+  existing metric sets, with reasons quoted from the description.
+- Limits: only existing metric sets, never new metrics or formulas; the common core is always
+  included; codes are schema-checked; two models must agree, otherwise the second model's
+  choice is used and the case goes to the review queue.
+- The choice is stored and reused (re-chosen only when the description changes) and shown in
+  the app as "metrics chosen by AI from the business description", in the existing
+  `Methodology` text (no app schema change).
+- Foreign issuers (20-F / 40-F) are out of scope: they need IFRS mapping.
+
 ---
 
 ## 6. Risks and trade-offs we already see
@@ -280,21 +371,32 @@ shipping companies (need TCE, fleet utilization). Foreign issuers would be a sep
 3. **Coverage notes can hide real gaps.** Group-level and `"*"` notes (e.g. "goodwill
    impairment is tagged only in years with one") are efficient, but one broad note explains
    many rows. Every note was checked against company data when written; nothing re-checks it
-   later.
+   later. After the freeze (§5.8), only the sample gets notes; beyond it, gaps are rates.
 4. **Litigation baseline.** Matters found on a company's first run are its baseline and do not
    go to review. For the 98 new companies, every existing matter is baseline. They still raise
    signals if recent and active, but nobody reviews them as "new".
 5. **Phase 17 assumes a REIT module Phase 16 did not build.** The plan maps "real estate
    operating" companies to "the Phase 16 REIT module (occupancy, NOI)", which was deferred. The
    plan needs that module or a different mapping.
-6. **Throughput.** Locally every LLM stage runs one company at a time (hours for 107
-   companies). Production parallelism needs Azure SQL, and LLM calls still sit inside database
-   transactions (15i not done). Phase 17 also depends on Phase 10, which hasn't started.
+6. **Throughput.** Insights and metricdetail now keep no transaction open while waiting for
+   the model: 4 companies at once even on SQLite, measured at 1 company a minute instead of one
+   every 3.5 minutes. The other LLM stages still make their calls inside one transaction per
+   company: serial on SQLite, holding locks on Azure SQL. Converting them is planned in Phase
+   17 (17d), which also depends on Phase 10 (not started).
 7. **External dependencies.** Alpha Vantage premium is required (prices, estimates, news);
    SecureGPT RPM quota and the gpt-6-luna price are unknown; Alpha Vantage earnings dates are
    matched to quarter ends within 25 days, looser than an exact date match.
 8. **Learned calendars trust the filer.** Quarter ends come from the 10-Q's own fiscal-period
    tags; a mis-tagged 10-Q would shift a quarter. Golden tests cover Costco only.
+9. **N/M quarters after restatements.** Restated years leave their fourth quarter (and what is
+   computed from it) as N/M in the app until the nine-month figure is restated too, which for
+   older years never happens. Correct, but underwriters will see "N/M" for some quarters.
+10. **Freeze without per-company tuning (§5.8).** Beyond the sample, SIC misfits keep the wrong
+    module and company-specific tagging (like BlackRock's) leaves individual metrics missing
+    or off; DQ flags them, nobody fixes them one by one.
+11. **AI-chosen metric sets (§5.9)** are the one place where metric lists are not curated by
+    people. The limits (existing sets only, two models, stored and reviewable) keep it
+    contained, but the choice can still be wrong for an unusual business.
 
 ## 7. Questions for the reviewer
 
@@ -312,6 +414,10 @@ shipping companies (need TCE, fleet utilization). Foreign issuers would be a sep
    on SecureGPT before Phase 16 is called done?
 7. For Phase 17: SPACs in scope? $10M clinical-stage threshold? Tier 1 size?
 8. Anything an underwriter would expect in the S&P 100 view that isn't in §4.2?
+9. Is the freeze after the 226-company sample (§5.8) acceptable, given risk 10?
+10. Should AI-chosen metric sets (§5.9) be reviewed by a person before they reach the app, or
+    only flagged?
+11. For restated quarters (§4.3, risk 9): N/M, or the value as first reported with a label?
 
 ## 8. Reviewer notes
 

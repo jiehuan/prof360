@@ -41,7 +41,8 @@ def run_dq_stage(
                     company.ticker, industry.groups[row["industry_group"]]
                 ).metrics
                 findings = run_rules(conn, row["company_id"], company.ticker, metrics,
-                                     notes.get(company.ticker, {}), cfg, now)  # fmt: skip
+                                     notes.for_company(company.ticker, row["industry_group"]),
+                                     cfg, now)  # fmt: skip
                 # Re-running the stage within a run replaces that run's findings.
                 conn.execute(
                     delete(dq_finding).where(

@@ -121,3 +121,25 @@ def test_debt_without_current_portion_is_reported() -> None:
     assert [f.rule_id for f in debt_current_portion([fallback], _Rule(severity="Warning"))] == [
         "debt_current_portion"]  # fmt: skip
     assert debt_current_portion([paired], _Rule(severity="Warning")) == []
+
+
+def test_group_notes_apply_to_every_company_of_the_group(tmp_path) -> None:
+    # Phase 16 (16c): `groups:` notes cover a gap a whole industry shares; a company note wins.
+    from uw_pipeline.compute.coverage import load_notes
+
+    (tmp_path / "coverage_notes.yaml").write_text(
+        "groups:\n"
+        "  '*':\n"
+        "    goodwill_impairment: Tagged only in impairment years.\n"
+        "  INSURANCE:\n"
+        "    current_ratio: Insurers do not classify the balance sheet as current.\n"
+        "    gross_margin: Not reported.\n"
+        "BRK.B:\n"
+        "  gross_margin: Berkshire reports segment margins only.\n"
+    )
+    notes = load_notes(tmp_path)
+    brk = notes.for_company("brk.b", "INSURANCE")
+    assert brk["current_ratio"].startswith("Insurers")
+    assert brk["gross_margin"].startswith("Berkshire")
+    assert notes.for_company("AAPL", "HARDWARE") == {
+        "goodwill_impairment": "Tagged only in impairment years."}  # fmt: skip

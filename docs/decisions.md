@@ -1053,3 +1053,104 @@ LLM runs until the end, then one comparison.
   `scripts/securegpt_smoke.py` on the work network shows the gateway passes it with the new
   version; without it the models use their default effort.
 
+
+**D-052 S&P 100 coverage: companies, industry modules, coverage notes (Phase 16).**
+- Companies: the S&P 100 as of 2026-09-21 (100 companies; GOOGL and GOOG are one CIK) plus
+  the seven MVP companies outside it (MAR, LUV, F, M, LUMN, SKYD, ENPH): 107. CIKs pinned from
+  SEC's ticker list on 2026-10-18. Who reviews the list each quarter is still open.
+- Industry by company where SIC misleads (D-049 `industry`, 22 companies, each with its
+  reason): e.g. 3M (SIC 3841, medical) is an industrial, Visa and Mastercard (7389, business
+  services) are payments, CVS (5912, drug stores) is managed care, Amazon and Booking are
+  internet, Danaher, Thermo Fisher and Abbott are medtech and tools.
+- Predecessor registrants: `predecessor_ciks` is now read by the facts, documents and signals
+  stages (each filing under the CIK it was filed with). ExxonMobil's listed parent changed
+  on 2026-07-01 (holding-company reorganization; the latest 10-K and proxy are Exxon Mobil
+  Corp's) and BlackRock's in 2024. A successor-only company (`history_start`, D-012: SKYD)
+  still reads its own filings only.
+- Industry groups (24): new SOFTWARE_INTERNET, HARDWARE, MEDTECH, MANAGED_CARE,
+  CONSUMER_STAPLES, ENERGY, UTILITIES, AEROSPACE_DEFENSE, INDUSTRIALS, TRANSPORT, REIT and
+  PAYMENTS, mapped by SIC ranges; non-bank financials (CREDIT, BROKER_DEALERS, INSURANCE) get
+  FINANCIAL_CORE (returns, leverage, assets / equity) instead of liquidity and EBITDA.
+- Module metrics, XBRL first: gross margin, R&D / revenue, deferred revenue and its growth,
+  deposits and growth, unrealized securities losses / equity, assets / equity, net investment
+  income, warranty reserve, pension and retiree-benefit liabilities (the funded status is
+  tagged by plan only), regulatory assets, operating ratio. Text (MD&A and releases, both
+  reads must agree): largest product revenue (and its share), medical cost ratio and members,
+  uninsured deposits and CRE loans (and their shares), net flows, payments volume,
+  comparable and organic sales growth, oil-equivalent production, postpaid phone net adds and
+  churn, vehicle deliveries. Not done: customer concentration and oil reserves are in the
+  notes and Item 2, which text extraction does not read; insurance gets net investment income
+  only (Berkshire is the only S&P 100 insurer and reports no combined ratio). REIT FFO and
+  occupancy, ARPU (telecom, media), utility storm costs and auto recalls are left for Phase 17:
+  one or two S&P 100 companies each, and definitions differ by company.
+- Count metrics (members, vehicles, barrels per day): metric unit `count`, extraction unit
+  `count`, prompt `text_metrics_v3` (also: a growth rate is extracted when the definition asks
+  for one, decreases negative).
+- Fiscal calendars: quarter ends are learned from the company's own 10-Qs (their duration
+  facts and `fp`); 12/12/12/16-week years (Costco, PepsiCo) put Q2 and Q3 up to three weeks
+  before the month end. Duration classes widened (a 16-week quarter, 36-week year to date).
+  Alpha Vantage dates such quarters at the month end; earnings match within 25 days.
+- Tags added where the first run showed gaps: bank and broker net revenue (us-gaap:Revenues,
+  RevenuesNetOfInterestExpense), utilities' operating revenues, interest expense (also
+  InterestAndDebtExpense, and cash interest paid as the last fallback), separate depreciation
+  and amortization, debt combinations (DebtCurrent with non-current long-term debt; LongTermDebt
+  plus short-term borrowings; the combined debt total), buybacks from the equity statement,
+  inventory net of progress billings (Boeing) and utility inventory, operating cash flow from
+  continuing operations. EBITDA without an operating income line: pre-tax income + interest +
+  D&A. A bank's net revenue where no total is tagged: a hidden helper of its own concepts, so
+  bank metrics are not pulled into every company.
+- Coverage notes: `groups:` notes for gaps a whole industry shares (and "*" for every
+  company: goodwill impairment and buybacks are tagged only in periods with them; debt due
+  within a year only when some is); company notes for the rest, each checked against the
+  company's companyfacts. After the XBRL stages every gap is explained; text metrics follow
+  their first extraction.
+- Golden values (16e): two companies per new or changed module (24 tests), each value a fact
+  of the company's latest 10-K or 10-Q.
+- Restated years (first DQ review, user decision): a fourth quarter derived as year minus
+  nine months carried the whole restatement when a filing between the two restated a fiscal
+  year (19 of 107 companies have a restated year since 2022: spin-offs, discontinued
+  operations, presentation changes). BAC's FY2025 10-K recast FY2024 revenue (101,887 ->
+  105,856): our Q4 2025 was 31,180 and Q4 2024 29,316, against about 28,400 and 26,500 on
+  the restated basis. Options: keep (wrong quarters, DQ quiet because they still add up);
+  derive Q4 from the year as first reported (right as reported, but the stored restated
+  year no longer matches its quarters: DQ errors); N/M. Chosen: N/M (no wrong value; the
+  coverage report counts it, the quarters-vs-year check skips the year). N/M carries through:
+  a formula with no usable form because an input is N/M, and a growth rate over an N/M
+  period, are N/M too (before, they had no row and showed as coverage gaps). Years stay at
+  their latest, restated value, so year-on-year growth compares like with like. And D-046
+  gets an exception: when the year's own figure is already on the newer basis (a filing
+  between the quarter's report and the year's restated a fiscal year), a quarter restated
+  later matches its year and is kept (BAC Q1 and Q2 2025 now equal the releases).
+- Release vs XBRL (first DQ review: 33 of 2,272 checks disagreed; the release quotes showed
+  why). A release that prints a rounded headline ("net income of $1.8 billion" for 1,777M)
+  now agrees when XBRL, rounded to the printed precision, gives that figure; an exact table
+  figure must still agree within 0.5%. The preliminary definitions now ask for the exact
+  figure in the income statement table and name the line ("Net income attributable to
+  <company>", not "available to common shareholders", "profit", continuing operations or
+  adjusted), matching us-gaap:NetIncomeLoss. A check whose XBRL value has since become N/M
+  is dropped.
+- BlackRock: total revenue is tagged as contract revenue; its us-gaap:Revenues facts (about
+  11-13B a year) are not the total. Company override `company_overrides/BLK.yaml`.
+- Short transactions (Phase 15i follow-up, user decision): insights and metricdetail commit
+  their finished writes before each model call and each cached answer right after it
+  (`cached_call(commit=True)`), so no transaction stays open while waiting for the model.
+  A group of writes (retire the old set, insert the new one) still commits together. On a
+  SQLite file these two stages now run companies in parallel (jobs.yaml `parallel`); SQLite
+  files use WAL and a 60 s busy timeout. Measured in a test: two companies 1.3 s instead of
+  2.3 s. The other LLM stages still hold one transaction per company (Phase 17d), and calls
+  within a company stay serial (behavioral and strategic could overlap: ~20%).
+- Ratios over text metrics (top product, uninsured deposit and CRE loan shares) are computed by
+  `compute` from the text values stored earlier, as Altman Z uses the stored market cap: a new
+  text value gets its ratio on the next run. Only metrics of kind `text` are read back; a
+  metric with XBRL and a text fallback (CET1) keeps its XBRL values as formula input.
+- Claude calls get a 10-minute deadline, retries included (`ANTHROPIC_TIMEOUT_SEC`; the
+  SDK's timeout bounds each socket read, not the call). A call past it fails as one item
+  (retried next run); later calls use a new client. The stalls that prompted it (BAC legal
+  at 15:38, INTC legal at 16:34) began the second the laptop went into idle sleep (pmset
+  log): the process freezes, the connection dies, and timers count only awake time. Long
+  local runs go under `caffeinate -i`; servers don't sleep.
+- Development LLM runs use Claude Haiku 5.5 only (user decision; profile `anthropic_haiku`):
+  dual checks then compare Haiku with itself at two efforts, less independent than with Sonnet.
+- Open: market cap for multi-class companies (Alphabet, Visa, Berkshire) needs per-class
+  share counts; total loans for Wells Fargo and American Express are not tagged with standard
+  tags (company concepts needed); the quarterly list review owner.

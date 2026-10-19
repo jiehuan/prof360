@@ -77,6 +77,11 @@ class JobSpec(BaseModel):
     refresh_sec: bool = False
 
 
+# Stages that keep no transaction open while waiting for the model (short transactions, D-052):
+# on a SQLite file they too run companies in parallel, each write holding the lock briefly.
+SHORT_TRANSACTION_STAGES = frozenset({"insights", "metricdetail"})
+
+
 class JobsConfig(BaseModel):
     jobs: dict[str, JobSpec]
     stale_after_minutes: int = 30
@@ -135,9 +140,15 @@ class Orchestrator:
         self.heartbeat_every = heartbeat_every
         self.now = now
         self.parallel = parallel or {}
-        # SQLite allows a single writer: there every stage runs one company at a time.
-        self.allow_parallel = (engine.dialect.name != "sqlite" if allow_parallel is None
-                               else allow_parallel)  # fmt: skip
+        # SQLite allows a single writer: there a stage runs one company at a time, except the
+        # short-transaction stages on a database file (an in-memory database is per thread).
+        sqlite = engine.dialect.name == "sqlite"
+        self.allow_parallel = not sqlite if allow_parallel is None else allow_parallel
+        self.short_parallel = (allow_parallel is None and sqlite
+                               and engine.url.database not in (None, "", ":memory:"))  # fmt: skip
+
+    def _parallel_ok(self, stage: str) -> bool:
+        return self.allow_parallel or (self.short_parallel and stage in SHORT_TRANSACTION_STAGES)
 
     # -- starting / resuming -------------------------------------------------------------------
 
@@ -327,7 +338,7 @@ class Orchestrator:
         for _, group in itertools.groupby(tasks, key=lambda t: t["stage"]):
             batch = list(group)
             workers = min(self.parallel.get(batch[0]["stage"], 1), len(batch))
-            if not self.allow_parallel or workers <= 1:
+            if not self._parallel_ok(batch[0]["stage"]) or workers <= 1:
                 for t in batch:
                     run_task(t)
                 continue

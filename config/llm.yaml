@@ -70,6 +70,16 @@ providers:
       followups: 14000         # 6,492
       behavioral: 18000        # 7,967
       key_insights: 22000      # 9,462
+  anthropic_haiku:
+    # Development runs from Phase 16 (user decision, 2026-10-18): Claude Haiku 5.5 in every
+    # role, for cost. Extractor and tie-breaker differ in effort only, so the two reads of a
+    # dual check are the same model (less independent than with Sonnet as second model).
+    extractor: {model: claude-haiku-5-5, effort: low, max_tokens: 8000}
+    tiebreaker: {model: claude-haiku-5-5, effort: high, max_tokens: 16000}
+    synthesis: {model: claude-haiku-5-5, effort: high, max_tokens: 32000}
+    pricing_currency: USD
+    pricing:
+      claude-haiku-5-5: [0.1, 0.5]    # prompts <= 100K tokens; longer prompts 0.5 / 2.5
   runware:
     # Runware model ids. Extractor and tie-breaker are different models, so dual checks and
     # signal votes stay two independent reads.

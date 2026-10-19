@@ -1,0 +1,246 @@
+{
+ "cik": "0000909832",
+ "entityType": "operating",
+ "sic": "5331",
+ "sicDescription": "Retail-Variety Stores",
+ "ownerOrg": "07 Trade & Services",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "COSTCO WHOLESALE CORP /NEW",
+ "tickers": [
+  "COST"
+ ],
+ "exchanges": [
+  "Nasdaq"
+ ],
+ "ein": "911223280",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "0830",
+ "stateOfIncorporation": "WA",
+ "stateOfIncorporationDescription": "WA",
+ "addresses": {
+  "mailing": {
+   "street1": "999 LAKE DRIVE",
+   "street2": null,
+   "city": "ISSAQUAH",
+   "stateOrCountry": "WA",
+   "zipCode": "98027",
+   "stateOrCountryDescription": "WA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "999 LAKE DRIVE",
+   "street2": null,
+   "city": "ISSAQUAH",
+   "stateOrCountry": "WA",
+   "zipCode": "98027-",
+   "stateOrCountryDescription": "WA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "4253138100",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "COSTCO COMPANIES INC",
+   "from": "1997-12-18T05:00:00.000Z",
+   "to": "1999-06-29T04:00:00.000Z"
+  },
+  {
+   "name": "PRICE/COSTCO INC",
+   "from": "1994-01-05T05:00:00.000Z",
+   "to": "1997-01-06T05:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000909832-26-000100",
+    "0000909832-26-000098",
+    "0000909832-26-000096",
+    "0001959173-26-007355",
+    "0000909832-26-000093",
+    "0000909832-26-000051",
+    "0000909832-26-000029",
+    "0000909832-25-000169",
+    "0000909832-25-000101"
+   ],
+   "filingDate": [
+    "2026-10-16",
+    "2026-10-14",
+    "2026-10-14",
+    "2026-10-13",
+    "2026-10-07",
+    "2026-06-03",
+    "2026-03-11",
+    "2025-12-17",
+    "2025-10-08"
+   ],
+   "reportDate": [
+    "2026-10-13",
+    "2026-10-13",
+    "2026-10-14",
+    "",
+    "2026-08-30",
+    "2026-05-10",
+    "2026-02-15",
+    "2025-11-23",
+    "2025-08-31"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-17T00:52:57.000Z",
+    "2026-10-15T03:00:30.000Z",
+    "2026-10-15T00:16:05.000Z",
+    "2026-10-13T23:26:07.000Z",
+    "2026-10-07T05:13:15.000Z",
+    "2026-06-04T00:43:00.000Z",
+    "2026-03-12T00:37:54.000Z",
+    "2025-12-18T03:12:42.000Z",
+    "2025-10-08T05:16:06.000Z"
+   ],
+   "act": [
+    "34",
+    "",
+    "34",
+    "33",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "8-K",
+    "4",
+    "8-K",
+    "144",
+    "10-K",
+    "10-Q",
+    "10-Q",
+    "10-Q",
+    "10-K"
+   ],
+   "fileNumber": [
+    "000-20355",
+    "",
+    "000-20355",
+    "000-20355",
+    "000-20355",
+    "000-20355",
+    "000-20355",
+    "000-20355",
+    "000-20355"
+   ],
+   "filmNumber": [
+    "261466736",
+    "",
+    "261460127",
+    "261456709",
+    "261445309",
+    "261061471",
+    "26743969",
+    "251580183",
+    "251381129"
+   ],
+   "items": [
+    "5.02,9.01",
+    "",
+    "8.01,9.01",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "XBRL",
+    "4",
+    "XBRL",
+    "144",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    143064,
+    4564,
+    159673,
+    4389,
+    8831787,
+    5058262,
+    4958310,
+    4717162,
+    8258764
+   ],
+   "isXBRL": [
+    1,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    1,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "cost-20261013.htm",
+    "xslF345X06/form4.xml",
+    "cost-20261014.htm",
+    "xsl144X01/primary_doc.xml",
+    "cost-20260830.htm",
+    "cost-20260510.htm",
+    "cost-20260215.htm",
+    "cost-20251123.htm",
+    "cost-20250831.htm"
+   ],
+   "primaryDocDescription": [
+    "8-K",
+    "PRIMARY DOCUMENT",
+    "8-K",
+    "",
+    "10-K",
+    "10-Q",
+    "10-Q",
+    "10-Q",
+    "10-K"
+   ]
+  },
+  "files": []
+ }
+}

@@ -45,11 +45,15 @@
 - **公司标识**：`company.company_id` 是代理键，`company.cik` 是自然键（10 位补零）。ticker 只用于展示：PARA 已被 SEC 改给了另一家公司，Paramount 现在是 SKYD，见 D-006。
 - **当前版本**：`insight` 和 `followup_question` 只读 `is_current = 1` 的行。历史版本保留，用于审计。
 - **期间**：`metric_value` 中 `period_type` 取 `Q` 或 `FY`，并有 `fiscal_year` 和 `fiscal_quarter`（FY 行的季度为 0）。这些都按**公司自己的财年**口径。例如 Macy's 截至 2026-01-31 的年度是 FY2025。`period_end` 是期末日期。
-- **数值单位**：`unit` 取以下三种之一：
-  - `USD`：金额，以美元为单位，不是百万美元。
-  - `ratio`：倍数，例如 0.53 显示为 0.53x。
-  - `fraction`：比例，例如 0.049 显示为 4.9%。
-- **N/M**：`value_status = 'NM'` 时 `value` 为 NULL，前端显示 "N/M"。典型情况是负权益下的 D/E。
+- **数值单位**：`unit` 取以下几种之一（应用库 `metrics.subtitle` 是对应的显示单位）：
+  - `USD`：金额，以美元为单位，不是百万美元（subtitle `USD`）。
+  - `ratio`：倍数，例如 0.53 显示为 0.53x（subtitle `x`）。
+  - `fraction`：比例，例如 0.049 显示为 4.9%（subtitle `%`）。
+  - `days`：天数，例如存货周转天数（subtitle `days`）。
+  - `shares`：股数（subtitle `shares`）。
+  - `count`：其他数量，例如会员人数、交付车辆、桶油当量 / 天（subtitle `count`，Phase 16）。
+  - `score`：无量纲的评分，目前只有 Altman Z（subtitle 为空）。
+- **N/M**：`value_status = 'NM'` 时 `value` 为 NULL，前端显示 "N/M"。典型情况是负权益下的 D/E；另外，重述之后无法在同一口径下算出的第四季度及由它算出的指标（增长率、EBITDA 等）也是 N/M（D-052）。
 - **来源标签**：`derivation` 用于前端标注数据来源：
 
   | derivation | 含义 | 建议标注 |

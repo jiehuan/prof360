@@ -46,8 +46,12 @@ def _rows(engine):
         return [r._asdict() for r in conn.execute(select(company).order_by(company.c.company_id))]
 
 
+MVP = ["MAR", "LUV", "F", "PFE", "JPM", "M", "LUMN", "SKYD", "ENPH"]  # recorded SEC fixtures
+
+
 def test_run_all_company_stage(sec_routes: respx.MockRouter, cli_env) -> None:
-    result = CliRunner().invoke(app, ["run", "--all", "--stage", "company"])
+    tickers = [a for t in MVP for a in ("--ticker", t)]
+    result = CliRunner().invoke(app, ["run", *tickers, "--stage", "company"])
     assert result.exit_code == 0, result.output
     assert "SUCCEEDED: succeeded=9; dq=not run" in result.output  # no dq stage in this run
     rows = _rows(cli_env)
@@ -59,7 +63,7 @@ def test_run_all_company_stage(sec_routes: respx.MockRouter, cli_env) -> None:
     assert fi == {"JPM"}
 
     # Rerun: same rows, same surrogate keys, no duplicates.
-    result = CliRunner().invoke(app, ["run", "--all", "--stage", "company", "--force"])
+    result = CliRunner().invoke(app, ["run", *tickers, "--stage", "company", "--force"])
     assert result.exit_code == 0, result.output
     again = _rows(cli_env)
     assert [(r["company_id"], r["cik"]) for r in again] == [

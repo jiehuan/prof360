@@ -426,7 +426,7 @@ def process_company(
     group = industry.groups[row["industry_group"]]
     metrics = registry.for_company(cfg.ticker, group).metrics
     common = (PROMPTS_DIR / f"{icfg.prompt_versions['common']}.md").read_text(encoding="utf-8")
-    runner = TaskRunner(client, conn, lambda: now, common)
+    runner = TaskRunner(client, conn, lambda: now, common, commit=True)
     stats = CompanyStats()
     since = now.replace(tzinfo=None) - timedelta(days=icfg.news_days)
     stats.activities_summarised = summarise_activities(
@@ -591,8 +591,12 @@ def run_insights_stage(
     results: list[TaskResult] = []
     for cfg in companies:
         try:
-            with engine.begin() as conn:
+            # Short transactions (D-052): each group of writes commits before the next model
+            # call, so companies can run in parallel even on SQLite; a failure rolls back only
+            # the unfinished group, and a rerun picks up from the LLM cache.
+            with engine.connect() as conn:
                 stats = process_company(cfg, registry, industry, llm, icfg, labels, conn, now())
+                conn.commit()
             for ex in stats.dropped_examples:
                 log.info("%s: dropped %s", cfg.ticker, ex)
             log.info("%s: insights %s, %d activities summarised", cfg.ticker, stats.tasks,

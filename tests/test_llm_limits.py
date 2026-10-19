@@ -83,3 +83,46 @@ def test_task_max_tokens_caps_the_request() -> None:
             cached_call(conn, inner, spec, task=task, prompt_version="v1", system="s",
                         user=task, schema={}, now=now)  # fmt: skip
     assert inner.max_tokens == [4000, 16000]
+
+
+def test_claude_call_gives_up_at_the_deadline() -> None:
+    """Phase 16: a call that never answers fails at the deadline (the SDK's timeout bounds
+    each socket read, not the call), and later calls get a fresh client."""
+    import threading
+    import time
+    from types import SimpleNamespace
+
+    import pytest
+
+    from uw_pipeline.clients.llm import ClaudeClient, LLMError
+
+    assert ClaudeClient("test-key", timeout=45)._client.timeout == 45
+    release = threading.Event()
+    made: list[object] = []
+
+    def make() -> object:
+        hang = not made  # the first client's connection stops sending
+
+        def create(**_: object) -> object:
+            if hang:
+                release.wait(5)
+            return SimpleNamespace(
+                stop_reason="end_turn", model="m",
+                content=[SimpleNamespace(type="text", text='{"ok": 1}')],
+                usage=SimpleNamespace(input_tokens=1, output_tokens=1),
+            )  # fmt: skip
+
+        client = SimpleNamespace(beta=SimpleNamespace(messages=SimpleNamespace(create=create)))
+        made.append(client)
+        return client
+
+    claude = ClaudeClient("test-key", timeout=0.2)
+    claude._make, claude._client = make, make()
+    call = dict(model="m", effort="low", max_tokens=10, system="s", user="u", schema={})
+    start = time.monotonic()
+    with pytest.raises(LLMError, match="no answer within"):
+        claude.complete_json(**call)  # type: ignore[arg-type]
+    assert time.monotonic() - start < 2
+    assert claude.complete_json(**call).output == {"ok": 1}  # type: ignore[arg-type]
+    assert len(made) == 2
+    release.set()

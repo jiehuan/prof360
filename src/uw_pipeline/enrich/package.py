@@ -132,6 +132,8 @@ def fmt_value(value: float | None, unit: str, status: str = "OK") -> str:
         return f"{value / 1e6:,.1f}M shares"
     if unit == "score":
         return f"{value:.2f}"
+    if unit == "count":  # members, vehicles, subscribers, barrels per day (Phase 16)
+        return f"{value / 1e6:,.2f}M" if abs(value) >= 1e6 else f"{value:,.0f}"
     if abs(value) >= 1e9:
         return f"${value / 1e9:,.2f}B"
     if abs(value) >= 1e6:

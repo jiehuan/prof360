@@ -10,7 +10,7 @@ from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 import pandas as pd
-from sqlalchemy import Connection, Engine, and_, select
+from sqlalchemy import Connection, Engine, and_, or_, select
 
 from uw_pipeline.clients.sec import SecClient, pad_cik
 from uw_pipeline.compute.metrics import Value, compute_metrics
@@ -107,40 +107,50 @@ def load_company_facts(
     history_years: int,
     force: bool,
 ) -> tuple[pd.DataFrame, str]:
-    """All facts the company's metrics need, plus a fingerprint of the inputs."""
+    """All facts the company's metrics need, plus a fingerprint of the inputs. Facts of
+    predecessor registrants (`predecessor_ciks`, Phase 16) are read the same way: the periods
+    before a holding-company reorganization are in the old registrant's filings."""
     refs = creg.tag_refs()
     proxy_refs = {r for r in refs if r.taxonomy == "ecd"}
     std_refs = {r for r in refs if not r.needs_instance}
     inst_refs = refs - std_refs - proxy_refs
 
-    cf = sec.companyfacts(cik, force=force)
-    frames = [facts_from_companyfacts(cf.payload, std_refs)]
-    fingerprint = [cf.content_hash, *sorted(r.label() for r in refs)]
-
-    cf_accns = _companyfacts_accns(cf.payload)
+    frames: list[pd.DataFrame] = []
+    fingerprint = sorted(r.label() for r in refs)
     since = today - timedelta(days=365 * history_years if inst_refs else GAP_LOOKBACK_DAYS)
-    subs = sec.submissions(cik, force=force).payload
     gap_since = (today - timedelta(days=GAP_LOOKBACK_DAYS)).isoformat()
-    for filing in periodic_filings(sec, cik, subs, since, force=force):
-        gap = filing.accn not in cf_accns and filing.filed >= gap_since
-        wanted = inst_refs | (std_refs if gap else set())
-        if not wanted:
-            continue
-        if gap:
-            log.info("%s: %s %s not in companyfacts; reading its XBRL instance",
-                     cfg.ticker, filing.form, filing.accn)  # fmt: skip
-        frame = _instance_facts(sec, cik, filing, wanted)
-        if frame is not None:
-            frames.append(frame)
-            fingerprint.append(filing.accn)
-    if proxy_refs:
-        proxies = filings_since(sec, cik, subs, today - timedelta(days=365 * 3), PROXY_FORMS,
-                                force=force)[-PROXIES_READ:]  # fmt: skip
-        for filing in proxies:
-            frame = _instance_facts(sec, cik, filing, proxy_refs, proxy=True)
+    proxies: list[tuple[str, Filing]] = []
+    for reg in cfg.registrant_ciks(cik):
+        cf = sec.companyfacts(reg, force=force)
+        frames.append(facts_from_companyfacts(cf.payload, std_refs))
+        fingerprint.append(cf.content_hash)
+        cf_accns = _companyfacts_accns(cf.payload)
+        subs = sec.submissions(reg, force=force).payload
+        for filing in periodic_filings(sec, reg, subs, since, force=force):
+            gap = filing.accn not in cf_accns and filing.filed >= gap_since
+            wanted = inst_refs | (std_refs if gap else set())
+            if not wanted:
+                continue
+            if gap:
+                log.info("%s: %s %s not in companyfacts; reading its XBRL instance",
+                         cfg.ticker, filing.form, filing.accn)  # fmt: skip
+            frame = _instance_facts(sec, reg, filing, wanted)
             if frame is not None:
                 frames.append(frame)
                 fingerprint.append(filing.accn)
+        if proxy_refs:
+            proxies += [
+                (reg, f)
+                for f in filings_since(
+                    sec, reg, subs, today - timedelta(days=365 * 3), PROXY_FORMS, force=force
+                )
+            ]
+    # The latest proxies across registrants.
+    for reg, filing in sorted(proxies, key=lambda p: p[1].filed)[-PROXIES_READ:]:
+        frame = _instance_facts(sec, reg, filing, proxy_refs, proxy=True)
+        if frame is not None:
+            frames.append(frame)
+            fingerprint.append(filing.accn)
     facts = pd.concat([f for f in frames if not f.empty], ignore_index=True)
     if facts.empty:
         facts = pd.DataFrame(columns=FACT_COLUMNS)
@@ -319,18 +329,29 @@ def fiscal_periods(conn: Connection, company_id: int) -> dict[tuple[str, int, in
     return out
 
 
-def _market_values(conn: Connection, company_id: int) -> dict[str, dict[Any, Value]]:
-    """Market metrics the market stage stored (Phase 15a), for formulas such as Altman Z. A new
-    period gets them on the run after its prices are read."""
+def _stored_values(
+    conn: Connection, company_id: int, text_codes: set[str]
+) -> dict[str, dict[Any, Value]]:
+    """Values other stages stored, for formulas: market metrics (Phase 15a, e.g. Altman Z) and
+    text metrics (Phase 16, e.g. the top product's share of revenue). A new period gets them on
+    the run after the market or text-metrics stage reads it. Only metrics of kind `text`: one
+    with XBRL and a text fallback (CET1) keeps its XBRL values here."""
     out: dict[str, dict[Any, Value]] = {}
     for r in conn.execute(select(metric_value).where(
-        metric_value.c.company_id == company_id, metric_value.c.derivation == "MARKET"
+        metric_value.c.company_id == company_id,
+        or_(metric_value.c.derivation == "MARKET",
+            and_(metric_value.c.derivation == "LLM_EXTRACTED",
+                 metric_value.c.metric_code.in_(sorted(text_codes)))),
     )).mappings():  # fmt: skip
         key = (r["period_type"], r["fiscal_year"], r["fiscal_quarter"])
+        sources = (
+            (("market", "Alpha Vantage"),) if r["derivation"] == "MARKET"
+            else tuple(json.loads(r["source_tags"] or "{}").items())
+        )  # fmt: skip
         out.setdefault(r["metric_code"], {})[key] = Value(
-            value=r["value"], status=r["value_status"], derivation="MARKET",
+            value=r["value"], status=r["value_status"], derivation=r["derivation"],
             period_end=r["period_end"], accn=r["source_accn"] or "", filed="",
-            formula=r["formula"] or r["metric_code"], sources=(("market", "Alpha Vantage"),),
+            formula=r["formula"] or r["metric_code"], sources=sources,
         )  # fmt: skip
     return out
 
@@ -351,8 +372,9 @@ def run_compute_stage(
             with engine.connect() as conn:
                 row = company_row(conn, cfg)
                 facts = read_facts(conn, row["company_id"])
-                stored = _market_values(conn, row["company_id"])
-            creg = _company_registry(registry, industry, cfg, row)
+                creg = _company_registry(registry, industry, cfg, row)
+                text_codes = {m.code for m in creg.metrics if m.kind == "text"}
+                stored = _stored_values(conn, row["company_id"], text_codes)
             _, metrics = compute_company(
                 facts, row["fiscal_year_end"] or "1231", creg, cfg.history_start, stored
             )

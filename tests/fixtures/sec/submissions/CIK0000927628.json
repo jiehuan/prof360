@@ -1,0 +1,245 @@
+{
+ "cik": "0000927628",
+ "entityType": "operating",
+ "sic": "6021",
+ "sicDescription": "National Commercial Banks",
+ "ownerOrg": "02 Finance",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "CAPITAL ONE FINANCIAL CORP",
+ "tickers": [
+  "COF",
+  "COF-PI",
+  "COF-PJ",
+  "COF-PK",
+  "COF-PL",
+  "COF-PN"
+ ],
+ "exchanges": [
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE"
+ ],
+ "ein": "541719854",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "1680 CAPITAL ONE DRIVE",
+   "street2": null,
+   "city": "MCLEAN",
+   "stateOrCountry": "VA",
+   "zipCode": "22102",
+   "stateOrCountryDescription": "VA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "1680 CAPITAL ONE DRIVE",
+   "street2": null,
+   "city": "MCLEAN",
+   "stateOrCountry": "VA",
+   "zipCode": "22102",
+   "stateOrCountryDescription": "VA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "7037201000",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001950047-26-010248",
+    "0001950047-26-010233",
+    "0001727277-26-000020",
+    "0001950047-26-010066",
+    "0001741344-26-000024",
+    "0000927628-26-000089",
+    "0000927628-26-000048",
+    "0000927628-26-000024",
+    "0000927628-25-000276"
+   ],
+   "filingDate": [
+    "2026-10-15",
+    "2026-10-15",
+    "2026-10-07",
+    "2026-10-06",
+    "2026-09-16",
+    "2026-07-28",
+    "2026-05-07",
+    "2026-02-19",
+    "2025-11-03"
+   ],
+   "reportDate": [
+    "",
+    "",
+    "2026-10-06",
+    "",
+    "2026-09-15",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-16T00:22:05.000Z",
+    "2026-10-16T00:04:47.000Z",
+    "2026-10-08T00:09:09.000Z",
+    "2026-10-07T00:19:29.000Z",
+    "2026-09-17T00:06:18.000Z",
+    "2026-07-29T01:08:09.000Z",
+    "2026-05-08T00:23:11.000Z",
+    "2026-02-20T02:14:09.000Z",
+    "2025-11-04T03:20:03.000Z"
+   ],
+   "act": [
+    "33",
+    "33",
+    "",
+    "33",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "144",
+    "144",
+    "4",
+    "144",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "001-13300",
+    "001-13300",
+    "",
+    "001-13300",
+    "",
+    "001-13300",
+    "001-13300",
+    "001-13300",
+    "001-13300"
+   ],
+   "filmNumber": [
+    "261463312",
+    "261463095",
+    "",
+    "261444298",
+    "",
+    "261212891",
+    "26953877",
+    "26654563",
+    "251445251"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "144",
+    "144",
+    "4",
+    "144",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    6174,
+    6723,
+    4944,
+    7452,
+    5134,
+    34545180,
+    29086360,
+    41725224,
+    35388410
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xsl144X01/primary_doc.xml",
+    "xsl144X01/primary_doc.xml",
+    "xslF345X06/wk-form4_1791403746.xml",
+    "xsl144X01/primary_doc.xml",
+    "xslF345X06/wk-form4_1789589175.xml",
+    "cof-20260630.htm",
+    "cof-20260331.htm",
+    "cof-20251231.htm",
+    "cof-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "",
+    "",
+    "FORM 4",
+    "",
+    "FORM 4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

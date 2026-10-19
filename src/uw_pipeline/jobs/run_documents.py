@@ -19,6 +19,7 @@ import hashlib
 import json
 import logging
 import xml.etree.ElementTree as ET
+from collections import Counter
 from collections.abc import Callable, Sequence
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
@@ -192,7 +193,27 @@ def process_company(
     history_years: int = 0,
 ) -> dict[str, int]:
     row = company_row(conn, cfg)
-    cik, company_id = row["cik"], row["company_id"]
+    stats: Counter[str] = Counter()
+    kept_ownership: set[str] = set()
+    # The company's own filings, then its predecessor registrants' (Phase 16: after a
+    # holding-company reorganization the latest 10-K and proxy are the predecessor's).
+    for cik in cfg.registrant_ciks(row["cik"]):
+        stats.update(_process_registrant(
+            cfg, sec, registry, rules, conn, row["company_id"], cik, kept_ownership,
+            today=today, text_lookback_days=text_lookback_days,
+            event_lookback_days=event_lookback_days, force=force, now=now,
+            history_years=history_years,
+        ))  # fmt: skip
+    _drop_stray_ownership(conn, row["company_id"], kept_ownership, rules)
+    return dict(stats)
+
+
+def _process_registrant(
+    cfg: CompanyConfig, sec: SecClient, registry: Registry, rules: SignalRules,
+    conn: Connection, company_id: int, cik: str, kept_ownership: set[str], *, today: date,
+    text_lookback_days: int, event_lookback_days: int, force: bool, now: datetime,
+    history_years: int,
+) -> dict[str, int]:  # fmt: skip
     subs = sec.submissions(cik, force=force).payload
     since_events = today - timedelta(days=event_lookback_days)
     since_text = (today - timedelta(days=text_lookback_days)).isoformat()
@@ -272,18 +293,7 @@ def process_company(
     insert_missing(conn, source_document,
                    [_doc_row(company_id, cik, f, f.primary_doc, "PRIMARY") for f in ownership],
                    key_cols=["accession_no", "doc_name"])  # fmt: skip
-    # Earlier registrations of 13Ds the company filed about others (no signal points to them).
-    kept = {f.accn for f in ownership}
-    stray = [r.doc_id for r in conn.execute(
-        select(source_document.c.doc_id, source_document.c.accession_no).where(
-            source_document.c.company_id == company_id,
-            source_document.c.form_type.in_(tuple(rules.ownership_forms)))
-    ).all() if r.accession_no not in kept]  # fmt: skip
-    if stray:
-        used = {d for (d,) in conn.execute(
-            select(signal.c.doc_id).where(signal.c.doc_id.in_(stray))).all()}  # fmt: skip
-        conn.execute(delete(source_document).where(
-            source_document.c.doc_id.in_([d for d in stray if d not in used])))  # fmt: skip
+    kept_ownership |= {f.accn for f in ownership}
     stats["ownership"] = len(ownership)
     # Form 4s as far back as the insider-cluster rule looks (Phase 15b), at least the event window.
     cluster = rules.insiders.insider_cluster_selling
@@ -297,6 +307,23 @@ def process_company(
             since_text, section_rules, force=force, now=now,
         )  # fmt: skip
     return stats
+
+
+def _drop_stray_ownership(
+    conn: Connection, company_id: int, kept: set[str], rules: SignalRules
+) -> None:
+    """Earlier registrations of 13Ds the company filed about others (no signal points to
+    them); `kept`: the 13Ds about the company, across its registrants."""
+    stray = [r.doc_id for r in conn.execute(
+        select(source_document.c.doc_id, source_document.c.accession_no).where(
+            source_document.c.company_id == company_id,
+            source_document.c.form_type.in_(tuple(rules.ownership_forms)))
+    ).all() if r.accession_no not in kept]  # fmt: skip
+    if stray:
+        used = {d for (d,) in conn.execute(
+            select(signal.c.doc_id).where(signal.c.doc_id.in_(stray))).all()}  # fmt: skip
+        conn.execute(delete(source_document).where(
+            source_document.c.doc_id.in_([d for d in stray if d not in used])))  # fmt: skip
 
 
 def _about_company(sec: SecClient, cik: str, accn: str) -> bool:
