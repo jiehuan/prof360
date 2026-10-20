@@ -35,9 +35,12 @@ class MetricCoverage:
     nm_count: int
     tags: list[str]
     note: str | None = None
+    # A formula over a text metric (a product's share of revenue) can only reach as far back
+    # as the text it is built on, so it gets the text target (Phase 16).
+    from_text: bool = False
 
     def target(self, metric: MetricDef) -> tuple[int, int]:
-        if metric.kind == "text":
+        if metric.kind == "text" or self.from_text:
             return 0, TARGET_TEXT_Q
         fy = TARGET_FY if "FY" in metric.period_types else 0
         q = TARGET_Q if "Q" in metric.period_types else 0
@@ -114,6 +117,8 @@ def company_coverage(
     q_window = _quarter_window(latest_q, TARGET_Q) if latest_q else set()
 
     cov = CompanyCoverage(ticker, latest_fy, latest_q)
+    metrics = list(metrics)
+    text_codes = {m.code for m in metrics if m.kind == "text"}
     for m in metrics:
         if not m.display:
             continue
@@ -139,6 +144,7 @@ def company_coverage(
                     nm_count=sum(1 for r in recent if r["value_status"] == "NM"),
                     tags=tags,
                     note=notes.get(m.code) or notes.get("*"),
+                    from_text=bool(m.inputs() & text_codes),
                 ),
             )
         )

@@ -44,6 +44,10 @@ PFE:
   buyback_intensity: See buybacks.
 
 LUMN:
+  postpaid_phone_net_adds: >-
+    No wireless business: Lumen has no postpaid phone subscribers.
+  postpaid_phone_churn: >-
+    No wireless business: Lumen has no postpaid phone subscribers.
   inventory_days: >-
     Lumen has reported no inventory line since FY2010; days inventory outstanding does not
     apply.
@@ -79,6 +83,9 @@ LUV:
   interest_coverage: FY2021 interest expense missing; see interest_expense.
 
 JPM:
+  cre_loan_share: >-
+    The MD&A discusses commercial real estate, but no CRE loan total matching the definition was
+    read (follow-up: definition).
   goodwill_impairment: >-
     Goodwill impairment is tagged only in years with an impairment; no tag means none was
     recorded in those fiscal years (Phase 15c). JPM tagged a zero impairment in two of the five
@@ -95,6 +102,13 @@ MAR:
 # Phase 16 (S&P 100, D-052). Industry-group notes apply to every company of the group; group
 # "*" to every company. A company's own note wins.
 groups:
+  BANKS:
+    cet1_ratio: >-
+      Older periods only where the bank's XBRL capital ratios are mapped (JPM, D-042); other
+      banks' ratios come from MD&A text, which covers about the last 400 days.
+    tier1_ratio: >-
+      Older periods only where the bank's XBRL capital ratios are mapped (JPM, D-042); other
+      banks' ratios come from MD&A text, which covers about the last 400 days.
   "*":
     goodwill_impairment: >-
       Tagged only in years with a goodwill impairment; no tag means none was recorded (Phase
@@ -164,6 +178,17 @@ ANET:
   interest_expense: No borrowings outstanding in the periods shown (no debt tagged).
   interest_coverage: No borrowings outstanding in the periods shown (no debt tagged).
 AXP:
+  nim: >-
+    A card issuer: reports net interest yield on Card Member loans, not net interest margin.
+  npl_ratio: >-
+    Reports net write-off and delinquency rates on card loans, not nonperforming loans.
+  uninsured_deposit_share: >-
+    Deposits are mostly insured retail savings accounts; no uninsured-deposit figure in the
+    MD&A.
+  cre_loan_share: >-
+    No commercial real estate lending.
+  lcr: >-
+    LCR found in 3 of the last 4 quarters by text extraction (follow-up: holdout review).
   loan_loss_reserve_ratio: >-
     Card Member loans are tagged with American Express's own tags; no standard total-loans tag
     (Phase 16 follow-up: company concept).
@@ -180,6 +205,16 @@ BKNG:
     booking).
   deferred_revenue_growth_yoy: Needs deferred revenue; see its note.
 BNY:
+  npl_ratio: >-
+    The 10-K's Item 7 refers to the annual report (Exhibit 13), which is not read yet; text
+    metrics come only from 10-Qs and earnings releases (Phase 17d: read Exhibit 13). A custody
+    bank with a small loan book.
+  uninsured_deposit_share: >-
+    The 10-K's Item 7 refers to the annual report (Exhibit 13), which is not read yet; text
+    metrics come only from 10-Qs and earnings releases (Phase 17d: read Exhibit 13).
+  cre_loan_share: >-
+    The 10-K's Item 7 refers to the annual report (Exhibit 13), which is not read yet; text
+    metrics come only from 10-Qs and earnings releases (Phase 17d: read Exhibit 13).
   loan_loss_reserve_ratio: >-
     Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
   sbc_to_revenue: Share-based compensation tagged in some years only.
@@ -198,6 +233,21 @@ BRK.B:
   net_investment_income: >-
     Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
 C:
+  lcr: >-
+    No MD&A text is read: the section splitter finds no Item 7 / Item 2 in its 10-K and 10-Q
+    layout (Phase 17d: section rules).
+  nim: >-
+    No MD&A text is read: the section splitter finds no Item 7 / Item 2 in its 10-K and 10-Q
+    layout (Phase 17d: section rules).
+  npl_ratio: >-
+    No MD&A text is read: the section splitter finds no Item 7 / Item 2 in its 10-K and 10-Q
+    layout (Phase 17d: section rules).
+  uninsured_deposit_share: >-
+    No MD&A text is read: the section splitter finds no Item 7 / Item 2 in its 10-K and 10-Q
+    layout (Phase 17d: section rules).
+  cre_loan_share: >-
+    No MD&A text is read: the section splitter finds no Item 7 / Item 2 in its 10-K and 10-Q
+    layout (Phase 17d: section rules).
   loan_loss_reserve_ratio: >-
     Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
   sbc_to_revenue: Share-based compensation not tagged with the standard tags since 2012.
@@ -213,6 +263,9 @@ CAT:
     tagged annually only.
   interest_coverage: Needs interest expense; see its note.
 COF:
+  npl_ratio: >-
+    Nonperforming loans ratio found in 1 of the last 4 quarters by text extraction (follow-up:
+    holdout review).
   unrealized_loss_to_equity: >-
     Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
 COP:
@@ -331,6 +384,8 @@ MCD:
 MMM:
   warranty_reserve: Warranty reserve tagged through FY2024 only.
 MO:
+  organic_sales_growth: >-
+    Altria does not report organic sales growth.
   interest_expense: >-
     Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
   interest_coverage: >-
@@ -423,6 +478,15 @@ UNP:
   goodwill_to_equity: No goodwill on the balance sheet.
   pension_liability: Pension liabilities are tagged by plan only, not as one balance sheet total.
 USB:
+  lcr: >-
+    The 10-K's Item 7 refers to the annual report (Exhibit 13), which is not read yet; text
+    metrics come only from 10-Qs and earnings releases (Phase 17d: read Exhibit 13).
+  npl_ratio: >-
+    The 10-K's Item 7 refers to the annual report (Exhibit 13), which is not read yet; text
+    metrics come only from 10-Qs and earnings releases (Phase 17d: read Exhibit 13).
+  uninsured_deposit_share: >-
+    The 10-K's Item 7 refers to the annual report (Exhibit 13), which is not read yet; text
+    metrics come only from 10-Qs and earnings releases (Phase 17d: read Exhibit 13).
   loan_loss_reserve_ratio: >-
     Tagged in the 10-K; the 10-Qs use the company's own tags, so some quarters have no value.
 V:
@@ -440,6 +504,14 @@ VZ:
   free_cash_flow: Needs capital expenditures; see its note.
   sbc_to_revenue: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
 WFC:
+  uninsured_deposit_share: >-
+    The 10-K's Item 7 refers to the annual report (Exhibit 13), which is not read yet; text
+    metrics come only from 10-Qs and earnings releases (Phase 17d: read Exhibit 13). Its 10-Q
+    Item 2 is only a table of contents to the Financial Review.
+  cre_loan_share: >-
+    The 10-K's Item 7 refers to the annual report (Exhibit 13), which is not read yet; text
+    metrics come only from 10-Qs and earnings releases (Phase 17d: read Exhibit 13). Its 10-Q
+    Item 2 is only a table of contents to the Financial Review.
   loan_loss_reserve_ratio: >-
     Total loans are not tagged with a standard undimensioned tag since 2019 (Phase 16 follow-up:
     company concept).
@@ -449,3 +521,38 @@ XOM:
   sbc_to_revenue: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
   diluted_shares_growth_yoy: >-
     Diluted weighted-average shares are not tagged with the standard tag since 2013.
+BAC:
+  lcr: >-
+    LCR found in 2 of the last 4 quarters by text extraction (follow-up: holdout review).
+  cre_loan_share: >-
+    Commercial real estate loans found in 2 of the last 4 quarters by text extraction (follow-
+    up: holdout review).
+  uninsured_deposit_share: >-
+    The MD&A discusses uninsured deposits, but no figure matching the definition was read
+    (follow-up: definition).
+MS:
+  net_flows: >-
+    No MD&A text is read: the section splitter finds no Item 7 / Item 2 in its 10-K and 10-Q
+    layout (Phase 17d: section rules).
+BLK:
+  net_flows: >-
+    Net flows found in 3 of the last 4 quarters by text extraction (follow-up: holdout review).
+PG:
+  organic_sales_growth: >-
+    Organic sales growth found in 3 of the last 4 quarters by text extraction (follow-up:
+    holdout review).
+WMT:
+  comparable_sales_growth: >-
+    Walmart reports comparable sales by segment (Walmart U.S., Sam's Club U.S.), not for the
+    company as a whole.
+ABBV:
+  top_product_share: >-
+    Largest product revenue found in 2 of the last 4 quarters by text extraction (follow-up:
+    holdout review).
+JNJ:
+  top_product_share: >-
+    Largest product revenue found in 2 of the last 4 quarters by text extraction (follow-up:
+    holdout review).
+AMGN:
+  top_product_share: >-
+    Largest product revenue not read in the last 4 quarters (follow-up: holdout review).

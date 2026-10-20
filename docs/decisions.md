@@ -1155,6 +1155,28 @@ LLM runs until the end, then one comparison.
   share counts; total loans for Wells Fargo and American Express are not tagged with standard
   tags (company concepts needed); the quarterly list review owner.
 
+- Closing checks (2026-10-20):
+  - Coverage: a formula over a text metric (product, uninsured-deposit and CRE shares) now gets
+    the text target (4 quarters), as the text it is built on covers about 400 days. The rest got
+    notes: capital ratios per industry (BANKS: older periods only where XBRL ratios are mapped,
+    JPM), and company notes naming the cause. 0 unexplained gaps (3,625 OK, 525 explained).
+  - Found while writing them: for 5 of 8 banks no MD&A text is read. Wells Fargo, US Bancorp
+    and BNY put the MD&A in the annual report (Exhibit 13; Item 7 only refers to it, and Wells
+    Fargo's 10-Q Item 2 is a table of contents); for Citi and Morgan Stanley the section splitter
+    finds no Item 7 / Item 2. Their text metrics (LCR, NIM, NPL, uninsured deposits, CRE, net
+    flows) are missing for that reason; fix in Phase 17d (read Exhibit 13, section rules).
+  - Text-metric holdout, 2 companies per metric (32 values): all right for their period. Weak
+    evidence in two (COF CRE loans, GM deliveries: the quote is a table's total line without its
+    label); Ford's "deliveries" are wholesale units; Costco's comparable sales are as reported
+    (with gasoline and FX), BAC's margin is net interest yield on an FTE basis.
+  - audit-insights checked only 10-K/10-Q section text, so proxy facts, litigation matters
+    (rendered for the model with the filing's words) and loan rows read by table cell ("row |
+    value") were reported as not found. It now checks them against what the model saw: 1,580 of
+    1,580 snippets in a 600-insight sample, 14 of 14 loan rows.
+  - stability_check --faults (JPM, MAR, UNH, COST, XOM): time-out, rate limit and invalid
+    output each fail closed; nothing stored changes.
+  - SQL Server (`scripts/test_mssql.sh --all`): 413 passed, including the KeyTakeaways table.
+
 
 **D-053 Key Takeaway: 2–3 bullets for professional lines above the Key Insights (2026-10-20).**
 - User request: a Key Takeaway box on the company page (prototype: "Key Takeaway", above "Key

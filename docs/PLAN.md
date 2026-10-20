@@ -670,8 +670,8 @@ uw-pipeline dq-report --run-id <id>
 - [x] 16d 首次全量 LLM（Haiku 5.5，D-052）：$13.32、6,054 次调用、0 错误；insights 和 metricdetail 改短事务后同时 4 家
 - [x] 第一次 DQ 复查：Error 37 → 6（重述年度的第四季度 N/M、BlackRock 收入 tag、新闻稿按取整精度比较、更严格的定义、删除过时核对；剩下 6 个已有解释）
 - [x] Key Takeaway（用户新需求，2026-10-20，D-053）：insights 阶段第 6 步 `key_takeaways_v1`，2–3 条对专业责任险最重要的要点，不显示链接；应用库新表 `KeyTakeaways`（需要 BFF 新增读取）
-- [ ] 16d 待办：55 个文本指标缺口的说明或修复；每个文本指标 2 家留出公司
-- [ ] 16e 其余关口：`audit-insights` 抽 20 家、`stability_check.py` 抽 5 家、SQL Server 测试
+- [x] 16d 文本指标：引用文本指标的比率改用文本目标（4 个季度）；其余缺口都有说明（未说明 0）；留出测试 16 个指标各 2 家共 32 个值，期间和数值都正确（D-052）
+- [x] 16e 其余关口：`audit-insights`（改为对照模型看到的文本：600 条洞察 1,580/1,580 引文、14/14 贷款行）；`stability_check.py --faults` 5 家全部安全失败；SQL Server 全套测试
 - [ ] 未做（Phase 17 再看）：客户集中度、油气储量（在附注和 Item 2，文本抽取不读）；REIT FFO / 出租率、ARPU、公用事业灾害成本、汽车召回；多类股公司的市值（GOOGL、V、BRK.B）；WFC、AXP 的贷款总额（需公司自定义概念）
 
 #### 16a 公司范围
@@ -804,6 +804,7 @@ uw-pipeline dq-report --run-id <id>
 - 约 4,000 家必须先有 Phase 10 的分层（Tier 1 全量、Tier 2 轻量、洞察按需）和多 worker 领取任务；15i 的并行和按模型限速是前提。
 - 其余 LLM 阶段改短事务（2026-10-18 用户决定放在本阶段）：textmetrics、governance、legal、signals、scores、news 和 insights / metricdetail 一样，等待模型时不占数据库事务（调用前提交已完成的写入、答案到达后立即提交），加入 `SHORT_TRANSACTION_STAGES`，在 SQLite 文件上也能多家并行，在 Azure SQL 上不再长时间占锁。逐个阶段检查没有一组写入跨过 LLM 调用；textmetrics（双重读取、恒等式检查）和 signals（投票、复核）最需要注意。每个阶段一个并行与串行结果一致的测试。
 - 公司内部的调用并行：insights 的 behavioral 和 strategic 同时调用（约省 20%），textmetrics 的各文件、双重检查的两次读取同时调用。
+- 银行的 MD&A（Phase 16 收尾时发现）：Wells Fargo、US Bancorp、BNY 的 MD&A 在年报附件（Exhibit 13）里，10-K Item 7 只是引用；Citi、Morgan Stanley 的 10-K / 10-Q 格式切不出 Item 7 / Item 2。要读 Exhibit 13，并给不标准的格式加章节规则；大银行里这种做法常见，全量上线前要做。
 - 首次回补的 LLM 费用和时长：按 Phase 16 实测的每家成本推算，进入本阶段前先在 100 家上测准，决定 Tier 1 的范围。
 - 外部接口：SEC 每天约 4,000 次 submissions 请求加新文件，不是瓶颈；Alpha Vantage 每家每天 2 次，约 8,000 次，需要付费版的分钟配额（75 次 / 分钟约 2 小时）。
 
