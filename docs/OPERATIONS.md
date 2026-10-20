@@ -111,6 +111,7 @@
 - 建表：由工程师执行 `deploy/sql/pipeline_schema_full.sql`、`app_schema_full.sql`（新环境）或 `app_schema_changes.sql`（已有数据模型）。改了表结构或 schema 名后，运行 `python scripts/export_app_ddl.py` 重新生成。
 - 首次运行前：`python scripts/azure_smoke.py`，检查连接、schema、表、权限和 ADLS 读写，不会改动任何业务表。ALTER 和 CREATE TABLE 只显示 WARN：只有自己建表才需要，日常运行只用临时表。
 - `uw-pipeline init-db` 只用于本地 SQLite；在 Azure SQL 上它会提示改用 `deploy/sql/` 的脚本。
+- 把本地 SQLite 结果一次性复制到 Azure SQL（保留 id）：Databricks notebook `scripts/databricks/copy_sqlite_to_azure.py`，说明见 `docs/databricks-copy.md`。
 - 改了涉及数据库的代码后，在本机跑 `scripts/test_mssql.sh --all`：用本地 Docker 的 SQL Server 运行全部测试（不需要公司网络）。用完 `scripts/test_mssql.sh --stop`。
 
 ## 10a. 结构化数据优先和恒等式（Phase 13，D-042）
