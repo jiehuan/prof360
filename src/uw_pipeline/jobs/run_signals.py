@@ -117,6 +117,7 @@ def detect_company(
     conn: Connection,
     voter: Voter | None = None,
     industry: IndustryConfig | None = None,
+    hidden_metrics: frozenset[str] = frozenset(),
 ) -> tuple[int, list[Detected], list[VoteRow]]:
     row = company_row(conn, cfg)
     # The company's industry decides which signals are tracked and their parameters (D-049).
@@ -177,7 +178,7 @@ def detect_company(
     governance = (board_signals(dict(board), board["filed_at"], board["accession_no"], rules)
                   if board else [])  # fmt: skip
     for s in [*metric_signals(quarterly, rules), *pay_signals(values, rules),
-              *threshold_signals(values, rules)]:  # fmt: skip
+              *threshold_signals(values, rules, hidden_metrics)]:  # fmt: skip
         detected.append(replace(s, doc_id=by_accn.get(s.accession_no or "")))
     detected += [replace(s, doc_id=board["doc_id"]) for s in governance] if board else []
     market = _market(conn, cfg.symbols()[0], rules)
@@ -278,6 +279,7 @@ def run_signals_stage(
     *,
     llm: tuple[LLMClient, LLMConfig] | None = None,
     industry: IndustryConfig | None = None,
+    hidden_metrics: frozenset[str] = frozenset(),
     now: Callable[[], datetime] = lambda: datetime.now(UTC),
 ) -> list[TaskResult]:
     """Rule signals, with rule + LLM voting on judgment signals when `llm` is given. With
@@ -289,13 +291,13 @@ def run_signals_stage(
                 voter = Voter(llm[0], llm[1], rules, conn, now) if llm else None
                 try:
                     company_id, detected, votes = detect_company(
-                        cfg, sec, rules, conn, voter, industry
+                        cfg, sec, rules, conn, voter, industry, hidden_metrics
                     )
                 except LLMUnavailableError as exc:
                     log.error("LLM unavailable, continuing with rules only: %s", exc)
                     llm = None
                     company_id, detected, votes = detect_company(
-                        cfg, sec, rules, conn, None, industry
+                        cfg, sec, rules, conn, None, industry, hidden_metrics
                     )
                 stamp = now()
                 _store_votes(conn, company_id, votes, stamp)

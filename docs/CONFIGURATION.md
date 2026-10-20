@@ -41,6 +41,7 @@ code. Decisions D-016 and D-049 explain the design.
 | Change a signal's threshold for one industry | `industry_groups.yaml` | `signal_params: {rule_id: {field: value}}` |
 | Add a keyword signal | `signal_rules.yaml` | an entry under `keywords` (2.4); `industries` to limit it |
 | Add a metric threshold signal | `signal_rules.yaml` | an entry under `thresholds` (2.4) |
+| Hide or show a whole metric set (computed, but not in the app, the LLM inputs or threshold signals) | `metrics.yaml` | `hidden_metric_sets: [SET, ...]`; remove a set to show it again (D-054) |
 | Change an 8-K item's severity or title | `signal_rules.yaml` | `eight_k_items` |
 | Change a market, insider, 13D or litigation signal (threshold, window, severity) | `signal_rules.yaml` | `market`, `insiders`, `ownership_forms`, `legal` (2.4) |
 | Explain a missing metric | `coverage_notes.yaml` | a note per company and metric (or `"*"`), or per industry under `groups:` (2.6) |

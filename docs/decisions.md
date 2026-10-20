@@ -1201,3 +1201,26 @@ LLM runs until the end, then one comparison.
   three open securities class actions, the newest filed 2026-02-17). Some run past the 35-word
   target. Cost: one call per company with changed inputs (about $0.01 on Haiku).
 
+
+**D-054 Hide the Phase 15 metrics beyond the BRD (2026-10-20).**
+- User request: the metrics Phase 15 added beyond the BRD (Professional 360 MVP: financial,
+  liquidity, leverage, operational, FI trends, loan portfolio) are hidden for now and kept out
+  of key insights, key takeaways and the other LLM outputs.
+- Scope: the three Phase 15 metric sets, 21 metrics: REPORTING_QUALITY (receivable and
+  inventory days, accruals ratio, debt maturities 1-5+ years, near-term debt coverage, Altman Z),
+  MARKET (market cap, 90-day volatility, 52-week drawdown, EPS surprise, insider net sales,
+  officer sell %), CAPITAL_QUALITY (goodwill / equity, goodwill impairment, SBC / revenue,
+  diluted share growth).
+- How: `hidden_metric_sets` in `config/metrics.yaml`. The metrics are still computed and stored
+  (the market and documents stages still write theirs), so showing them again means deleting
+  the line, with no backfill. Hidden means: not published (MatrixData, CompanyMetricDetail and
+  the SIC's SIC_Preferences rows are removed; the metric and category definitions stay), not in
+  any LLM input (the package takes only displayed or insight-input metrics), not in the coverage
+  report.
+- Signals (user decision): threshold signals on a hidden metric are not raised, as their text
+  quotes the value: near_term_refinancing and altman_distress (13 Altman signals removed). The
+  event signals stay (stock drop, earnings-miss drop, insider cluster selling, 8-K 1.05 / 1.02,
+  13D, litigation): they fit the BRD's Strategic & Risk categories.
+- BFF: no change if it builds a company's metric list from SIC_Preferences or MatrixData and hides
+  categories without metrics; "Market & Trading" and "Reporting Quality" are now empty.
+

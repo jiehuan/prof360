@@ -196,6 +196,13 @@ class Registry(BaseModel):
     metrics: list[MetricDef]
     metric_sets: dict[str, list[str]] = Field(default_factory=dict)
     overrides: dict[str, CompanyOverride] = Field(default_factory=dict)
+    # Metric sets computed and stored but not shown: not published to the app, not in any LLM
+    # input, no threshold signals, not in coverage (D-054). Removing a set shows it again.
+    hidden_metric_sets: list[str] = Field(default_factory=list)
+
+    @property
+    def hidden_codes(self) -> frozenset[str]:
+        return frozenset(c for s in self.hidden_metric_sets for c in self.metric_sets[s])
 
     @model_validator(mode="after")
     def _check_refs(self) -> Registry:
@@ -213,6 +220,9 @@ class Registry(BaseModel):
             unknown = set(members) - codes
             if unknown:
                 raise ValueError(f"metric set {name} lists unknown metrics {sorted(unknown)}")
+        unknown_sets = set(self.hidden_metric_sets) - self.metric_sets.keys()
+        if unknown_sets:
+            raise ValueError(f"hidden_metric_sets: unknown metric sets {sorted(unknown_sets)}")
         return self
 
     def _catalog(self, ticker: str) -> list[MetricDef]:
@@ -254,10 +264,13 @@ class Registry(BaseModel):
                 if dep not in wanted:
                     wanted.add(dep)
                     stack.append(dep)
+        hidden = self.hidden_codes
         metrics = [  # catalog order = dependency order
             m.model_copy(update={"display": False, "insight_input": False})
-            if m.code in group.exclude_metrics and m.code not in tracked
-            else m  # removed by the industry but needed by another metric: a hidden helper
+            # removed by the industry but needed by another metric (a hidden helper), or in a
+            # hidden set (computed, not shown, D-054)
+            if (m.code in group.exclude_metrics and m.code not in tracked) or m.code in hidden
+            else m
             for m in catalog
             if m.code in wanted
         ]
@@ -292,5 +305,6 @@ def load_registry(config_dir: Path) -> Registry:
             "metrics": catalog["metrics"],
             "metric_sets": catalog.get("metric_sets", {}),
             "overrides": overrides,
+            "hidden_metric_sets": catalog.get("hidden_metric_sets", []),
         }
     )

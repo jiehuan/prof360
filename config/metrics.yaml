@@ -25,6 +25,12 @@
 # display: false hides helper metrics from the front end (they are still stored for audit).
 # insight_input: true puts a hidden metric into the insight input anyway (e.g. CEO pay).
 
+# Hidden for now (2026-10-20, user decision, D-054): the Phase 15 metrics beyond the BRD. They
+# are still computed and stored, but not published to the app, not given to the LLM (key
+# insights, strategic risk, follow-ups, key takeaways, metric relevance), not used by threshold
+# signals and not counted by the coverage report. Delete a set from this list to show it again.
+hidden_metric_sets: [REPORTING_QUALITY, MARKET, CAPITAL_QUALITY]
+
 metric_sets:
   COMMERCIAL_CORE:
     - revenue

@@ -102,7 +102,23 @@ class AppWriter:
     def drop_except(self, table: Table, prefix: str, keep: Iterable[str]) -> int:
         """Delete this prefix's rows whose key is not in `keep` (stale objects)."""
         keep = set(keep)
-        stale = {k: a for k, a in self.keys(table, prefix).items() if k not in keep}
+        return self._delete(table, {k: a for k, a in self.keys(table, prefix).items()
+                                    if k not in keep})  # fmt: skip
+
+    def drop(self, table: Table, keys: Iterable[str]) -> int:
+        """Delete the rows of exactly these keys (objects no longer published)."""
+        wanted = list(keys)
+        found: dict[str, int] = {}
+        for i in range(0, len(wanted), 500):
+            rows = self.conn.execute(
+                select(pmap.c.pipeline_key, pmap.c.app_id).where(
+                    pmap.c.entity == table.name, pmap.c.pipeline_key.in_(wanted[i : i + 500])
+                )
+            )
+            found |= {k: int(a) for k, a in rows}
+        return self._delete(table, found)
+
+    def _delete(self, table: Table, stale: Mapping[str, int]) -> int:
         if not stale:
             return 0
         ids = list(stale.values())

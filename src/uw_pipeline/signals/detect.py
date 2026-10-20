@@ -634,12 +634,17 @@ _OPS = {"<": lambda a, b: a < b, "<=": lambda a, b: a <= b, ">": lambda a, b: a 
         ">=": lambda a, b: a >= b}  # fmt: skip
 
 
-def threshold_signals(values: Sequence[Mapping[str, Any]], rules: SignalRules) -> list[Detected]:
+def threshold_signals(
+    values: Sequence[Mapping[str, Any]], rules: SignalRules, hidden: frozenset[str] = frozenset()
+) -> list[Detected]:
     """User-defined threshold rules (D-049): the metric's latest quarter (or fiscal year) value
     crossing the threshold. `values`: the company's metric_value rows; N/M values never fire.
-    Values are in stored units (fraction 0.05 = 5%, ratio 1.2 = 1.2x, USD)."""
+    Values are in stored units (fraction 0.05 = 5%, ratio 1.2 = 1.2x, USD). A metric in
+    `hidden` (hidden metric sets, D-054) raises nothing: the signal's text would show it."""
     out = []
     for rule in rules.thresholds:
+        if rule.metric in hidden:
+            continue
         rows = [v for v in values if v["metric_code"] == rule.metric
                 and v["period_type"] == rule.period]  # fmt: skip
         if not rows:

@@ -220,8 +220,9 @@ class StageRunner:
             return lambda c: run_legal_stage(c, self.llm, self.storage, e)
         if stage == "signals":
             return lambda c: run_signals_stage(
-                c, self.sec, self.signal_rules, e, llm=self.llm, industry=ind
-            )
+                c, self.sec, self.signal_rules, e, llm=self.llm, industry=ind,
+                hidden_metrics=self.registry.hidden_codes,
+            )  # fmt: skip
         if stage == "dq":
             return lambda c: run_dq_stage(
                 c, reg, ind, load_dq_config(s.config_dir), s.config_dir, e, run_id=self.run_id

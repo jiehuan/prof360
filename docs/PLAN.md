@@ -669,6 +669,7 @@ uw-pipeline dq-report --run-id <id>
 - [x] 16e golden 值：每个新增或修改的模块 2 家，24 个测试，取自 10-K / 10-Q
 - [x] 16d 首次全量 LLM（Haiku 5.5，D-052）：$13.32、6,054 次调用、0 错误；insights 和 metricdetail 改短事务后同时 4 家
 - [x] 第一次 DQ 复查：Error 37 → 6（重述年度的第四季度 N/M、BlackRock 收入 tag、新闻稿按取整精度比较、更严格的定义、删除过时核对；剩下 6 个已有解释）
+- [x] 暂时隐藏 Phase 15 超出 BRD 的指标（用户新需求，2026-10-20，D-054）：Reporting Quality、Market、Capital Quality 三组共 21 个指标照常计算，但不发布到应用库、不进任何 LLM 输入、不触发阈值信号；`config/metrics.yaml` 的 `hidden_metric_sets` 删掉一组即恢复
 - [x] Key Takeaway（用户新需求，2026-10-20，D-053）：insights 阶段第 6 步 `key_takeaways_v1`，2–3 条对专业责任险最重要的要点，不显示链接；应用库新表 `KeyTakeaways`（需要 BFF 新增读取）
 - [x] 16d 文本指标：引用文本指标的比率改用文本目标（4 个季度）；其余缺口都有说明（未说明 0）；留出测试 16 个指标各 2 家共 32 个值，期间和数值都正确（D-052）
 - [x] 16e 其余关口：`audit-insights`（改为对照模型看到的文本：600 条洞察 1,580/1,580 引文、14/14 贷款行）；`stability_check.py --faults` 5 家全部安全失败；SQL Server 全套测试
