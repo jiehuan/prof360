@@ -274,6 +274,22 @@ class KeyInsights(BaseModel):
     insights: list[KeyInsight]
 
 
+class KeyTakeaway(BaseModel):
+    """key_takeaways_v1: one bullet of the Key Takeaway box (shown without links)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    topic: str = Field(description="The exposure, at most 5 words")
+    text: str = Field(description="One sentence, at most 35 words")
+    evidence: list[Evidence]
+
+
+class KeyTakeaways(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    takeaways: list[KeyTakeaway] = Field(description="2 or 3, most important first")
+
+
 class FollowUpQuestion(BaseModel):
     """followups_v2 (Phase 8): the fields of the Follow-Up Question modal."""
 

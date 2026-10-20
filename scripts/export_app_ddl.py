@@ -27,8 +27,8 @@ from uw_pipeline.schema_app import app_metadata
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "deploy" / "sql"
 
-# Phase 9 changes to the diagram (docs/schema-contract.md).
-NEW_TABLES = ["ItemLink", "CompanyMetricDetail", "pipeline_publish_map"]
+# Changes to the diagram (docs/schema-contract.md): Phase 9, and KeyTakeaways (2026-10-20).
+NEW_TABLES = ["ItemLink", "CompanyMetricDetail", "KeyTakeaways", "pipeline_publish_map"]
 ADDED_COLUMNS = {
     "KeyInsights": ["isActive"],
     "FollowUpQuestions": ["Priority", "isActive"],
@@ -59,6 +59,8 @@ TABLE_DOCS = {
     "questions and metrics; read from either end.",
     "CompanyMetricDetail": "Metric modal (and the Loan Portfolio modal as metric "
     "'loan_portfolio'): methodology, data sources, data points, UW relevance.",
+    "KeyTakeaways": "Key Takeaway box above Key Insights: 2-3 bullets for professional lines, "
+    "most important first (Ordinal 1), no links; read isActive = 1.",
     "pipeline_publish_map": "Pipeline bookkeeping (pipeline object -> app id); written and read "
     "only by the pipeline.",
 }

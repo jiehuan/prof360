@@ -124,6 +124,19 @@ KeyInsights = Table(
     Column("isActive", Boolean, nullable=False),  # Phase 9 addition
 )  # fmt: skip
 
+# The Key Takeaway box (2026-10-20): 2-3 bullets for professional lines, most important first,
+# shown without links. Versioned like KeyInsights: a new version is new rows, the old rows get
+# isActive = 0.
+KeyTakeaways = Table(
+    "KeyTakeaways", app_metadata,
+    _id("KeyTakeawayId"),
+    Column("CompanyId", Integer, ForeignKey("Company.CompanyId"), nullable=False),
+    Column("Ordinal", Integer, nullable=False),  # 1 = most important
+    Column("Takeaway", UnicodeText, nullable=False),
+    Column("UpdatedDate", Date),
+    Column("isActive", Boolean, nullable=False),
+)  # fmt: skip
+
 RiskTypes = Table(
     "RiskTypes", app_metadata,
     _id("RiskType_Id"),

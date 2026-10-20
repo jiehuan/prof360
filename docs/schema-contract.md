@@ -15,6 +15,7 @@
 | `FollowUpQuestions` 增加 Priority, isActive；`KeyInsights` 增加 isActive | 版本化：新版本是新行，旧行 isActive = 0，用户的 flag 不会指向换了内容的问题 |
 | 所有 sources 类列存 `[{title, url, date}]`，不是纯 URL 列表 | 弹窗要显示可读标题；`KeyInsights.link` 是第一个 URL |
 | `MatrixData.accession`、`filed_date`、`context_or_dimension` 存 JSON 列表 | 图里是 list 类型 |
+| 新表 `KeyTakeaways`（CompanyId, Ordinal, Takeaway, UpdatedDate, isActive）（2026-10-20，D-053） | 公司页 Key Insights 上方的 Key Takeaway 框：2–3 条对专业责任险最重要的要点，不显示链接；需要 BFF 新增读取 |
 
 ## 应用表的写入规则
 
@@ -24,6 +25,7 @@
 | metric_category / metrics / SIC_Preferences | `config/metrics.yaml` + 行业组 | metrics.Formula 是通用定义；分类名在 `config/app_publish.yaml`。Phase 14 新增显示指标：银行 ROA、ROE、贷款损失准备率；AUM、VaR、国际收入、RPO 等只作为洞察输入，不进 metrics（D-043） |
 | MatrixData | `metric_value` | source_class = derivation；confidence 按取值方式（配置） |
 | KeyInsights / KeyInsightsTypes | `insight`（KEY） | evidence = Supporting Evidence（规则生成）；confidence 按来源数（配置） |
+| KeyTakeaways | `insight`（TAKEAWAY） | Takeaway = 一句话要点；Ordinal 1 最重要；没有来源和链接（依据只存在管线库，供审计）；不进 ItemLink |
 | StrategicRisk / RiskTypes | `insight`（STRATEGIC_RISK、BEHAVIORAL） | Category：governance / risk / event / behavior；RiskType 由 subcategory 按 `config/app_publish.yaml` 的规则映射 |
 | FollowUpQuestions | `followup_question` | title = 问题；Priority = system_priority |
 | ItemLink | `insight_link`、`insight_metric`、`followup_question_insight`、`followup_question_metric` | 只连接当前版本（isActive = 1）的对象；从任一端都可查 |
@@ -34,7 +36,7 @@
 
 **id 稳定性**：应用表的 id 由应用库生成。`pipeline_publish_map`（在应用库里）记录每个管线对象对应的应用 id，重跑时更新同一行；内容没变的行不写。
 
-**读取约定**：KeyInsights、StrategicRisk、FollowUpQuestions 只读 `isActive = 1`。Related tab 用 `ItemLink`，例如指标弹窗的 Related Key Insight = `ToType = 'METRIC' AND ToId = <metric_id> AND FromType = 'KEY_INSIGHT'`，Key Insight 弹窗的 Related Metrics = `FromType = 'KEY_INSIGHT' AND FromId = <UniqueID> AND ToType = 'METRIC'`。
+**读取约定**：KeyInsights、KeyTakeaways、StrategicRisk、FollowUpQuestions 只读 `isActive = 1`；KeyTakeaways 按 `Ordinal` 排序显示。Related tab 用 `ItemLink`，例如指标弹窗的 Related Key Insight = `ToType = 'METRIC' AND ToId = <metric_id> AND FromType = 'KEY_INSIGHT'`，Key Insight 弹窗的 Related Metrics = `FromType = 'KEY_INSIGHT' AND FromId = <UniqueID> AND ToType = 'METRIC'`。
 
 ---
 
@@ -77,6 +79,7 @@
 | 公司头部 / Dashboard 卡片 | `company` | name, ticker, sic_code, sic_description, industry_group, is_financial, hq_city, hq_state, fiscal_year_end, last_refreshed_at | — |
 | Logo | BFF 已有（PLAN §12 Q9），管线不提供 | — | — |
 | Dashboard 计数 | Risk Flags = `signal` 中 `severity IN ('Warning','Critical')`；Follow-Up = `followup_question` 中 `is_current = 1` | count | 0 |
+| Key Takeaway（Key Insights 上方） | `insight` 中 `kind = 'TAKEAWAY' AND is_current = 1`，按 `ordinal` 排序 | summary（一句话要点）；title 是内部主题，不显示 | 隐藏模块 |
 | Key Insights Summary | `insight` 中 `kind = 'KEY' AND is_current = 1`，按 `ordinal` 排序；关联 `insight_evidence` 和 `insight_metric` | insight_type (Warning/Negative/Positive/Info), title, summary, uw_relevance, supporting_evidence | 隐藏模块 |
 | Financial / Liquidity / Leverage / Cash Flow 指标 | `metric_value` 关联 `metric_definition`（`is_display = 1`），按 `section` 分组 | value, value_status, unit, derivation, period_* | 单个指标无值时显示 "—"；原因见覆盖率报告 |
 | QoQ / YoY / 5Ys 切换 | `metric_value` 中 `period_type` 取 Q（最近 8 个季度）或 FY（最近 5 年）；增长率是 `revenue_growth_qoq` / `revenue_growth_yoy` | — | — |

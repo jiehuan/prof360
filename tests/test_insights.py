@@ -97,6 +97,17 @@ def answer(model, user):
              "uw_relevance": "Softer outlook may precede guidance cuts.",
              "evidence": [_ev("T1", "Demand remains robust across all regions"),
                           _ev("T2", "more challenging macro environment in the US")]}]}  # fmt: skip
+    if "## Rule-based signals" in user and "\nK1 | " in user:  # key takeaways (K items exist)
+        return {"takeaways": [
+            {"topic": "Leverage and refinancing",
+             "text": "Debt of $16.9B against negative equity raises refinancing and disclosure risk.",
+             "evidence": [_ev("K1", "Negative equity amid $16.9B debt")]},
+            {"topic": "Emerging macro caution",
+             "text": "The CEO's turn to a more challenging US macro view may precede guidance cuts.",
+             "evidence": [_ev("B1", "Macro caution enters CEO remarks")]},
+            {"topic": "Litigation", "text": "A 40% revenue drop raises securities claim risk.",
+             "evidence": [_ev("R1", "Negative equity with heavy debt")]},  # invented number
+        ]}  # fmt: skip
     if "## Rule-based signals" in user:  # key insights
         return {"insights": [
             {"type": "Warning", "title": "Negative equity amid $16.9B debt",
@@ -150,6 +161,16 @@ def test_grounded_insights_stored_with_lineage(env) -> None:
         ("STRATEGIC_RISK", "Negative equity with heavy debt"),
         ("STRATEGIC_RISK", "No material signal identified"),
         ("KEY", "Negative equity amid $16.9B debt"),
+        ("TAKEAWAY", "Leverage and refinancing"),  # the invented-number takeaway is dropped
+        ("TAKEAWAY", "Emerging macro caution"),
+    }
+    assert "key_takeaways=2/3" in detail
+    lead = rows[("TAKEAWAY", "Leverage and refinancing")]
+    assert lead.ordinal == 1 and lead.summary.startswith("Debt of $16.9B")
+    # Its evidence resolves through K1 to K1's own sources (kept for audits, not shown).
+    assert {e["source_kind"] for e in ev if e["insight_id"] == lead.insight_id} == {
+        "METRIC",
+        "DOCUMENT",
     }
     key_id = rows[("KEY", "Negative equity amid $16.9B debt")].insight_id
     key_ev = [e for e in ev if e["insight_id"] == key_id]
@@ -182,7 +203,7 @@ def test_sources_links_and_evidence_text(env) -> None:
         qs = c.execute(select(followup_question_source).order_by(
             followup_question_source.c.ordinal)).mappings().all()  # fmt: skip
     # K1 cited R1: the link is kept, and the evidence resolves to the 10-K with a readable title.
-    assert link == [(key.insight_id, risk.insight_id)]
+    assert [x for x in link if x[0] == key.insight_id] == [(key.insight_id, risk.insight_id)]
     doc_ev = next(e for e in ev if e["source_kind"] == "DOCUMENT")
     assert doc_ev["source_title"] == "MARRIOTT 10-K filed 2026-02-10 · Item 1A. Risk Factors"
     assert doc_ev["source_url"] == "u" and doc_ev["source_date"] == "2026-02-10"
@@ -212,9 +233,9 @@ def test_rerun_with_same_inputs_makes_no_calls(env) -> None:
     calls = len(llm.calls)
     detail = _run(env, llm)
     assert len(llm.calls) == calls
-    assert detail.count("unchanged") == 4
+    assert detail.count("unchanged") == 5
     with env.connect() as c:
-        assert c.execute(select(func.count()).select_from(insight)).scalar_one() == 4
+        assert c.execute(select(func.count()).select_from(insight)).scalar_one() == 6
 
 
 def test_changed_input_creates_new_current_version(env) -> None:
@@ -232,8 +253,9 @@ def test_changed_input_creates_new_current_version(env) -> None:
             select(insight.c.kind, func.count()).where(insight.c.is_current == true())
             .group_by(insight.c.kind)).all()  # fmt: skip
         total = c.execute(select(func.count()).select_from(insight)).scalar_one()
-    assert dict(current) == {"BEHAVIORAL": 1, "STRATEGIC_RISK": 2, "KEY": 1}
-    assert total == 4 + 3  # behavioral input unchanged; strategic (2 rows) and key re-generated
+    assert dict(current) == {"BEHAVIORAL": 1, "STRATEGIC_RISK": 2, "KEY": 1, "TAKEAWAY": 2}
+    # behavioral input unchanged; strategic (2 rows), key (1) and takeaways (2) re-generated
+    assert total == 6 + 5
 
 
 def test_fmt_value() -> None:
@@ -312,11 +334,11 @@ def test_companies_run_in_parallel_on_a_sqlite_file(tmp_path) -> None:
                                 companies))  # fmt: skip
     elapsed = time.monotonic() - started
     assert all(r.ok for r in results), results
-    assert state["peak"] == 2 and len(llm.calls) == 8  # four calls each, two at a time
-    # 1.2 s of calls per company: together ~1.3 s; one after the other (the second waiting on
-    # the first one's transaction) ~2.1 s.
-    assert elapsed < 1.8, elapsed
+    assert state["peak"] == 2 and len(llm.calls) == 10  # five calls each, two at a time
+    # 1.5 s of calls per company: together ~1.6 s; one after the other (the second waiting on
+    # the first one's transaction) ~2.7 s.
+    assert elapsed < 2.2, elapsed
     with engine.connect() as c:
         per_company = dict(c.execute(select(insight.c.company_id, func.count())
                                      .group_by(insight.c.company_id)).all())  # fmt: skip
-    assert per_company == {1: 4, 2: 4}
+    assert per_company == {1: 6, 2: 6}

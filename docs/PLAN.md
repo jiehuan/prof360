@@ -669,6 +669,7 @@ uw-pipeline dq-report --run-id <id>
 - [x] 16e golden 值：每个新增或修改的模块 2 家，24 个测试，取自 10-K / 10-Q
 - [x] 16d 首次全量 LLM（Haiku 5.5，D-052）：$13.32、6,054 次调用、0 错误；insights 和 metricdetail 改短事务后同时 4 家
 - [x] 第一次 DQ 复查：Error 37 → 6（重述年度的第四季度 N/M、BlackRock 收入 tag、新闻稿按取整精度比较、更严格的定义、删除过时核对；剩下 6 个已有解释）
+- [x] Key Takeaway（用户新需求，2026-10-20，D-053）：insights 阶段第 6 步 `key_takeaways_v1`，2–3 条对专业责任险最重要的要点，不显示链接；应用库新表 `KeyTakeaways`（需要 BFF 新增读取）
 - [ ] 16d 待办：55 个文本指标缺口的说明或修复；每个文本指标 2 家留出公司
 - [ ] 16e 其余关口：`audit-insights` 抽 20 家、`stability_check.py` 抽 5 家、SQL Server 测试
 - [ ] 未做（Phase 17 再看）：客户集中度、油气储量（在附注和 Item 2，文本抽取不读）；REIT FFO / 出租率、ARPU、公用事业灾害成本、汽车召回；多类股公司的市值（GOOGL、V、BRK.B）；WFC、AXP 的贷款总额（需公司自定义概念）

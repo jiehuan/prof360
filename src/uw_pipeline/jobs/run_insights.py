@@ -36,6 +36,7 @@ from uw_pipeline.enrich.schemas import (
     BehavioralInsights,
     FollowUpQuestions,
     KeyInsights,
+    KeyTakeaways,
     StrategicInsights,
 )
 from uw_pipeline.enrich.sources import SourceLabels, SourceRef, SourceResolver
@@ -539,7 +540,9 @@ def process_company(
 
     # 5. follow-up questions
     for n, r in enumerate(key, start=1):
-        pkg.add(_insight_source("K", n, r))
+        src = _insight_source("K", n, r)
+        pkg.add(src)
+        resolved[src.id] = _stored_evidence(conn, r["insight_id"])  # for the takeaways
     insight_ids = {f"{p}{n}": r["insight_id"]
                    for p, rows in (("K", key), ("R", strategic), ("B", behavioral))
                    for n, r in enumerate(rows, start=1)}  # fmt: skip
@@ -571,6 +574,24 @@ def process_company(
             _store_followups(conn, company_id, good, pkg, insight_ids, resolver,
                              model=spec.model, prompt_version=versions["followups"],
                              input_hash=q_hash, now=now)  # fmt: skip
+
+    # 6. key takeaways: 2-3 bullets for professional lines over all of the above, shown in the
+    # app without links; grounded like the other insights, their evidence kept for audits.
+    user_t = pkg.render("METRIC", "SIGNAL", "INSIGHT")
+    lo, hi = icfg.counts["key_takeaways"]
+
+    def run_t() -> list[dict[str, Any]] | None:
+        out = runner.run(spec, "key_takeaways", versions["key_takeaways"], user_t, KeyTakeaways)
+        if out is None:
+            return None
+        kept, g = ground_items(out.takeaways, pkg, ["topic", "text"], "key takeaway")
+        record("key_takeaways", g)
+        return [{"title": t.topic, "summary": t.text, "cited": c} for t, c in kept[:hi]]
+
+    takeaways = produce("TAKEAWAY", "key_takeaways", user_t, run_t,
+                        json.dumps(sorted(insight_ids.items())))  # fmt: skip
+    if not lo <= len(takeaways) <= hi:
+        log.warning("%s: %d key takeaways (expected %d-%d)", cfg.ticker, len(takeaways), lo, hi)
     return stats
 
 

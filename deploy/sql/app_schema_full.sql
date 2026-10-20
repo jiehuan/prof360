@@ -210,6 +210,19 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_KeyInsights_company_a
     CREATE INDEX [ix_KeyInsights_company_active] ON dbo_professional360.[KeyInsights] ([CompanyId], [isActive]);
 GO
 
+IF OBJECT_ID(N'dbo_professional360.KeyTakeaways', N'U') IS NULL
+CREATE TABLE dbo_professional360.[KeyTakeaways] (
+	[KeyTakeawayId] INTEGER NOT NULL IDENTITY, 
+	[CompanyId] INTEGER NOT NULL, 
+	[Ordinal] INTEGER NOT NULL, 
+	[Takeaway] NVARCHAR(max) NOT NULL, 
+	[UpdatedDate] DATE NULL, 
+	[isActive] BIT NOT NULL, 
+	PRIMARY KEY ([KeyTakeawayId]), 
+	FOREIGN KEY([CompanyId]) REFERENCES dbo_professional360.[Company] ([CompanyId])
+);
+GO
+
 IF OBJECT_ID(N'dbo_professional360.LoanPortfolio', N'U') IS NULL
 CREATE TABLE dbo_professional360.[LoanPortfolio] (
 	[LoanPortfolioId] INTEGER NOT NULL IDENTITY, 

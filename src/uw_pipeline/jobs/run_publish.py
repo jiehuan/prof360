@@ -63,6 +63,7 @@ from uw_pipeline.schema_app import (
     ItemLink,
     KeyInsights,
     KeyInsightsTypes,
+    KeyTakeaways,
     LoanPortfolio,
     LoanTypes,
     MatrixData,
@@ -318,9 +319,17 @@ class Publisher:
             .order_by(insight.c.kind, insight.c.ordinal)
         ).mappings().all()  # fmt: skip
         out: dict[int, tuple[str, int]] = {}
-        keep_k, keep_r = [], []
+        keep_k, keep_r, keep_t = [], [], []
         for r in rows:
             key = f"{self.p}{r['insight_id']}"
+            if r["kind"] == "TAKEAWAY":  # bullets only: no sources, no links (ItemLink)
+                self.w.put(KeyTakeaways, key, {
+                    "CompanyId": self.app_company, "Ordinal": r["ordinal"],
+                    "Takeaway": r["summary"], "UpdatedDate": _date(r["created_at"]),
+                    "isActive": True,
+                })  # fmt: skip
+                keep_t.append(key)
+                continue
             sources = self._sources(r["insight_id"])
             first_url = next((s["url"] for s in sources if s["url"]), None)
             if r["kind"] == "KEY":
@@ -353,8 +362,10 @@ class Publisher:
                 keep_r.append(key)
         self.stats.add("KeyInsights", len(keep_k))
         self.stats.add("StrategicRisk", len(keep_r))
+        self.stats.add("KeyTakeaways", len(keep_t))
         self.stats.add("retired", self.w.deactivate_except(KeyInsights, self.p, keep_k))
         self.stats.add("retired", self.w.deactivate_except(StrategicRisk, self.p, keep_r))
+        self.stats.add("retired", self.w.deactivate_except(KeyTakeaways, self.p, keep_t))
         return out
 
     def questions(self) -> dict[int, int]:

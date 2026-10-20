@@ -25,6 +25,7 @@ from uw_pipeline.schema_app import (
     FollowUpQuestions,
     ItemLink,
     KeyInsights,
+    KeyTakeaways,
     MatrixData,
     RiskTypes,
     StrategicRisk,
@@ -101,6 +102,12 @@ def test_publish_maps_objects_and_links() -> None:
         1.0,
     )
     assert detail["UnderwritingRelevance"] and "Reported in XBRL" in detail["Methodology"]
+    # Key takeaways: bullets in order, no links, nothing leaked into StrategicRisk.
+    with app.connect() as c:
+        tk = c.execute(select(KeyTakeaways).order_by(KeyTakeaways.c.Ordinal)).mappings().all()
+    assert [t["Ordinal"] for t in tk] == [1, 2] and all(t["isActive"] for t in tk)
+    assert tk[0]["Takeaway"].startswith("Debt of $16.9B")
+    assert len(risks) == 3 and not any(t == "TAKEAWAY" for t, *_ in links)
 
 
 def test_republish_is_idempotent_and_new_versions_retire_old_rows() -> None:
@@ -125,6 +132,9 @@ def test_republish_is_idempotent_and_new_versions_retire_old_rows() -> None:
     assert _count(app, KeyInsights) == 2 and _count(app, KeyInsights, KeyInsights.c.isActive) == 1
     assert _count(app, FollowUpQuestions) == q_before + 1
     assert _count(app, FollowUpQuestions, FollowUpQuestions.c.isActive) == 1
+    assert (
+        _count(app, KeyTakeaways) == 4 and _count(app, KeyTakeaways, KeyTakeaways.c.isActive) == 2
+    )
     # Links only connect active rows.
     with app.connect() as c:
         active_keys = set(

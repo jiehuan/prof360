@@ -1154,3 +1154,28 @@ LLM runs until the end, then one comparison.
 - Open: market cap for multi-class companies (Alphabet, Visa, Berkshire) needs per-class
   share counts; total loans for Wells Fargo and American Express are not tagged with standard
   tags (company concepts needed); the quarterly list review owner.
+
+
+**D-053 Key Takeaway: 2–3 bullets for professional lines above the Key Insights (2026-10-20).**
+- User request: a Key Takeaway box on the company page (prototype: "Key Takeaway", above "Key
+  Insights Summary"): from all of the company's current results, the 2–3 points that matter most
+  for professional insurance, without links.
+- Generation: a sixth step of the insights stage, `key_takeaways_v1` on the synthesis model,
+  after the follow-up questions. Input: metrics, signals and the current key, strategic/risk and
+  behavioral insights. Scope (user decision): D&O first (securities and derivative claims,
+  regulatory, governance and insider selling, distress, M&A), then E&O, cyber and employment
+  practices where the input shows them. Each bullet is one sentence with its fact and date.
+- Same checks as the other insights though nothing is shown but the text: schema; quotes of the
+  cited items must be found and every number must come from the input, else the bullet is
+  dropped; at most 3 kept; versioned by input hash (a new version only when an input changes).
+  The evidence is stored in `insight_evidence` (citations of key insights resolve to their own
+  sources) for `audit-insights`, and the link-coverage DQ check skips takeaways.
+- App storage, options: (A) a new table `KeyTakeaways` (CompanyId, Ordinal, Takeaway,
+  UpdatedDate, isActive); (B) `KeyInsights` with a "Takeaway" type, which the Key Insights cards
+  would have to filter out; (C) a text column on `Company`, without versions. Chosen (user
+  decision): A, versioned like KeyInsights. The BFF must add the read; recorded in
+  `docs/schema-contract.md`, DDL in `deploy/sql/app_schema_changes.sql`.
+- Trial on MAR, JPM, ENPH: 3 of 3 bullets kept for each, all specific and dated (e.g. ENPH:
+  three open securities class actions, the newest filed 2026-02-17). Some run past the 35-word
+  target. Cost: one call per company with changed inputs (about $0.01 on Haiku).
+
