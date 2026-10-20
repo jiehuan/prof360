@@ -39,13 +39,13 @@ CALL_2 = (
 )
 
 
-def _seed(engine):
+def _seed(engine, cid=1, cik="0001048286", ticker="MAR", name="MARRIOTT"):
     with engine.begin() as c:
         c.execute(insert(company).values(
-            company_id=1, cik="0001048286", ticker="MAR", name="Marriott", legal_name="MARRIOTT",
+            company_id=cid, cik=cik, ticker=ticker, name=name.title(), legal_name=name,
             industry_group="HOTELS", is_financial=False, is_active=True, fiscal_year_end="1231",
             source_url="u", source_hash="h", raw_path="p", last_refreshed_at=NOW))  # fmt: skip
-        mv = dict(company_id=1, period_type="Q", fiscal_year=2026, fiscal_quarter=2,
+        mv = dict(company_id=cid, period_type="Q", fiscal_year=2026, fiscal_quarter=2,
                   period_end="2026-06-30", value_status="OK", derivation="REPORTED",
                   formula="f", source_tags="{}", source_accn="a", computed_at=NOW)  # fmt: skip
         c.execute(insert(metric_value), [
@@ -54,7 +54,7 @@ def _seed(engine):
             mv | {"metric_code": "debt_to_equity", "value": None, "value_status": "NM", "unit": "ratio"},
         ])  # fmt: skip
         c.execute(insert(signal).values(
-            signal_key="k1", company_id=1, rule_id="negative_equity", category="Risk & Legal",
+            signal_key=f"k{cid}", company_id=cid, rule_id="negative_equity", category="Risk & Legal",
             subcategory="Balance Sheet", severity="Warning",
             title="Stockholders' equity is negative; debt-to-equity is not meaningful",
             description="d", event_date="2026-06-30", snippet=None, method="RULE",
@@ -63,10 +63,11 @@ def _seed(engine):
                 (2, "EARNINGS_CALL", "TRANSCRIPT", "AV-MAR-2026Q1", "2026-05-06", "2026-03-31", "TRANSCRIPT", CALL_1),
                 (3, "EARNINGS_CALL", "TRANSCRIPT", "AV-MAR-2026Q2", "2026-08-03", "2026-06-30", "TRANSCRIPT", CALL_2)]  # fmt: skip
         for doc_id, form, stype, accn, filed, pend, code, text in docs:
+            doc_id += 10 * (cid - 1)
             c.execute(insert(source_document).values(
-                doc_id=doc_id, company_id=1, source_type=stype, form_type=form, doc_role="PRIMARY",
-                accession_no=accn, doc_name="d", filed_at=filed, period_end=pend, url="u",
-                content_hash="h"))  # fmt: skip
+                doc_id=doc_id, company_id=cid, source_type=stype, form_type=form,
+                doc_role="PRIMARY", accession_no=f"{accn}-{cid}", doc_name="d", filed_at=filed,
+                period_end=pend, url="u", content_hash="h"))  # fmt: skip
             c.execute(insert(filing_section).values(
                 doc_id=doc_id, section_code=code, start_offset=0, char_count=len(text),
                 text=text, text_hash="h"))  # fmt: skip
@@ -96,6 +97,17 @@ def answer(model, user):
              "uw_relevance": "Softer outlook may precede guidance cuts.",
              "evidence": [_ev("T1", "Demand remains robust across all regions"),
                           _ev("T2", "more challenging macro environment in the US")]}]}  # fmt: skip
+    if "## Rule-based signals" in user and "\nK1 | " in user:  # key takeaways (K items exist)
+        return {"takeaways": [
+            {"topic": "Leverage and refinancing",
+             "text": "Debt of $16.9B against negative equity raises refinancing and disclosure risk.",
+             "evidence": [_ev("K1", "Negative equity amid $16.9B debt")]},
+            {"topic": "Emerging macro caution",
+             "text": "The CEO's turn to a more challenging US macro view may precede guidance cuts.",
+             "evidence": [_ev("B1", "Macro caution enters CEO remarks")]},
+            {"topic": "Litigation", "text": "A 40% revenue drop raises securities claim risk.",
+             "evidence": [_ev("R1", "Negative equity with heavy debt")]},  # invented number
+        ]}  # fmt: skip
     if "## Rule-based signals" in user:  # key insights
         return {"insights": [
             {"type": "Warning", "title": "Negative equity amid $16.9B debt",
@@ -149,6 +161,16 @@ def test_grounded_insights_stored_with_lineage(env) -> None:
         ("STRATEGIC_RISK", "Negative equity with heavy debt"),
         ("STRATEGIC_RISK", "No material signal identified"),
         ("KEY", "Negative equity amid $16.9B debt"),
+        ("TAKEAWAY", "Leverage and refinancing"),  # the invented-number takeaway is dropped
+        ("TAKEAWAY", "Emerging macro caution"),
+    }
+    assert "key_takeaways=2/3" in detail
+    lead = rows[("TAKEAWAY", "Leverage and refinancing")]
+    assert lead.ordinal == 1 and lead.summary.startswith("Debt of $16.9B")
+    # Its evidence resolves through K1 to K1's own sources (kept for audits, not shown).
+    assert {e["source_kind"] for e in ev if e["insight_id"] == lead.insight_id} == {
+        "METRIC",
+        "DOCUMENT",
     }
     key_id = rows[("KEY", "Negative equity amid $16.9B debt")].insight_id
     key_ev = [e for e in ev if e["insight_id"] == key_id]
@@ -181,7 +203,7 @@ def test_sources_links_and_evidence_text(env) -> None:
         qs = c.execute(select(followup_question_source).order_by(
             followup_question_source.c.ordinal)).mappings().all()  # fmt: skip
     # K1 cited R1: the link is kept, and the evidence resolves to the 10-K with a readable title.
-    assert link == [(key.insight_id, risk.insight_id)]
+    assert [x for x in link if x[0] == key.insight_id] == [(key.insight_id, risk.insight_id)]
     doc_ev = next(e for e in ev if e["source_kind"] == "DOCUMENT")
     assert doc_ev["source_title"] == "MARRIOTT 10-K filed 2026-02-10 · Item 1A. Risk Factors"
     assert doc_ev["source_url"] == "u" and doc_ev["source_date"] == "2026-02-10"
@@ -211,9 +233,9 @@ def test_rerun_with_same_inputs_makes_no_calls(env) -> None:
     calls = len(llm.calls)
     detail = _run(env, llm)
     assert len(llm.calls) == calls
-    assert detail.count("unchanged") == 4
+    assert detail.count("unchanged") == 5
     with env.connect() as c:
-        assert c.execute(select(func.count()).select_from(insight)).scalar_one() == 4
+        assert c.execute(select(func.count()).select_from(insight)).scalar_one() == 6
 
 
 def test_changed_input_creates_new_current_version(env) -> None:
@@ -231,8 +253,9 @@ def test_changed_input_creates_new_current_version(env) -> None:
             select(insight.c.kind, func.count()).where(insight.c.is_current == true())
             .group_by(insight.c.kind)).all()  # fmt: skip
         total = c.execute(select(func.count()).select_from(insight)).scalar_one()
-    assert dict(current) == {"BEHAVIORAL": 1, "STRATEGIC_RISK": 2, "KEY": 1}
-    assert total == 4 + 3  # behavioral input unchanged; strategic (2 rows) and key re-generated
+    assert dict(current) == {"BEHAVIORAL": 1, "STRATEGIC_RISK": 2, "KEY": 1, "TAKEAWAY": 2}
+    # behavioral input unchanged; strategic (2 rows), key (1) and takeaways (2) re-generated
+    assert total == 6 + 5
 
 
 def test_fmt_value() -> None:
@@ -274,3 +297,48 @@ def test_numbers_in_metric_names_are_input() -> None:
     assert numbers_ok(text, [Cited(pay, "$26.0M")], pkg, GroundingStats(), "t")
     assert not numbers_ok(["CEO pay rose to $31M."], [Cited(pay, "$26.0M")], pkg,
                           GroundingStats(), "t")  # fmt: skip
+
+
+def test_companies_run_in_parallel_on_a_sqlite_file(tmp_path) -> None:
+    """D-052: the stage commits its writes before each model call, so two companies' calls
+    overlap on a SQLite file instead of the second waiting for the first one's transaction."""
+    import threading
+    import time
+    from concurrent.futures import ThreadPoolExecutor
+
+    from uw_pipeline.clients.db import make_engine
+
+    engine = make_engine(f"sqlite:///{tmp_path / 'i.db'}")
+    metadata.create_all(engine)
+    _seed(engine)
+    _seed(engine, cid=2, cik="0001585689", ticker="HLT", name="HILTON")
+    lock, state = threading.Lock(), {"now": 0, "peak": 0}
+
+    def slow(model, user):
+        with lock:
+            state["now"] += 1
+            state["peak"] = max(state["peak"], state["now"])
+        time.sleep(0.3)
+        with lock:
+            state["now"] -= 1
+        return answer(model, user)
+
+    llm = FakeLLM(slow)
+    args = (load_registry(CONFIG_DIR), load_industry_config(CONFIG_DIR),
+            (llm, load_llm_config(CONFIG_DIR)), load_insights_config(CONFIG_DIR),
+            load_source_labels(CONFIG_DIR), engine)  # fmt: skip
+    companies = [CompanyConfig(ticker="MAR", cik=1048286), CompanyConfig(ticker="HLT", cik=1585689)]
+    started = time.monotonic()
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(lambda c: run_insights_stage([c], *args, now=lambda: NOW)[0],
+                                companies))  # fmt: skip
+    elapsed = time.monotonic() - started
+    assert all(r.ok for r in results), results
+    assert state["peak"] == 2 and len(llm.calls) == 10  # five calls each, two at a time
+    # 1.5 s of calls per company: together ~1.6 s; one after the other (the second waiting on
+    # the first one's transaction) ~2.7 s.
+    assert elapsed < 2.2, elapsed
+    with engine.connect() as c:
+        per_company = dict(c.execute(select(insight.c.company_id, func.count())
+                                     .group_by(insight.c.company_id)).all())  # fmt: skip
+    assert per_company == {1: 6, 2: 6}

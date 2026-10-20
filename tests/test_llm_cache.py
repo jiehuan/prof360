@@ -54,3 +54,40 @@ def test_request_too_large_fails_the_item_only(conn) -> None:
 
     with pytest.raises(LLMUnavailableError):
         _call(conn, FakeLLM(bad_setup), user="other")
+
+
+def test_short_transactions_hold_no_lock_while_the_model_answers(tmp_path) -> None:
+    """D-052: with `commit`, the stage's finished writes are committed before the model is
+    called, so another worker can write meanwhile (SQLite allows one writer at a time). Without
+    it the stage's transaction would hold the lock for the whole call."""
+    import sqlite3
+
+    from uw_pipeline.clients.db import make_engine
+    from uw_pipeline.schema import llm_task_stat
+
+    path = tmp_path / "w.db"
+    engine = make_engine(f"sqlite:///{path}")
+    metadata.create_all(engine)
+    seen: list[str] = []
+
+    def answer(model, user):
+        other = sqlite3.connect(path, timeout=0.2)  # another worker's write during the call
+        try:
+            other.execute("INSERT INTO llm_task_stat (company_id, task, generated, kept, "
+                          "created_at) VALUES (2, 'x', 0, 0, '2026-10-14')")  # fmt: skip
+            other.commit()
+            seen.append("written")
+        except sqlite3.OperationalError as exc:
+            seen.append(str(exc))
+        finally:
+            other.close()
+        return {"n": 1}
+
+    for commit in (True, False):
+        with engine.connect() as conn:
+            conn.execute(llm_task_stat.insert().values(company_id=1, task="t", generated=1,
+                                                       kept=1, created_at=NOW))  # fmt: skip
+            cached_call(conn, FakeLLM(answer), SPEC, task="t", prompt_version="v1", system="s",
+                        user=f"u-{commit}", schema={}, now=NOW, commit=commit)  # fmt: skip
+            conn.rollback()
+    assert seen == ["written", "database is locked"]

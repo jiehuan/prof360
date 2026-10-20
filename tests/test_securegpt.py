@@ -14,7 +14,7 @@ from uw_pipeline.enrich.schemas import strict_json_schema
 
 CFG = load_securegpt_config(CONFIG_DIR)
 DV = CFG.environments["dv"]
-NANO = "gpt-5-nano-2025-08-07"
+NANO = "gpt-6-luna-2026-09-22"  # the extractor's deployment
 CHAT = f"{DV.base_url}/{NANO}/chat/completions"
 
 
@@ -64,14 +64,14 @@ def test_token_then_structured_completion() -> None:
     assert (th["Client_Id"], th["Client_Secret"], th["scope"], th["Ocp-Apim-Subscription-Key"]) == (
         "id", "secret", "urn:grp:chatgpt", "subkey")  # fmt: skip
     req = chat.calls[0].request
-    assert req.url.params["api-version"] == "2024-10-21"
+    assert req.url.params["api-version"] == "2025-04-01-preview"
     assert req.headers["Authorization"] == "Bearer T1"
     body = json.loads(req.content)
     assert body["messages"][0] == {"role": "system", "content": "sys"}
     assert body["response_format"]["type"] == "json_schema"
     assert body["response_format"]["json_schema"]["strict"] is True
     assert body["max_completion_tokens"] == 1000
-    assert "reasoning_effort" not in body  # off for api-version 2024-10-21 until confirmed
+    assert "reasoning_effort" not in body  # off until the smoke test confirms the gateway
 
 
 def test_token_is_reused_and_refreshed_before_expiry() -> None:

@@ -216,3 +216,64 @@ def test_heartbeat_is_refreshed_during_a_long_task(tmp_path) -> None:
 
     assert orch.execute(run_id, slow).status == "SUCCEEDED"
     assert beats[0][1] > beats[0][0]  # refreshed while the task was still running
+
+
+def _concurrency_runner(slow_stage: str, fail: set[tuple[str, str]] = frozenset()):
+    import threading
+
+    lock, state = threading.Lock(), {"now": 0, "peak": {}}
+
+    def runner(stage, ticker):
+        with lock:
+            state["now"] += 1
+            state["peak"][stage] = max(state["peak"].get(stage, 0), state["now"])
+        time.sleep(0.2 if stage == slow_stage else 0.01)
+        with lock:
+            state["now"] -= 1
+        return TaskResult(ticker, stage, ok=(ticker, stage) not in fail, detail="x")
+
+    return runner, state
+
+
+def test_parallel_stage_runs_companies_together(tmp_path) -> None:
+    # Phase 15i: a stage's companies run in threads; later stages still wait for their own
+    # company's prerequisites. (A file database: tasks write their status from several threads.)
+    engine = create_engine(f"sqlite:///{tmp_path / 'p.db'}")
+    metadata.create_all(engine)
+    orch = Orchestrator(engine, now=Clock(), max_attempts=1, parallel={"facts": 3},
+                        allow_parallel=True)  # fmt: skip
+    run_id, _ = orch.start("nightly", STAGES[:3], ["A", "B", "C"])
+    runner, state = _concurrency_runner("facts", fail={("B", "facts")})
+    started = time.monotonic()
+    out = orch.execute(run_id, runner)
+    assert time.monotonic() - started < 0.5  # three 0.2 s tasks at once, not one after another
+    assert state["peak"] == {"company": 1, "facts": 3, "compute": 1}
+    t = tasks(engine, run_id)
+    assert out.status == "PARTIAL" and t[("B", "compute")][0] == "SKIPPED"
+    assert t[("A", "compute")][0] == t[("C", "compute")][0] == "SUCCEEDED"
+
+
+def test_parallel_only_on_a_server_database(engine) -> None:
+    # SQLite allows one writer: one company at a time. (scripts/test_mssql.sh --all runs this
+    # test on SQL Server, where the stage runs in parallel.)
+    sqlite = engine.dialect.name == "sqlite"
+    orch = Orchestrator(engine, now=Clock(), parallel={"facts": 3})
+    assert orch.allow_parallel is not sqlite
+    run_id, _ = orch.start("nightly", STAGES[:2], ["A", "B", "C"])
+    runner, state = _concurrency_runner("facts")
+    assert orch.execute(run_id, runner).status == "SUCCEEDED"
+    assert state["peak"]["facts"] == (1 if sqlite else 3)
+
+
+def test_short_transaction_stages_run_in_parallel_on_a_sqlite_file(tmp_path) -> None:
+    # D-052: insights and metricdetail keep no transaction open while waiting for the model, so
+    # on a SQLite file their companies run together; other stages stay one at a time.
+    engine = create_engine(f"sqlite:///{tmp_path / 'p.db'}")
+    metadata.create_all(engine)
+    orch = Orchestrator(engine, now=Clock(), max_attempts=1,
+                        parallel={"facts": 3, "insights": 3})  # fmt: skip
+    assert not orch.allow_parallel
+    run_id, _ = orch.start("nightly", ["company", "facts", "insights"], ["A", "B", "C"])
+    runner, state = _concurrency_runner("insights")
+    assert orch.execute(run_id, runner).status == "SUCCEEDED"
+    assert state["peak"]["insights"] == 3 and state["peak"]["facts"] == 1

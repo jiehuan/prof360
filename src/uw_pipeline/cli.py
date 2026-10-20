@@ -7,10 +7,11 @@ import logging
 import os
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
-from typing import Annotated
+from pathlib import Path
+from typing import Annotated, Any
 
 import typer
-from sqlalchemy import Engine, select
+from sqlalchemy import Connection, Engine, func, select
 
 from uw_pipeline.clients.db import app_engine, ensure_schema, pipeline_engine
 from uw_pipeline.compute.coverage import company_coverage, load_notes, render_markdown
@@ -24,6 +25,7 @@ from uw_pipeline.logs import log_context, setup_logging
 from uw_pipeline.schema import company, dq_finding, metric_value, pipeline_run, pipeline_task
 from uw_pipeline.schema_app import app_metadata
 from uw_pipeline.settings import Settings
+from uw_pipeline.signals.rules import load_signal_rules
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 log = logging.getLogger("uw_pipeline")
@@ -33,11 +35,13 @@ class Stage(StrEnum):
     company = "company"
     facts = "facts"
     compute = "compute"
+    market = "market"
     documents = "documents"
     transcripts = "transcripts"
     news = "news"
     textmetrics = "textmetrics"
     governance = "governance"
+    legal = "legal"
     signals = "signals"
     insights = "insights"
     metricdetail = "metricdetail"
@@ -48,9 +52,9 @@ class Stage(StrEnum):
 
 # Default order for manual runs (scheduled jobs list their stages in config/jobs.yaml).
 STAGE_ORDER = [
-    Stage.company, Stage.facts, Stage.compute, Stage.documents,
+    Stage.company, Stage.facts, Stage.compute, Stage.market, Stage.documents,
     Stage.transcripts, Stage.news, Stage.scores, Stage.textmetrics, Stage.governance,
-    Stage.signals,
+    Stage.legal, Stage.signals,
     Stage.insights,
     Stage.metricdetail, Stage.publish, Stage.dq,
 ]  # fmt: skip
@@ -117,6 +121,7 @@ def run(
         max_attempts=jobs_cfg.max_attempts,
         resume_within=timedelta(hours=jobs_cfg.resume_within_hours),
         heartbeat_every=timedelta(minutes=jobs_cfg.heartbeat_minutes),
+        parallel=jobs_cfg.parallel,
     )
     try:
         run_id, resumed = orch.start(
@@ -136,8 +141,10 @@ def run(
             outcome = orch.execute(run_id, runner)
             orch.add_stats(run_id, {"usage_last_start": runner.usage(started)})
     counts = ", ".join(f"{k.lower()}={v}" for k, v in sorted(outcome.counts.items()))
-    typer.echo(f"run {run_id} {outcome.status}: {counts}")
     with engine.connect() as conn:
+        dq, flagged = _dq_status(conn, run_id)
+        hint = " (uw-pipeline dq-report)" if flagged else ""
+        typer.echo(f"run {run_id} {outcome.status}: {counts}; {dq}{hint}")
         failed = conn.execute(
             select(pipeline_task.c.ticker, pipeline_task.c.stage, pipeline_task.c.status,
                    pipeline_task.c.detail)
@@ -149,6 +156,34 @@ def run(
         typer.echo(f"  {status} {t} [{st}]: {detail}", err=True)
     if outcome.status != "SUCCEEDED":
         raise typer.Exit(code=1)
+
+
+def _dq_status(conn: Connection, run_id: int) -> tuple[str, int]:
+    """The data-quality outcome of a run and its Error + Warning count. A run whose dq stage did
+    not run says so, so "no findings" is never read as "not checked"; dq findings never fail
+    the task, so a SUCCEEDED run can still have Errors."""
+    tasks: dict[str, int] = dict(conn.execute(
+        select(pipeline_task.c.status, func.count())
+        .where(pipeline_task.c.run_id == run_id, pipeline_task.c.stage == "dq")
+        .group_by(pipeline_task.c.status)
+    ).all())  # fmt: skip
+    if not tasks:
+        return "dq=not run", 0
+    done, total = tasks.get("SUCCEEDED", 0), sum(tasks.values())
+    if done == 0:
+        if tasks.keys() & {"PENDING", "RUNNING"}:
+            return "dq=pending", 0
+        states = ", ".join(f"{k.lower()}={v}" for k, v in sorted(tasks.items()))
+        return f"dq=not run ({states})", 0
+    found: dict[str, int] = dict(conn.execute(
+        select(dq_finding.c.severity, func.count())
+        .where(dq_finding.c.run_id == run_id).group_by(dq_finding.c.severity)
+    ).all())  # fmt: skip
+    errors, warnings = found.get("Error", 0), found.get("Warning", 0)
+    text = f"dq={ {'Error': errors, 'Warning': warnings} }"
+    if done < total:
+        text += f" ({done} of {total} companies checked)"
+    return text, errors + warnings
 
 
 @app.command()
@@ -170,8 +205,9 @@ def runs(limit: Annotated[int, typer.Option(help="Runs to show")] = 10) -> None:
             cost = usage.get("llm_cost_estimate", usage.get("llm_cost_usd_estimate", 0))
             symbol = {"USD": "$", "EUR": "€"}.get(usage.get("llm_cost_currency", "USD"), "")
             ended = f"{r['finished_at']:%H:%M}" if r["finished_at"] else "running"
+            dq = _dq_status(conn, r["run_id"])[0]
             typer.echo(
-                f"{r['run_id']:>5} {r['job']:<8} {r['status']:<9} starts={r['starts']} "
+                f"{r['run_id']:>5} {r['job']:<8} {r['status']:<9} {dq} starts={r['starts']} "
                 f"{r['started_at']:%Y-%m-%d %H:%M} -> {ended} "
                 f"tasks={stats.get('tasks', {})} llm={symbol}{cost}"
             )
@@ -210,9 +246,8 @@ def coverage_report(
                     select(metric_value).where(metric_value.c.company_id == row["company_id"])
                 ).mappings()
             ]
-            reports.append(
-                company_coverage(cfg.ticker, creg.metrics, values, notes.get(cfg.ticker, {}))
-            )
+            mine = notes.for_company(cfg.ticker, row["industry_group"])
+            reports.append(company_coverage(cfg.ticker, creg.metrics, values, mine))
     today = datetime.now(UTC).date().isoformat()
     out = settings.data_dir / "reports" / f"coverage-{today}.md"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -303,7 +338,7 @@ def dq_report(
 review_app = typer.Typer(
     no_args_is_help=False,
     add_completion=False,
-    help="Human review of disputed signals and identity breaks (D-045).",
+    help="Human review of disputed signals, identity breaks and new legal matters (D-045).",
 )
 app.add_typer(review_app, name="review")
 
@@ -387,3 +422,91 @@ def init_db() -> None:
 
 if __name__ == "__main__":
     app()
+
+
+config_app = typer.Typer(
+    no_args_is_help=True,
+    add_completion=False,
+    help="Validate the configuration and show what a company tracks (D-049).",
+)
+app.add_typer(config_app, name="config")
+
+
+def _config_dir() -> Path:
+    return Path(os.environ.get("CONFIG_DIR") or "config")
+
+
+def _load_all(config_dir: Path) -> tuple[Any, Any, Any, Any]:
+    """Companies, industries, metric registry and signal rules, cross-checked as a run does."""
+    companies = load_companies(config_dir)
+    industry = load_industry_config(config_dir)
+    industry.check_companies(companies)
+    registry = load_registry(config_dir)
+    registry.check_groups(industry.groups.values())
+    rules = load_signal_rules(config_dir)
+    rules.check_groups(industry.groups.values())
+    return companies, industry, registry, rules
+
+
+@config_app.command("check")
+def config_check() -> None:
+    """Validate config/ the way a run does, and list the company and industry settings."""
+    try:
+        companies, industry, _, rules = _load_all(_config_dir())
+    except ValueError as exc:  # pydantic ValidationError is a ValueError
+        typer.echo(f"INVALID: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo("valid")
+    for c in companies:
+        if c.industry:
+            typer.echo(f"  company {c.ticker} -> {c.industry} ({c.industry_reason})")
+    for g in industry.groups.values():
+        parts = [f"not tracked: metrics {g.exclude_metrics}" if g.exclude_metrics else "",
+                 f"signals {g.exclude_signals}" if g.exclude_signals else "",
+                 f"params {sorted(g.signal_params)}" if g.signal_params else ""]  # fmt: skip
+        if any(parts):
+            typer.echo(f"  industry {g.code}: " + ", ".join(p for p in parts if p))
+    for rule_id, scope in sorted(rules._scoped().items()):
+        typer.echo(f"  signal {rule_id}: only {scope}")
+
+
+@config_app.command("show")
+def config_show(ticker: Annotated[str, typer.Option("--ticker")]) -> None:
+    """A company's effective industry, metrics and signals, and where each setting comes from."""
+    try:
+        companies, industry, registry, rules = _load_all(_config_dir())
+    except ValueError as exc:
+        typer.echo(f"INVALID: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    cfg = next((c for c in companies if c.ticker == ticker.upper()), None)
+    if cfg is None:
+        raise typer.BadParameter(f"{ticker} is not in companies.yaml")
+    sic: int | None = None
+    try:  # the SIC code SEC reported, from the company stage's last run
+        engine = pipeline_engine(Settings())
+        with engine.connect() as conn:
+            code = conn.execute(
+                select(company.c.sic_code).where(company.c.cik == f"{cfg.cik:010d}")
+            ).scalar()
+        sic = int(code) if code else None
+    except Exception:  # no pipeline database yet
+        sic = None
+    group, how = industry.classify(sic, cfg)
+    typer.echo(f"{cfg.ticker} (CIK {cfg.cik}, SIC {sic or 'unknown until the company stage runs'})")
+    source = f"companies.yaml: {cfg.industry_reason}" if how == "company" else f"by {how}"
+    typer.echo(f"industry: {group.code} - {group.label}  [{source}]")
+    shown = [m for m in registry.for_company(cfg.ticker, group).metrics if m.display]
+    typer.echo(f"metrics tracked ({len(shown)}):")
+    for m in shown:
+        typer.echo(f"  {m.code:<32} {m.display_name}")
+    if group.exclude_metrics:
+        typer.echo(f"metrics not tracked by {group.code}: {group.exclude_metrics}")
+    tracked = sorted(r for r in rules.rule_ids() if rules.allows(r, group))
+    scoped = rules._scoped()
+    typer.echo(f"signals tracked ({len(tracked)}):")
+    for r in tracked:
+        params = group.signal_params.get(r)
+        typer.echo(f"  {r}" + (f"  [only {scoped[r]}]" if r in scoped else "")
+                   + (f"  params {params}" if params else ""))  # fmt: skip
+    if group.exclude_signals:
+        typer.echo(f"signals not tracked by {group.code}: {group.exclude_signals}")

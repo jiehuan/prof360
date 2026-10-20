@@ -16,7 +16,7 @@ from tests import test_metric_detail as tm
 from uw_pipeline.clients.db import create_tables, make_engine
 from uw_pipeline.load.upsert import delete_keys, insert_missing, upsert
 from uw_pipeline.schema import company, metadata, metric_value, signal
-from uw_pipeline.schema_app import KeyInsights, app_metadata
+from uw_pipeline.schema_app import KeyInsights, KeyTakeaways, app_metadata
 
 URL = os.environ.get("MSSQL_TEST_URL")
 pytestmark = [pytest.mark.mssql,
@@ -59,7 +59,7 @@ def test_tables_live_in_their_schema_with_unicode_text(pipe: Engine, app: Engine
     assert {"metric_value", "insight", "pipeline_task", "llm_call"} <= tables
     assert types["title"].startswith("NVARCHAR") and types["snippet"].startswith("NVARCHAR")
     with app.connect() as c:
-        assert {"ItemLink", "CompanyMetricDetail", "KeyInsights"} <= set(
+        assert {"ItemLink", "CompanyMetricDetail", "KeyInsights", "KeyTakeaways"} <= set(
             inspect(c).get_table_names(schema="uwt_app"))  # fmt: skip
     with pipe.begin() as c:
         _company(c)
@@ -125,8 +125,9 @@ def test_insights_metric_detail_publish_and_dq(pipe: Engine, app: Engine) -> Non
     assert publish().startswith("0 written")  # idempotent on SQL Server too
     with app.connect() as c:
         assert c.execute(select(func.count()).select_from(KeyInsights)).scalar_one() == 1
+        assert c.execute(select(func.count()).select_from(KeyTakeaways)).scalar_one() == 2
     calls = len(llm.calls)
-    assert ti._run(pipe, llm).count("unchanged") == 4 and len(llm.calls) == calls
+    assert ti._run(pipe, llm).count("unchanged") == 5 and len(llm.calls) == calls
     res = run_dq_stage(cfgs, reg, ind, load_dq_config(CONFIG_DIR), CONFIG_DIR, pipe, run_id=None,
                        now=lambda: NOW)  # fmt: skip
     assert res[0].ok, res

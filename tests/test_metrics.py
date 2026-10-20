@@ -77,6 +77,25 @@ def test_formula_alternatives_optional_and_nm() -> None:
     assert de == {2025: (None, "NM"), 2024: (2.0, "OK")}
 
 
+def test_nm_when_counts_a_missing_optional_input_as_zero() -> None:
+    # near_term_debt_coverage: a company without short-term investments is still checked.
+    reg = registry(
+        {"due": ["us-gaap:LongTermDebtCurrent"], "cash": ["us-gaap:Cash"],
+         "sti": ["us-gaap:ShortTermInvestments"], "ocf": ["us-gaap:OCF"]},
+        [{"code": "cov", "formula": "due / (cash + sti + ocf)", "optional": ["sti"],
+          "nm_when": "cash + sti + ocf <= 0", "unit": "ratio"}],
+    )  # fmt: skip
+    out = run(
+        [p("us-gaap:LongTermDebtCurrent", "FY", y, 0, 10) for y in (2024, 2025)]
+        + [p("us-gaap:Cash", "FY", 2024, 0, 5), p("us-gaap:OCF", "FY", 2024, 0, -9),
+           p("us-gaap:Cash", "FY", 2025, 0, 5), p("us-gaap:OCF", "FY", 2025, 0, 10),
+           p("us-gaap:ShortTermInvestments", "FY", 2025, 0, 5)],
+        reg,
+    )  # fmt: skip
+    cov = {k[1]: (v.value, v.status) for k, v in out["cov"].items()}
+    assert cov == {2024: (None, "NM"), 2025: (0.5, "OK")}
+
+
 def test_division_by_zero_gives_no_value() -> None:
     reg = registry({"a": ["us-gaap:A"], "b": ["us-gaap:B"]},
                    [{"code": "r", "formula": "a / b", "unit": "ratio"}])  # fmt: skip

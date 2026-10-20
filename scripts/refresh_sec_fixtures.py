@@ -3,8 +3,10 @@
 Run `uw-pipeline run --all` first, then this script. Fixtures are trimmed to keep the repo
 small:
 - ticker list: only the tickers tests need
-- submissions: the latest few filings plus the 10-K/10-Qs of the past ~13 months
-- companyfacts (golden companies only): only the tags the registry uses
+- submissions (the MVP and golden companies): the latest few filings plus the 10-K/10-Qs of
+  the past ~13 months
+- companyfacts (golden companies only): only the tags the registry uses, for periods ending in
+  the last seven years
 - XBRL instances (golden companies only): only facts the registry reads from instances,
   plus the contexts and units they reference
 """
@@ -29,7 +31,12 @@ OUT = ROOT / "tests" / "fixtures" / "sec"
 KEEP_TICKERS = {"MAR", "LUV", "F", "PFE", "JPM", "M", "LUMN", "SKYD", "PSKY", "PARA", "ENPH"}
 KEEP_FILINGS = 5
 PERIODIC_LOOKBACK_DAYS = 400
-GOLDEN = {"MAR"}
+# Phase 16: two companies per new or changed industry module (golden values, PLAN 16e).
+GOLDEN = {
+    "MAR", "PFE", "MSFT", "CRM", "CSCO", "AAPL", "NVDA", "AMD", "MDT", "ISRG", "KO", "PG",
+    "DUK", "NEE", "LMT", "BA", "UNP", "UPS", "V", "MA", "BAC", "COF", "GS", "MS", "COST", "WMT",
+}  # fmt: skip
+FACT_YEARS = 7
 
 _XBRLI = "{http://www.xbrl.org/2003/instance}"
 
@@ -55,9 +62,13 @@ def trim_submissions(payload: dict, today: date) -> dict:
     return payload
 
 
-def trim_companyfacts(payload: dict, tags: set[tuple[str, str]]) -> dict:
+def trim_companyfacts(payload: dict, tags: set[tuple[str, str]], since: str) -> dict:
+    def recent(body: dict) -> dict:
+        units = {u: [v for v in vals if v["end"] >= since] for u, vals in body["units"].items()}
+        return body | {"units": {u: vals for u, vals in units.items() if vals}}
+
     payload["facts"] = {
-        tax: {name: body for name, body in names.items() if (tax, name) in tags}
+        tax: {name: recent(body) for name, body in names.items() if (tax, name) in tags}
         for tax, names in payload["facts"].items()
     }
     return payload
@@ -100,7 +111,7 @@ def _bytes_io(data: bytes):  # type: ignore[no-untyped-def]
 def main() -> None:
     today = date.today()
     tickers = json.loads(latest(RAW / "company_tickers").read_text())
-    kept = [row for row in tickers.values() if row["ticker"] in KEEP_TICKERS]
+    kept = [row for row in tickers.values() if row["ticker"] in KEEP_TICKERS | GOLDEN]
     OUT.mkdir(parents=True, exist_ok=True)
     out = {str(i): row for i, row in enumerate(kept)}
     (OUT / "company_tickers.json").write_text(json.dumps(out, indent=1) + "\n")
@@ -111,23 +122,29 @@ def main() -> None:
     by_cik = {f"CIK{c.cik:010d}": c for c in load_companies(config) if c.cik}
 
     (OUT / "submissions").mkdir(exist_ok=True)
+    wanted = KEEP_TICKERS | GOLDEN
     for cik_dir in sorted(d for d in (RAW / "submissions").iterdir() if d.is_dir()):
+        cfg = by_cik.get(cik_dir.name)
+        if cfg is None or cfg.ticker not in wanted:
+            continue  # predecessor registrants and companies the tests do not use
         payload = json.loads(latest(cik_dir).read_text())
         subs = trim_submissions(payload, today)
         target = OUT / "submissions" / f"{cik_dir.name}.json"
         target.write_text(json.dumps(subs, indent=1) + "\n")
         print(f"wrote {target.relative_to(ROOT)}")
 
-        cfg = by_cik[cik_dir.name]
         if cfg.ticker not in GOLDEN:
             continue
-        group, _ = industry.classify(parse_sic(subs))
+        # The company's own industry (D-049), else its SIC code's.
+        group = (industry.groups[cfg.industry] if cfg.industry
+                 else industry.classify(parse_sic(subs))[0])  # fmt: skip
         refs = registry.for_company(cfg.ticker, group).tag_refs()
         cf = json.loads(latest(RAW / "companyfacts" / cik_dir.name).read_text())
         std = {(r.taxonomy, r.name) for r in refs if not r.needs_instance}
         target = OUT / "companyfacts" / f"{cik_dir.name}.json"
         target.parent.mkdir(exist_ok=True)
-        target.write_text(json.dumps(trim_companyfacts(cf, std)) + "\n")
+        since = (today - timedelta(days=365 * FACT_YEARS)).isoformat()
+        target.write_text(json.dumps(trim_companyfacts(cf, std, since)) + "\n")
         print(f"wrote {target.relative_to(ROOT)}")
 
         inst_tags = {r.tag for r in refs if r.needs_instance}
@@ -137,6 +154,8 @@ def main() -> None:
                 continue
             accn = recent["accessionNumber"][i]
             folder = RAW / "filings" / cik_dir.name / accn
+            if not (folder / "index.json").exists():
+                continue  # the facts stage never needed this filing's instance
             names = json.loads((folder / "index.json").read_text())["directory"]["item"]
             name = instance_name([n["name"] for n in names], recent["primaryDocument"][i])
             if name is None:

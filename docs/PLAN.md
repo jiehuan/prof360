@@ -582,9 +582,23 @@ uw-pipeline dq-report --run-id <id>
 
 ---
 
-### Phase 15 — D&O 风险核心层：市场数据、内部人交易、财报质量、诉讼（2026-10-15 计划，待确认）
+### Phase 15 — D&O 风险核心层：市场数据、内部人交易、财报质量、诉讼（2026-10-18，D-050）
 
 **目标**：补上证券集体诉讼最主要的驱动因素（股价大跌、业绩不及预期、内部人卖出、披露和会计问题、诉讼与监管调查），先在现有 9 家公司上做完并验证，再进入 Phase 16 扩大范围。应用库结构不变（方案 A）：新指标进 `MatrixData`，新事件经信号和洞察进 `StrategicRisk`。
+
+#### 完成情况（2026-10-18，D-050）
+- [x] 15a 市场数据：`market` 阶段（日线复权价、EARNINGS、SPY），market_cap / volatility_90d / max_drawdown_52w / eps_surprise_pct；stock_drop、earnings_miss_drop（Ford 2024-07-25 验收通过）
+- [x] 15b Form 4：`insider_transaction`，insider_net_sales / officer_sell_pct，insider_cluster_selling（每段集中卖出一条信号）；条数与 EDGAR 一致，10b5-1 按行判断
+- [x] 15c 财报质量和偿债：新概念与指标，MAR / PFE golden 值；DQ 告警改为阈值信号 near_term_refinancing、altman_distress
+- [x] 15d 8-K 1.05 / 1.02；13D 只保留以本公司为标的的文件（index headers 的 SUBJECT COMPANY）
+- [x] 15e 诉讼和监管调查：`legal` 阶段、`legal_matter`、`legal_matters_v1`、跨期合并、复核队列（MATTER）、信号、洞察输入；留出 PFE / JPM / LUMN 41 条类型全部正确
+- [x] 15f 审计费、双重股权、CEO 任期（`board_v2`，加列到 `board_composition`）；审计师 PCAOB ID
+- [x] 15g 发布配置（新类别、Market / Insider Trading 风险类型）、DDL、文档、测试
+- [x] 15h RevPAR / 入住率 / ADR 双模型；MAR 15 个值不变
+- [x] 15i 阶段内多家公司并行（`jobs.yaml` 的 `parallel`，仅服务器数据库）、按模型的 RPM / TPM 限速、按任务的 max_tokens
+- [x] SecureGPT：api-version 2025-04-01-preview（结构化输出），日常调用 gpt-6-luna、复核和综合 gpt-6-sol，每个部署 TPM 50 万（D-051）
+- [x] 15i：insights 和 metricdetail 的 LLM 调用移出事务（短事务），在 SQLite 文件上也能多家并行（D-052）
+- [ ] 15i 待办：其他 LLM 阶段改短事务、公司内部的调用并行（移到 Phase 17d）；SecureGPT 的 RPM、gpt-6-luna 的正式价格（暂用第三方列出的价格）和按任务 max_tokens；冷启动 10 分钟验收（需服务器数据库和一次付费冷启动）
 
 #### 15a 市场数据（Alpha Vantage）
 - 新端点：`OVERVIEW`（市值、股本、beta，每周一次）、`TIME_SERIES_DAILY`（日收盘价和成交量，每天一次）、`EARNINGS`（实际 EPS、预期 EPS、差额；有新财报时才取），外加一个市场基准（SPY）用来算相对跌幅。
@@ -644,9 +658,22 @@ uw-pipeline dq-report --run-id <id>
 - 诉讼事项：抽查 20 条，引文 100% 能在原文找到，类型正确率 ≥ 90%；人工复核队列可用。
 - 规则阶段不调用 LLM；LLM 新增成本记录在 run 统计里。DQ 无 Error；pytest 和 SQL Server 全部通过。
 
-### Phase 16 — 扩大到 S&P 100（2026-10-15 计划，待确认；依赖 Phase 15）
+### Phase 16 — 扩大到 S&P 100（2026-10-18，D-052）
 
 **目标**：100 家公司全部有通用核心层（XBRL 核心 + Phase 15 的市场、财报质量、信号），每个行业有一套行业模块；不做逐家定制。
+
+#### 完成情况（2026-10-18，D-052）
+- [x] 16a 公司：9 家 MVP 加 2026-09-21 的 S&P 100，共 107 家，CIK 逐家钉住；22 家用 `industry` 指定行业（写明原因）；控股公司重组用 `predecessor_ciks`（XOM、BLK）；BRK.B 的 `av_symbols`
+- [x] 16b 行业组 24 个（新增 12 个，金融类用 FINANCIAL_CORE）；模块指标以 XBRL 为主，文本指标双重读取；单位 `count`、`text_metrics_v3`；季度结束日从公司 10-Q 学习（Costco、PepsiCo）
+- [x] 16c `coverage_notes.yaml` 的 `groups:`（行业组和 `"*"`）；XBRL 指标缺口全部有说明
+- [x] 16e golden 值：每个新增或修改的模块 2 家，24 个测试，取自 10-K / 10-Q
+- [x] 16d 首次全量 LLM（开发用模型，D-052）：$13.32、6,054 次调用、0 错误；insights 和 metricdetail 改短事务后同时 4 家
+- [x] 第一次 DQ 复查：Error 37 → 6（重述年度的第四季度 N/M、BlackRock 收入 tag、新闻稿按取整精度比较、更严格的定义、删除过时核对；剩下 6 个已有解释）
+- [x] 暂时隐藏 Phase 15 超出 BRD 的指标（用户新需求，2026-10-20，D-054）：Reporting Quality、Market、Capital Quality 三组共 21 个指标照常计算，但不发布到应用库、不进任何 LLM 输入、不触发阈值信号；`config/metrics.yaml` 的 `hidden_metric_sets` 删掉一组即恢复
+- [x] Key Takeaway（用户新需求，2026-10-20，D-053）：insights 阶段第 6 步 `key_takeaways_v1`，2–3 条对专业责任险最重要的要点，不显示链接；应用库新表 `KeyTakeaways`（需要 BFF 新增读取）
+- [x] 16d 文本指标：引用文本指标的比率改用文本目标（4 个季度）；其余缺口都有说明（未说明 0）；留出测试 16 个指标各 2 家共 32 个值，期间和数值都正确（D-052）
+- [x] 16e 其余关口：`audit-insights`（改为对照模型看到的文本：600 条洞察 1,580/1,580 引文、14/14 贷款行）；`stability_check.py --faults` 5 家全部安全失败；SQL Server 全套测试
+- [ ] 未做（Phase 17 再看）：客户集中度、油气储量（在附注和 Item 2，文本抽取不读）；REIT FFO / 出租率、ARPU、公用事业灾害成本、汽车召回；多类股公司的市值（GOOGL、V、BRK.B）；WFC、AXP 的贷款总额（需公司自定义概念）
 
 #### 16a 公司范围
 - `config/companies.yaml`：按某一日期的 S&P 100 名单逐家钉住 CIK（同一 CIK 的多个股票类别只算一家，例如 GOOGL / GOOG），`av_symbols` 处理特殊代码（例如 BRK.B）。名单每季度人工核对一次。
@@ -685,14 +712,150 @@ uw-pipeline dq-report --run-id <id>
 **验收标准**：100 家公司全部跑通；通用核心层每家都有值或有说明；每个行业组的 golden 值核对通过；首次回补费用和时长记录在 run 统计；夜间增量在时间窗口内完成。
 
 #### Phase 15 / 16 待确认
-1. 内部人交易来源：SEC Form 4（建议：权威、免费、按 CIK）还是 AV `INSIDER_TRANSACTIONS`。
-2. 股价大跌阈值：单日 ≥ 10% 且相对 SPY ≥ 8%（建议），或只用绝对跌幅。
-3. 应用库：方案 A（不改结构，建议）还是方案 B（股价图、诉讼清单、内部人明细、治理面板的新表，需 BFF 和前端配合）。
+1. ~~内部人交易来源~~：SEC Form 4（D-050）。
+2. ~~股价大跌阈值~~：单日 ≥ 10% 且相对 SPY ≥ 8%（D-050）。
+3. ~~应用库~~：方案 A，不改结构（D-050）。
 4. Alpha Vantage 付费版是否可用（Phase 15 起就需要）。
-5. 诉讼和监管调查（15e）放在 Phase 15，还是推迟到 Phase 16 之后。
-6. 覆盖率说明改为行业组级。
-7. S&P 100 名单的基准日期，以及之后谁负责季度核对。
-8. SecureGPT 各部署的 TPM / RPM 配额（dv / pp / pr），以及 APIM 订阅是否另有限额。
+5. ~~诉讼和监管调查~~：放在 Phase 15（D-050）。
+6. ~~覆盖率说明改为行业组级~~：`groups:`（D-052）。
+7. S&P 100 名单：基准日期 2026-09-21（D-052）；之后谁负责季度核对，待定。
+8. SecureGPT 各部署的 RPM 配额（dv / pp / pr），以及 APIM 订阅是否另有限额（TPM 已定为每个部署 50 万，D-051）。
+
+---
+
+### Phase 17 — 覆盖约 98% 的上市公司（10-K 运营公司）（2026-10-18 计划，待确认；依赖 Phase 16 和 Phase 10）
+
+**目标**：在 Phase 16 的行业组之上，让约 98% 的上市运营公司有行业组：公司较多、有自己风险特征的行业配专门模块（路径 1），其余只要改 SIC 映射就有合适指标的行业一并纳入。
+
+**口径 A**（2026-10-18 按 EDGAR 实测）：在 NYSE / Nasdaq / Cboe 上市、2024-07-01 之后交过 10-K 的运营公司，不含 ETF、商品和加密信托（SPDR Gold、USO 一类，105 家），共 **4,195 家**。不在口径内：外国发行人（20-F / 40-F，1,124 家）、封闭式基金（N-CSR，355 家）、2024-07-01 之后没交年报的 286 家（多为 SPAC）。数据来源：SEC `company_tickers_exchange.json`，每家 submissions 的 SIC 和最近年报类型，XBRL frames 的 FY2024–25 收入。
+
+**现状和目标**：Phase 16 的行业组按 SIC 覆盖 2,995 家（71.4%）。本阶段新增 14 个行业组（7 个带新模块，7 个只改映射）、扩大 9 个已有组的 SIC 范围，加一个临床阶段特性：带模块的 7 组加上 6 个映射项到 4,003 家（95.4%），其余只改映射的再加 114 家，共 **4,117 家（98.1%）**。
+
+#### 17a 公司范围
+- 名单由脚本生成（新 `scripts/build_universe.py`：上面的口径、排除规则、每家的 SIC 和年报类型），人工审阅后提交，仍按 CIK 钉住；不在运行时生成。约 4,000 家放进 `config/companies.yaml` 还是拆成 `config/universe/*.yaml`，实现时定。
+- 每季度重跑一次：新上市、退市、改 SIC、改交年报类型的公司列成差异报告，审阅后提交。
+- SIC 6770 的 SPAC 纳入（有专门模块），是否承保另定（见待确认）。
+
+#### 17a′ 开发阶段的样本（2026-10-18 用户决定）
+- 开发阶段不跑约 4,000 家，先用样本：38 个行业组（Phase 16 的 24 个加本阶段新增的 14 个）每组取最近财年收入最大的 5 家。按口径 A 和 SEC 数据实测（2026-10-18）：共 **187 家**（PAYMENTS 按现在的映射只有 Visa、Mastercard 两家），其中 68 家已在现在的 107 家里，**新增 119 家**，开发样本合计 **226 家**。
+- 新增分布：14 个新组共 69 家（餐饮组已有 MCD）；现有组补足到 5 家共 50 家，例如 REIT 4 家（WELL、EQIX、PLD、WY）、保险 4 家（PGR、MET、ALL、PRU）、酒店 4 家（MGM、LVS、HLT、CZR）、航空 4 家（DAL、UAL、AAL、ALK）、CREDIT 5 家（现在 0 家）。
+- 名单人工审阅后再提交，不直接用收入排序：
+  - 收入排序在几个组不合适：SPAC 没有收入（改按信托规模）；券商组的 SNEX、GLXY 是交易总收入，排在 KKR、Blackstone 前面。
+  - SIC 分错组的要用 `industry` 改：NKE（SIC 3021 橡胶鞋 → 化工）、CTAS（2320 服装 → 耐用消费品，实为制服租赁）、PAA / PAGP / DINO（4610 管道 → 运输，实为能源中游 / 炼油）、COIN（→ CREDIT）、KLAC（3827 → 仪器，实为半导体设备）。这与 Phase 16 的 S&P 100 有 21% 需要改行业的情况一致。
+  - PAYMENTS 只有两家：PayPal、Fiserv、FIS 等按 SIC 不在这个组，要用 `industry` 归入。
+- 样本用途：每个新模块的 golden 值和文本指标留出公司从样本里取；覆盖率说明、DQ、`audit-insights` 和费用 / 时长都先在样本上做完，再扩到全量。规模与 Phase 16 相当（新增 98 家：开发用模型约 $12，SQLite 上串行约半天）。
+- 计算脚本：`build_universe.py` 增加 `--sample 5`（每组前 N 家），输出审阅用的清单。
+- **样本做完后冻结，直接对全部公司上线（2026-10-18 用户决定）**：226 家做完、通过 17e 的质量关口之后，不再按公司调整，直接处理全部公司。含义：
+  - 只在配置的通用层面改：行业组的 SIC 映射、指标集、tag 候选（`concept_map.yaml`、`by_group`）、公式、行业组级覆盖率说明、DQ 规则。改动对同一行业的所有公司生效。
+  - 样本外的公司不再加公司级设置：不加 `company_overrides`（如 BLK 的收入 tag）、不加公司级覆盖率说明；`industry` 只用于样本审阅时发现的分错组，以及上线后承保人员报告的问题。
+  - 样本外的缺口和 DQ 发现只按行业组统计（覆盖率报告和 DQ 报告给出每组的比例），不逐家说明。CONTRIBUTING.md 里"每个缺口都要有说明"的约定改为只适用于样本。
+  - 安全网是现有的自动检查：恒等式不符的值不保存（D-042），季度与年度不符、财报新闻稿与 XBRL 不符、重述后口径不一致（N/M，D-052）都会报出来。上线后 DQ 的 Error 按行业组看比例，比例高的说明是通用规则的问题，在通用层面修。
+  - 已知代价：SIC 分错组的公司会拿到不对口的模块（样本里约 21%，大公司比例更高）；公司自己特有的标注方式（如 BLK）会让个别指标缺失或偏差，由 DQ 报出，不逐家修。
+
+#### 17b 新增行业组和模块指标
+
+带新模块的 7 组（XBRL 优先，每组文本指标最多 3 个）：
+
+| 行业组 | SIC | 公司数 | 累计 | 模块指标 |
+|---|---|---|---|---|
+| SPAC_SHELL | 6770 | 174 | 75.5% | XBRL：信托账户每股价值、信托外营运资金；文本：距截止日月数、最近一次延期的赎回比例 |
+| CHEMICALS_MATERIALS | 2400–2499、2600–2679、2800–2829、2850–2899、3000–3299 | 134 | 78.7% | XBRL：环境修复计提、资本开支 / 折旧；文本：量价拆分 |
+| MINING_METALS | 1000–1499、3310–3399 | 89 | 83.6% | XBRL：弃置义务、资本开支；文本：产量、AISC、储量（S-K 1300） |
+| HEALTHCARE_SERVICES | 8000–8099 | 73 | 87.1% | XBRL：人工成本 / 收入；文本：同院收入增长、入院量或病人日、医保 / 医疗补助收入占比 |
+| CONSTRUCTION_HOMEBUILDERS | 1500–1799 | 52 | 92.5% | XBRL：土地储备；文本：在手订单金额、交付量与均价、取消率 |
+| LEISURE_GAMING | 7000–7010、7900–7999 | 38 | 94.5% | XBRL：分物业 / 地区收入（维度）；文本：赢率、客流 |
+| RESTAURANTS | 5812 | 37 | 95.4% | XBRL：加盟收入占比；文本：同店销售、门店数、单店平均营业额 |
+
+只改映射的 7 个新组（用 COMMERCIAL_CORE、REPORTING_QUALITY 和已有特性，不加新指标）：
+
+| 行业组 | SIC | 公司数 | 用的模块 |
+|---|---|---|---|
+| BUSINESS_SERVICES | 7300–7369、7375–7388、7390–7399、8100–8999 | 113 | 通用核心 + RPO（`contract_revenue`） |
+| WHOLESALE_DISTRIBUTION | 5000–5199（除 5140–5149） | 74 | 通用核心（毛利率、存货 / 应收天数） |
+| INSTRUMENTS | 3800–3840、3852–3899 | 70 | 通用核心 + RPO |
+| CONSUMER_DURABLES_APPAREL | 2200–2399、2500–2599、3100–3199、3630–3652、3900–3999 | 55 | 通用核心；可选文本：直营（DTC）收入占比 |
+| REAL_ESTATE_OPERATING | 6500–6599 | 52 | Phase 16 的 REIT 模块（出租率、NOI） |
+| AGRICULTURE | 0100–0999 | 15 | 通用核心 |
+| CONSUMER_SERVICES | 7012–7299、7500、7600、8200–8299 | 14 | 通用核心 |
+
+扩大已有组的 SIC 范围（9 个组，不加新指标）：
+
+| 行业组 | 新增 SIC | 公司数 |
+|---|---|---|
+| INDUSTRIALS | 3400–3509、3600、3770–3799 | 52 |
+| HARDWARE | 3670、3675–3689（电子元件） | 21 |
+| PHARMA | 8731–8734（研究服务，配临床阶段特性） | 15 |
+| AEROSPACE_DEFENSE | 3729–3759 | 13 |
+| TRANSPORT | 4100–4209、4232–4399、4500–4511、4523–4699、4790–4811、7510 | 12 |
+| MEDIA | 2742–2799、4842–4898、7830、7841 | 12 |
+| TELECOM | 4814–4829 | 3 |
+| PAYMENTS_BUSINESS_SERVICES | 6099 | 3 |
+| UTILITIES | 4900–4909 | 1 |
+
+合计新模块指标（都在带模块的 7 组）：XBRL 约 10 个，文本 17–18 个。只改映射的部分每组抽 2 家核对通用指标即可。
+
+#### 17c 临床阶段特性（`clinical_stage`）
+- 生命科学 SIC（2833–2836、8731–8734、3826、3841–3851）中最近财年收入低于 1,000 万美元的公司：390 家，占口径 A 的 9%。它们按 SIC 已落在 PHARMA / MEDTECH，但研发 / 收入、产品收入占比之类的指标对它们没有意义。
+- 特性写在公司配置里（由 `build_universe.py` 按收入建议、人工审阅，每季度复核），不在运行时判定。
+- XBRL 指标：现金可支撑季度数（现金 + 短期投资除以近四个季度平均经营现金流出）、研发占运营支出比。
+- 核心管线的阶段和下一个数据节点：两个模型都读、一致才保存，作为洞察输入（类似董事会事实），不进 MatrixData。
+- 阈值信号：现金可支撑少于 4 个季度。持续经营和股本稀释已有。
+
+#### 17d 运行规模
+- 约 4,000 家必须先有 Phase 10 的分层（Tier 1 全量、Tier 2 轻量、洞察按需）和多 worker 领取任务；15i 的并行和按模型限速是前提。
+- 其余 LLM 阶段改短事务（2026-10-18 用户决定放在本阶段）：textmetrics、governance、legal、signals、scores、news 和 insights / metricdetail 一样，等待模型时不占数据库事务（调用前提交已完成的写入、答案到达后立即提交），加入 `SHORT_TRANSACTION_STAGES`，在 SQLite 文件上也能多家并行，在 Azure SQL 上不再长时间占锁。逐个阶段检查没有一组写入跨过 LLM 调用；textmetrics（双重读取、恒等式检查）和 signals（投票、复核）最需要注意。每个阶段一个并行与串行结果一致的测试。
+- 公司内部的调用并行：insights 的 behavioral 和 strategic 同时调用（约省 20%），textmetrics 的各文件、双重检查的两次读取同时调用。
+- 银行的 MD&A（Phase 16 收尾时发现）：Wells Fargo、US Bancorp、BNY 的 MD&A 在年报附件（Exhibit 13）里，10-K Item 7 只是引用；Citi、Morgan Stanley 的 10-K / 10-Q 格式切不出 Item 7 / Item 2。要读 Exhibit 13，并给不标准的格式加章节规则；大银行里这种做法常见，全量上线前要做。
+- 首次回补的 LLM 费用和时长：按 Phase 16 实测的每家成本推算，进入本阶段前先在 100 家上测准，决定 Tier 1 的范围。
+- 外部接口：SEC 每天约 4,000 次 submissions 请求加新文件，不是瓶颈；Alpha Vantage 每家每天 2 次，约 8,000 次，需要付费版的分钟配额（75 次 / 分钟约 2 小时）。
+
+#### 17g 行业组以外的公司：由 LLM 在已有指标集里选（2026-10-18 用户决定）
+- 适用：上线后用户输入的公司按 SIC 不属于任何行业组（例如没有 SIC 的 48 家、BDC、航运），也没有 `industry` 设置。外国发行人（20-F / 40-F）不在此列：它们需要 IFRS 映射，另开阶段。
+- 做法：一次 LLM 调用（生产环境 SecureGPT），输入公司的业务描述（最新 10-K Item 1 的节选、SIC 说明）和已有的行业组及指标集清单（每个集合的指标名称和定义）；输出最接近的行业组，或若干个已有指标集，并说明理由。
+- 边界：
+  - 只能从已有的指标集里选，不能新造指标，也不能改公式；通用核心层（`COMMERCIAL_CORE` 或 `FINANCIAL_CORE`、`REPORTING_QUALITY` 和 `common_metric_sets`）总是包含，LLM 只选行业模块。
+  - 输出按 schema 校验（集合代码必须存在）；理由要引用业务描述原文（grounding）。
+  - 双重检查：日常模型和复核模型各选一次，一致才用；不一致时用复核模型的结果，并进 `uw-pipeline review`（新类型 INDUSTRY）。
+  - 选择结果存表（模型、prompt 版本、输入哈希、理由），按输入哈希缓存，之后的夜间运行沿用，不每次重选；业务描述变了才重选。
+  - 应用里标注"指标由 AI 按业务描述选择"；人工复核通过的可以写成 `industry`。
+- 改动：新 prompt `industry_choice_v1.md`、选择结果表、`registry.for_company` 支持存表的选择、review 新类型、测试（fake LLM，无效代码被拒）。CONTRIBUTING.md 的"指标清单不在运行时生成"写明这个例外。
+- 表结构：管线库加一张选择结果表（重新生成 `deploy/sql`）；应用库不改（方案 A）："指标由 AI 选择"的说明写进应用库已有的 `Methodology` 文本，不加字段。
+
+#### 17e 质量关口
+- 都在 17a′ 的 226 家样本上做；通过后冻结，对全部公司上线。
+- 每个新行业组 2 家公司的 golden 值（取自文件）；每个文本指标 2 家留出公司（约 36 家），不参与写 prompt。
+- 样本：`coverage-report` 每个缺口有说明（行业组级优先）；DQ 无 Error；`audit-insights` 每个新组抽 2 家。
+- 全量上线后：覆盖率和 DQ 按行业组出比例，作为监控指标，不逐家处理。
+- 临床阶段特性：抽 20 家核对收入判断和管线事实。
+
+**要改的文件**：新 `scripts/build_universe.py`；`config/companies.yaml`（或 `config/universe/`）、`config/industry_groups.yaml`（新组、SIC 范围、`clinical_stage`）、`config/metrics.yaml`（新指标集）、`config/concept_map.yaml`、`config/coverage_notes.yaml`、`config/signal_rules.yaml`（SPAC 事件、现金可支撑阈值）、`config/app_publish.yaml`（新指标类别）；`compute/registry.py`（新单位：盎司、吨、磅、月）；管线事实的 prompt 和阶段；测试、golden 和留出 fixture；文档。
+
+**验收标准**：口径 A 名单中 ≥ 98% 的公司有行业组（7 个新模块组的公司有对口模块）；每个新组的 golden 值核对通过；文本指标留出测试的引文 100% 能在原文找到、数值正确率 ≥ 95%；临床阶段抽查正确；首次回补和夜间增量在 Phase 10 定的时间窗口内完成，费用记录在 run 统计。
+
+#### 剩下的约 2%（口径 A 内 78 家，Phase 17 不做，之后按需）
+- 没有 SIC 的 48 家：逐家在公司配置里写 `industry` 和 `industry_reason`。
+- BDC 和控股投资公司 17 家（6720–6799，除 6770、6798）：需要 BDC 模块，包括每股 NAV、非应计贷款占比、资产覆盖率、净投资收益对分红的覆盖。
+- 航运 13 家（4400–4499）：等时租金（TCE）、船队利用率、船舶数（文本）。
+- 口径 A 之外，另开阶段：外国发行人（20-F / 40-F，1,124 家，54% 用 IFRS；需要 IFRS 概念映射、20-F 章节切分、6-K 事件、没有 Form 4 和委托书、最多半年数据）；封闭式基金（N-CSR）；ETF 和商品信托。
+
+#### Phase 17 待确认
+1. SPAC 是否在承保范围（不在的话 SPAC_SHELL 组不做；口径 A 去掉 174 家 SPAC 后覆盖率仍约 98%）。
+2. 约 4,000 家名单放在哪个配置文件，谁负责季度审阅。
+3. 临床阶段的收入门槛（1,000 万美元）。
+4. Tier 1 的范围（Phase 10），以及首次回补的预算上限。
+5. 新单位（盎司、吨、磅）只用于显示，还是也参与同比和阈值。
+
+---
+
+### Phase 18 — 行业归属、行业跟踪的指标和信号（2026-10-17，D-049）
+
+直接编辑 `config/`；说明见 `docs/CONFIGURATION.md`。
+- [x] 公司归属行业：`companies.yaml` 的 `industry` + `industry_reason`
+- [x] 行业不跟踪的指标（被依赖的作为隐藏辅助指标照算）和信号（`8k_5.02` 覆盖其 CEO/CFO 子类），行业专属的信号参数：`industry_groups.yaml`
+- [x] 指标阈值信号（`thresholds`）；关键词和阈值信号可用 `industries` 限定行业：`signal_rules.yaml`
+- [x] `uw-pipeline config check` / `config show --ticker`；所有引用在运行前校验
+- [ ] 判断类问题（规则 + 模型投票）只能按信号 id 关闭，不能新定义（答案类型写在代码和 prompt 里）
+- [ ] 洞察任务（behavioral、strategic & risk、key insights、follow-ups）对所有行业相同，不能按行业开关
 
 ---
 

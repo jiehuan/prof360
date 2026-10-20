@@ -1,0 +1,235 @@
+{
+ "cik": "0000789019",
+ "entityType": "operating",
+ "sic": "7372",
+ "sicDescription": "Services-Prepackaged Software",
+ "ownerOrg": "06 Technology",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "MICROSOFT CORP",
+ "tickers": [
+  "MSFT"
+ ],
+ "exchanges": [
+  "Nasdaq"
+ ],
+ "ein": "911144442",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "0630",
+ "stateOfIncorporation": "WA",
+ "stateOfIncorporationDescription": "WA",
+ "addresses": {
+  "mailing": {
+   "street1": "ONE MICROSOFT WAY",
+   "street2": null,
+   "city": "REDMOND",
+   "stateOrCountry": "WA",
+   "zipCode": "98052-6399",
+   "stateOrCountryDescription": "WA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "ONE MICROSOFT WAY",
+   "street2": null,
+   "city": "REDMOND",
+   "stateOrCountry": "WA",
+   "zipCode": "98052-6399",
+   "stateOrCountryDescription": "WA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "425-882-8080",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000789019-26-000228",
+    "0000789019-26-000226",
+    "0000789019-26-000224",
+    "0000789019-26-000223",
+    "0000789019-26-000222",
+    "0001193125-26-323660",
+    "0001193125-26-191507",
+    "0001193125-26-027207",
+    "0001193125-25-256321"
+   ],
+   "filingDate": [
+    "2026-10-15",
+    "2026-10-14",
+    "2026-09-17",
+    "2026-09-17",
+    "2026-09-17",
+    "2026-07-29",
+    "2026-04-29",
+    "2026-01-28",
+    "2025-10-29"
+   ],
+   "reportDate": [
+    "2026-10-15",
+    "2026-10-13",
+    "2026-09-15",
+    "2026-09-15",
+    "2026-09-15",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-16T02:05:10.000Z",
+    "2026-10-15T02:08:42.000Z",
+    "2026-09-18T02:07:20.000Z",
+    "2026-09-18T02:06:57.000Z",
+    "2026-09-18T02:06:42.000Z",
+    "2026-07-30T00:08:01.000Z",
+    "2026-04-30T00:06:24.000Z",
+    "2026-01-29T02:07:34.000Z",
+    "2025-10-30T00:10:48.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4",
+    "10-K",
+    "10-Q",
+    "10-Q",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "001-37845",
+    "001-37845",
+    "001-37845",
+    "001-37845"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "261217433",
+    "26915896",
+    "26572527",
+    "251430079"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    4512,
+    8830,
+    10319,
+    10308,
+    10297,
+    36328553,
+    31304294,
+    30063042,
+    24565853
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "msft-20260630.htm",
+    "msft-20260331.htm",
+    "msft-20251231.htm",
+    "msft-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "10-K",
+    "10-Q",
+    "10-Q",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

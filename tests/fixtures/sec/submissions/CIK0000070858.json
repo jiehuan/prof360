@@ -1,0 +1,278 @@
+{
+ "cik": "0000070858",
+ "entityType": "operating",
+ "sic": "6021",
+ "sicDescription": "National Commercial Banks",
+ "ownerOrg": "02 Finance",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "BANK OF AMERICA CORP /DE/",
+ "tickers": [
+  "BAC",
+  "BML-PG",
+  "BML-PL",
+  "BAC-PB",
+  "BAC-PK",
+  "BAC-PE",
+  "BAC-PL",
+  "BAC-PM",
+  "BAC-PN",
+  "BAC-PO",
+  "BAC-PP",
+  "BAC-PQ",
+  "BAC-PS",
+  "BACRP",
+  "BML-PH",
+  "BML-PJ",
+  "MER-PK"
+ ],
+ "exchanges": [
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "OTC",
+  "NYSE",
+  "NYSE",
+  "NYSE"
+ ],
+ "ein": "560906609",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "BANK OF AMERICA CORPORATE CENTER",
+   "street2": "100 N TRYON ST",
+   "city": "CHARLOTTE",
+   "stateOrCountry": "NC",
+   "zipCode": "28255",
+   "stateOrCountryDescription": "NC",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "BANK OF AMERICA CORPORATE CENTER",
+   "street2": "100 N TRYON ST",
+   "city": "CHARLOTTE",
+   "stateOrCountry": "NC",
+   "zipCode": "28255",
+   "stateOrCountryDescription": "NC",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "7043868486",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "BANKAMERICA CORP/DE/",
+   "from": "1998-10-30T05:00:00.000Z",
+   "to": "1999-04-23T04:00:00.000Z"
+  },
+  {
+   "name": "NATIONSBANK CORP",
+   "from": "1994-05-13T04:00:00.000Z",
+   "to": "1998-09-28T04:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001918704-26-031715",
+    "0001918704-26-031714",
+    "0001918704-26-031713",
+    "0001918704-26-031711",
+    "0001918704-26-031710",
+    "0000070858-26-000394",
+    "0000070858-26-000249",
+    "0000070858-26-000157",
+    "0000070858-25-000405"
+   ],
+   "filingDate": [
+    "2026-10-16",
+    "2026-10-16",
+    "2026-10-16",
+    "2026-10-16",
+    "2026-10-16",
+    "2026-07-31",
+    "2026-05-01",
+    "2026-02-25",
+    "2025-10-31"
+   ],
+   "reportDate": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-17T01:17:00.000Z",
+    "2026-10-17T01:16:49.000Z",
+    "2026-10-17T01:03:31.000Z",
+    "2026-10-17T00:44:15.000Z",
+    "2026-10-17T00:36:25.000Z",
+    "2026-08-01T00:44:20.000Z",
+    "2026-05-02T00:39:01.000Z",
+    "2026-02-26T03:01:44.000Z",
+    "2025-11-01T00:36:23.000Z"
+   ],
+   "act": [
+    "33",
+    "33",
+    "33",
+    "33",
+    "33",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "424B2",
+    "424B2",
+    "424B2",
+    "424B2",
+    "424B2",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "333-290665",
+    "333-290665",
+    "333-290665",
+    "333-290665",
+    "333-290665",
+    "001-06523",
+    "001-06523",
+    "001-06523",
+    "001-06523"
+   ],
+   "filmNumber": [
+    "261466978",
+    "261466976",
+    "261466847",
+    "261466670",
+    "261466590",
+    "261229201",
+    "26933333",
+    "26679960",
+    "251441057"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "424B2",
+    "424B2",
+    "424B2",
+    "424B2",
+    "424B2",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    616190,
+    901674,
+    629500,
+    1280714,
+    1218326,
+    48766352,
+    43186026,
+    62237235,
+    48685742
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "form424b2.htm",
+    "form424b2.htm",
+    "form424b2.htm",
+    "form424b2.htm",
+    "form424b2.htm",
+    "bac-20260630.htm",
+    "bac-20260331.htm",
+    "bac-20251231.htm",
+    "bac-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "424B2",
+    "424B2",
+    "424B2",
+    "424B2",
+    "424B2",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

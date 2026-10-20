@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import threading
 from collections.abc import Callable
 from datetime import datetime
 from types import TracebackType
@@ -12,6 +14,7 @@ from sqlalchemy import Engine, func, select
 from uw_pipeline.clients.alphavantage import AlphaVantageClient
 from uw_pipeline.clients.db import app_engine, ensure_schema
 from uw_pipeline.clients.llm import LLMClient
+from uw_pipeline.clients.llm_limits import LimitedClient
 from uw_pipeline.clients.ratelimit import TokenBucket
 from uw_pipeline.clients.sec import SecClient
 from uw_pipeline.clients.securegpt import SecureGPTClient, load_securegpt_config
@@ -27,6 +30,8 @@ from uw_pipeline.jobs.run_documents import run_documents_stage
 from uw_pipeline.jobs.run_dq import run_dq_stage
 from uw_pipeline.jobs.run_governance import run_governance_stage
 from uw_pipeline.jobs.run_insights import run_insights_stage
+from uw_pipeline.jobs.run_legal import run_legal_stage
+from uw_pipeline.jobs.run_market import run_market_stage
 from uw_pipeline.jobs.run_metric_detail import run_metric_detail_stage
 from uw_pipeline.jobs.run_news import load_news_config, run_news_stage
 from uw_pipeline.jobs.run_publish import load_publish_config, run_publish_stage
@@ -40,6 +45,8 @@ from uw_pipeline.schema import llm_call
 from uw_pipeline.schema_app import app_metadata
 from uw_pipeline.settings import Settings
 from uw_pipeline.signals.rules import load_signal_rules
+
+log = logging.getLogger(__name__)
 
 
 class StageRunner:
@@ -56,9 +63,11 @@ class StageRunner:
         cfg_dir = settings.config_dir
         self.companies = {c.ticker: c for c in load_companies(cfg_dir)}
         self.industry = load_industry_config(cfg_dir)
+        self.industry.check_companies(list(self.companies.values()))
         self.registry = load_registry(cfg_dir)
         self.registry.check_groups(self.industry.groups.values())
         self.signal_rules = load_signal_rules(cfg_dir)
+        self.signal_rules.check_groups(self.industry.groups.values())
         self.storage = make_storage(settings)
         self._sec: SecClient | None = None
         self._av: AlphaVantageClient | None = None
@@ -66,11 +75,17 @@ class StageRunner:
         self._llm: tuple[LLMClient, LLMConfig] | None = None
         self._llm_built = False
         self._app_engine: Engine | None = None
+        # Parallel tasks of one stage (Phase 15i) share these clients: build each only once.
+        self._lock = threading.RLock()
 
     # -- lazily built clients --------------------------------------------------------------
 
     @property
     def sec(self) -> SecClient:
+        with self._lock:
+            return self._sec_client()
+
+    def _sec_client(self) -> SecClient:
         if self._sec is None:
             s = self.settings
             self._sec = SecClient(
@@ -83,6 +98,10 @@ class StageRunner:
 
     @property
     def av(self) -> AlphaVantageClient | None:
+        with self._lock:
+            return self._av_client()
+
+    def _av_client(self) -> AlphaVantageClient | None:
         s = self.settings
         if self._av is None and s.alphavantage_api_key is not None:
             self._av = AlphaVantageClient(
@@ -95,6 +114,10 @@ class StageRunner:
 
     @property
     def llm(self) -> tuple[LLMClient, LLMConfig] | None:
+        with self._lock:
+            return self._llm_client()
+
+    def _llm_client(self) -> tuple[LLMClient, LLMConfig] | None:
         if not self._llm_built:
             self._llm_built = True
             s = self.settings
@@ -110,14 +133,29 @@ class StageRunner:
                     subscription_key=s.securegpt_subscription_key.get_secret_value(),
                 )  # fmt: skip
             if client is not None:
+                # Per-model RPM / TPM limits shared by parallel workers (Phase 15i).
+                if cfg.rate_limits:
+                    client = LimitedClient(client, cfg.rate_limits)
                 # Daily spend cap in the profile's currency (D-043); 0 = unlimited.
+                unpriced = sorted(
+                    {m.model for m in (cfg.extractor, cfg.tiebreaker, cfg.synthesis)}
+                    - cfg.pricing.keys()
+                )
+                if unpriced and s.llm_daily_budget > 0:
+                    log.warning("no price for %s in config/llm.yaml: the daily LLM budget does "
+                                "not count their calls", ", ".join(unpriced))  # fmt: skip
                 client.budget = DailyBudget(s.llm_daily_budget, cfg.pricing,  # type: ignore[attr-defined]
                                             cfg.pricing_currency)  # fmt: skip
+                client.task_max_tokens = cfg.task_max_tokens  # type: ignore[attr-defined]
                 self._llm = (client, cfg)
         return self._llm
 
     @property
     def app_engine(self) -> Engine:
+        with self._lock:
+            return self._app_db()
+
+    def _app_db(self) -> Engine:
         if self._app_engine is None:
             self._app_engine = app_engine(self.settings)
             if self._app_engine.dialect.name == "sqlite":  # dev stand-in for the app database
@@ -149,7 +187,7 @@ class StageRunner:
                 event_lookback_days=s.event_lookback_days, force=f,
                 history_years={k: g.mdna_history_years for k, g in ind.groups.items()},
             )  # fmt: skip
-        if stage in ("transcripts", "news"):
+        if stage in ("transcripts", "news", "market"):
             return lambda c: self._av_stage(stage, c)
         if stage == "textmetrics":
             return lambda c: run_text_metrics_stage(
@@ -165,8 +203,13 @@ class StageRunner:
             )
         if stage == "governance":
             return lambda c: run_governance_stage(c, self.llm, self.storage, e)
+        if stage == "legal":
+            return lambda c: run_legal_stage(c, self.llm, self.storage, e)
         if stage == "signals":
-            return lambda c: run_signals_stage(c, self.sec, self.signal_rules, e, llm=self.llm)
+            return lambda c: run_signals_stage(
+                c, self.sec, self.signal_rules, e, llm=self.llm, industry=ind,
+                hidden_metrics=self.registry.hidden_codes,
+            )  # fmt: skip
         if stage == "dq":
             return lambda c: run_dq_stage(
                 c, reg, ind, load_dq_config(s.config_dir), s.config_dir, e, run_id=self.run_id
@@ -214,6 +257,8 @@ class StageRunner:
                     for c in companies]  # fmt: skip
         if stage == "transcripts":
             return run_transcripts_stage(companies, av, self.engine)
+        if stage == "market":
+            return run_market_stage(companies, av, self.registry, self.industry, self.engine)
         news_cfg = load_news_config(self.settings.config_dir)
         return run_news_stage(companies, av, self.engine, news_cfg, llm=self.llm)
 

@@ -1,0 +1,249 @@
+{
+ "cik": "0000886982",
+ "entityType": "operating",
+ "sic": "6211",
+ "sicDescription": "Security Brokers, Dealers & Flotation Companies",
+ "ownerOrg": "02 Finance",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "GOLDMAN SACHS GROUP INC",
+ "tickers": [
+  "GS",
+  "GSCE",
+  "GS-PA",
+  "GS-PC",
+  "GS-PD"
+ ],
+ "exchanges": [
+  "NYSE",
+  "OTC",
+  "NYSE",
+  "NYSE",
+  "NYSE"
+ ],
+ "ein": "134019460",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "200 WEST STREET",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10282",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "200 WEST STREET",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10282",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "212-902-1000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "GOLDMAN SACHS GROUP INC/",
+   "from": "2001-02-07T05:00:00.000Z",
+   "to": "2008-03-04T05:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001193125-26-424262",
+    "0001193125-26-424250",
+    "0000950103-26-015728",
+    "0001193125-26-424218",
+    "0001193125-26-424213",
+    "0000886982-26-000297",
+    "0000886982-26-000118",
+    "0000886982-26-000091",
+    "0000886982-25-001411"
+   ],
+   "filingDate": [
+    "2026-10-16",
+    "2026-10-16",
+    "2026-10-16",
+    "2026-10-16",
+    "2026-10-16",
+    "2026-08-03",
+    "2026-05-01",
+    "2026-02-25",
+    "2025-10-31"
+   ],
+   "reportDate": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-17T01:17:31.000Z",
+    "2026-10-17T01:07:38.000Z",
+    "2026-10-17T01:01:55.000Z",
+    "2026-10-17T00:54:12.000Z",
+    "2026-10-17T00:50:42.000Z",
+    "2026-08-04T01:24:06.000Z",
+    "2026-05-02T00:14:24.000Z",
+    "2026-02-26T03:22:27.000Z",
+    "2025-11-01T00:17:56.000Z"
+   ],
+   "act": [
+    "33",
+    "33",
+    "33",
+    "33",
+    "33",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "424B2",
+    "424B2",
+    "424B2",
+    "424B2",
+    "424B2",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "333-284538",
+    "333-284538",
+    "333-284538",
+    "333-284538",
+    "333-284538",
+    "001-14965",
+    "001-14965",
+    "001-14965",
+    "001-14965"
+   ],
+   "filmNumber": [
+    "261466985",
+    "261466896",
+    "261466828",
+    "261466742",
+    "261466717",
+    "261234571",
+    "26932697",
+    "26680257",
+    "251440767"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "424B2",
+    "424B2",
+    "424B2",
+    "424B2",
+    "424B2",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    227199,
+    217965,
+    302417,
+    577484,
+    868304,
+    43427713,
+    38676891,
+    49399989,
+    44080458
+   ],
+   "isXBRL": [
+    1,
+    1,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    1,
+    1,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "gs-20261016.htm",
+    "gs-20261016.htm",
+    "dp255118_424b2-spar0098.htm",
+    "gs-20261016.htm",
+    "wodgx001_prelim.htm",
+    "gs-20260630.htm",
+    "gs-20260331.htm",
+    "gs-20251231.htm",
+    "gs-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "424B2",
+    "424B2",
+    "FORM 424B2",
+    "424B2",
+    "424B2",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

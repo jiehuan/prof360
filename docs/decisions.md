@@ -865,3 +865,303 @@ LLM runs until the end, then one comparison.
   roll-up rule in D-044. A run on the work network is still open (PLAN Phase 14).
 - Not done: tables in the pipeline schema only, no app tables changed; deploy/sql/
   pipeline_schema_full.sql gains board_composition and review_decision.
+
+**D-049 Industry membership, tracked metrics and signals, by editing config/ (Phase 18, 2026-10-17).**
+- User request: per company, which industry it belongs to; per industry, which metrics and
+  insights it tracks; new metrics and insights; in YAML or JSON. "Insights" means what the
+  pipeline already tracks (user clarification): the risk signals (8-K items, keyword rules,
+  metric and board rules, judgment questions).
+- Options: a separate override directory merged on top of config/ (built first: suits edits
+  outside code review and ConfigMaps in deployment), or editing config/ directly. User decision:
+  edit config/ directly; config changes go through PRs, so one place is simpler. The override
+  layer was removed before commit.
+- What was missing and is now in the existing files: `industry` + `industry_reason` per company
+  (companies.yaml; checked before the SIC code); `exclude_metrics`, `exclude_signals` and
+  `signal_params` per group (industry_groups.yaml); metric `thresholds` and `industries` on
+  keyword and threshold rules (signal_rules.yaml). New metrics, concepts, keyword rules, groups
+  and SIC mappings were already editable.
+- An excluded metric that another tracked metric needs is computed as a hidden helper. A family
+  id such as `8k_5.02` excludes its CEO/CFO variants. Signals are filtered after detection by
+  rule id, so the stage's stale-signal deletion removes signals an industry stops tracking.
+  Parameters are checked by field name and type.
+- Not covered: judgment questions can be excluded by id but not defined (answer types live in
+  code and the prompt); insight tasks are the same for every industry.
+- App database: no schema change (user choice (a)): SIC_Preferences stays per SIC; a company in
+  another industry shows the metrics it has data for.
+- `uw-pipeline config check` validates config/ as a run does and lists company and industry
+  settings; `config show --ticker X` prints a company's industry (and why), metrics, signals.
+  Guide for editors: docs/CONFIGURATION.md.
+
+## 2026-10-18
+
+**D-050 D&O risk core layer: market data, insider trades, reporting quality, litigation (Phase 15).**
+- Open questions settled at the start ("go ahead with phase 15", recommended options): insider
+  trades from SEC Form 4, not AV INSIDER_TRANSACTIONS (authoritative, free, by CIK); stock drop
+  = one day -10% or worse and at least 8 points below SPY; app database option A (no schema
+  change: new metrics in MatrixData, new events through signals and insights into
+  StrategicRisk); litigation (15e) stays in Phase 15.
+- 15a market: AV TIME_SERIES_DAILY_ADJUSTED (full history, kept 7 years) and EARNINGS per
+  company plus SPY, in `market_daily` (by symbol) and `earnings_report`; OVERVIEW not used.
+  Market cap = quarter-end close x the cover page's shares outstanding (dei, dated up to 120 days
+  after the period end), else diluted weighted-average shares. Metrics (derivation MARKET,
+  metric kind `external`: written by another stage, skipped by compute): market_cap,
+  volatility_90d (63 daily returns, annualized), max_drawdown_52w, eps_surprise_pct. Stage
+  `market` runs after compute; Altman Z (compute) reads the stored market cap, so on a company's
+  first run it appears one run later. Signals stock_drop and earnings_miss_drop (-8% within 3
+  trading days of a miss). Acceptance: Ford 2024-07-25 -18.4% while SPY -0.5%, and the miss
+  (EPS 0.47 vs 0.68) on 2024-07-24.
+- 15b Form 4: originals only (4/A left out so no line counts twice); non-derivative lines. A
+  sale is under a 10b5-1 plan when a footnote it cites says so; when no line cites one, the
+  filing's 10b5-1 box applies to all lines (a filing ticks the box once for all its lines; the
+  tax-withholding line of a plan sale is not a plan sale). Form 4s the company files as an owner
+  of another issuer (JPMorgan as a 10% holder) are registered, not parsed. Metrics (derivation
+  FORM4): insider_net_sales (officers' and directors' open-market sales minus purchases, USD)
+  and officer_sell_pct (officers' shares sold / holdings before the sales). Signal
+  insider_cluster_selling: 3 or more officers or directors selling on the open market outside a
+  plan within 30 days; one signal per episode (30 days from its first sale, keyed on that date);
+  Warning when a stock drop or earnings-miss drop follows within 90 days. Acceptance: every
+  Form 4 EDGAR lists is registered (0 missing, 9 companies; 366 have derivative lines only); no
+  sale left unflagged has 10b5-1 anywhere in its filing.
+- 15c reporting quality: receivables and inventory days, accruals ratio, goodwill / equity and
+  impairment, SBC / revenue, diluted share growth, debt maturities, near-term debt coverage,
+  Altman Z (with total liabilities, or assets minus equity when that is not tagged). Coverage
+  counts short-term investments (ShortTermInvestments, MarketableSecuritiesCurrent,
+  OtherShortTermInvestments): without them Enphase (1.04B USD marketable securities) raised a
+  false refinancing Warning. The plan's DQ warnings became threshold signals
+  (near_term_refinancing > 1.0, altman_distress < 1.81) so they reach insights and the app; DQ
+  stays about data correctness. Share counts are not derived (Q4 = FY - 9M gave 0 shares).
+  Golden values: Marriott and Pfizer FY2025 10-K.
+- 15d: 8-K 1.05 (Warning) and 1.02 (Info). EDGAR lists both 13Ds about the company and 13Ds it
+  files about others (JPMorgan's about funds): only those whose index headers name the company
+  as SUBJECT COMPANY are kept; the signal names the filer.
+- 15e litigation: stage `legal` (after documents) reads the latest 10-K and the 10-Qs after it,
+  passages chosen by keyword groups (45K characters), with both models. A matter is kept when
+  its quote is in the filing and both models give it the same type; its start date and accrual
+  only when they are in the quote. Across filings a matter is the same by type and name (generic
+  legal words and the company's name ignored; all distinctive words of one name in the other),
+  by the same full start date, or by agency and subject; across types only with nearly the same
+  name (an investigation that became an enforcement action; the type follows the latest filing).
+  Everything in a company's first run is its baseline; a matter first seen later (or named
+  differently) is NEW and goes to `uw-pipeline review` (item type MATTER); a rejected matter
+  leaves signals and insights. Signals for matters still disclosed (last 400 days) that began in
+  the last 730 days, or are open with no date: securities class action and Wells notice
+  Critical; derivative suit, investigation, enforcement Warning. All matters go to insights as a
+  DOCUMENT source. Prompt written on MAR, F, LUV, M, ENPH; holdout PFE, JPM, LUMN: 41 matters, all
+  types correct on reading; quotes grounded by construction. Readings left unpaired are mostly
+  real ambiguity (cash-sweep suits as securities or consumer claims).
+- 15f: `board_v2` adds the auditor fee table (each amount checked at any unit; a category a
+  table splits into lines may be a sum of up to three numbers; the year must agree between the
+  models), dual-class shares, and the CEO's start year (the name in the quote or in the 1,500
+  characters before it). Chosen: columns on `board_composition` rather than a new `audit_facts`
+  table (same document, same two-model check, one row per company). The auditor's PCAOB ID
+  (dei:AuditorFirmId) decides auditor_change when both 10-Ks give it. Signals dual_class_shares
+  (Info) and non_audit_fees (Warning at 50% or more of the auditor's fees). Result: fees 7 of 8
+  proxies (JPM's are prose and the readings differ), dual class Ford only, CEO start year 5 of 8.
+- 15h: dual_check on RevPAR, occupancy and ADR. Marriott's 15 values unchanged, dual_dropped 0;
+  a disagreement is logged with both readings.
+- 15i: companies of a stage run in parallel threads (jobs.yaml `parallel`), on server databases
+  only (SQLite: one at a time). `LimitedClient` keeps per-model requests and tokens per minute
+  across threads: a request reserves its input plus max_tokens, the unused part comes back, and a
+  429 pauses that model for every worker. max_tokens per task per provider profile, set from
+  the profile's own measured outputs. Not done: calls within one company stay serial and inside the
+  stage's transaction (moving them out means restructuring each LLM stage); SecureGPT quotas are
+  unknown (rate_limits commented out); the 10-minute cold-start target is not measured (needs a
+  server database and a paid cold run).
+- App: metric categories Reporting Quality and Market & Trading; risk types Market and Insider
+  Trading; investigation words map to Regulatory & Policy; no app schema change. Pipeline
+  tables: market_daily, earnings_report, insider_transaction, legal_matter; board_composition
+  gains fee, dual-class and CEO columns.
+
+**D-051 SecureGPT: gpt-6 models, api-version 2025-04-01-preview, 500K tokens per minute.**
+- User decision (gateway's API catalogue, 2026-10-18): calls go to the deployment's chat
+  completions with `api-version=2025-04-01-preview` (was 2024-10-21) and keep OpenAI structured
+  outputs (`response_format` `json_schema`, strict) on every call. The gateway also lists the
+  Responses API (`/providers/openai/responses`); not used, chat completions already give strict
+  structured outputs and need no other change.
+- Models (user decision): gpt-6-luna-2026-09-22 for routine calls (extractor: signal votes,
+  first reads, news, scores) and gpt-6-sol-2026-09-22 as tie-breaker (second model of every
+  dual check). Synthesis (insights, follow-ups, metric relevance) uses gpt-6-sol, as it used
+  the tie-breaker model before. The gpt-5 deployments stay mapped in config/securegpt.yaml.
+  The model is part of the cache key: the first run after the switch asks every LLM task again.
+  Prices per million tokens, USD, entered in the EUR profile (user decisions): gpt-6-sol 2.00
+  input / 10.00 output; gpt-6-luna 0.10 / 0.50 for now, a third-party list price, until
+  SecureGPT's own is known.
+- `rate_limits`: 500,000 tokens per minute for each deployment (gpt-6-luna, gpt-6-sol), as
+  the user set. No requests-per-minute limit until the gateway team gives one; a 429 pauses
+  that model for every worker (D-050). If the 500K is one quota shared by both deployments
+  rather than each, halve the two values.
+- `reasoning_effort` stays off (`send_reasoning_effort: false`) until
+  `scripts/securegpt_smoke.py` on the work network shows the gateway passes it with the new
+  version; without it the models use their default effort.
+
+
+**D-052 S&P 100 coverage: companies, industry modules, coverage notes (Phase 16).**
+- Companies: the S&P 100 as of 2026-09-21 (100 companies; GOOGL and GOOG are one CIK) plus
+  the seven MVP companies outside it (MAR, LUV, F, M, LUMN, SKYD, ENPH): 107. CIKs pinned from
+  SEC's ticker list on 2026-10-18. Who reviews the list each quarter is still open.
+- Industry by company where SIC misleads (D-049 `industry`, 22 companies, each with its
+  reason): e.g. 3M (SIC 3841, medical) is an industrial, Visa and Mastercard (7389, business
+  services) are payments, CVS (5912, drug stores) is managed care, Amazon and Booking are
+  internet, Danaher, Thermo Fisher and Abbott are medtech and tools.
+- Predecessor registrants: `predecessor_ciks` is now read by the facts, documents and signals
+  stages (each filing under the CIK it was filed with). ExxonMobil's listed parent changed
+  on 2026-07-01 (holding-company reorganization; the latest 10-K and proxy are Exxon Mobil
+  Corp's) and BlackRock's in 2024. A successor-only company (`history_start`, D-012: SKYD)
+  still reads its own filings only.
+- Industry groups (24): new SOFTWARE_INTERNET, HARDWARE, MEDTECH, MANAGED_CARE,
+  CONSUMER_STAPLES, ENERGY, UTILITIES, AEROSPACE_DEFENSE, INDUSTRIALS, TRANSPORT, REIT and
+  PAYMENTS, mapped by SIC ranges; non-bank financials (CREDIT, BROKER_DEALERS, INSURANCE) get
+  FINANCIAL_CORE (returns, leverage, assets / equity) instead of liquidity and EBITDA.
+- Module metrics, XBRL first: gross margin, R&D / revenue, deferred revenue and its growth,
+  deposits and growth, unrealized securities losses / equity, assets / equity, net investment
+  income, warranty reserve, pension and retiree-benefit liabilities (the funded status is
+  tagged by plan only), regulatory assets, operating ratio. Text (MD&A and releases, both
+  reads must agree): largest product revenue (and its share), medical cost ratio and members,
+  uninsured deposits and CRE loans (and their shares), net flows, payments volume,
+  comparable and organic sales growth, oil-equivalent production, postpaid phone net adds and
+  churn, vehicle deliveries. Not done: customer concentration and oil reserves are in the
+  notes and Item 2, which text extraction does not read; insurance gets net investment income
+  only (Berkshire is the only S&P 100 insurer and reports no combined ratio). REIT FFO and
+  occupancy, ARPU (telecom, media), utility storm costs and auto recalls are left for Phase 17:
+  one or two S&P 100 companies each, and definitions differ by company.
+- Count metrics (members, vehicles, barrels per day): metric unit `count`, extraction unit
+  `count`, prompt `text_metrics_v3` (also: a growth rate is extracted when the definition asks
+  for one, decreases negative).
+- Fiscal calendars: quarter ends are learned from the company's own 10-Qs (their duration
+  facts and `fp`); 12/12/12/16-week years (Costco, PepsiCo) put Q2 and Q3 up to three weeks
+  before the month end. Duration classes widened (a 16-week quarter, 36-week year to date).
+  Alpha Vantage dates such quarters at the month end; earnings match within 25 days.
+- Tags added where the first run showed gaps: bank and broker net revenue (us-gaap:Revenues,
+  RevenuesNetOfInterestExpense), utilities' operating revenues, interest expense (also
+  InterestAndDebtExpense, and cash interest paid as the last fallback), separate depreciation
+  and amortization, debt combinations (DebtCurrent with non-current long-term debt; LongTermDebt
+  plus short-term borrowings; the combined debt total), buybacks from the equity statement,
+  inventory net of progress billings (Boeing) and utility inventory, operating cash flow from
+  continuing operations. EBITDA without an operating income line: pre-tax income + interest +
+  D&A. A bank's net revenue where no total is tagged: a hidden helper of its own concepts, so
+  bank metrics are not pulled into every company.
+- Coverage notes: `groups:` notes for gaps a whole industry shares (and "*" for every
+  company: goodwill impairment and buybacks are tagged only in periods with them; debt due
+  within a year only when some is); company notes for the rest, each checked against the
+  company's companyfacts. After the XBRL stages every gap is explained; text metrics follow
+  their first extraction.
+- Golden values (16e): two companies per new or changed module (24 tests), each value a fact
+  of the company's latest 10-K or 10-Q.
+- Restated years (first DQ review, user decision): a fourth quarter derived as year minus
+  nine months carried the whole restatement when a filing between the two restated a fiscal
+  year (19 of 107 companies have a restated year since 2022: spin-offs, discontinued
+  operations, presentation changes). BAC's FY2025 10-K recast FY2024 revenue (101,887 ->
+  105,856): our Q4 2025 was 31,180 and Q4 2024 29,316, against about 28,400 and 26,500 on
+  the restated basis. Options: keep (wrong quarters, DQ quiet because they still add up);
+  derive Q4 from the year as first reported (right as reported, but the stored restated
+  year no longer matches its quarters: DQ errors); N/M. Chosen: N/M (no wrong value; the
+  coverage report counts it, the quarters-vs-year check skips the year). N/M carries through:
+  a formula with no usable form because an input is N/M, and a growth rate over an N/M
+  period, are N/M too (before, they had no row and showed as coverage gaps). Years stay at
+  their latest, restated value, so year-on-year growth compares like with like. And D-046
+  gets an exception: when the year's own figure is already on the newer basis (a filing
+  between the quarter's report and the year's restated a fiscal year), a quarter restated
+  later matches its year and is kept (BAC Q1 and Q2 2025 now equal the releases).
+- Release vs XBRL (first DQ review: 33 of 2,272 checks disagreed; the release quotes showed
+  why). A release that prints a rounded headline ("net income of $1.8 billion" for 1,777M)
+  now agrees when XBRL, rounded to the printed precision, gives that figure; an exact table
+  figure must still agree within 0.5%. The preliminary definitions now ask for the exact
+  figure in the income statement table and name the line ("Net income attributable to
+  <company>", not "available to common shareholders", "profit", continuing operations or
+  adjusted), matching us-gaap:NetIncomeLoss. A check whose XBRL value has since become N/M
+  is dropped.
+- BlackRock: total revenue is tagged as contract revenue; its us-gaap:Revenues facts (about
+  11-13B a year) are not the total. Company override `company_overrides/BLK.yaml`.
+- Short transactions (Phase 15i follow-up, user decision): insights and metricdetail commit
+  their finished writes before each model call and each cached answer right after it
+  (`cached_call(commit=True)`), so no transaction stays open while waiting for the model.
+  A group of writes (retire the old set, insert the new one) still commits together. On a
+  SQLite file these two stages now run companies in parallel (jobs.yaml `parallel`); SQLite
+  files use WAL and a 60 s busy timeout. Measured in a test: two companies 1.3 s instead of
+  2.3 s. The other LLM stages still hold one transaction per company (Phase 17d), and calls
+  within a company stay serial (behavioral and strategic could overlap: ~20%).
+- Ratios over text metrics (top product, uninsured deposit and CRE loan shares) are computed by
+  `compute` from the text values stored earlier, as Altman Z uses the stored market cap: a new
+  text value gets its ratio on the next run. Only metrics of kind `text` are read back; a
+  metric with XBRL and a text fallback (CET1) keeps its XBRL values as formula input.
+- Calls to the development LLM provider get a 10-minute deadline, retries included (the
+  SDK's timeout bounds each socket read, not the call). A call past it fails as one item
+  (retried next run); later calls use a new client. The stalls that prompted it (BAC legal
+  at 15:38, INTC legal at 16:34) began the second the laptop went into idle sleep (pmset
+  log): the process freezes, the connection dies, and timers count only awake time. Long
+  local runs go under `caffeinate -i`; servers don't sleep.
+- Development LLM runs use one small model in every role (user decision, for cost): dual
+  checks then compare that model with itself at two efforts, less independent than two models.
+- Open: market cap for multi-class companies (Alphabet, Visa, Berkshire) needs per-class
+  share counts; total loans for Wells Fargo and American Express are not tagged with standard
+  tags (company concepts needed); the quarterly list review owner.
+
+- Closing checks (2026-10-20):
+  - Coverage: a formula over a text metric (product, uninsured-deposit and CRE shares) now gets
+    the text target (4 quarters), as the text it is built on covers about 400 days. The rest got
+    notes: capital ratios per industry (BANKS: older periods only where XBRL ratios are mapped,
+    JPM), and company notes naming the cause. 0 unexplained gaps (3,625 OK, 525 explained).
+  - Found while writing them: for 5 of 8 banks no MD&A text is read. Wells Fargo, US Bancorp
+    and BNY put the MD&A in the annual report (Exhibit 13; Item 7 only refers to it, and Wells
+    Fargo's 10-Q Item 2 is a table of contents); for Citi and Morgan Stanley the section splitter
+    finds no Item 7 / Item 2. Their text metrics (LCR, NIM, NPL, uninsured deposits, CRE, net
+    flows) are missing for that reason; fix in Phase 17d (read Exhibit 13, section rules).
+  - Text-metric holdout, 2 companies per metric (32 values): all right for their period. Weak
+    evidence in two (COF CRE loans, GM deliveries: the quote is a table's total line without its
+    label); Ford's "deliveries" are wholesale units; Costco's comparable sales are as reported
+    (with gasoline and FX), BAC's margin is net interest yield on an FTE basis.
+  - audit-insights checked only 10-K/10-Q section text, so proxy facts, litigation matters
+    (rendered for the model with the filing's words) and loan rows read by table cell ("row |
+    value") were reported as not found. It now checks them against what the model saw: 1,580 of
+    1,580 snippets in a 600-insight sample, 14 of 14 loan rows.
+  - stability_check --faults (JPM, MAR, UNH, COST, XOM): time-out, rate limit and invalid
+    output each fail closed; nothing stored changes.
+  - SQL Server (`scripts/test_mssql.sh --all`): 413 passed, including the KeyTakeaways table.
+
+
+**D-053 Key Takeaway: 2–3 bullets for professional lines above the Key Insights (2026-10-20).**
+- User request: a Key Takeaway box on the company page (prototype: "Key Takeaway", above "Key
+  Insights Summary"): from all of the company's current results, the 2–3 points that matter most
+  for professional insurance, without links.
+- Generation: a sixth step of the insights stage, `key_takeaways_v1` on the synthesis model,
+  after the follow-up questions. Input: metrics, signals and the current key, strategic/risk and
+  behavioral insights. Scope (user decision): D&O first (securities and derivative claims,
+  regulatory, governance and insider selling, distress, M&A), then E&O, cyber and employment
+  practices where the input shows them. Each bullet is one sentence with its fact and date.
+- Same checks as the other insights though nothing is shown but the text: schema; quotes of the
+  cited items must be found and every number must come from the input, else the bullet is
+  dropped; at most 3 kept; versioned by input hash (a new version only when an input changes).
+  The evidence is stored in `insight_evidence` (citations of key insights resolve to their own
+  sources) for `audit-insights`, and the link-coverage DQ check skips takeaways.
+- App storage, options: (A) a new table `KeyTakeaways` (CompanyId, Ordinal, Takeaway,
+  UpdatedDate, isActive); (B) `KeyInsights` with a "Takeaway" type, which the Key Insights cards
+  would have to filter out; (C) a text column on `Company`, without versions. Chosen (user
+  decision): A, versioned like KeyInsights. The BFF must add the read; recorded in
+  `docs/schema-contract.md`, DDL in `deploy/sql/app_schema_changes.sql`.
+- Trial on MAR, JPM, ENPH: 3 of 3 bullets kept for each, all specific and dated (e.g. ENPH:
+  three open securities class actions, the newest filed 2026-02-17). Some run past the 35-word
+  target. Cost: one call per company with changed inputs (about $0.01 on the development model).
+
+
+**D-054 Hide the Phase 15 metrics beyond the BRD (2026-10-20).**
+- User request: the metrics Phase 15 added beyond the BRD (Professional 360 MVP: financial,
+  liquidity, leverage, operational, FI trends, loan portfolio) are hidden for now and kept out
+  of key insights, key takeaways and the other LLM outputs.
+- Scope: the three Phase 15 metric sets, 21 metrics: REPORTING_QUALITY (receivable and
+  inventory days, accruals ratio, debt maturities 1-5+ years, near-term debt coverage, Altman Z),
+  MARKET (market cap, 90-day volatility, 52-week drawdown, EPS surprise, insider net sales,
+  officer sell %), CAPITAL_QUALITY (goodwill / equity, goodwill impairment, SBC / revenue,
+  diluted share growth).
+- How: `hidden_metric_sets` in `config/metrics.yaml`. The metrics are still computed and stored
+  (the market and documents stages still write theirs), so showing them again means deleting
+  the line, with no backfill. Hidden means: not published (MatrixData, CompanyMetricDetail and
+  the SIC's SIC_Preferences rows are removed; the metric and category definitions stay), not in
+  any LLM input (the package takes only displayed or insight-input metrics), not in the coverage
+  report.
+- Signals (user decision): threshold signals on a hidden metric are not raised, as their text
+  quotes the value: near_term_refinancing and altman_distress (13 Altman signals removed). The
+  event signals stay (stock drop, earnings-miss drop, insider cluster selling, 8-K 1.05 / 1.02,
+  13D, litigation): they fit the BRD's Strategic & Risk categories.
+- BFF: no change if it builds a company's metric list from SIC_Preferences or MatrixData and hides
+  categories without metrics; "Market & Trading" and "Reporting Quality" are now empty.
+

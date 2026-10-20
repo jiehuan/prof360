@@ -16,7 +16,10 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
+import xml.etree.ElementTree as ET
+from collections import Counter
 from collections.abc import Callable, Sequence
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
@@ -24,12 +27,19 @@ from typing import Any
 from sqlalchemy import Connection, Engine, and_, delete, select, update
 
 from uw_pipeline.clients.sec import SecClient, archive_folder_url
+from uw_pipeline.compute.insiders import insider_metrics
 from uw_pipeline.compute.registry import Registry
 from uw_pipeline.config import CompanyConfig
-from uw_pipeline.extract.filings import Filing, exhibit_by_type, filings_since
+from uw_pipeline.extract.filings import (
+    Filing,
+    exhibit_by_type,
+    filings_since,
+    ownership_parties,
+)
 from uw_pipeline.jobs.run_company import TaskResult
-from uw_pipeline.jobs.run_xbrl import company_row
-from uw_pipeline.load.upsert import insert_missing, upsert
+from uw_pipeline.jobs.run_xbrl import company_row, fiscal_periods
+from uw_pipeline.load.upsert import delete_keys, insert_missing, upsert
+from uw_pipeline.normalize.form4 import parse_form4
 from uw_pipeline.normalize.html_text import html_to_text
 from uw_pipeline.normalize.sections import (
     Section,
@@ -39,7 +49,14 @@ from uw_pipeline.normalize.sections import (
     split_8k_items,
     split_items,
 )
-from uw_pipeline.schema import filing_section, section_chunk, source_document
+from uw_pipeline.schema import (
+    filing_section,
+    insider_transaction,
+    metric_value,
+    section_chunk,
+    signal,
+    source_document,
+)
 from uw_pipeline.signals.rules import SignalRules
 
 log = logging.getLogger(__name__)
@@ -176,7 +193,27 @@ def process_company(
     history_years: int = 0,
 ) -> dict[str, int]:
     row = company_row(conn, cfg)
-    cik, company_id = row["cik"], row["company_id"]
+    stats: Counter[str] = Counter()
+    kept_ownership: set[str] = set()
+    # The company's own filings, then its predecessor registrants' (Phase 16: after a
+    # holding-company reorganization the latest 10-K and proxy are the predecessor's).
+    for cik in cfg.registrant_ciks(row["cik"]):
+        stats.update(_process_registrant(
+            cfg, sec, registry, rules, conn, row["company_id"], cik, kept_ownership,
+            today=today, text_lookback_days=text_lookback_days,
+            event_lookback_days=event_lookback_days, force=force, now=now,
+            history_years=history_years,
+        ))  # fmt: skip
+    _drop_stray_ownership(conn, row["company_id"], kept_ownership, rules)
+    return dict(stats)
+
+
+def _process_registrant(
+    cfg: CompanyConfig, sec: SecClient, registry: Registry, rules: SignalRules,
+    conn: Connection, company_id: int, cik: str, kept_ownership: set[str], *, today: date,
+    text_lookback_days: int, event_lookback_days: int, force: bool, now: datetime,
+    history_years: int,
+) -> dict[str, int]:  # fmt: skip
     subs = sec.submissions(cik, force=force).payload
     since_events = today - timedelta(days=event_lookback_days)
     since_text = (today - timedelta(days=text_lookback_days)).isoformat()
@@ -248,12 +285,114 @@ def process_company(
                        key_cols=["accession_no", "doc_name"])  # fmt: skip
         _, data = _download(conn, sec, cik, p.accn, p.primary_doc, force=force, now=now)
         stats["proxy"] = 1 if data is not None else 0
+    # Schedule 13D others filed about this company (activist stakes, Phase 15d): registered
+    # from the submissions list only; the signal needs the form and the date, not the text.
+    listed = filings_since(sec, cik, subs, since_events, tuple(rules.ownership_forms),
+                           force=force) if rules.ownership_forms else []  # fmt: skip
+    ownership = [f for f in listed if _about_company(sec, cik, f.accn)]
+    insert_missing(conn, source_document,
+                   [_doc_row(company_id, cik, f, f.primary_doc, "PRIMARY") for f in ownership],
+                   key_cols=["accession_no", "doc_name"])  # fmt: skip
+    kept_ownership |= {f.accn for f in ownership}
+    stats["ownership"] = len(ownership)
+    # Form 4s as far back as the insider-cluster rule looks (Phase 15b), at least the event window.
+    cluster = rules.insiders.insider_cluster_selling
+    since_form4 = min(since_events, today - timedelta(days=cluster.lookback_days)) if cluster \
+        else since_events  # fmt: skip
+    stats["form4"], stats["insider_values"] = _insiders(
+        conn, sec, cfg, company_id, cik, subs, since_form4, force=force, now=now)  # fmt: skip
     if history_years:
         stats["history_10k"] = _mdna_history(
             conn, sec, cfg, company_id, cik, subs, today - timedelta(days=366 * history_years),
             since_text, section_rules, force=force, now=now,
         )  # fmt: skip
     return stats
+
+
+def _drop_stray_ownership(
+    conn: Connection, company_id: int, kept: set[str], rules: SignalRules
+) -> None:
+    """Earlier registrations of 13Ds the company filed about others (no signal points to
+    them); `kept`: the 13Ds about the company, across its registrants."""
+    stray = [r.doc_id for r in conn.execute(
+        select(source_document.c.doc_id, source_document.c.accession_no).where(
+            source_document.c.company_id == company_id,
+            source_document.c.form_type.in_(tuple(rules.ownership_forms)))
+    ).all() if r.accession_no not in kept]  # fmt: skip
+    if stray:
+        used = {d for (d,) in conn.execute(
+            select(signal.c.doc_id).where(signal.c.doc_id.in_(stray))).all()}  # fmt: skip
+        conn.execute(delete(source_document).where(
+            source_document.c.doc_id.in_([d for d in stray if d not in used])))  # fmt: skip
+
+
+def _about_company(sec: SecClient, cik: str, accn: str) -> bool:
+    """Whether a Schedule 13D in the company's listing is about the company (its index headers
+    name it as the subject), not one the company filed about another issuer."""
+    header = sec.filing_document(cik, accn, f"{accn}-index-headers.html").payload
+    subject, _ = ownership_parties(header.decode("utf-8", errors="replace"))
+    return subject == int(cik)
+
+
+def _insiders(
+    conn: Connection, sec: SecClient, cfg: CompanyConfig, company_id: int, cik: str,
+    subs: dict[str, Any], since: date, *, force: bool, now: datetime,
+) -> tuple[int, int]:  # fmt: skip
+    """Insiders' Form 4s (Phase 15b): registered, downloaded once and parsed into
+    insider_transaction, then the quarterly insider metrics (derivation FORM4, owned here).
+    Amendments (4/A) are left out so a line is never counted twice; Form 4s about another
+    issuer are registered (so they are not fetched again) but not parsed into rows."""
+    filings = filings_since(sec, cik, subs, since, ("4",), force=force)
+    for f in filings:
+        name = f.primary_doc.rsplit("/", 1)[-1]  # the raw XML, not the XSL-rendered view
+        insert_missing(conn, source_document, [_doc_row(company_id, cik, f, name, "PRIMARY")],
+                       key_cols=["accession_no", "doc_name"])  # fmt: skip
+        doc_id, data = _download(conn, sec, cik, f.accn, name, force=force, now=now)
+        if data is None:
+            continue  # unchanged: already parsed
+        try:
+            parsed = parse_form4(data)
+        except ET.ParseError as exc:
+            log.warning("%s Form 4 %s: not parseable XML (%s)", cfg.ticker, f.accn, exc)
+            continue
+        if parsed["issuer_cik"] != int(cik):
+            # Filed by the company as an owner of another issuer (e.g. JPMorgan as a 10%
+            # holder): not about this company's insiders.
+            conn.execute(delete(insider_transaction).where(
+                insider_transaction.c.accession_no == f.accn))  # fmt: skip
+            continue
+        owner = parsed["owner"]
+        upsert(conn, insider_transaction, [{
+            "accession_no": f.accn, "company_id": company_id, "doc_id": doc_id,
+            "filed_at": f.filed, "owner_cik": owner["cik"], "owner_name": owner["name"],
+            "is_director": owner["is_director"], "is_officer": owner["is_officer"],
+            "officer_title": owner["officer_title"], "is_ten_percent": owner["is_ten_percent"],
+            "updated_at": now, **t,
+        } for t in parsed["transactions"]], key_cols=["accession_no", "line"])  # fmt: skip
+    rows = [dict(r) for r in conn.execute(select(insider_transaction).where(
+        insider_transaction.c.company_id == company_id)).mappings()]  # fmt: skip
+    values = insider_metrics(rows, fiscal_periods(conn, company_id), since.isoformat())
+    keys = ["company_id", "metric_code", "period_type", "fiscal_year", "fiscal_quarter"]
+    units = {"insider_net_sales": "USD", "officer_sell_pct": "fraction"}
+    out = [{
+        "company_id": company_id, "metric_code": code, "period_type": k[0], "fiscal_year": k[1],
+        "fiscal_quarter": k[2], "period_end": end, "value": value, "value_status": "OK",
+        "unit": units[code], "derivation": "FORM4", "formula": f"{code} from Form 4 filings",
+        "source_tags": json.dumps({"form4": ["SEC Form 4"]}), "source_accn": "",
+        "computed_at": now,
+    } for code, by_key in values.items() for k, (value, end) in by_key.items()]  # fmt: skip
+    upsert(conn, metric_value, out, key_cols=keys)
+    produced = {tuple(r[k] for k in keys[1:]) for r in out}
+    existing = conn.execute(
+        select(*(metric_value.c[k] for k in keys[1:])).where(
+            metric_value.c.company_id == company_id, metric_value.c.derivation == "FORM4"
+        )
+    ).all()
+    stale = [tuple(e) for e in existing if tuple(e) not in produced]
+    if stale:
+        delete_keys(conn, metric_value, keys[1:], stale,
+                    metric_value.c.company_id == company_id)  # fmt: skip
+    return len(filings), len(out)
 
 
 def _mdna_history(

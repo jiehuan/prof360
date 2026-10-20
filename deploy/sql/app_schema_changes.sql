@@ -54,6 +54,20 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_CompanyMetricDetail_c
     CREATE INDEX [ix_CompanyMetricDetail_company_metric] ON dbo_professional360.[CompanyMetricDetail] ([CompanyId], metric_id);
 GO
 
+-- KeyTakeaways: Key Takeaway box above Key Insights: 2-3 bullets for professional lines, most important first (Ordinal 1), no links; read isActive = 1.
+IF OBJECT_ID(N'dbo_professional360.KeyTakeaways', N'U') IS NULL
+CREATE TABLE dbo_professional360.[KeyTakeaways] (
+	[KeyTakeawayId] INTEGER NOT NULL IDENTITY, 
+	[CompanyId] INTEGER NOT NULL, 
+	[Ordinal] INTEGER NOT NULL, 
+	[Takeaway] NVARCHAR(max) NOT NULL, 
+	[UpdatedDate] DATE NULL, 
+	[isActive] BIT NOT NULL, 
+	PRIMARY KEY ([KeyTakeawayId]), 
+	FOREIGN KEY([CompanyId]) REFERENCES dbo_professional360.[Company] ([CompanyId])
+);
+GO
+
 -- pipeline_publish_map: Pipeline bookkeeping (pipeline object -> app id); written and read only by the pipeline.
 IF OBJECT_ID(N'dbo_professional360.pipeline_publish_map', N'U') IS NULL
 CREATE TABLE dbo_professional360.pipeline_publish_map (

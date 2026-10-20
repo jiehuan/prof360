@@ -1,0 +1,235 @@
+{
+ "cik": "0000080424",
+ "entityType": "operating",
+ "sic": "2840",
+ "sicDescription": "Soap, Detergents, Cleang Preparations, Perfumes, Cosmetics",
+ "ownerOrg": "08 Industrial Applications and Services",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "PROCTER & GAMBLE Co",
+ "tickers": [
+  "PG"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "310411980",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "0630",
+ "stateOfIncorporation": "OH",
+ "stateOfIncorporationDescription": "OH",
+ "addresses": {
+  "mailing": {
+   "street1": "ONE PROCTER & GAMBLE PLAZA",
+   "street2": null,
+   "city": "CINCINNATI",
+   "stateOrCountry": "OH",
+   "zipCode": "45202",
+   "stateOrCountryDescription": "OH",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "ONE PROCTER & GAMBLE PLAZA",
+   "street2": null,
+   "city": "CINCINNATI",
+   "stateOrCountry": "OH",
+   "zipCode": "45202",
+   "stateOrCountryDescription": "OH",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "5139831100",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000080424-26-000245",
+    "0000080424-26-000243",
+    "0000080424-26-000241",
+    "0000080424-26-000239",
+    "0000080424-26-000225",
+    "0000080424-26-000103",
+    "0000080424-26-000060",
+    "0000080424-26-000011",
+    "0000080424-25-000245"
+   ],
+   "filingDate": [
+    "2026-10-16",
+    "2026-10-15",
+    "2026-10-15",
+    "2026-10-15",
+    "2026-10-14",
+    "2026-08-04",
+    "2026-04-24",
+    "2026-01-23",
+    "2025-10-24"
+   ],
+   "reportDate": [
+    "2026-10-16",
+    "",
+    "",
+    "",
+    "2026-10-13",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-17T00:25:47.000Z",
+    "2026-10-16T00:41:09.000Z",
+    "2026-10-16T00:39:59.000Z",
+    "2026-10-16T00:38:59.000Z",
+    "2026-10-14T23:59:10.000Z",
+    "2026-08-05T00:11:35.000Z",
+    "2026-04-25T00:14:30.000Z",
+    "2026-01-23T07:51:22.000Z",
+    "2025-10-25T00:24:02.000Z"
+   ],
+   "act": [
+    "34",
+    "33",
+    "33",
+    "33",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "8-K",
+    "S-3ASR",
+    "S-3ASR",
+    "S-3ASR",
+    "4",
+    "10-K",
+    "10-Q",
+    "10-Q",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "001-00434",
+    "333-299472",
+    "333-299471",
+    "333-299470",
+    "",
+    "001-00434",
+    "001-00434",
+    "001-00434",
+    "001-00434"
+   ],
+   "filmNumber": [
+    "261466401",
+    "261463494",
+    "261463480",
+    "261463474",
+    "",
+    "261238769",
+    "26894123",
+    "26553194",
+    "251416491"
+   ],
+   "items": [
+    "5.07",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "XBRL",
+    "S-3ASR",
+    "S-3ASR",
+    "S-3ASR",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    380188,
+    843618,
+    525382,
+    379881,
+    4831,
+    17753226,
+    6980446,
+    6962482,
+    7179008
+   ],
+   "isXBRL": [
+    1,
+    1,
+    1,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    1,
+    1,
+    1,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "pg-20261016.htm",
+    "proctergambledss-3asr.htm",
+    "proctergambledsppforms-3asr.htm",
+    "proctergambleuksiss-3asr.htm",
+    "xslF345X06/form4.xml",
+    "pg-20260630.htm",
+    "pg-20260331.htm",
+    "pg-20251231.htm",
+    "pg-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "8-K",
+    "S-3ASR",
+    "S-3ASR",
+    "S-3ASR",
+    "PRIMARY DOCUMENT",
+    "FY2526 10-K",
+    "FY2526 Q3 JFM 10-Q",
+    "FY2526 Q2 OND 10-Q",
+    "FY2526 Q1 JAS 10-Q"
+   ]
+  },
+  "files": []
+ }
+}

@@ -1,0 +1,251 @@
+{
+ "cik": "0000320193",
+ "entityType": "operating",
+ "sic": "3571",
+ "sicDescription": "Electronic Computers",
+ "ownerOrg": "06 Technology",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Apple Inc.",
+ "tickers": [
+  "AAPL"
+ ],
+ "exchanges": [
+  "Nasdaq"
+ ],
+ "ein": "942404110",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "0926",
+ "stateOfIncorporation": "CA",
+ "stateOfIncorporationDescription": "CA",
+ "addresses": {
+  "mailing": {
+   "street1": "ONE APPLE PARK WAY",
+   "street2": null,
+   "city": "CUPERTINO",
+   "stateOrCountry": "CA",
+   "zipCode": "95014",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "ONE APPLE PARK WAY",
+   "street2": null,
+   "city": "CUPERTINO",
+   "stateOrCountry": "CA",
+   "zipCode": "95014",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "(408) 996-1010",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "APPLE INC",
+   "from": "2007-01-10T05:00:00.000Z",
+   "to": "2019-08-05T04:00:00.000Z"
+  },
+  {
+   "name": "APPLE COMPUTER INC",
+   "from": "1994-01-26T05:00:00.000Z",
+   "to": "2007-01-04T05:00:00.000Z"
+  },
+  {
+   "name": "APPLE COMPUTER INC/ FA",
+   "from": "1997-07-28T04:00:00.000Z",
+   "to": "1997-07-28T04:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001950047-26-010286",
+    "0001140361-26-039785",
+    "0001140361-26-039158",
+    "0001140361-26-038674",
+    "0001140361-26-038672",
+    "0000320193-26-000020",
+    "0000320193-26-000013",
+    "0000320193-26-000006",
+    "0000320193-25-000079"
+   ],
+   "filingDate": [
+    "2026-10-16",
+    "2026-10-15",
+    "2026-10-08",
+    "2026-10-05",
+    "2026-10-05",
+    "2026-07-31",
+    "2026-05-01",
+    "2026-01-30",
+    "2025-10-31"
+   ],
+   "reportDate": [
+    "",
+    "2026-10-13",
+    "2026-10-06",
+    "2026-10-01",
+    "2026-10-01",
+    "2026-06-27",
+    "2026-03-28",
+    "2025-12-27",
+    "2025-09-27"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-17T00:29:07.000Z",
+    "2026-10-16T02:30:17.000Z",
+    "2026-10-09T02:30:32.000Z",
+    "2026-10-06T02:42:45.000Z",
+    "2026-10-06T02:39:10.000Z",
+    "2026-07-31T14:01:02.000Z",
+    "2026-05-01T14:01:00.000Z",
+    "2026-01-30T16:01:32.000Z",
+    "2025-10-31T14:01:26.000Z"
+   ],
+   "act": [
+    "33",
+    "",
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "144",
+    "4",
+    "4",
+    "4",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-Q",
+    "10-K"
+   ],
+   "fileNumber": [
+    "001-36743",
+    "",
+    "",
+    "",
+    "",
+    "001-36743",
+    "001-36743",
+    "001-36743",
+    "001-36743"
+   ],
+   "filmNumber": [
+    "261466426",
+    "",
+    "",
+    "",
+    "",
+    "261225227",
+    "26928636",
+    "26580330",
+    "251437791"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "144",
+    "4",
+    "4",
+    "4",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    4810,
+    4822,
+    4822,
+    20288,
+    14780,
+    5946811,
+    5809851,
+    5191740,
+    9392337
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xsl144X01/primary_doc.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "aapl-20260627.htm",
+    "aapl-20260328.htm",
+    "aapl-20251227.htm",
+    "aapl-20250927.htm"
+   ],
+   "primaryDocDescription": [
+    "",
+    "FORM 4",
+    "FORM 4",
+    "FORM 4",
+    "FORM 4",
+    "10-Q",
+    "10-Q",
+    "10-Q",
+    "10-K"
+   ]
+  },
+  "files": []
+ }
+}

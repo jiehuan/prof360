@@ -1,0 +1,9 @@
+# BlackRock-specific concept tags (Phase 16, D-052). BlackRock tags its total revenue as
+# contract revenue (us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax: 17,873 /
+# 17,859 / 20,407 USD millions for 2022-2024). Its us-gaap:Revenues facts for the same years
+# (11,061 / 11,012 / 12,794) are not the total, so the brokers group's order (Revenues first,
+# right for Goldman Sachs and Morgan Stanley) does not fit it.
+concepts:
+  revenue:
+    tags:
+      - us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax

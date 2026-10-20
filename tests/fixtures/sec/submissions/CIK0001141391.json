@@ -1,0 +1,235 @@
+{
+ "cik": "0001141391",
+ "entityType": "operating",
+ "sic": "7389",
+ "sicDescription": "Services-Business Services, NEC",
+ "ownerOrg": "07 Trade & Services",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Mastercard Inc",
+ "tickers": [
+  "MA"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "134172551",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "2000 PURCHASE STREET",
+   "street2": null,
+   "city": "PURCHASE",
+   "stateOrCountry": "NY",
+   "zipCode": "10577",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "2000 PURCHASE STREET",
+   "street2": null,
+   "city": "PURCHASE",
+   "stateOrCountry": "NY",
+   "zipCode": "10577",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "9142492000",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001950047-26-010290",
+    "0001141391-26-000116",
+    "0001950047-26-010168",
+    "0001950047-26-010147",
+    "0001141391-26-000114",
+    "0001141391-26-000083",
+    "0001141391-26-000031",
+    "0001141391-26-000013",
+    "0001141391-25-000193"
+   ],
+   "filingDate": [
+    "2026-10-16",
+    "2026-10-13",
+    "2026-10-13",
+    "2026-10-09",
+    "2026-10-05",
+    "2026-07-30",
+    "2026-04-30",
+    "2026-02-11",
+    "2025-10-30"
+   ],
+   "reportDate": [
+    "",
+    "2026-10-09",
+    "",
+    "",
+    "2026-10-01",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-17T00:30:03.000Z",
+    "2026-10-14T00:06:30.000Z",
+    "2026-10-13T16:22:28.000Z",
+    "2026-10-10T00:42:40.000Z",
+    "2026-10-06T00:12:25.000Z",
+    "2026-07-30T18:28:40.000Z",
+    "2026-04-30T18:15:29.000Z",
+    "2026-02-11T21:04:08.000Z",
+    "2025-10-30T18:14:27.000Z"
+   ],
+   "act": [
+    "33",
+    "",
+    "33",
+    "33",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "144",
+    "4",
+    "144",
+    "144",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "001-32877",
+    "",
+    "001-32877",
+    "001-32877",
+    "",
+    "001-32877",
+    "001-32877",
+    "001-32877",
+    "001-32877"
+   ],
+   "filmNumber": [
+    "261466438",
+    "",
+    "261454789",
+    "261453389",
+    "",
+    "261220872",
+    "26920955",
+    "26619080",
+    "251432752"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "144",
+    "4",
+    "144",
+    "144",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    4739,
+    9270,
+    5754,
+    4800,
+    4943,
+    9629144,
+    9350786,
+    19672075,
+    9526941
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xsl144X01/primary_doc.xml",
+    "xslF345X06/wk-form4_1791921988.xml",
+    "xsl144X01/primary_doc.xml",
+    "xsl144X01/primary_doc.xml",
+    "xslF345X06/wk-form4_1791231143.xml",
+    "ma-20260630.htm",
+    "ma-20260331.htm",
+    "ma-20251231.htm",
+    "ma-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "",
+    "FORM 4",
+    "",
+    "",
+    "FORM 4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

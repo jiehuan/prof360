@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import math
 import operator
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
@@ -55,9 +56,11 @@ def concept_values(
             for key, row in index.get((ref.tag, ref.dims_key, unit), {}).items():
                 if key in chosen:
                     continue
+                value = float(row["value"])
+                nm = math.isnan(value)  # a quarter that cannot be derived on one basis (D-052)
                 chosen[key] = Value(
-                    value=float(row["value"]),
-                    status="OK",
+                    value=None if nm else value,
+                    status="NM" if nm else "OK",
                     derivation=row["derivation"],
                     period_end=row["period_end"],
                     accn=row["accn"],
@@ -178,6 +181,9 @@ def _lookup(
 def _formula_value(
     metric: MetricDef, key: PeriodKey, known: Mapping[str, Mapping[PeriodKey, Value]]
 ) -> Value | None:
+    # N/M when no form gives a value but one had all its inputs, some of them N/M (D-052): the
+    # period is shown as not meaningful instead of missing.
+    nm: Value | None = None
     for expr in metric.formula:
         names = _names(expr)
         present = {n: v for n in names if (v := _lookup(n, key, known)) is not None}
@@ -186,23 +192,28 @@ def _formula_value(
             continue
         parts = list(present.values())
         if any(p.value is None for p in parts):
-            continue  # an input is itself N/M
+            nm = nm or _combine(parts, None, "NM", expr)
+            continue  # an input is itself N/M: try the next form
         env = {n: 0.0 for n in names} | {
             n: v.value for n, v in present.items() if v.value is not None
         }
         if metric.nm_when:
             nm_names = _names(metric.nm_when)
-            if all(key in known.get(n, {}) and known[n][key].value is not None for n in nm_names):
-                nm_env = {n: known[n][key].value for n in nm_names}
-                if _eval(ast.parse(metric.nm_when, mode="eval"), nm_env):  # type: ignore[arg-type]
-                    return _combine(parts, None, "NM", expr)
+            nm_env = {n: 0.0 for n in nm_names if n in metric.optional} | {
+                n: known[n][key].value
+                for n in nm_names
+                if key in known.get(n, {}) and known[n][key].value is not None
+            }
+            nm_expr = ast.parse(metric.nm_when, mode="eval")
+            if set(nm_env) == set(nm_names) and _eval(nm_expr, nm_env):  # type: ignore[arg-type]
+                return _combine(parts, None, "NM", expr)
         try:
             value = _eval(ast.parse(expr, mode="eval"), env)
         except _Undefined:
             continue
         label = parts[0].formula if len(names) == 1 and len(parts) == 1 else expr
         return _combine(parts, float(value), "OK", label)
-    return None
+    return nm
 
 
 def _comparison_key(key: PeriodKey, compare: str) -> PeriodKey:
@@ -218,21 +229,29 @@ def _growth_value(
     assert metric.base and metric.compare
     series = known.get(metric.base, {})
     cur, prev = series.get(key), series.get(_comparison_key(key, metric.compare))
-    if cur is None or prev is None or cur.value is None or prev.value is None or prev.value == 0:
+    label = f"growth({metric.base}, {metric.compare})"
+    if cur is None or prev is None:
         return None
-    growth = (cur.value - prev.value) / abs(prev.value)
-    return _combine([cur, prev], growth, "OK", f"growth({metric.base}, {metric.compare})")
+    if cur.value is None or prev.value is None:
+        return _combine([cur, prev], None, "NM", label)  # a period that is itself N/M
+    if prev.value == 0:
+        return None
+    return _combine([cur, prev], (cur.value - prev.value) / abs(prev.value), "OK", label)
 
 
 def compute_metrics(
-    periods: pd.DataFrame, registry: CompanyRegistry
+    periods: pd.DataFrame,
+    registry: CompanyRegistry,
+    stored: Mapping[str, dict[PeriodKey, Value]] | None = None,
 ) -> dict[str, dict[PeriodKey, Value]]:
-    """All applicable metrics for one company, keyed by metric code then period."""
+    """All applicable metrics for one company, keyed by metric code then period. `stored`:
+    values other stages wrote (market metrics, Phase 15a) that formulas may use."""
     known: dict[str, dict[PeriodKey, Value]] = dict(concept_values(periods, registry))
+    known |= dict(stored or {})
     results: dict[str, dict[PeriodKey, Value]] = {}
     for metric in registry.metrics:
-        if metric.kind == "text":
-            continue  # extracted from filing text by the LLM stage, not computed here
+        if metric.kind in ("text", "external"):
+            continue  # written by the text-metrics, market or documents stage, not here
         inputs = metric.inputs()
         keys = sorted({k for n in inputs for k in known.get(n, {})})
         values: dict[PeriodKey, Value] = {}

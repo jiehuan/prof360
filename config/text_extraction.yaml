@@ -1,7 +1,7 @@
 # LLM extraction of numbers from filing text (Phase 5a, decisions D-032).
 # Every value needs a verbatim quote that contains the number as written; otherwise dropped.
 
-prompt_version: text_metrics_v2
+prompt_version: text_metrics_v3
 # At `low` effort the extractor skipped comparative columns and rewrote table headers in
 # quotes (D-038), so this task runs the extractor at a higher effort.
 extractor_effort: medium
@@ -14,15 +14,25 @@ max_chars: 60000
 # Preliminary results from the earnings release (decisions D-022). Stored with
 # derivation = PRELIMINARY only for periods that have no XBRL value yet; the 10-Q/10-K replaces
 # them. A metric is extracted only if it is on the company's curated metric list.
+# Exact figures from the release's financial statement tables (D-052): a rounded headline in
+# the text ("$1.8 billion") or another line (available to common shareholders, "profit",
+# continuing operations) is not the figure the XBRL value is checked against.
 preliminary:
   revenue: >-
-    Total revenues (GAAP, as reported) for the fiscal quarter the release announces. For banks:
-    total net revenue on a reported (not managed) basis.
+    Total revenues (GAAP, as reported) for the fiscal quarter the release announces, as the
+    exact figure in the income statement table, not a rounded figure from the text. For banks:
+    total net revenue on a reported (not managed or fully taxable-equivalent) basis.
   net_income: >-
     Net income attributable to the company (GAAP, as reported) for the fiscal quarter the
-    release announces.
+    release announces: the income statement line "Net income attributable to <company>", or
+    "Net income" when nothing is attributable to noncontrolling interests. The exact figure in
+    the table, not a rounded figure from the text. Not net income available or applicable to
+    common shareholders (after preferred dividends), not "profit" or segment profit, not income
+    from continuing operations, not an adjusted figure.
   operating_income: >-
-    Operating income (GAAP, as reported) for the fiscal quarter the release announces.
+    Operating income (GAAP, as reported) for the fiscal quarter the release announces, as the
+    exact figure in the income statement table, not a rounded figure from the text; not segment
+    or adjusted operating income.
 
 # Loan book by loan class (BANKS only; Phase 8, decisions D-036). Both models must agree.
 loan_portfolio:

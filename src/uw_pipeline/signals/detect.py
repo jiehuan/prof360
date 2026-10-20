@@ -5,12 +5,20 @@ from __future__ import annotations
 
 import itertools
 import re
+from bisect import bisect_right
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from datetime import date, timedelta
 from typing import Any
 
 from uw_pipeline.normalize.sections import auditor_since
-from uw_pipeline.signals.rules import KeywordRule, SignalRules, SignalSpec
+from uw_pipeline.signals.rules import (
+    LEGAL_TYPES,
+    KeywordRule,
+    SignalRules,
+    SignalSpec,
+    ownership_rule_id,
+)
 
 SNIPPET_CHARS = 600
 
@@ -221,6 +229,7 @@ class AuditorInfo:
     name: str | None  # dei:AuditorName
     since: int | None  # "served as auditor since YYYY"
     snippet: str | None
+    firm_id: str | None = None  # dei:AuditorFirmId (PCAOB ID), Phase 15f
 
 
 def _norm_firm(name: str) -> str:
@@ -244,6 +253,7 @@ def auditor_signals(infos: Sequence[AuditorInfo]) -> list[Detected]:
             title=f"Auditor: {cur.name or 'not tagged'}{tenure}",
             description=(
                 f"Independent auditor per the {cur.doc.form_type} filed {cur.doc.filed_at}"
+                f"{f' (PCAOB ID {cur.firm_id})' if cur.firm_id else ''}"
                 f"{f'; auditor since {cur.since}' if cur.since else ''}."
             ),
             event_date=cur.doc.filed_at,
@@ -256,7 +266,10 @@ def auditor_signals(infos: Sequence[AuditorInfo]) -> list[Detected]:
     named = [i for i in dated if i.name]
     for prev, nxt in itertools.pairwise(named):
         assert prev.name and nxt.name
-        if _norm_firm(prev.name) != _norm_firm(nxt.name):
+        # The PCAOB firm ID when both 10-Ks give it; a firm's name can be written differently.
+        changed = (prev.firm_id != nxt.firm_id) if prev.firm_id and nxt.firm_id \
+            else _norm_firm(prev.name) != _norm_firm(nxt.name)  # fmt: skip
+        if changed:
             out.append(
                 Detected(
                     rule_id="auditor_change",
@@ -276,13 +289,15 @@ def auditor_signals(infos: Sequence[AuditorInfo]) -> list[Detected]:
     return out
 
 
-def auditor_info(doc: Doc, name: str | None, audit_text: str | None) -> AuditorInfo:
+def auditor_info(
+    doc: Doc, name: str | None, audit_text: str | None, firm_id: str | None = None
+) -> AuditorInfo:
     since = auditor_since(audit_text) if audit_text else None
     snippet = None
     if audit_text and since:
         m = re.search(rf"[^.\n]*since (?:at least )?{since}[^.\n]*\.?", audit_text)
         snippet = m.group(0).strip() if m else None
-    return AuditorInfo(doc, name, since, snippet)
+    return AuditorInfo(doc, name, since, snippet, firm_id)
 
 
 # -- keywords ----------------------------------------------------------------------------------
@@ -426,6 +441,228 @@ def pay_signals(values: Sequence[Mapping[str, Any]], rules: SignalRules) -> list
     ]
 
 
+def ownership_signals(
+    docs: Iterable[Doc], rules: SignalRules, filers: Mapping[str, str] | None = None
+) -> list[Detected]:
+    """Schedule 13D filings others made about the company (Phase 15d): activist stakes.
+    `filers`: accession -> the investor's name (from the filing's index headers)."""
+    out = []
+    for d in docs:
+        spec = rules.ownership_forms.get(d.form_type)
+        if spec is None:
+            continue
+        out.append(_from_spec(
+            spec, ownership_rule_id(d.form_type),
+            description=f"{(filers or {}).get(d.accession_no) or 'An investor'} filed a "
+                        f"{d.form_type} about the company on {d.filed_at} (accession "
+                        f"{d.accession_no}).",
+            event_date=d.filed_at, accession_no=d.accession_no, doc_id=d.doc_id,
+        ))  # fmt: skip
+    return out
+
+
+def market_signals(
+    prices: Sequence[tuple[str, float]],
+    benchmark: Sequence[tuple[str, float]],
+    earnings: Sequence[Mapping[str, Any]],
+    rules: SignalRules,
+    today: str,
+) -> list[Detected]:
+    """Stock drops beyond the market and drops after an earnings miss (Phase 15a), within the
+    lookback. `prices`, `benchmark`: (date, adjusted close), any order; `earnings`: rows of
+    earnings_report. Every signal can be checked against the stored prices."""
+    m = rules.market
+    since = (date.fromisoformat(today) - timedelta(days=m.lookback_days)).isoformat()
+    days = sorted(prices)
+    bench = dict(benchmark)
+    bench_days = sorted(bench)
+    out: list[Detected] = []
+    if m.stock_drop is not None:
+        rule = m.stock_drop
+        for (d0, p0), (d1, p1) in itertools.pairwise(days):
+            if d1 < since or p0 <= 0:
+                continue
+            ret = p1 / p0 - 1
+            j = bisect_right(bench_days, d1) - 1
+            if ret > -rule.min_drop or j < 1 or bench_days[j] != d1:
+                continue
+            bret = bench[d1] / bench[bench_days[j - 1]] - 1
+            if ret - bret <= -rule.min_excess:
+                out.append(_from_spec(
+                    rule, "stock_drop",
+                    description=f"Shares fell {-ret:.1%} on {d1} (close {p0:,.2f} on {d0} to "
+                                f"{p1:,.2f}, adjusted) while {m.benchmark} moved {bret:+.1%}.",
+                    event_date=d1, key_extra=d1,
+                ))  # fmt: skip
+    if m.earnings_miss_drop is not None:
+        rule2 = m.earnings_miss_drop
+        dates = [d for d, _ in days]
+        for e in earnings:
+            rep, est, when = e.get("reported_eps"), e.get("estimated_eps"), e.get("reported_date")
+            if rep is None or est is None or not when or when < since or rep >= est:
+                continue
+            base = bisect_right(dates, when) - 1  # the last close before the report day
+            if base >= 0 and dates[base] == when:
+                base -= 1
+            end = base + rule2.days
+            if base < 0 or end >= len(days) or days[base][1] <= 0:
+                continue
+            fall = days[end][1] / days[base][1] - 1
+            if fall <= -rule2.min_drop:
+                out.append(_from_spec(
+                    rule2, "earnings_miss_drop",
+                    description=f"EPS {rep} missed the estimate of {est} (quarter ended "
+                                f"{e['fiscal_date_ending']}, reported {when}); shares fell "
+                                f"{-fall:.1%} from {dates[base]} to {dates[end]}.",
+                    event_date=when, key_extra=str(e["fiscal_date_ending"]),
+                ))  # fmt: skip
+    return out
+
+
+def insider_signals(
+    trades: Sequence[Mapping[str, Any]],
+    later: Sequence[Detected],
+    rules: SignalRules,
+    today: str,
+) -> list[Detected]:
+    """Clusters of officers and directors selling on the open market (Phase 15b). `trades`:
+    insider_transaction rows; `later`: market signals (a stock drop or an earnings-miss drop
+    soon after a cluster makes it a Warning)."""
+    rule = rules.insiders.insider_cluster_selling
+    if rule is None:
+        return []
+    since = (date.fromisoformat(today) - timedelta(days=rule.lookback_days)).isoformat()
+    sales = sorted(
+        (r for r in trades if r["code"] == "S" and (r["is_officer"] or r["is_director"])
+         and not r["is_10b5_1"] and r["trade_date"] and r["trade_date"] >= since),
+        key=lambda r: r["trade_date"],
+    )  # fmt: skip
+    events = sorted((s.event_date, s.title) for s in later
+                    if s.rule_id in ("stock_drop", "earnings_miss_drop"))  # fmt: skip
+
+    def who(r: Mapping[str, Any]) -> str:
+        return str(r["owner_cik"] or r["owner_name"])
+
+    out: list[Detected] = []
+    cluster_end = ""
+    for i, sale in enumerate(sales):
+        day = sale["trade_date"]
+        if day <= cluster_end:
+            continue  # part of the episode already reported
+        start = (date.fromisoformat(day) - timedelta(days=rule.window_days)).isoformat()
+        window = [r for r in sales[: i + 1] if r["trade_date"] >= start]
+        if len({who(r) for r in window}) < rule.min_insiders:
+            continue
+        # One signal per episode: window_days from its first sale, keyed on that date so a
+        # still-growing episode updates the same signal on the next run.
+        first = window[0]["trade_date"]
+        cluster_end = (date.fromisoformat(first) + timedelta(days=rule.window_days)).isoformat()
+        episode = [r for r in sales if first <= r["trade_date"] <= cluster_end]
+        last = episode[-1]["trade_date"]
+        people = {who(r) for r in episode}
+        value = sum((r["shares"] or 0) * (r["price"] or 0) for r in episode)
+        names = sorted({r["owner_name"] or r["owner_cik"] for r in episode})
+        until = (date.fromisoformat(last) + timedelta(days=rule.escalate_days)).isoformat()
+        follow = [e for e in events if day < e[0] <= until]
+        note = f" Followed by: {follow[0][1].lower()} on {follow[0][0]}." if follow else ""
+        out.append(_from_spec(
+            rule, "insider_cluster_selling",
+            severity="Warning" if follow else rule.severity,
+            description=f"{len(people)} officers or directors sold {value / 1e6:,.1f}M USD of "
+                        f"shares on the open market between {first} and {last}, outside "
+                        f"Rule 10b5-1 plans: {', '.join(names)}.{note}",
+            event_date=last, key_extra=first,
+        ))  # fmt: skip
+    return out
+
+
+_MONTHS = ("january", "february", "march", "april", "may", "june", "july", "august",
+           "september", "october", "november", "december")  # fmt: skip
+
+
+def _started(text: str | None) -> tuple[str | None, str | None]:
+    """(latest date the wording allows, the exact date if it gives a day) for a matter's start
+    as the filing writes it: "March 5, 2024", "March 2024", "2024", "the 2025 second quarter"."""
+    low = (text or "").lower()
+    year = re.search(r"\b(?:19|20)\d{2}\b", low)
+    if year is None:
+        return None, None
+    month = next((i for i, m in enumerate(_MONTHS, 1) if m in low), None)
+    if month is None:
+        return f"{year[0]}-12-31", None
+    day = re.search(rf"{_MONTHS[month - 1]}\s+(\d{{1,2}}),", low)
+    if day:
+        exact = f"{year[0]}-{month:02d}-{int(day[1]):02d}"
+        return exact, exact
+    return f"{year[0]}-{month:02d}-28", None
+
+
+def legal_signals(matters: Sequence[Mapping[str, Any]], rules: SignalRules,
+                  today: str) -> list[Detected]:  # fmt: skip
+    """Recent securities, derivative and government matters still disclosed (Phase 15e).
+    `matters`: legal_matter rows a reviewer has not rejected, with the last filing's
+    `accession_no`."""
+    lr = rules.legal
+    day = date.fromisoformat(today)
+    since = (day - timedelta(days=lr.lookback_days)).isoformat()
+    active = (day - timedelta(days=lr.active_days)).isoformat()
+    out = []
+    for m in matters:
+        if m["status"] in ("dismissed", "closed") or m["last_seen"] < active:
+            continue
+        kind = "wells_notice" if m["wells_notice"] else m["matter_type"]
+        spec = getattr(lr, kind, None) if kind in LEGAL_TYPES else None
+        if spec is None:
+            continue
+        latest, exact = _started(m["started"])
+        if (latest < since) if latest else m["status"] != "open":
+            continue  # began before the window, or no date and not known to be open
+        agency = f" ({m['agency']})" if m["agency"] else ""
+        began = f", began {m['started']}" if m["started"] else ""
+        out.append(_from_spec(
+            spec, f"legal_{kind}",
+            description=f"{m['name']}{agency}: {m['status']}{began}; disclosed in filings from "
+                        f"{m['first_disclosed']} to {m['last_seen']}.",
+            event_date=exact or m["first_disclosed"], accession_no=m.get("accession_no"),
+            doc_id=m["last_doc_id"], snippet=m["quote"][:SNIPPET_CHARS],
+            key_extra=m["matter_key"],
+        ))  # fmt: skip
+    return out
+
+
+_OPS = {"<": lambda a, b: a < b, "<=": lambda a, b: a <= b, ">": lambda a, b: a > b,
+        ">=": lambda a, b: a >= b}  # fmt: skip
+
+
+def threshold_signals(
+    values: Sequence[Mapping[str, Any]], rules: SignalRules, hidden: frozenset[str] = frozenset()
+) -> list[Detected]:
+    """User-defined threshold rules (D-049): the metric's latest quarter (or fiscal year) value
+    crossing the threshold. `values`: the company's metric_value rows; N/M values never fire.
+    Values are in stored units (fraction 0.05 = 5%, ratio 1.2 = 1.2x, USD). A metric in
+    `hidden` (hidden metric sets, D-054) raises nothing: the signal's text would show it."""
+    out = []
+    for rule in rules.thresholds:
+        if rule.metric in hidden:
+            continue
+        rows = [v for v in values if v["metric_code"] == rule.metric
+                and v["period_type"] == rule.period]  # fmt: skip
+        if not rows:
+            continue
+        latest = max(rows, key=lambda v: (v["fiscal_year"], v["fiscal_quarter"]))
+        if latest["value"] is None or not _OPS[rule.op](latest["value"], rule.value):
+            continue
+        label = (f"FY{latest['fiscal_year']}" if rule.period == "FY"
+                 else f"FY{latest['fiscal_year']} Q{latest['fiscal_quarter']}")  # fmt: skip
+        out.append(_from_spec(
+            rule, rule.id,
+            description=(f"{rule.metric} was {latest['value']:,.4g} at {label} "
+                         f"({latest['period_end']}), {rule.op} {rule.value:,.4g}."),
+            event_date=latest["period_end"], accession_no=latest["source_accn"], key_extra=label,
+        ))  # fmt: skip
+    return out
+
+
 def board_signals(board: Mapping[str, Any] | None, proxy_date: str, accession_no: str | None,
                   rules: SignalRules) -> list[Detected]:  # fmt: skip
     """Board composition signals from the latest proxy (D-045). Only facts both models agreed
@@ -450,4 +687,25 @@ def board_signals(board: Mapping[str, Any] | None, proxy_date: str, accession_no
                         f"({independent / size:.0%}, below {ind.min_ratio:.0%}).",
             event_date=proxy_date, accession_no=accession_no, key_extra=proxy_date,
         ))  # fmt: skip
+    dual = rules.metrics.dual_class_shares
+    if dual and board.get("dual_class") is True:
+        out.append(_from_spec(
+            dual, "dual_class_shares",
+            description="The company has more than one class of common stock with different "
+                        "voting rights per share.",
+            event_date=proxy_date, accession_no=accession_no, key_extra=proxy_date,
+        ))  # fmt: skip
+    fee = rules.metrics.non_audit_fees
+    audit = board.get("audit_fees")
+    if fee and audit is not None:
+        other = sum(board.get(k) or 0.0 for k in ("audit_related_fees", "tax_fees", "other_fees"))
+        total = audit + other
+        if total > 0 and other / total >= fee.min_share:
+            out.append(_from_spec(
+                fee, "non_audit_fees",
+                description=f"Non-audit fees were {other / 1e6:,.1f}M USD of {total / 1e6:,.1f}M "
+                            f"USD paid to the auditor in FY{board.get('fees_fiscal_year')} "
+                            f"({other / total:.0%}, at or above {fee.min_share:.0%}).",
+                event_date=proxy_date, accession_no=accession_no, key_extra=proxy_date,
+            ))  # fmt: skip
     return out

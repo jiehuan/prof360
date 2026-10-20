@@ -1,16 +1,24 @@
 # SIC code -> industry group -> metric list. All companies with the same SIC share the same
 # metrics. The lists are curated here (see metrics.yaml header), not generated at run time.
-# Lookup order: exact `sic`, then `sic_ranges` (first match), then `default_group`.
+# Lookup order: a company's `industry` in companies.yaml, then exact `sic`, then `sic_ranges`
+# (first match), then `default_group`.
 # `is_financial` controls whether FI-only modules (NIM, CET1, NPL, loan portfolio) get data.
 # `metric_sets` refer to metrics.yaml; `metrics` adds individual metric codes.
+# What a group does not track (D-049; guide: docs/CONFIGURATION.md):
+#   exclude_metrics: [codes]      metrics from its sets it drops (a metric another tracked
+#                                 metric needs is still computed, hidden)
+#   exclude_signals: [rule ids]   signals from signal_rules.yaml it drops; `8k_5.02` also drops
+#                                 8k_5.02_cfo_departure etc. (`uw-pipeline config show` lists ids)
+#   signal_params: {rule id: {field: value}}   rule fields for this group only, e.g.
+#                                 {pay_vs_performance: {min_pay_growth: 0.5}}
 
 default_group: UNCLASSIFIED
 
 # Traits (decisions D-043): business-model properties that decide metric sets. A group's sets
 # are its `metric_sets`, plus `common_metric_sets`, plus the sets of each of its `traits`.
-common_metric_sets: [GOVERNANCE]
+common_metric_sets: [GOVERNANCE, CAPITAL_QUALITY, MARKET]
 trait_metric_sets:
-  bank: [BANK_CORE, BANK_REGULATORY]
+  bank: [BANK_CORE, BANK_REGULATORY, BANK_DEPOSITS]
   lodging: [HOTEL_OPERATING]
   contract_revenue: [CONTRACT_REVENUE]   # remaining performance obligations (RPO)
   manufacturing: [MANUFACTURING_OPERATING]
@@ -24,59 +32,112 @@ groups:
   HOTELS:
     label: Hotels & Lodging
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
     traits: [lodging]
   AIRLINES:
     label: Airlines
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
   AUTOMOTIVE:
     label: Automotive Manufacturing
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, AUTO_OPERATING]
     traits: [manufacturing, captive_finance]
   PHARMA:
-    label: Pharmaceuticals
+    label: Pharmaceuticals & Biotech
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, PHARMA_OPERATING]
   BANKS:
     label: Banks
     is_financial: true
     metric_sets: []
     traits: [bank]
     mdna_history_years: 5   # Performance Trends: 5 years of NIM / CET1 / NPL (Phase 8)
-  # Groups with no metric set get one when their first company is onboarded.
+  # Non-bank financials (Phase 16): returns and leverage, plus their own module.
   CREDIT:
     label: Non-depository Credit
     is_financial: true
-    metric_sets: []
+    metric_sets: [FINANCIAL_CORE]
   BROKER_DEALERS:
-    label: Securities & Brokerage
+    label: Securities, Brokerage & Asset Management
     is_financial: true
-    metric_sets: []
+    metric_sets: [FINANCIAL_CORE, ASSET_MANAGEMENT]
+    metrics: [var_total_avg]
   # Bank-style FI modules (CET1, NIM, loan book) don't fit insurers. See decisions D-008.
   INSURANCE:
     label: Insurance
     is_financial: false
-    metric_sets: []
+    metric_sets: [FINANCIAL_CORE, INSURANCE_OPERATING]
   RETAIL:
-    label: Retail
+    label: Retail & Restaurants
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, RETAIL_OPERATING]
   TELECOM:
     label: Telecommunications
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, TELECOM_OPERATING]
     traits: [contract_revenue]
   MEDIA:
     label: Media & Broadcasting
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
   SEMICONDUCTORS:
     label: Semiconductors & Related Devices
     is_financial: false
-    metric_sets: [COMMERCIAL_CORE]
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, PRODUCT_MARGINS]
     traits: [contract_revenue]
+  # -- S&P 100 groups (Phase 16, D-052) ----------------------------------------------------
+  SOFTWARE_INTERNET:
+    label: Software, Internet & IT Services
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, SOFTWARE_OPERATING]
+    traits: [contract_revenue]
+  HARDWARE:
+    label: Hardware & Networking
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, PRODUCT_MARGINS]
+  MEDTECH:
+    label: Medical Technology & Life-Science Tools
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, PRODUCT_MARGINS]
+  MANAGED_CARE:
+    label: Managed Care & Health Benefits
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, MANAGED_CARE_OPERATING]
+  CONSUMER_STAPLES:
+    label: Consumer Staples
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, STAPLES_OPERATING]
+  ENERGY:
+    label: Oil & Gas
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, ENERGY_OPERATING]
+  UTILITIES:
+    label: Utilities
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, UTILITY_OPERATING]
+  AEROSPACE_DEFENSE:
+    label: Aerospace & Defense
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, INDUSTRIAL_OPERATING]
+    traits: [contract_revenue]
+  INDUSTRIALS:
+    label: Industrials & Machinery
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, INDUSTRIAL_OPERATING]
+    traits: [contract_revenue]
+  TRANSPORT:
+    label: Transportation & Logistics
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, TRANSPORT_OPERATING]
+  REIT:
+    label: Real Estate Investment Trusts
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
+  PAYMENTS:
+    label: Payments Networks
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, PAYMENTS_OPERATING]
 
 # Exact SIC codes (MVP companies).
 sic:
@@ -90,9 +151,49 @@ sic:
   4833: MEDIA           # SKYD
   3674: SEMICONDUCTORS  # ENPH
   6712: BANKS           # bank holding companies (6700 block, otherwise not FI)
+  # Phase 16 (D-052): exact codes inside a range that belongs to another group.
+  6324: MANAGED_CARE    # hospital & medical service plans (within the insurance range)
+  4513: TRANSPORT       # air courier (within the airline range)
+  3600: INDUSTRIALS     # electrical equipment, not elsewhere classified
 
 # Fallbacks for SIC codes not listed above.
 sic_ranges:
+  # Phase 16 (D-052), by SEC SIC code; companies whose SIC misleads have `industry` set.
+  - {from: 2833, to: 2836, group: PHARMA}
+  - {from: 2000, to: 2111, group: CONSUMER_STAPLES}
+  - {from: 2840, to: 2844, group: CONSUMER_STAPLES}
+  - {from: 5140, to: 5149, group: CONSUMER_STAPLES}
+  - {from: 1311, to: 1389, group: ENERGY}
+  - {from: 2910, to: 2999, group: ENERGY}
+  - {from: 4920, to: 4925, group: ENERGY}       # natural gas transmission (pipelines)
+  - {from: 4910, to: 4919, group: UTILITIES}
+  - {from: 4930, to: 4991, group: UTILITIES}
+  - {from: 3711, to: 3716, group: AUTOMOTIVE}
+  - {from: 3720, to: 3728, group: AEROSPACE_DEFENSE}
+  - {from: 3760, to: 3769, group: AEROSPACE_DEFENSE}
+  - {from: 3812, to: 3812, group: AEROSPACE_DEFENSE}
+  - {from: 3510, to: 3569, group: INDUSTRIALS}
+  - {from: 3580, to: 3599, group: INDUSTRIALS}
+  - {from: 3610, to: 3659, group: INDUSTRIALS}
+  - {from: 3690, to: 3699, group: INDUSTRIALS}
+  - {from: 8711, to: 8711, group: INDUSTRIALS}
+  - {from: 3570, to: 3579, group: HARDWARE}
+  - {from: 3660, to: 3669, group: HARDWARE}
+  - {from: 3672, to: 3674, group: SEMICONDUCTORS}
+  - {from: 3841, to: 3851, group: MEDTECH}
+  - {from: 7370, to: 7374, group: SOFTWARE_INTERNET}
+  - {from: 4812, to: 4813, group: TELECOM}
+  - {from: 4899, to: 4899, group: TELECOM}
+  - {from: 4830, to: 4841, group: MEDIA}
+  - {from: 7810, to: 7829, group: MEDIA}
+  - {from: 2710, to: 2741, group: MEDIA}
+  - {from: 4512, to: 4522, group: AIRLINES}
+  - {from: 4011, to: 4011, group: TRANSPORT}
+  - {from: 4210, to: 4231, group: TRANSPORT}
+  - {from: 4700, to: 4789, group: TRANSPORT}
+  - {from: 7011, to: 7011, group: HOTELS}
+  - {from: 5200, to: 5999, group: RETAIL}
+  - {from: 6798, to: 6798, group: REIT}
   - {from: 6000, to: 6099, group: BANKS}
   - {from: 6100, to: 6199, group: CREDIT}
   - {from: 6200, to: 6299, group: BROKER_DEALERS}

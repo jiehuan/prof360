@@ -42,8 +42,11 @@ def run_company_stage(
         try:
             doc = fetch_submissions(cfg, sec, ticker_map, force=force)
             sic = parse_sic(doc.payload)
-            group, how = industry.classify(sic)
-            if how != "sic":
+            group, how = industry.classify(sic, cfg)
+            if how == "company":
+                log.info("%s: classified as %s by companies.yaml (SIC %s): %s", cfg.ticker,
+                         group.code, sic, cfg.industry_reason)  # fmt: skip
+            elif how != "sic":
                 log.warning(
                     "%s: SIC %s not listed in industry_groups.yaml; classified as %s via %s",
                     cfg.ticker,

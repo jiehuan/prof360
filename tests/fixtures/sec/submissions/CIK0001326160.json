@@ -1,0 +1,252 @@
+{
+ "cik": "0001326160",
+ "entityType": "operating",
+ "sic": "4931",
+ "sicDescription": "Electric & Other Services Combined",
+ "ownerOrg": "01 Energy & Transportation",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Duke Energy CORP",
+ "tickers": [
+  "DUK",
+  "DUKB",
+  "DUK-PA",
+  "DUKU"
+ ],
+ "exchanges": [
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE"
+ ],
+ "ein": "202777218",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "525 SOUTH TRYON STREET",
+   "street2": null,
+   "city": "CHARLOTTE",
+   "stateOrCountry": "NC",
+   "zipCode": "28202-1803",
+   "stateOrCountryDescription": "NC",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "525 SOUTH TRYON STREET",
+   "street2": null,
+   "city": "CHARLOTTE",
+   "stateOrCountry": "NC",
+   "zipCode": "28202-1803",
+   "stateOrCountryDescription": "NC",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "800-488-3853",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "Duke Energy Holding Corp.",
+   "from": "2005-07-01T04:00:00.000Z",
+   "to": "2006-04-03T04:00:00.000Z"
+  },
+  {
+   "name": "Deer Holding Corp.",
+   "from": "2005-05-09T04:00:00.000Z",
+   "to": "2005-06-22T04:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001491154-26-000008",
+    "0001771398-26-000005",
+    "0001771398-26-000003",
+    "0001326160-26-000042",
+    "0001104659-26-110588",
+    "0001326160-26-000040",
+    "0001326160-26-000026",
+    "0001326160-26-000014",
+    "0001326160-25-000192"
+   ],
+   "filingDate": [
+    "2026-10-08",
+    "2026-09-30",
+    "2026-09-29",
+    "2026-09-28",
+    "2026-09-25",
+    "2026-08-04",
+    "2026-05-05",
+    "2026-02-26",
+    "2025-11-07"
+   ],
+   "reportDate": [
+    "2026-10-06",
+    "2026-09-28",
+    "2026-09-28",
+    "",
+    "2026-09-24",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-09T00:40:28.000Z",
+    "2026-10-01T00:19:53.000Z",
+    "2026-09-30T00:21:46.000Z",
+    "2026-09-28T18:49:54.000Z",
+    "2026-09-25T14:30:27.000Z",
+    "2026-08-04T18:50:39.000Z",
+    "2026-05-05T19:59:24.000Z",
+    "2026-02-26T23:07:42.000Z",
+    "2025-11-07T22:13:31.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "33",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "4",
+    "3",
+    "424B3",
+    "8-K",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "333-290634",
+    "001-32853",
+    "001-32853",
+    "001-32853",
+    "001-32853",
+    "001-32853"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "261412860",
+    "261406203",
+    "261236410",
+    "26941587",
+    "26684531",
+    "251461456"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "5.02,8.01,9.01",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "3",
+    "424B3",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    5665,
+    5668,
+    846504,
+    5682,
+    318716,
+    44503701,
+    36801940,
+    81613612,
+    47646108
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/wk-form4_1791492025.xml",
+    "xslF345X06/wk-form4_1790799591.xml",
+    "xslF345X06/wk-form3_1790713302.xml",
+    "september282026premiernotes.htm",
+    "tm2626114d1_8k.htm",
+    "duk-20260630.htm",
+    "duk-20260331.htm",
+    "duk-20251231.htm",
+    "duk-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "FORM 4",
+    "FORM 4",
+    "FORM 3",
+    "424B3",
+    "FORM 8-K",
+    "FORM 10-Q",
+    "FORM 10-Q",
+    "FORM10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

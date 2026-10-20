@@ -19,6 +19,7 @@ from uw_pipeline.normalize.sections import Section
 from uw_pipeline.schema import (
     company,
     filing_section,
+    insider_transaction,
     metadata,
     section_chunk,
     signal,
@@ -55,6 +56,22 @@ INSTANCE = b"""<?xml version="1.0"?><xbrl xmlns="http://www.xbrl.org/2003/instan
  xmlns:dei="http://xbrl.sec.gov/dei/2025"><context id="c"><entity><identifier scheme="x">42</identifier></entity>
  <period><startDate>2025-01-01</startDate><endDate>2025-12-31</endDate></period></context>
  <dei:AuditorName contextRef="c">Big Four LLP</dei:AuditorName></xbrl>"""
+
+FORM4 = b"""<?xml version="1.0"?><ownershipDocument>
+<issuer><issuerCik>0000000042</issuerCik></issuer>
+<reportingOwner><reportingOwnerId><rptOwnerCik>0000000901</rptOwnerCik>
+<rptOwnerName>Lee Pat</rptOwnerName></reportingOwnerId><reportingOwnerRelationship>
+<isOfficer>1</isOfficer><officerTitle>CFO</officerTitle></reportingOwnerRelationship></reportingOwner>
+<aff10b5One>0</aff10b5One><nonDerivativeTable><nonDerivativeTransaction>
+<securityTitle><value>Common Stock</value></securityTitle>
+<transactionDate><value>2026-07-29</value></transactionDate>
+<transactionCoding><transactionCode>S</transactionCode></transactionCoding>
+<transactionAmounts><transactionShares><value>1000</value></transactionShares>
+<transactionPricePerShare><value>50</value></transactionPricePerShare>
+<transactionAcquiredDisposedCode><value>D</value></transactionAcquiredDisposedCode></transactionAmounts>
+<postTransactionAmounts><sharesOwnedFollowingTransaction><value>9000</value>
+</sharesOwnedFollowingTransaction></postTransactionAmounts>
+</nonDerivativeTransaction></nonDerivativeTable></ownershipDocument>"""
 
 FILINGS = [
     # accn, form, filed, report, primary, items
@@ -105,6 +122,7 @@ def env(make_sec_client):
             "0000000042-26-000005-index.html": INDEX_HTML.encode(),
             "er-q2.htm": b"<p>Acme reports second quarter results. Revenue $1.2 billion.</p>",
         },
+        "0000000042-26-000006": {"form4.xml": FORM4},
     }
     with respx.mock(assert_all_called=False) as router:
         router.get(f"{SEC_DATA}/submissions/CIK0000000042.json").mock(
@@ -188,7 +206,8 @@ def test_documents_and_signals(env) -> None:
             )
         }
         sigs = {r.rule_id: r for r in conn.execute(select(signal))}
-    # Form 4 is not registered; the 10-K/A is registered but not downloaded or split.
+        trades = conn.execute(select(insider_transaction)).mappings().all()
+    # The 10-K/A is registered but not downloaded or split; the Form 4 is parsed into trades.
     assert docs == {
         ("01", "10-K", "PRIMARY"): True,
         ("02", "10-K/A", "PRIMARY"): False,
@@ -196,7 +215,10 @@ def test_documents_and_signals(env) -> None:
         ("04", "8-K", "PRIMARY"): True,  # 5.02: body downloaded for the leadership rules
         ("05", "8-K", "PRIMARY"): False,  # 2.02: only its press release is needed
         ("05", "8-K", "EX-99.1"): True,
+        ("06", "4", "PRIMARY"): True,
     }
+    assert [(t["owner_name"], t["code"], t["shares"], t["price"], t["is_10b5_1"])
+            for t in trades] == [("Lee Pat", "S", 1000, 50, False)]  # fmt: skip
     assert {
         ("10-K", "10K-1A"), ("10-K", "10K-3"), ("10-K", "10K-7"), ("10-K", "10K-9A"),
         ("10-K", "10K-AUDIT"), ("10-Q", "10Q-I-2"), ("10-Q", "10Q-II-1"), ("8-K", "8K-5.02"),
@@ -249,3 +271,31 @@ def test_resplit_removes_sections_no_longer_found(env) -> None:
                 section_chunk.c.section_id.not_in(select(filing_section.c.section_id)))
         ).scalar_one()  # fmt: skip
     assert codes == ["10K-1A"] and orphans == 0
+
+
+def test_industry_excluding_signals_turns_them_off(env, tmp_path) -> None:
+    """D-049: an industry that excludes the 8-K 5.02 family gets none of its signals, and the
+    signals stage deletes the ones stored before."""
+    import shutil
+
+    import yaml
+
+    from uw_pipeline.config import load_industry_config
+
+    engine, sec, _ = env
+    _run(engine, sec)
+    with engine.connect() as conn:
+        before = {r.rule_id for r in conn.execute(select(signal))}
+    assert any(r.startswith("8k_5.02") for r in before)
+    config = tmp_path / "config"
+    shutil.copytree(CONFIG_DIR, config)
+    groups = yaml.safe_load((config / "industry_groups.yaml").read_text())
+    groups["groups"]["AUTOMOTIVE"]["exclude_signals"] = ["8k_5.02"]
+    (config / "industry_groups.yaml").write_text(yaml.safe_dump(groups))
+    cfg = [CompanyConfig(ticker="ACME", cik=CIK)]
+    res = run_signals_stage(cfg, sec, load_signal_rules(config), engine,
+                            industry=load_industry_config(config))  # fmt: skip
+    assert all(r.ok for r in res), res
+    with engine.connect() as conn:
+        after = {r.rule_id for r in conn.execute(select(signal))}
+    assert after == {r for r in before if not r.startswith("8k_5.02")}

@@ -1,9 +1,11 @@
 """Human review of what the pipeline could not settle (`uw-pipeline review`, decisions D-045).
 
-Items: signals the rule/LLM vote left DISPUTED or OVERRULED, and stored values that break an
-identity (the latest dq run's `metric_identity` errors). Each item shows its evidence and source
-link. Only a named reviewer decides; nothing is approved automatically. A rejected signal is
-left out of the insight input and the review queue; an approved one is kept and leaves the queue.
+Items: signals the rule/LLM vote left DISPUTED or OVERRULED, stored values that break an
+identity (the latest dq run's `metric_identity` errors), and litigation or regulatory matters
+first seen after a company's baseline (Phase 15e: a new matter, or a known one named
+differently). Each item shows its evidence and source link. Only a named reviewer decides;
+nothing is approved automatically. A rejected signal or matter is left out of the signals,
+the insight input and the review queue; an approved one is kept and leaves the queue.
 """
 
 from __future__ import annotations
@@ -14,9 +16,17 @@ from datetime import datetime
 
 from sqlalchemy import Connection, func, select
 
+from uw_pipeline.enrich.legal import review_key
 from uw_pipeline.enrich.sources import filing_index_url
 from uw_pipeline.load.upsert import upsert
-from uw_pipeline.schema import company, dq_finding, review_decision, signal, source_document
+from uw_pipeline.schema import (
+    company,
+    dq_finding,
+    legal_matter,
+    review_decision,
+    signal,
+    source_document,
+)
 
 REVIEW_STATUSES = ("DISPUTED", "OVERRULED")
 
@@ -27,7 +37,7 @@ class ReviewError(Exception):
 
 @dataclass(frozen=True)
 class Item:
-    item_type: str  # SIGNAL | IDENTITY
+    item_type: str  # SIGNAL | IDENTITY | MATTER
     item_key: str
     company_id: int
     ticker: str
@@ -77,6 +87,20 @@ def pending(conn: Connection) -> list[Item]:
                 continue
             items.append(Item("IDENTITY", key, r["company_id"], r["ticker"], r["message"],
                               "BROKEN", r["message"], "dq-report of the latest run"))  # fmt: skip
+    for r in conn.execute(
+        select(legal_matter, company.c.ticker, company.c.cik, source_document.c.accession_no)
+        .join(company, company.c.company_id == legal_matter.c.company_id)
+        .join(source_document, source_document.c.doc_id == legal_matter.c.last_doc_id)
+        .where(legal_matter.c.review_status == "NEW")
+        .order_by(company.c.ticker, legal_matter.c.first_disclosed)
+    ).mappings().all():  # fmt: skip
+        key = review_key(r["company_id"], r["matter_key"])
+        if ("MATTER", key) in decided:
+            continue
+        link = filing_index_url(r["cik"], r["accession_no"])
+        items.append(Item("MATTER", key, r["company_id"], r["ticker"],
+                          f"{r['first_disclosed']} {r['matter_type']}: {r['name']}", "NEW",
+                          r["quote"][:400], link))  # fmt: skip
     return items
 
 

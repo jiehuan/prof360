@@ -179,6 +179,23 @@ class AlphaVantageClient:
         payload = self.fetch(params, key, force=force, keep=lambda p: bool(p.get("transcript")))
         return payload, key
 
+    def daily_adjusted(self, symbol: str, *, force: bool = False) -> tuple[Any, str]:
+        """TIME_SERIES_DAILY_ADJUSTED, full history (paid plan; Phase 15a). Landed once a day."""
+        params = {"function": "TIME_SERIES_DAILY_ADJUSTED", "symbol": symbol,
+                  "outputsize": "full"}  # fmt: skip
+        key = f"av/daily/{symbol}/{self._today().isoformat()}.json"
+        payload = self.fetch(params, key, force=force,
+                             keep=lambda p: bool(p.get("Time Series (Daily)")))  # fmt: skip
+        return payload, key
+
+    def earnings(self, symbol: str, *, force: bool = False) -> tuple[Any, str]:
+        """EARNINGS: quarterly reported and estimated EPS (Phase 15a). Landed once a day."""
+        params = {"function": "EARNINGS", "symbol": symbol}
+        key = f"av/earnings/{symbol}/{self._today().isoformat()}.json"
+        payload = self.fetch(params, key, force=force,
+                             keep=lambda p: bool(p.get("quarterlyEarnings")))  # fmt: skip
+        return payload, key
+
 
 def public_url(params: dict[str, str]) -> str:
     """Request URL for lineage, without the API key."""

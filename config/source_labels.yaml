@@ -75,6 +75,8 @@ derivations:
   COMPUTED: "Computed from reported XBRL values"
   LLM_EXTRACTED: "Extracted from filing text"
   PRELIMINARY: "Preliminary, from the earnings release (10-Q/10-K not yet filed)"
+  MARKET: "Computed from daily share prices and consensus EPS (Alpha Vantage)"
+  FORM4: "Summed from insiders' Form 4 filings"
 
 # XBRL concepts (concept_map.yaml) that are not metrics themselves, as written in formulas.
 concepts:

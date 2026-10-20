@@ -8,8 +8,9 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 
 ```bash
 .venv/bin/pip install -e ".[dev]"             # Python 3.14 venv (project supports >=3.11)
-.venv/bin/uw-pipeline run --all     # company -> facts -> compute -> documents -> transcripts
-                                     #   -> news -> scores -> textmetrics -> signals -> insights
+.venv/bin/uw-pipeline run --all     # company -> facts -> compute -> market -> documents
+                                     #   -> transcripts -> news -> scores -> textmetrics
+                                     #   -> governance -> legal -> signals -> insights
                                      #   -> metricdetail -> publish (app database) -> dq
 .venv/bin/uw-pipeline audit-insights # re-verify insight evidence (Phase 5 acceptance)
 .venv/bin/uw-pipeline run --job nightly   # scheduled job (config/jobs.yaml); resumes a dead run
@@ -19,6 +20,8 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 .venv/bin/uw-pipeline run --ticker MAR --force       # ignore same-day raw cache / input hash
 .venv/bin/uw-pipeline coverage-report                # data/reports/coverage-<date>.md
 .venv/bin/uw-pipeline review                          # disputed signals / identity breaks; approve|reject
+.venv/bin/uw-pipeline config check                    # validate config/ as a run would (D-049)
+.venv/bin/uw-pipeline config show --ticker MAR        # a company's industry, metrics and signals; guide: docs/CONFIGURATION.md
 .venv/bin/python scripts/stability_check.py --faults MAR   # failure handling (--runs 3: live, costs)
 .venv/bin/pytest -q
 .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy
@@ -50,8 +53,12 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
 - All external calls (HTTP, LLM, DB) go through `src/uw_pipeline/clients/` so tests can swap them.
 - Companies are identified by pinned CIK in `config/companies.yaml`; tickers are display-only.
 - Metric lists per industry group are curated in `config/metrics.yaml` (metric_sets) and
-  `config/industry_groups.yaml`; never generate them at run time.
-- Every metric gap shown by `coverage-report` needs a note in `config/coverage_notes.yaml`.
+  `config/industry_groups.yaml`; never generate them at run time. One exception (PLAN 17g): a
+  company outside every industry group gets curated metric sets chosen by the LLM, never new
+  metrics; the choice is validated, stored and reviewable.
+- Every metric gap shown by `coverage-report` needs a note in `config/coverage_notes.yaml` for
+  companies in the development sample (PLAN 17a′); beyond it, gaps are tracked as per-group
+  rates.
 - Golden values come from the filing itself (XBRL instance / document), not from estimates.
 - LLM: prompts in `src/uw_pipeline/enrich/prompts/{task}_v{N}.md`; any change gets a new
   version. Calls go through `enrich/llm.cached_call` (cached by input hash). Outputs are
@@ -65,3 +72,4 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
   The free plan has ~25 calls/day; stages stop cleanly at the quota and resume next run.
 - Signal and section rules live in `config/signal_rules.yaml` and `company_overrides/*.yaml`
   (`sections:`); every false positive found becomes a test case in `tests/test_signals.py`.
+

@@ -1,0 +1,253 @@
+{
+ "cik": "0000753308",
+ "entityType": "operating",
+ "sic": "4911",
+ "sicDescription": "Electric Services",
+ "ownerOrg": "01 Energy & Transportation",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "NEXTERA ENERGY INC",
+ "tickers": [
+  "NEE",
+  "NEE-PN",
+  "NEE-PS",
+  "NEE-PT",
+  "NEE-PU",
+  "NEE-PV",
+  "NEE-PW"
+ ],
+ "exchanges": [
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE",
+  "NYSE"
+ ],
+ "ein": "592449419",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "FL",
+ "stateOfIncorporationDescription": "FL",
+ "addresses": {
+  "mailing": {
+   "street1": "P O BOX 14000",
+   "street2": null,
+   "city": "JUNO BEACH",
+   "stateOrCountry": "FL",
+   "zipCode": "33408",
+   "stateOrCountryDescription": "FL",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "700 UNIVERSE BLVD",
+   "street2": null,
+   "city": "JUNO BEACH",
+   "stateOrCountry": "FL",
+   "zipCode": "33408",
+   "stateOrCountryDescription": "FL",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "561-694-4697",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "FPL GROUP INC",
+   "from": "1994-02-28T05:00:00.000Z",
+   "to": "2010-05-21T04:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001769378-26-000009",
+    "0002006041-26-000006",
+    "0001104659-26-114413",
+    "0000753308-26-000074",
+    "0001950032-26-000016",
+    "0000753308-26-000060",
+    "0000753308-26-000031",
+    "0000753308-26-000015",
+    "0000753308-25-000056"
+   ],
+   "filingDate": [
+    "2026-10-14",
+    "2026-10-09",
+    "2026-10-08",
+    "2026-10-06",
+    "2026-10-05",
+    "2026-07-24",
+    "2026-04-23",
+    "2026-02-13",
+    "2025-10-28"
+   ],
+   "reportDate": [
+    "2026-10-12",
+    "2026-10-07",
+    "",
+    "2026-09-22",
+    "2026-10-02",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-15T00:11:33.000Z",
+    "2026-10-10T00:09:53.000Z",
+    "2026-10-08T01:49:35.000Z",
+    "2026-10-07T00:15:39.000Z",
+    "2026-10-06T00:17:01.000Z",
+    "2026-07-24T22:07:10.000Z",
+    "2026-04-24T00:52:23.000Z",
+    "2026-02-14T02:19:14.000Z",
+    "2025-10-28T15:52:30.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "34",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "4",
+    "425",
+    "8-K",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "001-08841",
+    "",
+    "001-08841",
+    "001-08841",
+    "001-08841",
+    "001-08841"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "261444206",
+    "",
+    "261200924",
+    "26889392",
+    "26633149",
+    "251421461"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "8.01,9.01",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "425",
+    "XBRL",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    5507,
+    6392,
+    102235,
+    1409786,
+    6495,
+    17374466,
+    16832884,
+    31454405,
+    16485411
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "tm2627237d1_425.htm",
+    "nee-20260922.htm",
+    "xslF345X06/form4.xml",
+    "nee-20260630.htm",
+    "nee-20260331.htm",
+    "nee-20251231.htm",
+    "nee-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "425",
+    "8-K",
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

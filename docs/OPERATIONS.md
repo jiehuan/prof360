@@ -8,7 +8,7 @@
 |---|---|
 | `uw-pipeline run --job nightly` | 定时任务。nightly 在美东 23:30 运行，morning 在 05:30 运行，阶段定义在 `config/jobs.yaml` |
 | `uw-pipeline run --ticker MAR --stage compute` | 手动运行指定公司的指定阶段，`--stage` 可以写多次 |
-| `uw-pipeline runs` | 列出最近的运行，以及最近一次里失败或被跳过的任务和原因 |
+| `uw-pipeline runs` | 列出最近的运行，以及最近一次里失败或被跳过的任务和原因。每次运行旁边显示数据质量结果：`dq={'Error': 1, 'Warning': 3}`；没跑 dq 阶段的显示 `dq=not run`。运行成功不代表质量通过：dq 查出 Error 时任务仍是 SUCCEEDED，详情看 `dq-report` |
 | `uw-pipeline dq-report` | 生成数据质量报告，写到 `data/reports/dq-run<id>.md` |
 | `uw-pipeline coverage-report` | 生成 XBRL 指标覆盖率报告，并列出没有说明原因的缺口 |
 | `uw-pipeline run --stage publish` | 把当前结果写进应用库（nightly、morning、news 三个 job 末尾都会跑） |
@@ -32,16 +32,16 @@
 ## 2. 新增公司
 
 1. 在 `config/companies.yaml` 中加一项，**必须固定 CIK**。CIK 可以在 `https://www.sec.gov/files/company_tickers.json` 查到，但要到 submissions 里核对公司名称：ticker 会被转给别的公司，例如 PARA 现在属于 Banzai。
-2. 如果公司经历过合并、目前的申报主体是后继公司，设置 `history_start`，只使用后继主体的数据（参考 SKYD 的写法）。
+2. 如果公司经历过合并、目前的申报主体是后继公司，设置 `history_start`，只使用后继主体的数据（参考 SKYD 的写法）。如果只是控股公司重组（新 CIK 接过 ticker，历史、10-K 和委托书还在旧 CIK 下，例如 XOM、BLK），`cik` 写新的，旧的写进 `predecessor_ciks`，两边的申报都会读取（D-052）。
 3. 确认它的 SIC 在 `config/industry_groups.yaml` 里有对应的行业组。没有的话，见下文"新增行业组"。
-4. 运行 `uw-pipeline run --ticker XXX`，然后运行 `coverage-report`。对每一个缺口，要么修正 tag 映射，要么在 `config/coverage_notes.yaml` 里写明原因。
+4. 运行 `uw-pipeline run --ticker XXX`，然后运行 `coverage-report`。对每一个缺口，要么修正 tag 映射，要么在 `config/coverage_notes.yaml` 里写明原因。整个行业都有的缺口写在 `groups:` 下（行业组代码，或 `"*"` 表示所有公司），公司级说明只写真正的例外（D-052）。
 5. 首次运行的 LLM 费用约为每家公司 $1.5–3。
-6. MVP 阶段的约定是每个 SIC 只放一家公司（D-007）。
+6. MVP 阶段每个 SIC 只放一家公司（D-007）；Phase 16 起加入 S&P 100（2026-09-21 的名单，D-052），名单每季度对照指数核对一次。
 
 ## 3. 新增指标或修改指标集合
 
 - **计算类指标**：在 `config/metrics.yaml` 中定义 `formula`。所需的 XBRL 概念加到 `config/concept_map.yaml`：候选 tag 会**按期间逐个选择**，排在前面的优先；如果某个行业组需要不同的 tag，用 `by_group` 覆盖。
-- **文本类指标**（`kind: text`）：写清 `definition`，包括口径和需要排除的情况；配好 `keywords`；银行的资本类指标设 `dual_check: true`，要求两个模型的结果一致。
+- **文本类指标**（`kind: text`）：写清 `definition`，包括口径和需要排除的情况；配好 `keywords`；银行的资本类指标和 Phase 16 起的新文本指标设 `dual_check: true`，要求两次读取的结果一致。人数、辆数、桶 / 天这类数量用单位 `count`。
 - **加入行业组**：把指标放进某个 `metric_sets`，或者加到行业组的 `metrics` 列表。**指标清单只在配置中维护，不在运行时生成**（D-016）。
 - **验证**：运行 `pytest`，然后对一家受影响的公司运行 `run --stage compute`（文本类指标运行 `--stage textmetrics`），最后看 `coverage-report`。
 
@@ -50,6 +50,15 @@
 1. 在 `config/industry_groups.yaml` 的 `groups` 下新增一组，设置 `is_financial`（决定 FI 模块是否出数据）和 `metric_sets`。
 2. 在 `sic:` 下加精确的 SIC 映射。范围映射只作兜底。
 3. 保险业目前设为非 FI（D-008）。如果业务方要求改，修改 `is_financial` 即可。
+
+## 4a. 公司归哪个行业、行业跟踪哪些指标和信号（D-049）
+
+直接修改 `config/` 里的文件，完整说明（能改什么、怎么改、不能改什么）见 `docs/CONFIGURATION.md`。
+- 公司归属行业：`companies.yaml` 里该公司加 `industry` 和 `industry_reason`，不再按 SIC 分类。
+- 行业不跟踪的指标、信号和信号参数：`industry_groups.yaml` 里该行业的 `exclude_metrics`、`exclude_signals`、`signal_params`。
+- 新信号只用于部分行业：`signal_rules.yaml` 的关键词规则或 `thresholds`（指标阈值信号）加 `industries`。
+- 改完先跑 `uw-pipeline config check`，再用 `uw-pipeline config show --ticker X` 看这家公司实际的行业、指标和信号。配置有错时运行不会开始。
+- 下一次运行生效：不再跟踪的指标会从管线库和应用库删除，不再跟踪的信号会被删掉；新的文本指标和信号会对相关公司调用 LLM。
 
 ## 5. 公司特有的设置
 
@@ -82,7 +91,7 @@
 
 ## 9. LLM：SecureGPT（D-039）
 
-- 模型配置在 `config/llm.yaml`：抽取 gpt-5-nano，复核和综合 gpt-5-mini，以及价格。网关地址、api-version、部署名在 `config/securegpt.yaml`。
+- 模型配置在 `config/llm.yaml`：日常调用 gpt-6-luna，复核和综合 gpt-6-sol（D-051；之前是 gpt-5-nano / gpt-5-mini），以及价格（每百万 token，美元）：gpt-6-sol 输入 2.00、输出 10.00；gpt-6-luna 暂用第三方列出的 0.10 / 0.50，拿到 SecureGPT 的价格后替换。网关地址、api-version（2025-04-01-preview，结构化输出）、部署名在 `config/securegpt.yaml`。
 - 凭证只放环境变量：`SECUREGPT_CLIENT_ID`、`SECUREGPT_CLIENT_SECRET`、`SECUREGPT_SUBSCRIPTION_KEY`，环境用 `SECUREGPT_ENV`（dv / pp / pr）。
 - 更换环境或模型前先跑 `python scripts/securegpt_smoke.py`：每个模型调用一次，并测试网关是否接受 `reasoning_effort`；接受的话把 `send_reasoning_effort` 改为 true。
 - 模型是缓存键的一部分：换模型后所有 LLM 任务会重新请求一次。
@@ -96,6 +105,7 @@
 - 建表：由工程师执行 `deploy/sql/pipeline_schema_full.sql`、`app_schema_full.sql`（新环境）或 `app_schema_changes.sql`（已有数据模型）。改了表结构或 schema 名后，运行 `python scripts/export_app_ddl.py` 重新生成。
 - 首次运行前：`python scripts/azure_smoke.py`，检查连接、schema、表、权限和 ADLS 读写，不会改动任何业务表。ALTER 和 CREATE TABLE 只显示 WARN：只有自己建表才需要，日常运行只用临时表。
 - `uw-pipeline init-db` 只用于本地 SQLite；在 Azure SQL 上它会提示改用 `deploy/sql/` 的脚本。
+- 把本地 SQLite 结果一次性复制到 Azure SQL（保留 id）：Databricks notebook `scripts/databricks/copy_sqlite_to_azure.py`，说明见 `docs/databricks-copy.md`。
 - 改了涉及数据库的代码后，在本机跑 `scripts/test_mssql.sh --all`：用本地 Docker 的 SQL Server 运行全部测试（不需要公司网络）。用完 `scripts/test_mssql.sh --stop`。
 
 ## 10a. 结构化数据优先和恒等式（Phase 13，D-042）
@@ -113,6 +123,24 @@
 - 稳定性检查：`python scripts/stability_check.py --runs 3 MAR JPM`（真实调用，有费用）；`--faults` 检查超时、限流、无效输出是否安全失败（无费用）。记录在 `data/reports/stability-*.json`。结果里同一个值数字不同才是问题；某个值在一次运行里有、另一次没有，是校验没通过被扣下，属于覆盖率波动。
 - 贷款分类：两个模型都要读出同一个数才保存。两个模型读的层级不同（一个给整个批发贷款一行，另一个给分类）时，只要分类加起来等于那一行，就保存那一行（JPM 显示为 Wholesale / Loans retained）。
 
+## 10c. 市场、内部人、诉讼、并行（Phase 15，D-050）
+
+- 市场数据：`market` 阶段（在 compute 之后）用 Alpha Vantage 付费 key（`TIME_SERIES_DAILY_ADJUSTED` 全量和 `EARNINGS`），每家每天 2 次，另加 SPY；配额用完干净停止，下次运行续上。市值 = 季末收盘价 × 封面的流通股数（dei，期末后 120 天内），没有时用稀释加权股数。Altman Z 在 compute 里用上次 market 运行存下的市值，所以新公司第一次运行时 Altman Z 晚一次出现。
+- Form 4：在 documents 阶段，只取原件（4/A 不取，避免重复计算）。公司作为其他发行人的大股东提交的 Form 4（例如 JPM）只登记、不解析。集中卖出信号每段一条；之后 90 天内出现股价大跌或业绩不及预期后的下跌，升为 Warning。
+- 13D：EDGAR 的列表里也有公司自己就其他发行人提交的 13D，只保留 index headers 里 SUBJECT COMPANY 是本公司的。
+- 诉讼和监管调查：`legal` 阶段读最新 10-K 和之后的 10-Q，输入不变不重复调用。一家公司第一次运行找到的事项是基线；之后新出现的（或换了名字的已知事项）进 `uw-pipeline review`（类型 MATTER）。重复的旧事项驳回即可：被驳回的不再出信号，也不进洞察。两个模型类型不一致的不保存（日志里的 `unpaired`），多半是本来就有两种读法的事项。
+- 委托书 `board_v2`：审计费、双重股权、CEO 任期。JPM 的审计费是文字叙述，两个模型读法不同时为空，属于正常。
+- 并行：`config/jobs.yaml` 的 `parallel` 设各阶段同时处理几家公司，在 Azure SQL 上对所有阶段生效；在本地 SQLite 文件上只对 insights 和 metricdetail 生效（短事务：等待模型时不占写锁，D-052），其他阶段一次一家。SecureGPT 每个部署的 TPM 设为 50 万（`config/llm.yaml` 的 `rate_limits`，D-051）；RPM 网关团队给出后再加。出现 429 失败或数据库死锁时，先调小该阶段的 workers。
+- 按任务的 max_tokens（`task_max_tokens`，每个提供方各自配置）：用 `SELECT task, model, MAX(output_tokens) FROM llm_call GROUP BY task, model` 看最大输出（gpt-6 含推理 token），取约 2 倍。它不在缓存 key 里，改了不会重复调用；某任务出现截断（`llm_call.error`）时调大。
+
+## 10d. S&P 100（Phase 16，D-052）
+
+- 公司：9 家 MVP 公司加 S&P 100（共 107 家）。SIC 太粗或分错组的 22 家在 `companies.yaml` 用 `industry` 指定行业（例如 AMZN、GOOGL 归 SOFTWARE_INTERNET，V、MA 归 PAYMENTS），每家写了原因。
+- 行业组 24 个，每组的模块指标以 XBRL 为主；文本指标（产品收入占比、医疗赔付率、无保险存款、可比销售额等）从 MD&A 和新闻稿读取，两次读取一致才保存。
+- 财年：季度结束日从公司自己的 10-Q 学习（Costco、PepsiCo 的 12/12/12/16 周）；Alpha Vantage 把这类季度记在月末，业绩匹配允许 25 天误差。
+- 覆盖率：`coverage-report` 每个缺口要有行业组或公司说明。先看是不是整个行业都缺（写 `groups:`），再写公司说明；写之前在 companyfacts 里核对该 tag 确实不存在。
+- 首次全量 LLM（开发用模型）约 1–2 小时、费用见运行统计（`uw-pipeline runs` 的 `llm=`）。
+
 ## 11. 常见故障
 
 | 现象 | 原因与处理 |
@@ -121,6 +149,7 @@
 | transcripts 显示 `unavailable` | AV 没有这家公司这一季的记录。改过 ticker 的公司，AV 常把旧数据留在旧代码下：在 `config/companies.yaml` 设置 `av_symbols`（新代码在前，例如 SKYD 是 `[SKYD, PSKY]`），下次运行会按新列表重试，新闻也会重新回补 30 天 |
 | SEC 返回 403/429 | 检查 `SEC_USER_AGENT` 是否包含联系邮箱，限速不要超过 10 次/秒（默认 8）。客户端已经带了重试 |
 | 日志里出现 `LLM unavailable` | 凭证、环境或部署名有问题（SecureGPT：检查 `SECUREGPT_*` 和 `config/securegpt.yaml`，先跑 smoke test）。此时 signals 会退回纯规则，textmetrics 和 insights 会失败 |
+| 某家公司的阶段长时间没有日志 | 本地运行时先看电脑是否睡眠过（`pmset -g log | grep Sleep`）：睡眠会冻结进程、断开连接，计时也暂停。长时间运行用 `caffeinate -i uw-pipeline run ...`。否则多半是一次 LLM 请求没有返回：超过 `config/securegpt.yaml` 的 `timeout_sec` 后这一项失败、运行继续，下次运行重新请求 |
 | 运行一直显示 RUNNING | 进程已经死了。30 分钟后再次启动同一个 job 就会续跑（12 小时之内）；也可以等下一次 CronJob。超过 12 小时的会被关闭，新运行从头开始 |
 | 退出码 2 | 有运行正在进行（任何 job，运行锁），无需处理；被挡住的 news 会在下一个时间点运行 |
 | DQ 报出 `quarters_vs_year` 错误 | 通常是公司在新申报里重述了前期数据，新旧口径混在一起（例如 LUV 2025 年的 capex，见 D-035）。要核对原始文件；等下一份 10-K 入库后，口径通常会恢复一致 |

@@ -15,11 +15,10 @@ from uw_pipeline.schema import company, metadata, metric_value, xbrl_fact
 TODAY = date(2026, 10, 13)
 
 
-@pytest.fixture
-def mar_db(sec_routes, make_sec_client):
+def _golden_db(make_sec_client, ticker):
     engine = create_engine("sqlite://")
     metadata.create_all(engine)
-    cfgs = [c for c in load_companies(CONFIG_DIR) if c.ticker == "MAR"]
+    cfgs = [c for c in load_companies(CONFIG_DIR) if c.ticker == ticker]
     industry = load_industry_config(CONFIG_DIR)
     registry = load_registry(CONFIG_DIR)
     sec = make_sec_client(day=TODAY)
@@ -32,6 +31,16 @@ def mar_db(sec_routes, make_sec_client):
         return results
 
     return engine, run_all
+
+
+@pytest.fixture
+def mar_db(sec_routes, make_sec_client):
+    return _golden_db(make_sec_client, "MAR")
+
+
+@pytest.fixture
+def pfe_db(sec_routes, make_sec_client):
+    return _golden_db(make_sec_client, "PFE")
 
 
 def _metric(engine, code, ptype, fy, fq):
@@ -125,3 +134,45 @@ def test_rerun_is_idempotent(mar_db) -> None:
     results = run_all()
     assert snapshot() == before
     assert [r.detail for r in results if r.stage == "facts"] == ["unchanged"]
+
+
+def test_marriott_fy2025_reporting_quality_matches_10k(mar_db) -> None:
+    """Phase 15c, golden values from Marriott's FY2025 10-K (accession 0001048286-26-000007):
+    receivables 2,909, revenue 26,186, net income 2,601, operating cash flow 3,212, total
+    assets 27,540, cash 358, debt due in 12 months 1,209 and in year two 2,581, stock
+    compensation 236 (USD millions); equity -3,771, so goodwill / equity is N/M."""
+    engine, run_all = mar_db
+    run_all()
+    fy = ("FY", 2025, 0)
+    expected = {
+        "receivables_days": 2_909 / 26_186 * 365,
+        "accruals_ratio": (2_601 - 3_212) / 27_540,
+        "sbc_to_revenue": 236 / 26_186,
+        "debt_due_1y": 1_209e6,
+        "debt_due_2y": 2_581e6,
+        "near_term_debt_coverage": 1_209 / (358 + 3_212),
+        "goodwill_impairment": 0.0,
+    }
+    for code, value in expected.items():
+        row = _metric(engine, code, *fy)
+        assert row["value"] == pytest.approx(value, rel=1e-9), code
+    assert _metric(engine, "goodwill_to_equity", *fy)["value_status"] == "NM"
+
+
+def test_pfizer_fy2025_reporting_quality_matches_10k(pfe_db) -> None:
+    """Phase 15c, Pfizer's FY2025 10-K: receivables 11,874, revenue 62,579, inventory 10,654,
+    cost of goods sold 16,067, goodwill 71,264, equity 86,476, current portion of long-term
+    debt 2,997 (Pfizer no longer tags the maturity schedule), cash 1,142, short-term investments
+    12,454, operating cash flow 11,704 (USD millions)."""
+    engine, run_all = pfe_db
+    run_all()
+    fy = ("FY", 2025, 0)
+    expected = {
+        "receivables_days": 11_874 / 62_579 * 365,
+        "inventory_days": 10_654 / 16_067 * 365,
+        "goodwill_to_equity": 71_264 / 86_476,
+        "debt_due_1y": 2_997e6,
+        "near_term_debt_coverage": 2_997 / (1_142 + 12_454 + 11_704),
+    }
+    for code, value in expected.items():
+        assert _metric(engine, code, *fy)["value"] == pytest.approx(value, rel=1e-9), code

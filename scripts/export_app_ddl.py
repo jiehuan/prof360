@@ -27,8 +27,8 @@ from uw_pipeline.schema_app import app_metadata
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "deploy" / "sql"
 
-# Phase 9 changes to the diagram (docs/schema-contract.md).
-NEW_TABLES = ["ItemLink", "CompanyMetricDetail", "pipeline_publish_map"]
+# Changes to the diagram (docs/schema-contract.md): Phase 9, and KeyTakeaways (2026-10-20).
+NEW_TABLES = ["ItemLink", "CompanyMetricDetail", "KeyTakeaways", "pipeline_publish_map"]
 ADDED_COLUMNS = {
     "KeyInsights": ["isActive"],
     "FollowUpQuestions": ["Priority", "isActive"],
@@ -38,6 +38,20 @@ ADDED_COLUMNS = {
     "TranscriptRiskFlag": ["Category"],
     "TranscriptToneAnalysis": ["CompanyId", "Quarter"],
 }
+# Columns added to pipeline tables after they were first deployed; the full pipeline script
+# adds them to an existing table (CREATE TABLE ... IF missing does not).
+PIPELINE_ADDED_COLUMNS = {
+    "board_composition": [
+        "fees_fiscal_year",
+        "audit_fees",
+        "audit_related_fees",
+        "tax_fees",
+        "other_fees",
+        "dual_class",
+        "ceo_name",
+        "ceo_since",
+    ],  # Phase 15f
+}
 # Columns whose foreign key pointed to a table the pipeline replaced (not built any more).
 REPLACED_REFERENCES = ["alpha_Transcripts", "alpha_run", "alpha_NewsArticle"]
 TABLE_DOCS = {
@@ -45,6 +59,8 @@ TABLE_DOCS = {
     "questions and metrics; read from either end.",
     "CompanyMetricDetail": "Metric modal (and the Loan Portfolio modal as metric "
     "'loan_portfolio'): methodology, data sources, data points, UW relevance.",
+    "KeyTakeaways": "Key Takeaway box above Key Insights: 2-3 bullets for professional lines, "
+    "most important first (Ordinal 1), no links; read isActive = 1.",
     "pipeline_publish_map": "Pipeline bookkeeping (pipeline object -> app id); written and read "
     "only by the pipeline.",
 }
@@ -154,10 +170,12 @@ def changes() -> str:
     return "\n".join(parts)
 
 
-def full(md: MetaData, schema: str, what: str) -> str:
+def full(md: MetaData, schema: str, what: str,
+         added: dict[str, list[str]] | None = None) -> str:  # fmt: skip
     parts = [HEADER, f"-- {what}", "", _schema(schema), ""]
     for table in md.sorted_tables:
-        parts += [_create(table, schema), *_indexes(table, schema), ""]
+        new_cols = [_add_column(table, c, schema) for c in (added or {}).get(table.name, [])]
+        parts += [_create(table, schema), *new_cols, *_indexes(table, schema), ""]
     return "\n".join(parts)
 
 
@@ -170,7 +188,7 @@ def main() -> None:
                                     "application (Users, UserHistory, ...) are not included."),
         "pipeline_schema_full.sql": full(pipeline_metadata, PIPELINE_SCHEMA, "The pipeline's own "
                                          "tables (raw facts, documents, LLM cache, runs, DQ). The "
-                                         "BFF does not read them."),
+                                         "BFF does not read them.", PIPELINE_ADDED_COLUMNS),
     }  # fmt: skip
     for name, text in outputs.items():
         (OUT / name).write_text(text, encoding="utf-8")

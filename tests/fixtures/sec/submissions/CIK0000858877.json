@@ -1,0 +1,246 @@
+{
+ "cik": "0000858877",
+ "entityType": "operating",
+ "sic": "3576",
+ "sicDescription": "Computer Communications Equipment",
+ "ownerOrg": "06 Technology",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "CISCO SYSTEMS, INC.",
+ "tickers": [
+  "CSCO"
+ ],
+ "exchanges": [
+  "Nasdaq"
+ ],
+ "ein": "770059951",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "0731",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "170 WEST TASMAN DR",
+   "street2": null,
+   "city": "SAN JOSE",
+   "stateOrCountry": "CA",
+   "zipCode": "95134-1706",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "170 WEST TASMAN DR",
+   "street2": null,
+   "city": "SAN JOSE",
+   "stateOrCountry": "CA",
+   "zipCode": "95134-1706",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "4085264000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "CISCO SYSTEMS, INC.",
+   "from": "2011-10-18T04:00:00.000Z",
+   "to": "2026-10-15T04:00:00.000Z"
+  },
+  {
+   "name": "CISCO SYSTEMS INC",
+   "from": "1995-02-13T05:00:00.000Z",
+   "to": "2011-11-22T05:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001193125-26-422871",
+    "0000858877-26-000163",
+    "0000858877-26-000162",
+    "0000858877-26-000161",
+    "0000858877-26-000156",
+    "0000858877-26-000132",
+    "0000858877-26-000078",
+    "0000858877-26-000021",
+    "0000858877-25-000171"
+   ],
+   "filingDate": [
+    "2026-10-15",
+    "2026-10-13",
+    "2026-10-13",
+    "2026-10-13",
+    "2026-10-09",
+    "2026-09-02",
+    "2026-05-19",
+    "2026-02-17",
+    "2025-11-18"
+   ],
+   "reportDate": [
+    "2026-09-30",
+    "2026-10-10",
+    "2026-10-09",
+    "2026-10-09",
+    "2026-10-07",
+    "2026-07-25",
+    "2026-04-25",
+    "2026-01-24",
+    "2025-10-25"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-16T00:05:03.000Z",
+    "2026-10-14T00:13:48.000Z",
+    "2026-10-14T00:11:55.000Z",
+    "2026-10-14T00:10:15.000Z",
+    "2026-10-10T00:08:49.000Z",
+    "2026-09-03T00:36:56.000Z",
+    "2026-05-20T00:36:11.000Z",
+    "2026-02-18T02:27:10.000Z",
+    "2025-11-19T02:38:53.000Z"
+   ],
+   "act": [
+    "34",
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "13F-HR",
+    "4",
+    "4",
+    "3",
+    "8-K",
+    "10-K",
+    "10-Q",
+    "10-Q",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "028-14494",
+    "",
+    "",
+    "",
+    "001-39940",
+    "001-39940",
+    "001-39940",
+    "001-39940",
+    "001-39940"
+   ],
+   "filmNumber": [
+    "261463098",
+    "",
+    "",
+    "",
+    "261452985",
+    "261355469",
+    "26999559",
+    "26642041",
+    "251495329"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "5.02",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "13F-HR",
+    "4",
+    "4",
+    "3",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    6294,
+    5238,
+    4961,
+    11633,
+    142691,
+    21093077,
+    15204694,
+    15102948,
+    13974936
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslForm13F_X02/primary_doc.xml",
+    "xslF345X06/wk-form4_1791922426.xml",
+    "xslF345X06/wk-form4_1791922312.xml",
+    "xslF345X06/wk-form3_1791922212.xml",
+    "csco-20261007.htm",
+    "csco-20260725.htm",
+    "csco-20260425.htm",
+    "csco-20260124.htm",
+    "csco-20251025.htm"
+   ],
+   "primaryDocDescription": [
+    "",
+    "FORM 4",
+    "FORM 4",
+    "FORM 3",
+    "8-K",
+    "10-K",
+    "10-Q",
+    "10-Q",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

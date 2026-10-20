@@ -22,7 +22,7 @@ from uw_pipeline.enrich.text_metrics import (
 )
 from uw_pipeline.jobs.run_text_metrics import run_text_metrics_stage
 from uw_pipeline.normalize.periods import FiscalCalendar
-from uw_pipeline.schema import company, metadata, metric_value, source_document
+from uw_pipeline.schema import company, metadata, metric_value, release_check, source_document
 
 REG = load_registry(CONFIG_DIR)
 IND = load_industry_config(CONFIG_DIR)
@@ -190,7 +190,9 @@ def test_stage_writes_preliminary_and_crosschecks(tmp_path) -> None:
         res = run_text_metrics_stage(cfgs, REG, IND, text_cfg, pair, storage, engine,
                                      now=lambda: NOW)  # fmt: skip
         assert res[0].ok, res
-    assert len(llm.calls) == 2  # tables + text; no dual check for MAR; the rerun is cached
+    # Tables by both models (RevPAR is displayed: dual check, Phase 15h) + text; the rerun is
+    # cached.
+    assert len(llm.calls) == 3
     with engine.connect() as c:
         rows = {
             (r.metric_code, r.fiscal_year, r.fiscal_quarter): (r.value, r.derivation)
@@ -201,6 +203,19 @@ def test_stage_writes_preliminary_and_crosschecks(tmp_path) -> None:
         ("revenue", 2026, 3): (7.3e9, "PRELIMINARY"),
         ("revpar", 2026, 3): (140.12, "LLM_EXTRACTED"),
     }
+    # D-052: XBRL later has the period as N/M (a restatement). The earlier check against the
+    # withdrawn value is dropped, and the release does not fill the period either.
+    with engine.begin() as c:
+        assert c.execute(select(release_check)).all()
+        c.execute(metric_value.update().where(metric_value.c.fiscal_year == 2025)
+                  .values(value=None, value_status="NM"))  # fmt: skip
+    res = run_text_metrics_stage(cfgs, REG, IND, text_cfg, pair, storage, engine,
+                                 now=lambda: NOW)  # fmt: skip
+    assert res[0].ok, res
+    with engine.connect() as c:
+        assert c.execute(select(release_check)).all() == []
+        q3 = c.execute(select(metric_value).where(metric_value.c.fiscal_year == 2025)).one()
+    assert q3.value is None and q3.derivation == "REPORTED"
 
 
 LOAN_TABLE = "Consumer credit portfolio (in millions) Residential real estate 300,664"
@@ -348,3 +363,27 @@ def test_loan_segment_read_at_two_levels_keeps_the_line_both_models_confirm() ->
     assert list(_rolled_up(classes, line, {})) == [("loans retained", "2026-06-30")]
     # Classes that do not add up to the line: neither is stored.
     assert _rolled_up(line, classes[:2], {}) == {}
+
+
+@pytest.mark.parametrize(
+    ("printed", "scale", "xbrl", "match"),
+    [
+        ("1.8", "billions", 1_777e6, True),  # COF: "net income of $1.8 billion"
+        ("2.1", "billions", 2_116e6, True),  # T operating income, rounded headline
+        ("(0.2)", "billions", -174e6, True),  # a small loss, rounded
+        ("4.4", "billions", 4_080e6, False),  # T: a different line, not rounding
+        ("2,100", "millions", 2_116e6, False),  # an exact table figure must match exactly
+        ("4,223", "millions", 4_304e6, False),  # ORCL: available to common shareholders
+        ("3,781", "millions", 3_781.4e6, True),  # within the 0.5% tolerance
+    ],
+)  # fmt: skip
+def test_release_figures_match_xbrl_rounded_as_printed(printed, scale, xbrl, match) -> None:
+    """D-052: a release that prints a rounded headline agrees with XBRL when XBRL, rounded the
+    same way, gives the printed figure."""
+    from uw_pipeline.enrich.text_metrics import matches_release, parse_number, printed_step
+
+    raw = parse_number(printed)
+    value = raw * {"millions": 1e6, "billions": 1e9}[scale]
+    c = Candidate("net_income", ("Q", 2026, 1), "2026-03-31", value, "q",
+                  printed_step(printed, value))  # fmt: skip
+    assert matches_release(xbrl, c) is match

@@ -2,10 +2,13 @@
 
 Rules (PLAN §5.2):
 - Restatements: for the same tag and fiscal period, the most recently filed value wins.
+  A fourth quarter is not derived from a year and a nine-month figure on different bases (a
+  filing between them restated a fiscal year): it is emitted as N/M instead (D-052).
 - Duration facts are classified by length: quarter (~3m), YTD 6m, YTD 9m, or fiscal year.
 - Quarterly flow values come from a reported 3-month fact. Otherwise they are derived from
   YTD differences (Q4 = FY - 9M, cash-flow quarters from cumulative YTD). Derived values are
-  marked DERIVED.
+  marked DERIVED. Only USD flows are derived; other units (share counts) are not additive and
+  keep reported periods only.
 - Reported 6m/9m YTD values are also emitted (period_type "YTD") so that quarters can be
   derived at concept level when a company switches tags between its 10-Qs and its 10-K.
 - Balance-sheet (instant) facts map to the fiscal quarter whose end they fall on. The Q4
@@ -32,9 +35,12 @@ PERIOD_COLUMNS = [
 ]  # fmt: skip
 
 # Period length classes in days (end - start). Index = number of fiscal quarters covered.
-_DURATION_CLASSES = {1: (75, 105), 2: (165, 195), 3: (255, 285), 4: (350, 380)}
+# 12/12/12/16-week years (Costco, PepsiCo): a 16-week Q4 is 112 days, 36 weeks 252.
+_DURATION_CLASSES = {1: (75, 115), 2: (160, 195), 3: (245, 285), 4: (350, 380)}
 # 52/53-week calendars put period ends a few days off the nominal month end.
 _END_TOLERANCE_DAYS = 10
+# A quarter end the company's own 10-Q reports matches within this many days (Phase 16).
+_LEARNED_TOLERANCE_DAYS = 4
 
 
 def _fye_on_or_after(d: date, mmdd: str) -> date:
@@ -56,11 +62,17 @@ def _months_back(d: date, months: int) -> date:
 class FiscalCalendar:
     fye_mmdd: str  # fiscal year end as MMDD, from SEC submissions
     year_offset: int = 0  # fiscal_year label = calendar year of the FY end + offset
+    # Quarter ends the company's own 10-Qs report, with their quarter (Phase 16): in a
+    # 12/12/12/16-week year Q2 and Q3 end weeks before the nominal month end.
+    quarter_ends: tuple[tuple[date, int], ...] = ()
 
     def locate(self, end: date) -> tuple[int, int] | None:
         """(fiscal_year, fiscal_quarter) for a period ending on `end`, or None if `end` is not
         near a fiscal quarter end."""
         fy_end = _fye_on_or_after(end, self.fye_mmdd)
+        for q_end, quarter in self.quarter_ends:
+            if abs((end - q_end).days) <= _LEARNED_TOLERANCE_DAYS:
+                return fy_end.year + self.year_offset, quarter
         days_before = (fy_end - end).days
         quarter = 4 - round(days_before / 91.31)
         if not 1 <= quarter <= 4:
@@ -90,7 +102,22 @@ def learn_calendar(facts: pd.DataFrame, fye_mmdd: str) -> FiscalCalendar:
         if loc is not None and loc[1] == 4:
             offsets[int(group["fy"].iloc[0]) - loc[0]] += 1
     offset = offsets.most_common(1)[0][0] if offsets else 0
-    return FiscalCalendar(fye_mmdd, offset)
+    return FiscalCalendar(fye_mmdd, offset, _quarter_ends(facts))
+
+
+def _quarter_ends(facts: pd.DataFrame) -> tuple[tuple[date, int], ...]:
+    """Each 10-Q's own quarter end (the latest end of its duration facts) and its quarter
+    (the filing's `fp`)."""
+    quarterly = facts[
+        facts["form"].astype(str).str.startswith("10-Q")
+        & facts["fp"].isin(["Q1", "Q2", "Q3"])
+        & facts["start"].notna()
+    ]
+    out = set()
+    for _, group in quarterly.groupby("accn"):
+        end = max(date.fromisoformat(e) for e in group["end"])
+        out.add((end, int(str(group["fp"].iloc[0])[1])))
+    return tuple(sorted(out))
 
 
 def _classify(facts: pd.DataFrame, cal: FiscalCalendar) -> pd.DataFrame:
@@ -138,6 +165,23 @@ def standardize(
         tuple(k): g for k, g in classified.groupby(keys, sort=False)
     }
     latest: dict[tuple[Any, ...], dict[str, Any]] = {k: _latest(g) for k, g in groups.items()}
+    # Basis changes per series: filings that restated a fiscal year's value (D-052). A
+    # restated year means everything filed before the restatement is on the older basis.
+    changes: dict[tuple[Any, ...], list[str]] = {}
+    for k, g in groups.items():
+        if int(k[6]) != 4:
+            continue
+        ordered = records(g.sort_values(["filed", "accn"]))
+        first = ordered[0]["val"]
+        changes.setdefault(k[:4], []).extend(
+            r["filed"] for r in ordered[1:]
+            if abs(r["val"] - first) > RESTATED * max(abs(first), 1.0)
+        )  # fmt: skip
+
+    def mixed_basis(series: tuple[Any, ...], older: str, newer: str) -> bool:
+        """A basis change lies between two filing dates."""
+        return any(older < c <= newer for c in changes.get(series, ()))
+
     # ... except that a quarter or year-to-date value restated after its fiscal year was
     # reported keeps the basis of that year's figure until a filing restates the year too
     # (the next 10-K's comparative). Mixing bases made the quarters disagree with the year
@@ -153,6 +197,11 @@ def standardize(
             continue
         before = _latest(earlier)
         if abs(row["val"] - before["val"]) > RESTATED * max(abs(before["val"]), 1.0):
+            # The year itself is already on the newer basis when a filing between the
+            # quarter's report and the year's restated a fiscal year (BAC's FY2025 10-K recast
+            # FY2024): the restated quarter matches its year and is kept (D-052).
+            if mixed_basis(k[:4], before["filed"], cutoff):
+                continue
             latest[k] = before
             restated.append(
                 f"{k[1]} FY{k[4]} span {k[6]} q{k[5]}: {before['val']:,.0f} as "
@@ -183,7 +232,7 @@ def standardize(
     for k, row in latest.items():
         by_series.setdefault(k[:4], {})[(int(k[4]), int(k[5]), int(k[6]))] = row
 
-    for facts_by_period in by_series.values():
+    for series, facts_by_period in by_series.items():
         is_instant = all(span == 0 for (_, _, span) in facts_by_period)
         years = sorted({fy for (fy, _, _) in facts_by_period})
         for fy in years:
@@ -198,6 +247,16 @@ def standardize(
                 continue
 
             direct = {fq: facts_by_period.get((fy, fq, 1)) for fq in range(1, 5)}
+            if next(iter(facts_by_period.values()))["unit"] != "USD":
+                # Not additive (a weighted-average share count, a per-share amount): quarters
+                # and years only as reported; Q4 = FY - 9M would be meaningless (Phase 15c).
+                for fq, reported in direct.items():
+                    if reported is not None:
+                        emit(reported, "Q", fq, reported["val"], "REPORTED")
+                annual = facts_by_period.get((fy, 4, 4))
+                if annual is not None:
+                    emit(annual, "FY", 0, annual["val"], "REPORTED")
+                continue
 
             def ytd(k: int, fy: int = fy, direct: Any = direct, fbp: Any = facts_by_period) -> Any:
                 """(value, source row) for the k-quarter YTD, or None."""
@@ -218,6 +277,11 @@ def standardize(
                     continue
                 cur, prev = ytd(fq), ytd(fq - 1)
                 if cur is not None and prev is not None:
+                    if fq == 4 and mixed_basis(series, prev[1]["filed"], cur[1]["filed"]):
+                        # Year and nine months on different bases: the difference would carry
+                        # the whole restatement (BAC revenue, D-052). N/M, not a wrong value.
+                        emit(cur[1], "Q", 4, float("nan"), "DERIVED")
+                        continue
                     emit(cur[1], "Q", fq, cur[0] - prev[0], "DERIVED")
 
             annual = facts_by_period.get((fy, 4, 4))

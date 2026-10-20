@@ -37,6 +37,22 @@ CREATE TABLE uw_pipeline.company (
 );
 GO
 
+IF OBJECT_ID(N'uw_pipeline.earnings_report', N'U') IS NULL
+CREATE TABLE uw_pipeline.earnings_report (
+	symbol NVARCHAR(16) NOT NULL, 
+	fiscal_date_ending NVARCHAR(10) NOT NULL, 
+	reported_date NVARCHAR(10) NULL, 
+	report_time NVARCHAR(20) NULL, 
+	reported_eps FLOAT NULL, 
+	estimated_eps FLOAT NULL, 
+	surprise FLOAT NULL, 
+	surprise_pct FLOAT NULL, 
+	raw_path NVARCHAR(500) NOT NULL, 
+	updated_at DATETIMEOFFSET NOT NULL, 
+	PRIMARY KEY (symbol, fiscal_date_ending)
+);
+GO
+
 IF OBJECT_ID(N'uw_pipeline.llm_call', N'U') IS NULL
 CREATE TABLE uw_pipeline.llm_call (
 	input_hash NVARCHAR(64) NOT NULL, 
@@ -50,6 +66,19 @@ CREATE TABLE uw_pipeline.llm_call (
 	output_tokens INTEGER NULL, 
 	created_at DATETIMEOFFSET NOT NULL, 
 	PRIMARY KEY (input_hash)
+);
+GO
+
+IF OBJECT_ID(N'uw_pipeline.market_daily', N'U') IS NULL
+CREATE TABLE uw_pipeline.market_daily (
+	symbol NVARCHAR(16) NOT NULL, 
+	trade_date NVARCHAR(10) NOT NULL, 
+	[close] FLOAT NOT NULL, 
+	adjusted_close FLOAT NOT NULL, 
+	volume FLOAT NULL, 
+	raw_path NVARCHAR(500) NOT NULL, 
+	updated_at DATETIMEOFFSET NOT NULL, 
+	PRIMARY KEY (symbol, trade_date)
 );
 GO
 
@@ -414,6 +443,14 @@ CREATE TABLE uw_pipeline.board_composition (
 	ceo_is_chair BIT NULL, 
 	lead_independent_director NVARCHAR(200) NULL, 
 	committees_json NVARCHAR(max) NOT NULL, 
+	fees_fiscal_year INTEGER NULL, 
+	audit_fees FLOAT(53) NULL, 
+	audit_related_fees FLOAT(53) NULL, 
+	tax_fees FLOAT(53) NULL, 
+	other_fees FLOAT(53) NULL, 
+	dual_class BIT NULL, 
+	ceo_name NVARCHAR(200) NULL, 
+	ceo_since INTEGER NULL, 
 	evidence_json NVARCHAR(max) NOT NULL, 
 	model NVARCHAR(60) NOT NULL, 
 	prompt_version NVARCHAR(40) NOT NULL, 
@@ -423,6 +460,30 @@ CREATE TABLE uw_pipeline.board_composition (
 	FOREIGN KEY(company_id) REFERENCES uw_pipeline.company (company_id), 
 	FOREIGN KEY(doc_id) REFERENCES uw_pipeline.source_document (doc_id)
 );
+GO
+IF COL_LENGTH(N'uw_pipeline.board_composition', N'fees_fiscal_year') IS NULL
+    ALTER TABLE uw_pipeline.board_composition ADD fees_fiscal_year INTEGER NULL;
+GO
+IF COL_LENGTH(N'uw_pipeline.board_composition', N'audit_fees') IS NULL
+    ALTER TABLE uw_pipeline.board_composition ADD audit_fees FLOAT(53) NULL;
+GO
+IF COL_LENGTH(N'uw_pipeline.board_composition', N'audit_related_fees') IS NULL
+    ALTER TABLE uw_pipeline.board_composition ADD audit_related_fees FLOAT(53) NULL;
+GO
+IF COL_LENGTH(N'uw_pipeline.board_composition', N'tax_fees') IS NULL
+    ALTER TABLE uw_pipeline.board_composition ADD tax_fees FLOAT(53) NULL;
+GO
+IF COL_LENGTH(N'uw_pipeline.board_composition', N'other_fees') IS NULL
+    ALTER TABLE uw_pipeline.board_composition ADD other_fees FLOAT(53) NULL;
+GO
+IF COL_LENGTH(N'uw_pipeline.board_composition', N'dual_class') IS NULL
+    ALTER TABLE uw_pipeline.board_composition ADD dual_class BIT NULL;
+GO
+IF COL_LENGTH(N'uw_pipeline.board_composition', N'ceo_name') IS NULL
+    ALTER TABLE uw_pipeline.board_composition ADD ceo_name NVARCHAR(200) NULL;
+GO
+IF COL_LENGTH(N'uw_pipeline.board_composition', N'ceo_since') IS NULL
+    ALTER TABLE uw_pipeline.board_composition ADD ceo_since INTEGER NULL;
 GO
 
 IF OBJECT_ID(N'uw_pipeline.filing_section', N'U') IS NULL
@@ -480,6 +541,38 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_followup_question_sou
     CREATE INDEX ix_followup_question_source_question_id ON uw_pipeline.followup_question_source (question_id);
 GO
 
+IF OBJECT_ID(N'uw_pipeline.insider_transaction', N'U') IS NULL
+CREATE TABLE uw_pipeline.insider_transaction (
+	accession_no NVARCHAR(25) NOT NULL, 
+	line INTEGER NOT NULL, 
+	company_id INTEGER NOT NULL, 
+	doc_id INTEGER NULL, 
+	filed_at NVARCHAR(10) NOT NULL, 
+	owner_cik NVARCHAR(10) NULL, 
+	owner_name NVARCHAR(200) NULL, 
+	is_director BIT NOT NULL, 
+	is_officer BIT NOT NULL, 
+	officer_title NVARCHAR(200) NULL, 
+	is_ten_percent BIT NOT NULL, 
+	security_title NVARCHAR(200) NULL, 
+	trade_date NVARCHAR(10) NULL, 
+	code NVARCHAR(4) NULL, 
+	acquired_disposed NVARCHAR(1) NULL, 
+	shares FLOAT NULL, 
+	price FLOAT NULL, 
+	shares_after FLOAT NULL, 
+	direct BIT NOT NULL, 
+	is_10b5_1 BIT NOT NULL, 
+	updated_at DATETIMEOFFSET NOT NULL, 
+	PRIMARY KEY (accession_no, line), 
+	FOREIGN KEY(company_id) REFERENCES uw_pipeline.company (company_id), 
+	FOREIGN KEY(doc_id) REFERENCES uw_pipeline.source_document (doc_id)
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_insider_transaction_company_id' AND object_id = OBJECT_ID(N'uw_pipeline.insider_transaction'))
+    CREATE INDEX ix_insider_transaction_company_id ON uw_pipeline.insider_transaction (company_id);
+GO
+
 IF OBJECT_ID(N'uw_pipeline.insight_evidence', N'U') IS NULL
 CREATE TABLE uw_pipeline.insight_evidence (
 	evidence_id INTEGER NOT NULL IDENTITY, 
@@ -520,6 +613,33 @@ CREATE TABLE uw_pipeline.insight_metric (
 	link_source NVARCHAR(16) NOT NULL DEFAULT 'INSIGHT', 
 	PRIMARY KEY (insight_id, metric_code), 
 	FOREIGN KEY(insight_id) REFERENCES uw_pipeline.insight (insight_id)
+);
+GO
+
+IF OBJECT_ID(N'uw_pipeline.legal_matter', N'U') IS NULL
+CREATE TABLE uw_pipeline.legal_matter (
+	company_id INTEGER NOT NULL, 
+	matter_key NVARCHAR(160) NOT NULL, 
+	matter_type NVARCHAR(30) NOT NULL, 
+	name NVARCHAR(300) NOT NULL, 
+	agency NVARCHAR(100) NULL, 
+	status NVARCHAR(20) NOT NULL, 
+	started NVARCHAR(30) NULL, 
+	wells_notice BIT NOT NULL, 
+	accrual FLOAT(53) NULL, 
+	quote NVARCHAR(max) NOT NULL, 
+	first_doc_id INTEGER NOT NULL, 
+	last_doc_id INTEGER NOT NULL, 
+	first_disclosed NVARCHAR(10) NOT NULL, 
+	last_seen NVARCHAR(10) NOT NULL, 
+	review_status NVARCHAR(20) NOT NULL, 
+	model NVARCHAR(60) NOT NULL, 
+	prompt_version NVARCHAR(40) NOT NULL, 
+	updated_at DATETIMEOFFSET NOT NULL, 
+	PRIMARY KEY (company_id, matter_key), 
+	FOREIGN KEY(company_id) REFERENCES uw_pipeline.company (company_id), 
+	FOREIGN KEY(first_doc_id) REFERENCES uw_pipeline.source_document (doc_id), 
+	FOREIGN KEY(last_doc_id) REFERENCES uw_pipeline.source_document (doc_id)
 );
 GO
 

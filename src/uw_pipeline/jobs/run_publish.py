@@ -63,6 +63,7 @@ from uw_pipeline.schema_app import (
     ItemLink,
     KeyInsights,
     KeyInsightsTypes,
+    KeyTakeaways,
     LoanPortfolio,
     LoanTypes,
     MatrixData,
@@ -171,12 +172,14 @@ class Publisher:
         row: dict[str, Any],
         metric_defs: Sequence[MetricDef],
         names: dict[str, str],
+        hidden: frozenset[str] = frozenset(),
     ) -> None:
         self.src, self.w, self.cfg, self.labels, self.row = src, w, cfg, labels, row
         self.company_id: int = row["company_id"]
         self.cik: str = row["cik"]
         self.p = f"{self.cik}:"  # key prefix of this company's objects
         self.defs = {m.code: m for m in metric_defs}
+        self.hidden = hidden  # metric codes of hidden sets (D-054)
         self.names = names
         self.resolver = SourceResolver(src, row, labels)
         self.stats = Stats()
@@ -205,7 +208,8 @@ class Publisher:
                 formula: str | None) -> int:  # fmt: skip
         cat = self.cfg.metric_categories.get(section, section)
         cat_id = self._lookup(metric_category, section, {"categoryName": cat})
-        unit = {"USD": "USD", "fraction": "%", "ratio": "x"}
+        unit = {"USD": "USD", "fraction": "%", "ratio": "x", "days": "days", "shares": "shares",
+                "count": "count"}  # fmt: skip
         m = self.defs.get(code)
         return self.w.put(metrics, code, {
             "metric_name": name, "metric_category_Id": cat_id,
@@ -223,6 +227,11 @@ class Publisher:
             if self.sic_id is not None:
                 pref = {"metric_id": self.metric_ids[m.code], "SIC_Id": self.sic_id}
                 self._lookup(SIC_Preferences, f"{self.row['sic_code']}:{m.code}", pref)
+        if self.sic_id is not None and self.hidden:
+            # Hidden metrics leave the SIC's metric list too (only these: another industry may
+            # show the others for the same SIC code).
+            keys = [f"{self.row['sic_code']}:{c}" for c in sorted(self.hidden)]
+            self.stats.add("SIC_Preferences_removed", self.w.drop(SIC_Preferences, keys))
         if self.row["is_financial"]:
             lm = self.cfg.loan_portfolio_metric
             self.metric_ids[lm.code] = self._metric(lm.code, lm.name, "loan_portfolio",
@@ -317,9 +326,17 @@ class Publisher:
             .order_by(insight.c.kind, insight.c.ordinal)
         ).mappings().all()  # fmt: skip
         out: dict[int, tuple[str, int]] = {}
-        keep_k, keep_r = [], []
+        keep_k, keep_r, keep_t = [], [], []
         for r in rows:
             key = f"{self.p}{r['insight_id']}"
+            if r["kind"] == "TAKEAWAY":  # bullets only: no sources, no links (ItemLink)
+                self.w.put(KeyTakeaways, key, {
+                    "CompanyId": self.app_company, "Ordinal": r["ordinal"],
+                    "Takeaway": r["summary"], "UpdatedDate": _date(r["created_at"]),
+                    "isActive": True,
+                })  # fmt: skip
+                keep_t.append(key)
+                continue
             sources = self._sources(r["insight_id"])
             first_url = next((s["url"] for s in sources if s["url"]), None)
             if r["kind"] == "KEY":
@@ -352,8 +369,10 @@ class Publisher:
                 keep_r.append(key)
         self.stats.add("KeyInsights", len(keep_k))
         self.stats.add("StrategicRisk", len(keep_r))
+        self.stats.add("KeyTakeaways", len(keep_t))
         self.stats.add("retired", self.w.deactivate_except(KeyInsights, self.p, keep_k))
         self.stats.add("retired", self.w.deactivate_except(StrategicRisk, self.p, keep_r))
+        self.stats.add("retired", self.w.deactivate_except(KeyTakeaways, self.p, keep_t))
         return out
 
     def questions(self) -> dict[int, int]:
@@ -691,7 +710,7 @@ def publish_company(
     defs = registry.for_company(cfg.ticker, group).metrics
     names = {m.code: m.display_name for m in defs} | labels.concepts
     w = AppWriter(dst, now, scope=f"{row['cik']}:")
-    p = Publisher(src, w, pcfg, labels, row, defs, names)
+    p = Publisher(src, w, pcfg, labels, row, defs, names, registry.hidden_codes)
     p.company()
     p.metrics()
     p.matrix()

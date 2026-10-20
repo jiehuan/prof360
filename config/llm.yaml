@@ -10,15 +10,31 @@
 default_provider: securegpt
 providers:
   securegpt:
-    # max_tokens includes reasoning tokens on gpt-5 models, hence the higher limits.
-    extractor: {model: gpt-5-nano-2025-08-07, effort: low, max_tokens: 16000}
-    tiebreaker: {model: gpt-5-mini-2025-08-07, effort: high, max_tokens: 32000}
-    synthesis: {model: gpt-5-mini-2025-08-07, effort: high, max_tokens: 32000}
-    # SecureGPT price list, per million tokens (input, output); run statistics only.
+    # Models (D-051): gpt-6-luna for routine calls, gpt-6-sol as tie-breaker and for synthesis
+    # (was gpt-5-nano / gpt-5-mini). max_tokens includes reasoning tokens, hence the higher
+    # limits.
+    extractor: {model: gpt-6-luna-2026-09-22, effort: low, max_tokens: 16000}
+    tiebreaker: {model: gpt-6-sol-2026-09-22, effort: high, max_tokens: 32000}
+    synthesis: {model: gpt-6-sol-2026-09-22, effort: high, max_tokens: 32000}
+    # SecureGPT price list, per million tokens (input, output): run statistics and the daily
+    # budget (LLM_DAILY_BUDGET). A model without a price counts as free (the run logs a warning).
     pricing_currency: EUR
     pricing:
+      # D-051, in USD: gpt-6-sol as given by the user; gpt-6-luna provisional, a third-party
+      # list price (TO VERIFY against SecureGPT's own).
+      gpt-6-luna-2026-09-22: [0.10, 0.50]
+      gpt-6-sol-2026-09-22: [2.00, 10.00]
       gpt-5-nano-2025-08-07: [0.052, 0.378]
       gpt-5-mini-2025-08-07: [0.240, 1.889]
+    # Phase 15i (D-050, D-051): each deployment's quota, shared by the parallel workers of a
+    # stage (config/jobs.yaml `parallel`); a request reserves its input plus max_tokens, as
+    # Azure counts it. 500K tokens per minute per deployment; requests per minute not limited
+    # here until the gateway team gives a number (429s are retried and pause the model).
+    rate_limits:
+      gpt-6-luna-2026-09-22: {tpm: 500000}
+      gpt-6-sol-2026-09-22: {tpm: 500000}
+    # task_max_tokens: lower max_tokens per task, from this profile's own llm_call
+    # output_tokens (reasoning included); see docs/OPERATIONS.md.
 
 prompt_version: signals_v1
 # The tie-breaker sees both claims and their evidence and rules on the text (D-028).

@@ -428,6 +428,7 @@ def source_coverage(conn: Connection, company_id: int, cfg: _Rule) -> list[Findi
                func.count(ev.source_url))
         .outerjoin(insight_evidence, ev.insight_id == insight.c.insight_id)
         .where(insight.c.company_id == company_id, insight.c.is_current == true(),
+               insight.c.kind != "TAKEAWAY",  # shown without links by design
                or_(insight.c.subcategory.is_(None), insight.c.subcategory != "No signal"))
         .group_by(insight.c.insight_id, insight.c.kind, insight.c.title)
     ).all()  # fmt: skip

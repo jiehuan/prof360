@@ -64,7 +64,7 @@ def parse_submissions(
     if not legal_name:
         raise ValueError("submissions payload has no company name")
     sic = parse_sic(payload)
-    group, _ = industry.classify(sic)
+    group, _ = industry.classify(sic, cfg)
 
     business = (payload.get("addresses") or {}).get("business") or {}
     foreign = bool(business.get("isForeignLocation"))

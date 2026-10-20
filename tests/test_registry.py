@@ -32,8 +32,20 @@ def test_metric_list_comes_from_group_config(reg, industry) -> None:
         "international_revenue",  # BANK_REGULATORY
         "ceo_total_comp", "ceo_comp_actually_paid", "neo_avg_total_comp", "tsr_value_100",
         "peer_tsr_value_100",  # GOVERNANCE (every group)
+        "goodwill_to_equity", "goodwill_impairment", "sbc_to_revenue", "diluted_shares",
+        "diluted_shares_growth_yoy",  # CAPITAL_QUALITY (every group)
+        "market_cap", "volatility_90d", "max_drawdown_52w", "eps_surprise_pct",
+        "insider_net_sales", "officer_sell_pct",  # MARKET (every group, external)
+        "deposits", "deposit_growth_yoy", "uninsured_deposits", "uninsured_deposit_share",
+        "cre_loans", "cre_loan_share", "securities_unrealized_loss",
+        "unrealized_loss_to_equity",  # BANK_DEPOSITS (Phase 16)
+        "bank_net_revenue",  # hidden helper of revenue's second form (Phase 16)
     }  # fmt: skip
-    assert jpm.concepts["revenue"] == [TagRef(tag="us-gaap:RevenuesNetOfInterestExpense")]
+    # Bank revenue: net of interest expense; us-gaap:Revenues where only that is tagged (BAC).
+    assert jpm.concepts["revenue"] == [
+        TagRef(tag="us-gaap:RevenuesNetOfInterestExpense"),
+        TagRef(tag="us-gaap:Revenues"),
+    ]
     # Capital ratios: JPM's override tags, firm-wide Standardized, unit pure (D-042).
     assert jpm.units["cet1_ratio"] == "pure" and jpm.concepts["cet1_ratio"][0].needs_instance
 

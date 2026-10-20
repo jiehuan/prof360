@@ -87,8 +87,11 @@ class TaskRunner:
         conn: Connection,
         now: Callable[[], datetime],
         common_prompt: str,
+        *,
+        commit: bool = False,  # short transactions: see cached_call
     ) -> None:
         self.client, self.conn, self.now, self.common = client, conn, now, common_prompt
+        self.commit = commit
 
     def run(
         self,
@@ -105,7 +108,7 @@ class TaskRunner:
         raw = cached_call(
             self.conn, self.client, spec, task=task, prompt_version=prompt_version,
             system=system, user=user, schema=strict_json_schema(model), now=self.now(),
-            validate=model.model_validate,
+            validate=model.model_validate, commit=self.commit,
         )  # fmt: skip
         if raw is None:
             return None

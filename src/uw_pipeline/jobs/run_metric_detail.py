@@ -343,7 +343,7 @@ def process_company(
     if llm is not None and shown:
         client, _ = llm
         common = (PROMPTS_DIR / f"{icfg.prompt_versions['common']}.md").read_text(encoding="utf-8")
-        runner = TaskRunner(client, conn, lambda: now, common)
+        runner = TaskRunner(client, conn, lambda: now, common, commit=True)
         relevance(conn, runner, icfg, row, group.label, shown, values, now, stats)
     return stats
 
@@ -362,8 +362,9 @@ def run_metric_detail_stage(
     results: list[TaskResult] = []
     for cfg in companies:
         try:
-            with engine.begin() as conn:
+            with engine.connect() as conn:  # short transactions, as in the insights stage
                 stats = process_company(cfg, registry, industry, llm, icfg, labels, conn, now())
+                conn.commit()
             for d in stats.dropped:
                 log.info("%s: metric relevance dropped %s", cfg.ticker, d)
             detail = (f"{stats.metrics} metrics, {stats.sources} sources, "

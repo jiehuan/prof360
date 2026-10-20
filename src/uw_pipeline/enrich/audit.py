@@ -9,8 +9,11 @@ from dataclasses import dataclass, field
 from sqlalchemy import Connection, false, func, select, true
 
 from uw_pipeline.enrich.grounding import is_grounded
+from uw_pipeline.enrich.legal import legal_matters
+from uw_pipeline.enrich.package import board_text, legal_text
 from uw_pipeline.schema import (
     activity,
+    board_composition,
     company,
     filing_section,
     followup_question,
@@ -22,6 +25,7 @@ from uw_pipeline.schema import (
     metric_insight,
     metric_value,
     signal,
+    source_document,
 )
 
 
@@ -50,11 +54,26 @@ class AuditReport:
 def _source_text(conn: Connection, ev: dict[str, object]) -> str:
     kind = ev["source_kind"]
     if kind == "DOCUMENT" and ev["doc_id"] is not None:
-        return " ".join(
+        texts = list(
             conn.execute(
                 select(filing_section.c.text).where(filing_section.c.doc_id == ev["doc_id"])
             ).scalars()
         )
+        # Proxy facts and litigation matters reach the model as rendered text (the filing's
+        # own words with labels, Phase 15e/f), so their quotes are checked against that text.
+        board = conn.execute(
+            select(board_composition).where(board_composition.c.doc_id == ev["doc_id"])
+        ).mappings().first()  # fmt: skip
+        if board is not None:
+            texts.append(board_text(board))
+        company_id = conn.execute(
+            select(source_document.c.company_id).where(source_document.c.doc_id == ev["doc_id"])
+        ).scalar()
+        if company_id is not None:
+            matters = legal_matters(conn, company_id)
+            if any(m["last_doc_id"] == ev["doc_id"] for m in matters):
+                texts.append(legal_text(matters))
+        return " ".join(texts)
     if kind == "SIGNAL" and ev["signal_id"] is not None:
         row = conn.execute(
             select(signal.c.title, signal.c.snippet, signal.c.description, signal.c.event_date,
@@ -126,7 +145,9 @@ def audit(conn: Connection, sample: int = 20, seed: int = 7) -> AuditReport:
         rep.loan_rows += 1
         text = " ".join(conn.execute(select(filing_section.c.text).where(
             filing_section.c.doc_id == r["source_doc_id"])).scalars())  # fmt: skip
-        if is_grounded(r["evidence"], text):
+        # Rows read by table cell (D-044) keep their evidence as "row label | value": each part
+        # must be in the filing.
+        if all(is_grounded(part, text, min_chars=4) for part in r["evidence"].split(" | ")):
             rep.loan_rows_found += 1
         else:
             rep.failures.append(f"loan row {r['segment']} {r['period_end']}: {r['evidence'][:80]}")

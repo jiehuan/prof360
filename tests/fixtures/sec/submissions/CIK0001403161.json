@@ -1,0 +1,235 @@
+{
+ "cik": "0001403161",
+ "entityType": "operating",
+ "sic": "7389",
+ "sicDescription": "Services-Business Services, NEC",
+ "ownerOrg": "07 Trade & Services",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "VISA INC.",
+ "tickers": [
+  "V"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "260267673",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "0930",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "P.O. BOX 8999",
+   "street2": null,
+   "city": "SAN FRANCISCO",
+   "stateOrCountry": "CA",
+   "zipCode": "94128-8999",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "P.O. BOX 8999",
+   "street2": null,
+   "city": "SAN FRANCISCO",
+   "stateOrCountry": "CA",
+   "zipCode": "94128-8999",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "650-432-7644",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001403161-26-000123",
+    "0001964306-26-000460",
+    "0001403161-26-000121",
+    "0001403161-26-000118",
+    "0001964306-26-000433",
+    "0001403161-26-000104",
+    "0001403161-26-000079",
+    "0001403161-26-000045",
+    "0001403161-25-000089"
+   ],
+   "filingDate": [
+    "2026-10-02",
+    "2026-10-01",
+    "2026-09-23",
+    "2026-09-10",
+    "2026-09-09",
+    "2026-07-29",
+    "2026-04-29",
+    "2026-01-30",
+    "2025-11-06"
+   ],
+   "reportDate": [
+    "2026-10-01",
+    "",
+    "2026-09-18",
+    "2026-09-09",
+    "",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-02T20:05:52.000Z",
+    "2026-10-01T20:05:24.000Z",
+    "2026-09-23T20:06:31.000Z",
+    "2026-09-10T20:01:48.000Z",
+    "2026-09-09T20:03:58.000Z",
+    "2026-07-28T22:08:12.000Z",
+    "2026-04-28T22:11:07.000Z",
+    "2026-01-29T23:08:26.000Z",
+    "2025-11-06T21:09:41.000Z"
+   ],
+   "act": [
+    "",
+    "33",
+    "34",
+    "",
+    "33",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "144",
+    "8-K",
+    "4",
+    "144",
+    "10-Q",
+    "10-Q",
+    "10-Q",
+    "10-K"
+   ],
+   "fileNumber": [
+    "",
+    "001-33977",
+    "001-33977",
+    "",
+    "001-33977",
+    "001-33977",
+    "001-33977",
+    "001-33977",
+    "001-33977"
+   ],
+   "filmNumber": [
+    "",
+    "261431338",
+    "261401101",
+    "",
+    "261368149",
+    "261213177",
+    "26909663",
+    "26579638",
+    "251458314"
+   ],
+   "items": [
+    "",
+    "",
+    "8.01",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "144",
+    "XBRL",
+    "4",
+    "144",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    9359,
+    7358,
+    650729,
+    8598,
+    5564,
+    10103000,
+    9409806,
+    8088536,
+    20273752
+   ],
+   "isXBRL": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/form4.xml",
+    "xsl144X01/primary_doc.xml",
+    "v-20260918.htm",
+    "xslF345X06/form4.xml",
+    "xsl144X01/primary_doc.xml",
+    "v-20260630.htm",
+    "v-20260331.htm",
+    "v-20251231.htm",
+    "v-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "PRIMARY DOCUMENT",
+    "",
+    "8-K",
+    "PRIMARY DOCUMENT",
+    "",
+    "10-Q",
+    "10-Q",
+    "10-Q",
+    "10-K"
+   ]
+  },
+  "files": []
+ }
+}

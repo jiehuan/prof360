@@ -1,0 +1,246 @@
+{
+ "cik": "0001108524",
+ "entityType": "operating",
+ "sic": "7372",
+ "sicDescription": "Services-Prepackaged Software",
+ "ownerOrg": "06 Technology",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Salesforce, Inc.",
+ "tickers": [
+  "CRM"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "943320693",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "0131",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "SALESFORCE TOWER",
+   "street2": "415 MISSION STREET 3RD FL",
+   "city": "SAN FRANCISCO",
+   "stateOrCountry": "CA",
+   "zipCode": "94105",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "SALESFORCE TOWER",
+   "street2": "415 MISSION STREET 3RD FL",
+   "city": "SAN FRANCISCO",
+   "stateOrCountry": "CA",
+   "zipCode": "94105",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "415-901-7000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "SALESFORCE.COM, INC.",
+   "from": "2019-06-14T00:00:00.000Z",
+   "to": "2022-03-31T00:00:00.000Z"
+  },
+  {
+   "name": "SALESFORCE COM INC",
+   "from": "2003-12-18T00:00:00.000Z",
+   "to": "2019-08-05T00:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001108524-26-000225",
+    "0001108524-26-000220",
+    "0001108524-26-000217",
+    "0001108524-26-000214",
+    "0001108524-26-000212",
+    "0001108524-26-000190",
+    "0001108524-26-000127",
+    "0001108524-26-000060",
+    "0001108524-25-000238"
+   ],
+   "filingDate": [
+    "2026-09-23",
+    "2026-09-23",
+    "2026-09-23",
+    "2026-09-23",
+    "2026-09-21",
+    "2026-08-27",
+    "2026-05-28",
+    "2026-03-02",
+    "2025-12-04"
+   ],
+   "reportDate": [
+    "2026-09-22",
+    "2026-09-22",
+    "2026-09-22",
+    "2026-09-22",
+    "2026-09-18",
+    "2026-07-31",
+    "2026-04-30",
+    "2026-01-31",
+    "2025-10-31"
+   ],
+   "acceptanceDateTime": [
+    "2026-09-23T23:45:09.000Z",
+    "2026-09-23T22:37:13.000Z",
+    "2026-09-23T22:31:33.000Z",
+    "2026-09-23T22:17:32.000Z",
+    "2026-09-21T22:18:57.000Z",
+    "2026-08-26T22:54:46.000Z",
+    "2026-05-27T22:15:51.000Z",
+    "2026-03-02T21:24:59.000Z",
+    "2025-12-03T23:47:15.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "001-32224",
+    "001-32224",
+    "001-32224",
+    "001-32224"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "261324499",
+    "261027867",
+    "26708076",
+    "251547741"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    19382,
+    8850,
+    14001,
+    13995,
+    5110,
+    9911536,
+    9351464,
+    14681239,
+    9597789
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "crm-20260731.htm",
+    "crm-20260430.htm",
+    "crm-20260131.htm",
+    "crm-20251031.htm"
+   ],
+   "primaryDocDescription": [
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

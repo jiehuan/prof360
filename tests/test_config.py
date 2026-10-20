@@ -12,18 +12,15 @@ from uw_pipeline.config import (
 
 def test_mvp_company_list() -> None:
     companies = load_companies(CONFIG_DIR)
-    assert [c.ticker for c in companies] == [
-        "MAR",
-        "LUV",
-        "F",
-        "PFE",
-        "JPM",
-        "M",
-        "LUMN",
-        "SKYD",
-        "ENPH",
-    ]
-    assert all(c.cik for c in companies), "every MVP company pins its CIK"
+    assert [c.ticker for c in companies][:9] == [
+        "MAR", "LUV", "F", "PFE", "JPM", "M", "LUMN", "SKYD", "ENPH",
+    ]  # fmt: skip
+    # Phase 16: the S&P 100 (100 companies; GOOGL and GOOG are one) plus seven MVP companies.
+    assert len(companies) == 107 and {"AAPL", "GOOGL", "BRK.B", "XOM"} <= {
+        c.ticker for c in companies
+    }
+    assert all(c.cik for c in companies), "every company pins its CIK"
+    assert len({c.cik for c in companies}) == len(companies), "one entry per CIK"
 
 
 def test_duplicate_ticker_rejected() -> None:
@@ -40,7 +37,7 @@ def test_duplicate_ticker_rejected() -> None:
         (6035, "BANKS", "range", True),
         (6211, "BROKER_DEALERS", "range", True),
         (6331, "INSURANCE", "range", False),
-        (6798, "UNCLASSIFIED", "default", False),  # REITs are not FI
+        (6798, "REIT", "range", False),  # REITs are not FI (Phase 16 group)
         (None, "UNCLASSIFIED", "default", False),
     ],
 )
@@ -70,11 +67,11 @@ def test_llm_provider_profiles(monkeypatch) -> None:
     monkeypatch.delenv("LLM_PROVIDER", raising=False)
     default = load_llm_config(CONFIG_DIR)
     assert default.provider == "securegpt"
-    assert (default.extractor.model, default.tiebreaker.model) == (
-        "gpt-5-nano-2025-08-07", "gpt-5-mini-2025-08-07")  # fmt: skip
+    assert (default.extractor.model, default.tiebreaker.model, default.synthesis.model) == (
+        "gpt-6-luna-2026-09-22", "gpt-6-sol-2026-09-22", "gpt-6-sol-2026-09-22")  # fmt: skip
     assert default.pricing_currency == "EUR"
 
-    assert load_insights_config(CONFIG_DIR).synthesis.model == "gpt-5-mini-2025-08-07"
+    assert load_insights_config(CONFIG_DIR).synthesis.model == "gpt-6-sol-2026-09-22"
 
     monkeypatch.setenv("LLM_PROVIDER", "securegpt")
     assert load_llm_config(CONFIG_DIR).provider == "securegpt"

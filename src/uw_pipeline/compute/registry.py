@@ -130,8 +130,8 @@ class MetricDef(BaseModel):
     display_name: str
     description: str | None = None
     section: str
-    unit: Literal["USD", "ratio", "fraction"]
-    kind: Literal["formula", "growth", "text"] = "formula"
+    unit: Literal["USD", "ratio", "fraction", "days", "shares", "score", "count"]
+    kind: Literal["formula", "growth", "text", "external"] = "formula"  # external: Phase 15
     formula: list[str] = Field(default_factory=list)
     optional: list[str] = Field(default_factory=list)
     nm_when: str | None = None
@@ -158,12 +158,14 @@ class MetricDef(BaseModel):
         elif self.kind == "text":
             if self.extraction is None:
                 raise ValueError(f"{self.code}: text metric needs `extraction`")
+        elif self.kind == "external":
+            pass  # written by another stage: market (prices, EPS) or documents (Form 4)
         elif not (self.base and self.compare):
             raise ValueError(f"{self.code}: growth metric needs `base` and `compare`")
         return self
 
     def inputs(self) -> set[str]:
-        if self.kind == "text":
+        if self.kind in ("text", "external"):
             return set()
         if self.kind == "growth":
             return {self.base} if self.base else set()
@@ -194,6 +196,13 @@ class Registry(BaseModel):
     metrics: list[MetricDef]
     metric_sets: dict[str, list[str]] = Field(default_factory=dict)
     overrides: dict[str, CompanyOverride] = Field(default_factory=dict)
+    # Metric sets computed and stored but not shown: not published to the app, not in any LLM
+    # input, no threshold signals, not in coverage (D-054). Removing a set shows it again.
+    hidden_metric_sets: list[str] = Field(default_factory=list)
+
+    @property
+    def hidden_codes(self) -> frozenset[str]:
+        return frozenset(c for s in self.hidden_metric_sets for c in self.metric_sets[s])
 
     @model_validator(mode="after")
     def _check_refs(self) -> Registry:
@@ -211,6 +220,9 @@ class Registry(BaseModel):
             unknown = set(members) - codes
             if unknown:
                 raise ValueError(f"metric set {name} lists unknown metrics {sorted(unknown)}")
+        unknown_sets = set(self.hidden_metric_sets) - self.metric_sets.keys()
+        if unknown_sets:
+            raise ValueError(f"hidden_metric_sets: unknown metric sets {sorted(unknown_sets)}")
         return self
 
     def _catalog(self, ticker: str) -> list[MetricDef]:
@@ -224,7 +236,7 @@ class Registry(BaseModel):
         codes = {m.code for m in self.metrics}
         for g in groups:
             unknown_sets = set(g.metric_sets) - self.metric_sets.keys()
-            unknown_codes = set(g.metrics) - codes
+            unknown_codes = (set(g.metrics) | set(g.exclude_metrics)) - codes
             if unknown_sets or unknown_codes:
                 raise ValueError(
                     f"industry group {g.code}: unknown metric sets {sorted(unknown_sets)} "
@@ -243,6 +255,8 @@ class Registry(BaseModel):
         by_code = {m.code: m for m in catalog}
         wanted = {c for s in group.metric_sets for c in self.metric_sets[s]}
         wanted |= set(group.metrics) | {m.code for m in override.metrics}
+        wanted -= set(group.exclude_metrics)  # not tracked for this industry (D-049)
+        tracked = set(wanted)
         # Pull in helper metrics that wanted metrics depend on.
         stack = list(wanted)
         while stack:
@@ -250,7 +264,16 @@ class Registry(BaseModel):
                 if dep not in wanted:
                     wanted.add(dep)
                     stack.append(dep)
-        metrics = [m for m in catalog if m.code in wanted]  # catalog order = dependency order
+        hidden = self.hidden_codes
+        metrics = [  # catalog order = dependency order
+            m.model_copy(update={"display": False, "insight_input": False})
+            # removed by the industry but needed by another metric (a hidden helper), or in a
+            # hidden set (computed, not shown, D-054)
+            if (m.code in group.exclude_metrics and m.code not in tracked) or m.code in hidden
+            else m
+            for m in catalog
+            if m.code in wanted
+        ]
         return CompanyRegistry(concepts=concepts, units=units, metrics=metrics)
 
 
@@ -282,5 +305,6 @@ def load_registry(config_dir: Path) -> Registry:
             "metrics": catalog["metrics"],
             "metric_sets": catalog.get("metric_sets", {}),
             "overrides": overrides,
+            "hidden_metric_sets": catalog.get("hidden_metric_sets", []),
         }
     )

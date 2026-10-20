@@ -1,0 +1,241 @@
+{
+ "cik": "0001045810",
+ "entityType": "operating",
+ "sic": "3674",
+ "sicDescription": "Semiconductors & Related Devices",
+ "ownerOrg": "04 Manufacturing",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "NVIDIA CORP",
+ "tickers": [
+  "NVDA"
+ ],
+ "exchanges": [
+  "Nasdaq"
+ ],
+ "ein": "943177549",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "0131",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "2788 SAN TOMAS EXPRESSWAY",
+   "street2": null,
+   "city": "SANTA CLARA",
+   "stateOrCountry": "CA",
+   "zipCode": "95051",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "2788 SAN TOMAS EXPRESSWAY",
+   "street2": null,
+   "city": "SANTA CLARA",
+   "stateOrCountry": "CA",
+   "zipCode": "95051",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "408-486-2000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "NVIDIA CORP/CA",
+   "from": "1998-05-07T04:00:00.000Z",
+   "to": "2002-06-04T04:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0002152188-26-000007",
+    "0001197647-26-000011",
+    "0001696841-26-000014",
+    "0001199039-26-000016",
+    "0001921094-26-001040",
+    "0001045810-26-000075",
+    "0001045810-26-000052",
+    "0001045810-26-000021",
+    "0001045810-25-000230"
+   ],
+   "filingDate": [
+    "2026-10-13",
+    "2026-10-09",
+    "2026-09-23",
+    "2026-09-22",
+    "2026-09-21",
+    "2026-08-26",
+    "2026-05-20",
+    "2026-02-25",
+    "2025-11-19"
+   ],
+   "reportDate": [
+    "2026-09-09",
+    "2026-10-07",
+    "2026-09-21",
+    "2026-09-18",
+    "",
+    "2026-07-26",
+    "2026-04-26",
+    "2026-01-25",
+    "2025-10-26"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-14T01:09:29.000Z",
+    "2026-10-10T01:04:09.000Z",
+    "2026-09-24T00:56:28.000Z",
+    "2026-09-23T00:56:23.000Z",
+    "2026-09-22T00:22:56.000Z",
+    "2026-08-27T00:36:00.000Z",
+    "2026-05-21T00:35:52.000Z",
+    "2026-02-26T02:42:19.000Z",
+    "2025-11-20T02:36:17.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "",
+    "33",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4/A",
+    "4",
+    "4",
+    "4",
+    "144",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "",
+    "000-23985",
+    "000-23985",
+    "000-23985",
+    "000-23985",
+    "000-23985"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "",
+    "261394180",
+    "261323507",
+    "261004576",
+    "26679581",
+    "251499810"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4/A",
+    "4",
+    "4",
+    "4",
+    "144",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    5819,
+    6863,
+    10575,
+    8862,
+    5214,
+    9044060,
+    7515560,
+    11461765,
+    8026373
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/wk-form4a_1791925767.xml",
+    "xslF345X06/wk-form4_1791579847.xml",
+    "xslF345X06/wk-form4_1790196985.xml",
+    "xslF345X06/wk-form4_1790110579.xml",
+    "xsl144X01/primary_doc.xml",
+    "nvda-20260726.htm",
+    "nvda-20260426.htm",
+    "nvda-20260125.htm",
+    "nvda-20251026.htm"
+   ],
+   "primaryDocDescription": [
+    "FORM 4/A",
+    "FORM 4",
+    "FORM 4",
+    "FORM 4",
+    "",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

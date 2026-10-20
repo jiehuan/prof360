@@ -20,9 +20,10 @@ designed in and tested:
 
 - **Traceable.** Every value and insight links to a document (accession, URL, section) or
   metric row. LLM output is stored only after schema validation and grounding (§8).
-- **Industry-aware.** Metric sets are curated per industry group in `config/`, plus trait
-  sets (bank, lodging, contract revenue, manufacturing, captive finance) a group opts into;
-  bank modules (NIM, CET1, NPL, loan book) never appear for non-banks.
+- **Industry-aware.** Metric sets are curated per industry group in `config/` (24 groups
+  for the S&P 100, D-052), plus trait sets (bank, lodging, contract revenue, manufacturing,
+  captive finance) a group opts into; bank modules (NIM, CET1, NPL, loan book) never appear
+  for non-banks.
 - **Idempotent.** Natural-key upserts; a rerun on unchanged input writes nothing and calls no
   LLM.
 - **Incremental.** Raw responses are cached; LLM calls are cached by input hash; insights are
@@ -61,7 +62,7 @@ swap them for fakes.
 | `jobs/` | One module per stage (`run_*.py`), `run_review.py` (human review queue), `stages.py` (stage dispatch), `orchestrator.py` (runs, tasks, lock, resume) |
 | `load/` | `upsert.py` (SQLite / SQL Server upsert, chunked deletes), `app_writer.py` (app ids and versions) |
 | `quality/dq.py`, `quality/identities.py` | Data-quality rules; metric identities (also the textmetrics gate) |
-| `schema.py`, `schema_app.py` | Pipeline tables (36), application tables (23) |
+| `schema.py`, `schema_app.py` | Pipeline tables (40), application tables (23) |
 | `logs.py`, `frames.py` | JSON logging with run context; pandas helpers |
 
 ## 4. Stages
@@ -72,6 +73,7 @@ for a company, that company's dependent stages are SKIPPED and other companies c
 ```mermaid
 flowchart LR
   company --> facts --> compute
+  compute --> market
   company --> documents
   company --> news
   company --> scores
@@ -81,6 +83,7 @@ flowchart LR
   compute --> signals
   documents --> signals
   documents --> governance
+  documents --> legal
   signals --> insights
   textmetrics --> insights
   insights --> metricdetail
@@ -93,15 +96,17 @@ flowchart LR
 |---|---|---|---|---|
 | company | `run_company` | Company metadata; pinned CIK, ticker check (D-006) | `company` | SEC |
 | facts | `run_xbrl` | XBRL facts for the tags in the registry, from companyfacts plus filing instances for recent or dimensional facts (D-013, D-014), and pay versus performance from the latest two proxy statements (D-042) | `xbrl_fact`, `ingest_state` | SEC |
-| compute | `run_xbrl` | Metrics per period from `config/metrics.yaml`; Q4 = FY − 9M; N/M handling (D-019) | `metric_definition`, `metric_value` | – |
-| documents | `run_documents` | Registers 10-K/10-Q/8-K; downloads and splits text documents and EX-99.1 releases (D-023…D-026); downloads the latest proxy (DEF 14A, D-045) | `source_document`, `filing_section`, `section_chunk` | SEC |
+| compute | `run_xbrl` | Metrics per period from `config/metrics.yaml`; Q4 = FY − 9M (USD series only); N/M handling; reads the stored market cap for Altman Z (D-019, D-050) | `metric_definition`, `metric_value` | – |
+| market | `run_market` | Daily adjusted prices (company and SPY) and earnings estimates; market cap, 90-day volatility, 52-week drawdown, EPS surprise at the quarter ends (D-050) | `market_daily`, `earnings_report`, `metric_value` (MARKET) | AV |
+| documents | `run_documents` | Registers 10-K/10-Q/8-K; downloads and splits text documents and EX-99.1 releases (D-023…D-026); downloads the latest proxy (DEF 14A, D-045); Schedule 13Ds about the company; parses Form 4s into insider trades and quarterly insider metrics (D-050) | `source_document`, `filing_section`, `section_chunk`, `insider_transaction`, `metric_value` (FORM4) | SEC |
 | transcripts | `run_transcripts` | Last 4 fiscal quarters of earnings-call transcripts (D-030) | `source_document`, sections, chunks | AV |
 | news | `run_news` | 30-day news, mention filter, 3-tier de-duplication, LLM relevance verdict (D-029, D-037) | `news_item`, `activity` | AV, LLM |
 | scores | `run_scores` | News risk scores per activity; transcript tone and risk flags (D-037) | `news_risk_score`, `transcript_tone`, `transcript_flag` | LLM |
 | textmetrics | `run_text_metrics` | Figures from MD&A and releases (NIM, LCR, …); table metrics read by cell (RevPAR, occupancy, ADR, AUM, VaR, international revenue, average interest-earning assets, capacity utilization) and the loan book; values XBRL covers (capital ratios, release figures) only cross-checked; identity gate (D-022, D-032, D-042, D-044) | `metric_value` (LLM_EXTRACTED, PRELIMINARY), `loan_portfolio_*`, `release_check` | LLM |
-| governance | `run_governance` | Board composition from the latest proxy, both models, facts kept only when quoted and agreed (D-045) | `board_composition` | LLM |
-| signals | `run_signals` | 8-K, keyword, auditor, metric and board signals; LLM vote on judgment topics (D-027, D-028, D-045) | `signal`, `signal_vote` | LLM |
-| insights | `run_insights` | Activity summaries, behavioral, strategic & risk, key insights, follow-up questions (D-033) | `insight*`, `followup_question*`, `activity` | LLM |
+| governance | `run_governance` | Board composition, auditor fees, dual-class shares and CEO start year from the latest proxy, both models, facts kept only when quoted and agreed (D-045, D-050) | `board_composition` | LLM |
+| legal | `run_legal` | Litigation and regulatory matters from the latest 10-K and later 10-Qs, both models, matched across filings; new matters to review (D-050) | `legal_matter` | LLM |
+| signals | `run_signals` | 8-K, keyword, auditor, metric, threshold, board, 13D, market, insider and legal signals; LLM vote on judgment topics (D-027, D-028, D-045, D-049, D-050) | `signal`, `signal_vote` | LLM |
+| insights | `run_insights` | Activity summaries, behavioral, strategic & risk, key insights, follow-up questions (D-033), key takeaways (D-053) | `insight*`, `followup_question*`, `activity` | LLM |
 | metricdetail | `run_metric_detail` | Methodology and sources by rules; underwriting relevance by LLM (D-036) | `metric_detail`, `metric_source`, `metric_insight` | LLM |
 | publish | `run_publish` | Writes the app database (§11) | app tables | – |
 | dq | `run_dq` | Data-quality findings (§12) | `dq_finding` | – |
@@ -122,13 +127,14 @@ FAILED / SKIPPED. Run states: SUCCEEDED, PARTIAL, FAILED, RUNNING.
 | Heartbeat | A background thread refreshes `heartbeat_at` while a task runs | `heartbeat_minutes: 5` |
 | Resume | A dead run (stale heartbeat) is resumed only by the same job with the same stages and companies, started less than `resume_within_hours` ago; finished tasks are kept | `resume_within_hours: 12` |
 | Abandon | Older or different dead runs are closed (FAILED, `"abandoned": true`) and the new run starts fresh | – |
+| Parallel | A stage's companies run in threads (D-050); on SQLite always one at a time (single writer). LLM calls share per-model RPM / TPM limits (§8) | `parallel: {insights: 4, ...}` |
 
 **Jobs** (`config/jobs.yaml`) and OpenShift CronJobs (`deploy/openshift/cronjobs.yaml`, time zone
 America/New_York, `concurrencyPolicy: Forbid`):
 
 | Job | Schedule (ET) | Stages |
 |---|---|---|
-| `nightly` | 23:30 | company, facts, compute, documents, transcripts, scores, textmetrics, governance, signals, insights, metricdetail, publish, dq |
+| `nightly` | 23:30 | company, facts, compute, market, documents, transcripts, scores, textmetrics, governance, legal, signals, insights, metricdetail, publish, dq |
 | `morning` | 05:30 | same as nightly (catch-up) |
 | `news` | 03:00, 09:00, 15:00, 21:00 | news, scores, publish |
 
@@ -139,9 +145,15 @@ same-day cache; `--force` refetches and ignores input hashes.
 **Run statistics** (`pipeline_run.stats_json`, shown by `uw-pipeline runs`): task counts, SEC
 requests, Alpha Vantage calls, LLM calls, tokens and estimated cost per model.
 
+**Data-quality status** (`uw-pipeline runs` and the summary line `run` prints at the end): each
+run shows `dq={'Error': n, 'Warning': m}` from its own dq findings, `dq=not run` when the run
+had no dq stage (or it was skipped or failed), `dq=pending` while it waits, and "(k of n
+companies checked)" when only some companies were checked. dq findings never fail a task, so a
+SUCCEEDED run can have Errors; the summary then points to `uw-pipeline dq-report`.
+
 ## 6. Data model
 
-### Pipeline database (`schema.py`, 36 tables)
+### Pipeline database (`schema.py`, 40 tables)
 
 | Area | Tables |
 |---|---|
@@ -156,14 +168,24 @@ requests, Alpha Vantage calls, LLM calls, tokens and estimated cost per model.
 | LLM | `llm_call` (cache), `llm_task_stat` (grounding drop rates) |
 | Runs and quality | `pipeline_run`, `pipeline_task`, `dq_finding`, `review_decision` |
 | Governance | `board_composition` |
+| Market and insiders | `market_daily`, `earnings_report` (by symbol), `insider_transaction` (Form 4 lines) |
+| Litigation | `legal_matter` |
 
 Conventions:
 
 - `metric_value`: FY rows have `fiscal_quarter = 0`; N/M values are `value = NULL,
   value_status = 'NM'`; growth is a fraction. `derivation` is REPORTED / DERIVED / COMPUTED
-  (owned by `compute`) or LLM_EXTRACTED / PRELIMINARY (owned by `textmetrics`). Each stage
-  deletes only the rows it owns that the current rules no longer produce, so a 10-Q value
-  replaces a PRELIMINARY one (D-019, D-032).
+  (owned by `compute`), LLM_EXTRACTED / PRELIMINARY (owned by `textmetrics`), MARKET (owned by
+  `market`) or FORM4 (owned by `documents`). Each stage deletes only the rows it owns that the
+  current rules no longer produce, so a 10-Q value replaces a PRELIMINARY one (D-019, D-032,
+  D-050). Metrics of kind `external` are written by another stage and skipped by compute.
+  Formulas may use stored market and text values (Altman Z, a product's share of revenue);
+  a new one is picked up by the next run's compute (D-050, D-052).
+- Fiscal periods: a fact's quarter comes from the company's own 10-Q quarter ends when they
+  are known (12/12/12/16-week years such as Costco and PepsiCo), otherwise from the fiscal
+  year end with a 52/53-week tolerance (`normalize/periods.py`, D-052).
+- Predecessor registrants: `predecessor_ciks` (holding-company reorganizations, e.g. XOM,
+  BLK) adds the old CIK's company facts, filings and Form 4s to the company (D-052).
 - `xbrl_fact` keeps only the tags the registry uses, keyed by `fact_key` (a hash, because a
   nullable start date breaks SQL uniqueness) (D-015).
 - Insight sets are versioned by input hash (inputs, prompts, model, `GROUNDING_VERSION`); a new
@@ -171,10 +193,11 @@ Conventions:
 - Signals keep `detected_at` across reruns; `signal_key` = hash(company, rule, accession,
   section, extra) (D-027).
 
-### Application database (`schema_app.py`, 23 tables)
+### Application database (`schema_app.py`, 24 tables)
 
 The team's data model diagram, with the changes in D-037: new `ItemLink` and
-`CompanyMetricDetail`, a few added columns, and `pipeline_publish_map` (pipeline bookkeeping).
+`CompanyMetricDetail`, a few added columns, and `pipeline_publish_map` (pipeline bookkeeping);
+and `KeyTakeaways` (D-053).
 The column-level mapping to the front end is in `docs/schema-contract.md`. Tables owned by the
 application (users, favorites, history) are not touched.
 
@@ -185,18 +208,18 @@ versioned with the code.
 
 | File | Controls |
 |---|---|
-| `companies.yaml` | Companies: pinned CIK, display ticker, former tickers, `history_start`, `news_aliases`, `av_symbols` |
+| `companies.yaml` | Companies: pinned CIK, display ticker, former tickers, `history_start`, `news_aliases`, `av_symbols`, `industry` (D-049), `predecessor_ciks` (D-052) |
 | `company_overrides/*.yaml` | Company metrics and `sections:` rules (JPM, MAR) |
-| `industry_groups.yaml` | SIC → industry group, metric sets, `traits`, `trait_metric_sets`, `common_metric_sets` (governance), `is_financial`, `mdna_history_years` |
-| `metrics.yaml` | Metric definitions, formulas (`x_py` = a year earlier), text and table extraction specs (`table:` column, scope, excluded rows), `insight_input`, `metric_sets` |
+| `industry_groups.yaml` | SIC → industry group, metric sets, `traits`, `trait_metric_sets`, `common_metric_sets` (governance), `is_financial`, `mdna_history_years`, `exclude_metrics` / `exclude_signals` / `signal_params` (D-049) |
+| `metrics.yaml` | Metric definitions, formulas (`x_py` = a year earlier), text and table extraction specs (`table:` column, scope, excluded rows, `dual_check`), `kind: external` (market and Form 4 metrics, D-050), `insight_input`, `metric_sets`, `hidden_metric_sets` (computed, not shown, D-054) |
 | `concept_map.yaml` | Concept → candidate XBRL tags (with dimensions) |
-| `coverage_notes.yaml` | Reason for every metric gap `coverage-report` shows |
-| `signal_rules.yaml` | 8-K item mapping, keyword and role rules, board rules, `fetch_body_items` |
+| `coverage_notes.yaml` | Reason for every metric gap `coverage-report` shows: per company, or per industry group under `groups:` (`"*"` = every company, D-052) |
+| `signal_rules.yaml` | 8-K item mapping, keyword and role rules, board rules, metric `thresholds`, `industries` per rule (D-049), `fetch_body_items`; `ownership_forms` (13D), `market`, `insiders`, `legal` (D-050) |
 | `text_extraction.yaml` | Text-metric chunk budget, effort, loan portfolio settings |
 | `insights.yaml` | Insight tasks, package limits, `news_materiality` gate |
 | `news.yaml` | De-duplication thresholds, mention filter, relevance verdict |
 | `scores.yaml` | News and transcript risk scoring |
-| `llm.yaml` | Provider profiles (models, effort, token limits, prices), signal topics, `max_input_chars` |
+| `llm.yaml` | Provider profiles (models, effort, token limits, prices, `rate_limits`, `task_max_tokens`), signal topics, `max_input_chars` |
 | `securegpt.yaml` | Gateway and token URLs per environment, API version, deployments |
 | `azure.yaml` | Azure SQL server, database, schemas; ADLS account, container, root (placeholders) |
 | `app_publish.yaml` | Metric categories, RiskTypes regex rules, confidence rules, trend and loan metrics |
@@ -206,13 +229,13 @@ versioned with the code.
 
 ## 8. LLM layer
 
-**Models** (`config/llm.yaml`, D-039). The SecureGPT gateway (Azure OpenAI) with three roles:
+**Models** (`config/llm.yaml`, D-039, D-051). The SecureGPT gateway (Azure OpenAI) with three roles:
 
 | Role | Used for | Model |
 |---|---|---|
-| extractor | Signal votes, text-metric first pass, news grouping and relevance, activity summaries, risk scores | gpt-5-nano |
-| tiebreaker | Signal tie-breaks, second model of the dual check | gpt-5-mini |
-| synthesis | Behavioral, strategic & risk, key insights, follow-ups, metric relevance | gpt-5-mini |
+| extractor | Signal votes, text-metric first pass, news grouping and relevance, activity summaries, risk scores | gpt-6-luna |
+| tiebreaker | Signal tie-breaks, second model of the dual check | gpt-6-sol |
+| synthesis | Behavioral, strategic & risk, key insights, follow-ups, metric relevance | gpt-6-sol |
 
 The client (`clients/securegpt.py`, response handling in `clients/openai_chat.py`) implements
 `complete_json` with structured outputs (strict JSON schema; every output
@@ -229,6 +252,13 @@ it is cached; an invalid output is recorded as an error and asked again next run
 the cache row commits in its own transaction, so a stage that rolls back keeps calls already
 paid for.
 
+**Rate limits** (D-050). When a stage's companies run in parallel (`config/jobs.yaml`
+`parallel`), the client is wrapped in `clients/llm_limits.LimitedClient`: per model, requests
+and tokens per minute (`rate_limits` in the provider profile). A request reserves its estimated
+input plus `max_tokens`, as Azure OpenAI counts it, and gets the unused part back after the
+answer; a 429 pauses that model for every worker. `task_max_tokens` lowers `max_tokens` per task
+(not part of the cache key). Calls within one company stay serial.
+
 **Prompts** live in `enrich/prompts/{task}_v{N}.md` (`common_v1` holds the shared rules: cite
 everything, numbers only from the input, no underwriting decisions). A change is a new version,
 which also invalidates the cache; then run `scripts/export_golden.py` and review
@@ -243,7 +273,8 @@ which also invalidates the cache; then run `scripts/export_golden.py` and review
   rounding allowed) or appear as written in a cited item; digits match only as whole numbers.
   Years, quarter numbers and small counts are ignored.
 - Text-metric values are kept only if the quote is in the source, the number is in the quote,
-  the unit fits and the period length fits (quarter 75–105 days, year 350–380).
+  the unit fits and the period length fits (quarter 75–115 days, so a 16-week fourth
+  quarter passes; year 350–380).
 - Failing items are dropped and logged; drop rates go to `llm_task_stat` (DQ alerts above 20%).
 - `GROUNDING_VERSION` (`jobs/run_insights.py`, now 7) is part of the insight input hash: bump
   it when grounding rules change, and cached outputs are re-checked without new LLM calls.
@@ -266,13 +297,16 @@ the system prompt. `LLM_DAILY_BUDGET` caps new calls per day (D-043): over it, a
 **Agreement checks.** Judgment signals: rules vote, the extractor votes with a verbatim quote,
 and only on disagreement the tie-breaker rules on both claims; a rule hit voted down by both
 models is kept as OVERRULED, three different answers as DISPUTED (D-028). Bank metrics and the
-loan book need extractor and tie-breaker to agree within 0.5% (D-032). Where the two models read
-a loan segment at different levels (one line vs. its classes) and the classes add up to the
-line, the line is kept (D-044). Board facts need both models to give the same value (D-045).
+loan book need extractor and tie-breaker to agree within 0.5% (D-032); so do the displayed
+table metrics RevPAR, occupancy and ADR (D-050). Where the two models read a loan segment at
+different levels (one line vs. its classes) and the classes add up to the line, the line is kept
+(D-044). Board facts, fees, dual class and CEO start year need both models to give the same value
+(D-045, D-050). A legal matter is kept only when both models found it with the same type (D-050).
 
-**Human review** (`uw-pipeline review`, D-045). DISPUTED / OVERRULED signals and identity
-breaks are listed with evidence and source link; a named reviewer approves or rejects
-(`review_decision`). A rejected signal leaves the insight input and the dq review queue.
+**Human review** (`uw-pipeline review`, D-045). DISPUTED / OVERRULED signals, identity
+breaks and legal matters first seen after a company's baseline (D-050) are listed with evidence
+and source link; a named reviewer approves or rejects (`review_decision`). A rejected signal or
+matter leaves the signals, the insight input and the review queue.
 
 ## 9. Raw storage
 
@@ -420,10 +454,12 @@ scripts/test_mssql.sh --all               # whole suite on SQL Server 2022 in Do
 | Limitation | Effect | Where it is tracked |
 |---|---|---|
 | Restatements: a quarter restated after its year keeps the year's basis until the year is restated too | Old quarters show the basis they were first reported on; DQ flags quarters ≠ year | D-035, D-046 |
+| A fourth quarter whose year and nine months are on different bases (a fiscal year restated in between) is N/M | Restated years (19 of 107 companies since 2022) lose that quarter until the nine months are restated too | D-052 |
 | Live stability: values never differed across runs, but some are withheld in one run and stored in another | Coverage of rarely-tabled figures (AUM, LCR, VaR quarters) can vary when a new filing arrives | D-046 |
-| One database transaction per company and stage includes the network and LLM calls | Fine for one process; must be split before parallel workers | PLAN 10.E |
+| One database transaction per company and stage includes the network and LLM calls (except insights and metricdetail: short transactions, D-052) | The other LLM stages run one company at a time on SQLite and hold locks during calls on Azure SQL | PLAN 10.E, 15i |
 | SQLite allows one writer | Jobs are serialised by the global run lock | D-034, D-041 |
-| SEC data is fetched per company on every scheduled run | Fine for 9 companies; daily index and bulk files needed at scale | PLAN Phase 10 |
+| SEC data is fetched per company on every scheduled run | Fine for 107 companies; daily index and bulk files needed at scale | PLAN Phase 10 |
+| Market cap uses the registrant's diluted share count at the price of one share class | Understated where classes trade at different prices or convert (GOOGL, V, BRK.B) | D-052 |
 | Transcripts have no public URL | Insights resting only on transcripts have a title but no link or date | D-036 |
 | SecureGPT not yet run on the work network | `reasoning_effort` off; production gateway URL assumed; quality and cost unmeasured | D-039, PLAN Phase 11 |
 | Azure settings are placeholders | No run on Azure SQL / ADLS yet | D-040, PLAN Phase 12 |

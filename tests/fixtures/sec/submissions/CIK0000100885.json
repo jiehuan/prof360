@@ -1,0 +1,235 @@
+{
+ "cik": "0000100885",
+ "entityType": "operating",
+ "sic": "4011",
+ "sicDescription": "Railroads, Line-Haul Operating",
+ "ownerOrg": "01 Energy & Transportation",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "UNION PACIFIC CORP",
+ "tickers": [
+  "UNP"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "132626465",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "UT",
+ "stateOfIncorporationDescription": "UT",
+ "addresses": {
+  "mailing": {
+   "street1": "1400 DOUGLAS STREET",
+   "street2": "STOP 0310",
+   "city": "OMAHA",
+   "stateOrCountry": "NE",
+   "zipCode": "68179",
+   "stateOrCountryDescription": "NE",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "1400 DOUGLAS STREET",
+   "street2": "STOP 0310",
+   "city": "OMAHA",
+   "stateOrCountry": "NE",
+   "zipCode": "68179",
+   "stateOrCountryDescription": "NE",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "402 544 6763",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000100885-26-000305",
+    "0000100885-26-000292",
+    "0000100885-26-000291",
+    "0000100885-26-000290",
+    "0000100885-26-000289",
+    "0000100885-26-000250",
+    "0000100885-26-000155",
+    "0000100885-26-000037",
+    "0000100885-25-000321"
+   ],
+   "filingDate": [
+    "2026-10-16",
+    "2026-10-01",
+    "2026-10-01",
+    "2026-10-01",
+    "2026-10-01",
+    "2026-07-23",
+    "2026-04-23",
+    "2026-02-06",
+    "2025-10-23"
+   ],
+   "reportDate": [
+    "2026-10-16",
+    "2026-10-01",
+    "2026-10-01",
+    "2026-10-01",
+    "2026-10-01",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-16T17:01:58.000Z",
+    "2026-10-02T02:45:33.000Z",
+    "2026-10-02T02:45:26.000Z",
+    "2026-10-02T02:45:18.000Z",
+    "2026-10-02T02:45:10.000Z",
+    "2026-07-23T23:48:16.000Z",
+    "2026-04-23T23:07:37.000Z",
+    "2026-02-06T20:03:10.000Z",
+    "2025-10-23T23:42:27.000Z"
+   ],
+   "act": [
+    "34",
+    "",
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "8-K",
+    "4",
+    "4",
+    "4",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "001-06075",
+    "",
+    "",
+    "",
+    "",
+    "001-06075",
+    "001-06075",
+    "001-06075",
+    "001-06075"
+   ],
+   "filmNumber": [
+    "261464440",
+    "",
+    "",
+    "",
+    "",
+    "261196895",
+    "26887970",
+    "26605636",
+    "251412936"
+   ],
+   "items": [
+    "5.02,7.01,9.01",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "XBRL",
+    "4",
+    "4",
+    "4",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    150526,
+    5382,
+    5400,
+    5342,
+    5352,
+    7801855,
+    6585580,
+    13953916,
+    7594622
+   ],
+   "isXBRL": [
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "unp-20261016.htm",
+    "xslF345X06/edgardoc.xml",
+    "xslF345X06/edgardoc.xml",
+    "xslF345X06/edgardoc.xml",
+    "xslF345X06/edgardoc.xml",
+    "unp-20260630.htm",
+    "unp-20260331.htm",
+    "unp-20251231.htm",
+    "unp-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "8-K",
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

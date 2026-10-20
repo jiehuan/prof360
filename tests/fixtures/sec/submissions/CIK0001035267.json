@@ -1,0 +1,235 @@
+{
+ "cik": "0001035267",
+ "entityType": "operating",
+ "sic": "3842",
+ "sicDescription": "Orthopedic, Prosthetic & Surgical Appliances & Supplies",
+ "ownerOrg": "08 Industrial Applications and Services",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "INTUITIVE SURGICAL INC",
+ "tickers": [
+  "ISRG"
+ ],
+ "exchanges": [
+  "Nasdaq"
+ ],
+ "ein": "770416458",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "1020 KIFER ROAD",
+   "street2": null,
+   "city": "SUNNYVALE",
+   "stateOrCountry": "CA",
+   "zipCode": "94086",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "1020 KIFER ROAD",
+   "street2": null,
+   "city": "SUNNYVALE",
+   "stateOrCountry": "CA",
+   "zipCode": "94086",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "4085232100",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001274559-26-000005",
+    "0001561733-26-000016",
+    "0001897970-26-000008",
+    "0001950047-26-009515",
+    "0002010300-26-000033",
+    "0001035267-26-000058",
+    "0001035267-26-000032",
+    "0001035267-26-000010",
+    "0001035267-25-000209"
+   ],
+   "filingDate": [
+    "2026-10-13",
+    "2026-10-13",
+    "2026-09-16",
+    "2026-09-15",
+    "2026-09-11",
+    "2026-07-21",
+    "2026-04-22",
+    "2026-02-03",
+    "2025-10-22"
+   ],
+   "reportDate": [
+    "2026-10-10",
+    "2026-10-10",
+    "2026-09-15",
+    "",
+    "2026-09-10",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-13T21:54:07.000Z",
+    "2026-10-13T20:44:33.000Z",
+    "2026-09-16T21:35:36.000Z",
+    "2026-09-16T00:43:19.000Z",
+    "2026-09-12T02:41:15.000Z",
+    "2026-07-22T01:25:51.000Z",
+    "2026-04-23T01:03:01.000Z",
+    "2026-02-04T02:59:59.000Z",
+    "2025-10-23T01:18:20.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "33",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "4",
+    "4",
+    "144",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "000-30713",
+    "",
+    "000-30713",
+    "000-30713",
+    "000-30713",
+    "000-30713"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "261381341",
+    "",
+    "261191157",
+    "26884600",
+    "26594195",
+    "251410848"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "4",
+    "144",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    8733,
+    8674,
+    13554,
+    4742,
+    6145,
+    10916443,
+    9517633,
+    14807496,
+    10322690
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/edgardoc.xml",
+    "xslF345X06/edgardoc.xml",
+    "xslF345X06/edgardoc.xml",
+    "xsl144X01/primary_doc.xml",
+    "xslF345X06/edgardoc.xml",
+    "isrg-20260630.htm",
+    "isrg-20260331.htm",
+    "isrg-20251231.htm",
+    "isrg-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "",
+    "PRIMARY DOCUMENT",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}
