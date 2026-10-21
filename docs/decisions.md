@@ -1430,3 +1430,43 @@ LLM runs until the end, then one comparison.
   Capital (BDC, no SIC) CREDIT, Carnival (4400) HOTELS, Dolby (6794) SOFTWARE_INTERNET, Kirby
   (4400) TRANSPORT, SSR Mining (6795) MINING, Texas Pacific Land (6792) ENERGY; their metrics
   were recomputed in the same run (SSR Mining: retirement obligations, capex / D&A).
+
+**D-060 Bank MD&A: the annual report in Exhibit 13, and heading rules (Phase 17d, 2026-10-21).**
+- Found: Wells Fargo, U.S. Bancorp and BNY file the 10-K as a short wrapper (cover, Item 1,
+  a cross-reference index); MD&A, risk factors, controls and the financial statements are in
+  the annual report, filed as an `EX-13` / `EX-13.1` document (file names like
+  `wfc-20251231.htm` or `usb-20251231_d2.htm`, so the type comes from the filing index, not
+  the name). In the wrapper, Item 7 is a 300-character cross-reference. Bank of America's,
+  BNY's, Citi's, Morgan Stanley's, U.S. Bancorp's and Wells Fargo's 10-Qs and Citi's and Morgan
+  Stanley's 10-Ks use their own headings; their 10-Q MD&A was missing or a stub.
+- Which document is the 10-K's primary text, options: (a) keep the wrapper primary and add the
+  annual report as a second role every reader must learn; (b) the annual report becomes the
+  filing's PRIMARY document and the wrapper is kept as role `10-K-WRAPPER`. Chosen: (b). Every
+  reader (signals, text metrics with their table reads, legal, citations) already uses the
+  PRIMARY document of a filing, and the annual report is where the cited text is.
+- When: a 10-K whose MD&A (10K-7) is missing or shorter than 3,000 characters, and whose
+  filing index lists an EX-13 document. Its sections come from the item split plus the
+  company's `sections:` rules; the wrapper's sections the annual report does not have (Item 1,
+  Part III) are kept with it, after its text. Same for the older 10-Ks read for MD&A history.
+- Heading rules for BAC, BNY, C, MS, USB, WFC in `company_overrides/` (as JPM's). Two rule
+  changes: a rule's section is the longest block between a start and an end line (a table of
+  contents lists the same headings; of several starts reaching the same end the first counts,
+  since page headers repeat the start heading, as JPMorgan's do); a section the item split found at the same place under another code is
+  dropped (Bank of America's 10-Q puts MD&A before the "Part I" heading, so the split filed it
+  as Part II Item 2). Rules apply only to their own form (10K- / 10Q- codes).
+- Citi's and Morgan Stanley's risk management discussion (credit, liquidity, market risk:
+  nonperforming loans) follows the MD&A under its own heading; their MD&A rule runs through it,
+  so the MD&A text holds what the other banks' MD&A holds.
+- Result (runs 133–135, 2026-10-21; `textmetrics` on Haiku, 1.67M input / 0.29M output
+  tokens): every 10-K and 10-Q of the six banks now has its MD&A (108k–462k characters, was
+  0–776). Text metrics gained: Citi NIM, CET1, Tier 1, total capital, LCR (none before); U.S.
+  Bancorp and BNY the capital ratios and LCR; Wells Fargo the capital ratios, CRE loans and
+  uninsured deposits. Checked against their quotes: Wells Fargo CET1 10.61% at 2025-12-31,
+  10.29% at Q1 2026, 10.26% at Q2 2026; U.S. Bancorp CET1 10.8% at 2025-12-31; Citi NIM 2.47%
+  for 2025, 2.49% for Q4 2025, 2.46% / 2.54% for Q1 / Q2 2026.
+- Left for 17e: no NPL ratio for Citi, U.S. Bancorp and BNY (their filings do not state
+  nonaccrual loans to total loans directly, which the definition requires; U.S. Bancorp states
+  nonperforming assets to loans plus other real estate); no Item 3 section for Citi and Morgan
+  Stanley (legal proceedings are in the notes, which the legal stage reads from the whole
+  document); BNY's annual report has no auditor tenure sentence, so no auditor's report section.
+  Morgan Stanley is a broker-dealer: its text metrics are those of BROKER_DEALERS.

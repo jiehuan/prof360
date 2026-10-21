@@ -101,7 +101,7 @@ flowchart LR
 | facts | `run_xbrl` | XBRL facts for the tags in the registry, from companyfacts plus filing instances for recent or dimensional facts (D-013, D-014), and pay versus performance from the latest two proxy statements (D-042) | `xbrl_fact`, `ingest_state` | SEC |
 | compute | `run_xbrl` | Metrics per period from `config/metrics.yaml`; Q4 = FY − 9M (USD series only); N/M handling; reads the stored market cap for Altman Z (D-019, D-050) | `metric_definition`, `metric_value` | – |
 | market | `run_market` | Daily adjusted prices (company and SPY) and earnings estimates; market cap, 90-day volatility, 52-week drawdown, EPS surprise at the quarter ends (D-050) | `market_daily`, `earnings_report`, `metric_value` (MARKET) | AV |
-| documents | `run_documents` | Registers 10-K/10-Q/8-K; downloads and splits text documents and EX-99.1 releases (D-023…D-026); downloads the latest proxy (DEF 14A, D-045); Schedule 13Ds about the company; parses Form 4s into insider trades and quarterly insider metrics (D-050) | `source_document`, `filing_section`, `section_chunk`, `insider_transaction`, `metric_value` (FORM4) | SEC |
+| documents | `run_documents` | Registers 10-K/10-Q/8-K; downloads and splits text documents and EX-99.1 releases (D-023…D-026); a 10-K wrapper's annual report (Exhibit 13) becomes the filing's PRIMARY document (D-060); downloads the latest proxy (DEF 14A, D-045); Schedule 13Ds about the company; parses Form 4s into insider trades and quarterly insider metrics (D-050) | `source_document`, `filing_section`, `section_chunk`, `insider_transaction`, `metric_value` (FORM4) | SEC |
 | transcripts | `run_transcripts` | Last 4 fiscal quarters of earnings-call transcripts (D-030) | `source_document`, sections, chunks | AV |
 | news | `run_news` | 30-day news, mention filter, 3-tier de-duplication, LLM relevance verdict (D-029, D-037) | `news_item`, `activity` | AV, LLM |
 | scores | `run_scores` | News risk scores per activity; transcript tone and risk flags (D-037) | `news_risk_score`, `transcript_tone`, `transcript_flag` | LLM |
@@ -216,7 +216,7 @@ versioned with the code.
 | File | Controls |
 |---|---|
 | `companies.yaml` | Companies: pinned CIK, display ticker, former tickers, `history_start`, `news_aliases`, `av_symbols`, `industry` (D-049), `predecessor_ciks` (D-052), company `traits` such as `clinical_stage` (D-058) |
-| `company_overrides/*.yaml` | Company metrics and `sections:` rules (JPM, MAR) |
+| `company_overrides/*.yaml` | Company metrics and `sections:` rules (JPM, MAR; bank MD&A rules D-060) |
 | `industry_groups.yaml` | SIC → industry group, metric sets, `traits`, `trait_metric_sets`, `trait_exclude_metrics` (D-058), `common_metric_sets` (governance), `is_financial`, `mdna_history_years`, `exclude_metrics` / `exclude_signals` / `signal_params` (D-049) |
 | `metrics.yaml` | Metric definitions, formulas (`x_py` = a year earlier, `x_ttm` = the last four quarters, D-058), text and table extraction specs (`table:` column, scope, excluded rows, `dual_check`), `kind: external` (market and Form 4 metrics, D-050), `insight_input`, `metric_sets`, `hidden_metric_sets` (computed, not shown, D-054) |
 | `concept_map.yaml` | Concept → candidate XBRL tags (with dimensions) |

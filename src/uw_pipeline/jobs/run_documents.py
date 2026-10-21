@@ -67,6 +67,9 @@ PROXY_FORMS = ("DEF 14A",)
 # Sections that must be found; a miss is logged (PLAN Phase 3 acceptance).
 HISTORY_SECTIONS = ("10K-7",)
 REQUIRED_SECTIONS = {"10-K": ("10K-1A", "10K-3", "10K-7"), "10-Q": ("10Q-I-2",)}
+# A 10-K MD&A shorter than this is a cross-reference to the annual report (D-060).
+STUB_CHARS = 3_000
+WRAPPER_ROLE = "10-K-WRAPPER"  # a 10-K whose text is in its Exhibit 13 annual report
 
 
 def _doc_row(company_id: int, cik: str, f: Filing, name: str, role: str) -> dict[str, Any]:
@@ -178,6 +181,49 @@ def _download(
     return doc_id, data
 
 
+def _filing_sections(
+    conn: Connection, sec: SecClient, company_id: int, cik: str, f: Filing, doc_id: int,
+    text: str, section_rules: dict[str, tuple[str, str]], *, now: datetime,
+) -> tuple[int, list[Section]]:  # fmt: skip
+    """A 10-K's or 10-Q's sections and the document they belong to. A 10-K whose MD&A only
+    refers to the annual report filed as Exhibit 13 (D-060): the annual report becomes the
+    filing's PRIMARY document, with the 10-K's own sections it lacks (Item 1, Part III) after
+    its text; the 10-K is kept as a WRAPPER_ROLE document without sections."""
+    sections = _split(text, f.form, section_rules)
+    if f.form != "10-K":
+        return doc_id, sections
+    mdna = next((s for s in sections if s.code == "10K-7"), None)
+    if mdna is not None and len(mdna.text) >= STUB_CHARS:
+        return doc_id, sections
+    index_page = sec.filing_document(cik, f.accn, f"{f.accn}-index.html").payload
+    name = exhibit_by_type(index_page, "EX-13", numbered=True)
+    if name is None:
+        return doc_id, sections
+    insert_missing(conn, source_document, [_doc_row(company_id, cik, f, name, "PRIMARY")],
+                   key_cols=["accession_no", "doc_name"])  # fmt: skip
+    conn.execute(update(source_document).where(source_document.c.doc_id == doc_id)
+                 .values(doc_role=WRAPPER_ROLE))  # fmt: skip
+    _store_sections(conn, doc_id, [])
+    report_id, data = _download(conn, sec, cik, f.accn, name, force=True, now=now)
+    report = html_to_text(data or b"")
+    found = _split(report, f.form, section_rules)
+    codes = {s.code for s in found}
+    shift = len(report) + 1
+    kept = [Section(s.code, s.start + shift, s.end + shift, s.text)
+            for s in sections if s.code not in codes]  # fmt: skip
+    log.info("%s %s: text from the annual report %s (Exhibit 13)", f.form, f.accn, name)
+    return report_id, found + kept
+
+
+def _split(text: str, form: str, section_rules: dict[str, tuple[str, str]]) -> list[Section]:
+    sections = apply_rules(text, split_items(text, form), section_rules, form)
+    if form == "10-K":
+        audit = audit_report(text)
+        if audit is not None:
+            sections.append(audit)
+    return sections
+
+
 def process_company(
     cfg: CompanyConfig,
     sec: SecClient,
@@ -238,12 +284,9 @@ def _process_registrant(
             if data is None:
                 continue
             stats["downloaded"] += 1
-            text = html_to_text(data)
-            sections = apply_rules(text, split_items(text, f.form), section_rules)
-            if f.form == "10-K":
-                audit = audit_report(text)
-                if audit is not None:
-                    sections.append(audit)
+            doc_id, sections = _filing_sections(
+                conn, sec, company_id, cik, f, doc_id, html_to_text(data), section_rules, now=now
+            )
             _store_sections(conn, doc_id, sections)
             stats["sections"] += len(sections)
             found = {s.code for s in sections}
@@ -426,8 +469,9 @@ def _mdna_history(
         doc_id, data = _download(conn, sec, cik, f.accn, f.primary_doc, force=force, now=now)
         if data is None:
             continue
-        text = html_to_text(data)
-        sections = apply_rules(text, split_items(text, f.form), section_rules)
+        doc_id, sections = _filing_sections(
+            conn, sec, company_id, cik, f, doc_id, html_to_text(data), section_rules, now=now
+        )
         mdna = [s for s in sections if s.code in HISTORY_SECTIONS]
         if not mdna:
             log.warning("%s 10-K %s: MD&A not found", cfg.ticker, f.accn)

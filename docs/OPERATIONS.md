@@ -67,6 +67,9 @@
 - `concepts`：替换某个概念的候选 tag。可以写公司扩展 taxonomy 或带维度的 tag，管线会从每份申报的 XBRL instance 里读取，参考 `MAR.yaml` 中的 fee revenue。
 - `metrics`：公司专属指标。
 - `sections`：标准的 Item 标题切不出章节时，用起止标题的正则来定位，参考 `JPM.yaml` 中的 MD&A。
+  - 规则只用于同类表格（`10K-` 代码只用于 10-K，`10Q-` 只用于 10-Q）。从匹配 `start` 的行到其后第一个匹配 `end` 的行，取最长的一段；多个 `start` 到达同一个 `end` 时取第一个（页眉会重复标题）。目录也会列出同样的标题：如果目录里的 `start` 会一直延伸到正文的 `end`，就在 `end` 里加上目录中的下一项（参考 `USB.yaml`）。
+  - 在加规则前，先把文档转成文本看标题行；改完用 `uw-pipeline run --ticker X --stage documents --force` 重切，再查 `filing_section` 的长度。银行的规则见 `BAC`、`BNY`、`C`、`MS`、`USB`、`WFC`（D-060）。
+- 10-K 本身只是封套、正文在年报附件（Exhibit 13）里的公司（Wells Fargo、U.S. Bancorp、BNY）不需要配置：MD&A 不到 3,000 字符时，documents 阶段从申报索引里找 `EX-13` 文件，把它作为这份申报的 PRIMARY 文档，10-K 本身保留为 `10-K-WRAPPER`（D-060）。
 
 ## 6. 修改 prompt 或 grounding 规则
 

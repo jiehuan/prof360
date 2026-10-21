@@ -1,0 +1,14 @@
+# BNY files its 10-K as a wrapper; the text is the annual report (Exhibit 13.1). Its 10-Q
+# heads MD&A "Items 2. and 3.", which the item split does not read.
+# Section rules (D-060): from a `start` line to the first later `end` line, the longest such
+# block (regexes, case-insensitive, whole lines): the table of contents repeats the headings.
+sections:
+  10K-7:
+    start: "^Management.s Discussion and Analysis of Financial Condition and Results of Operations:?$"
+    end: "^Risk Factors$"
+  10K-1A:
+    start: "^Risk Factors$"
+    end: "^Report of Independent Registered Public Accounting Firm"
+  10Q-I-2:
+    start: "^Items 2\\. and 3\\. Management.s Discussion and Analysis"
+    end: "^Item 1\\. Financial Statements"

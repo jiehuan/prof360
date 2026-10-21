@@ -1,0 +1,11 @@
+# Bank of America's 10-Q puts MD&A before the "Part I" heading; the item split would file it
+# as Part II Item 2.
+# Section rules (D-060): from a `start` line to the first later `end` line, the longest such
+# block (regexes, case-insensitive, whole lines): the table of contents repeats the headings.
+sections:
+  10Q-I-2:
+    start: "^Item 2\\. Management.s Discussion and Analysis"
+    end: "^Item 3\\."
+  10Q-I-4:
+    start: "^Item 4\\. Controls and Procedures"
+    end: "^Part I{1,2}\\. (Financial|Other) Information"
