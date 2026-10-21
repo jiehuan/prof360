@@ -31,7 +31,7 @@ dbutils.widgets.text("sqlite_path", "/Volumes/<catalog>/<schema>/<volume>/uw.db"
 dbutils.widgets.dropdown("env", "dv", ["dv", "pp", "pr"], "3. Environment (config/azure.yaml)")
 dbutils.widgets.text("target_schema", "", "4. Target schema (blank: from azure.yaml)")
 dbutils.widgets.text("staging_schema", "stg_uw_copy", "5. Staging schema (dropped at the end)")
-dbutils.widgets.dropdown("mode", "dry_run", ["dry_run", "load"], "6. Mode")
+dbutils.widgets.dropdown("mode", "dry_run", ["dry_run", "load", "clear_target"], "6. Mode")
 # Blank: from config/azure.yaml for the environment.
 dbutils.widgets.text("server", "", "7. Server (blank: azure.yaml)")
 dbutils.widgets.text("sql_database", "", "8. Database (blank: azure.yaml)")
@@ -146,6 +146,21 @@ for t in sorted(src_tables):
     plan.append((t, shared))
 for t in sorted(set(target) - set(src_tables)):
     print(f"empty  {t}: in the target schema, not in the SQLite file")
+if W["mode"] == "clear_target":
+    # After a failed load: empty the tables of this copy so it can run again. DELETE, not
+    # TRUNCATE (refused on tables that others reference); constraints are off meanwhile.
+    print(f"clearing {sum(target_rows.get(t, 0) for t, _ in plan):,} rows in {TARGET}")
+    for t, _ in plan:
+        run_sql(engine, f"ALTER TABLE {q(TARGET)}.{q(t)} NOCHECK CONSTRAINT ALL")
+    for t, _ in plan:
+        if target_rows.get(t, 0):
+            run_sql(engine, f"DELETE FROM {q(TARGET)}.{q(t)}")
+            print(f"cleared {t}")
+    for t, _ in plan:
+        run_sql(engine, f"ALTER TABLE {q(TARGET)}.{q(t)} WITH CHECK CHECK CONSTRAINT ALL")
+        run_sql(engine, f"DROP TABLE IF EXISTS {q(STAGE)}.{q(t)}")
+    run_sql(engine, f"IF SCHEMA_ID('{STAGE}') IS NOT NULL EXEC('DROP SCHEMA {q(STAGE)}')")
+    dbutils.notebook.exit(f"cleared {len(plan)} tables in {TARGET}; run mode = load again")
 for p in problems:
     print("PROBLEM", p)
 assert not problems, "fix the problems above first"
@@ -197,6 +212,12 @@ def select_list(t: str, shared: list[str]) -> str:
     return ", ".join(out)
 
 
+# Checked again here, not only in the plan: a rerun of this cell alone (after a failed load)
+# would otherwise stage for minutes and then insert duplicates.
+now = row_counts()
+filled = [t for t, _ in plan if now.get(t)]
+assert not filled, (f"target tables already have rows: {filled}; run mode = clear_target, then "
+                    "run the whole notebook again (not this cell alone)")  # fmt: skip
 run_sql(engine, f"IF SCHEMA_ID('{STAGE}') IS NULL EXEC('CREATE SCHEMA {q(STAGE)}')")
 started = time.time()
 for t, shared in plan:
@@ -235,18 +256,30 @@ try:
         identity = any(target[t][c]["IS_IDENTITY"] for c in shared)
         on = f"SET IDENTITY_INSERT {q(TARGET)}.{q(t)} ON;" if identity else ""
         off = f"SET IDENTITY_INSERT {q(TARGET)}.{q(t)} OFF;" if identity else ""
-        run_sql(
-            engine,
-            f"""{on}
-            INSERT INTO {q(TARGET)}.{q(t)} ({", ".join(q(c) for c in shared)})
-            SELECT {select_list(t, shared)} FROM {q(STAGE)}.{q(t)};
-            {off}""",
-        )
+        try:
+            run_sql(
+                engine,
+                f"""{on}
+                INSERT INTO {q(TARGET)}.{q(t)} ({", ".join(q(c) for c in shared)})
+                SELECT {select_list(t, shared)} FROM {q(STAGE)}.{q(t)};
+                {off}""",
+            )
+        except Exception as exc:
+            print(f"FAILED to load {t}: {exc}")
+            raise  # after the constraint checks below, this error is the one shown
         loaded.append(t)
         print(f"loaded {t}")
-finally:  # keys are checked again even when a table failed
+finally:
+    # Keys are checked again on every table, even when one failed; a failed check is listed,
+    # not raised, so the remaining tables still get their constraints back.
+    unchecked = []
     for t, _ in plan:
-        run_sql(engine, f"ALTER TABLE {q(TARGET)}.{q(t)} WITH CHECK CHECK CONSTRAINT ALL")
+        try:
+            run_sql(engine, f"ALTER TABLE {q(TARGET)}.{q(t)} WITH CHECK CHECK CONSTRAINT ALL")
+        except Exception as exc:
+            unchecked.append(t)
+            print(f"constraints of {t} not re-enabled (rows break a key): {str(exc)[:300]}")
+assert not unchecked, f"constraints left disabled on {unchecked}: empty the target and reload"
 
 # COMMAND ----------
 
