@@ -1224,6 +1224,91 @@ LLM runs until the end, then one comparison.
 - BFF: no change if it builds a company's metric list from SIC_Preferences or MatrixData and hides
   categories without metrics; "Market & Trading" and "Reporting Quality" are now empty.
 
+
+**D-055 Phase 17 scope decisions and the company universe build (2026-10-20).**
+- User decisions on the open Phase 17 questions:
+  - SPACs (SIC 6770, 174 companies) are not in underwriting scope: no SPAC_SHELL group, and the
+    universe excludes them. Coverage of the remaining universe stays about 98%.
+  - Clinical-stage trait: life-sciences companies with latest fiscal-year revenue below USD 10M.
+  - New units (ounces, tonnes, pounds, months) are displayed and get year-over-year growth like
+    other metrics (same unit in both years); no threshold signals on them except cash runway.
+  - Order: steps 17a/17a′ (universe and sample), the groups that only need SIC mapping, then the
+    six groups with their own metric modules; review after those.
+- Universe rule (口径 A without SPACs): CIKs listed on NYSE, Nasdaq or Cboe in SEC's
+  `company_tickers_exchange.json` whose latest annual report since 2024-07-01 is a 10-K (or
+  10-KT). Excluded with a reason in the report: foreign issuers (20-F / 40-F), funds (N-CSR), no
+  annual report since the cut-off, SPACs (6770), and exchange-traded products: SIC 6221 or 6199
+  with "Trust", "Fund" or "ETF" in the name (gold, oil, currency and crypto trusts; operating
+  companies under 6221 such as Uranium Royalty Corp. stay).
+- Revenue for ranking: XBRL frames (CY of the latest full year, the previous year as fallback),
+  the largest of the revenue tags; banks without a revenue tag rank by interest and dividend
+  income (marked in the sample list). The sample is a review list, not a run-time choice: the
+  chosen companies are pinned by CIK in `config/companies.yaml`.
+- Raw landing, options: (a) land all ~6,000 submissions responses (1–2 GB per build, quarterly);
+  (b) land the ticker list and frames as-is, and one summary line per registrant (the fields the
+  rule reads) instead of each submissions response; (c) SEC's bulk submissions.zip (about
+  1.5 GB). Chosen: (b). The build is replayable from the landed files, and local disk is short.
+- SIC ranges in `industry_groups.yaml` must not overlap (checked when the file loads), so the
+  order of the list no longer decides a company's group; exact `sic` codes still take
+  precedence over ranges.
+- Two of PLAN 17b's groups are split, as their companies need different module metrics (seen
+  in the companies' XBRL): MINING (1000–1499 without oil and gas: reserves, ounces and pounds,
+  asset retirement obligations) and METALS (3310–3399: tons shipped, mill utilization);
+  HOMEBUILDERS (1520–1531: land, closings, cancellations, inventory write-downs) and
+  CONSTRUCTION_ENGINEERING (1540–1799: backlog as remaining performance obligations, core
+  metrics only). 39 groups in all.
+- Casino operators file under SIC 7011 with the hotels; in the sample they get
+  `industry: LEISURE_GAMING` (gaming hold and visitation, not RevPAR). Outside the sample they
+  stay in HOTELS (PLAN 17a′: no per-company settings after the freeze).
+- Not mapped (PLAN 17, remaining 2%): water transportation (4400–4499), which is mostly cruise
+  lines (Carnival, Royal Caribbean, Norwegian); they fall under 17g's LLM choice until a module
+  exists.
+- The new groups' module metrics (user decision, 2026-10-21) are treated like Phase 16's
+  industry modules: shown under Operational Metrics and used by key insights, key takeaways and
+  the other LLM outputs. The Phase 15 sets hidden by D-054 stay hidden for the new groups too
+  (`hidden_metric_sets` applies to every group).
+- Sample review decisions are kept in `config/universe.yaml` (read only by the universe script):
+  `industry` for registrants not yet in companies.yaml whose SIC misleads (with the reason,
+  carried into companies.yaml when a company is added) and `sample_skip` for registrants whose
+  ranking revenue is not comparable (StoneX, Galaxy: gross commodity and digital-asset sales).
+  A year's revenue more than 20 times the year before is taken as a tagging error and the
+  earlier year ranks the company (Tigo Energy tagged $103.5B for CY2025).
+
+**D-056 Phase 17 industry modules (2026-10-21).**
+- Seven module sets, XBRL first, at most three text metrics per group (PLAN 17b), designed from
+  the sample companies' own XBRL (tags and dimensions each of them files):
+
+  | Group | XBRL | Text (two reads must agree) |
+  |---|---|---|
+  | CHEMICALS_MATERIALS | environmental remediation reserve, capex / D&A | sales change from volume, from price |
+  | MINING | asset retirement obligations, environmental reserve, capex / D&A | gold produced (oz), copper produced (lb), aggregates shipped (tons) |
+  | METALS | environmental reserve, capex / D&A | tons shipped, average selling price per ton (+ capacity utilization) |
+  | HOMEBUILDERS | homebuilding inventory, land and lots, land / equity, inventory impairments | homes closed, backlog value, cancellation rate |
+  | HEALTHCARE_SERVICES | labor cost / revenue | same-facility revenue growth, same-facility volume growth, admissions |
+  | LEISURE_GAMING | casino revenue / revenue (ProductOrServiceAxis = CasinoMember) | attendance |
+  | RESTAURANTS | labor cost / revenue, franchise revenue / revenue (FranchisorDisclosureAxis) | comparable sales, restaurants system-wide, franchised share of restaurants |
+
+- Left out of the plan's list, with the reason:
+  - All-in sustaining cost (gold): a fourth text metric for MINING, whose sample is two copper
+    miners, one gold miner and two aggregates producers; production volumes cover all five.
+  - Medicare and Medicaid share of revenue: filers give each payer separately (HCA: Medicare,
+    managed Medicare, Medicaid, managed Medicaid), so a share needs a sum, and text metrics
+    take numbers as printed, never computed.
+  - Average unit volume (restaurants): two of five sample companies report it.
+  - Revenue by property or region (gaming): segment members differ by company; casino share of
+    revenue uses the standard member instead.
+- Restaurant counts are text, not XBRL: us-gaap:NumberOfRestaurants comes in units
+  Restaurant, Store or Location (McDonald's uses all three), and a concept reads one unit.
+- Land and lots = homebuilding inventory − homes under construction, then the land tags:
+  PulteGroup tags only raw land ($0.57B) with the land tag while its land under development
+  ($7.4B) is the untagged remainder; D.R. Horton and Toll Brothers agree within 10–20% on
+  both definitions (the difference also holds model homes).
+- Company overrides (sample companies, PLAN 17a′): McDonald's and Yum China tag franchise
+  revenue under their own tag and member.
+- Core change found on the sample: `RevenueFromContractWithCustomerIncludingAssessedTax` is the
+  last revenue candidate; it is Valero's only total and Wynn Resorts' since 2019 (both had no
+  current revenue). It fills only periods where no earlier candidate is tagged.
+
 **D-057 Azure credentials from a Databricks secret scope (2026-10-21).**
 - User request: connect to Azure SQL the way the team's loss-run project does on Databricks
   (`loss_run_integration`, data_io/sql_connect.py and config/main_config.cfg): an

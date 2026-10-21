@@ -130,7 +130,11 @@ class MetricDef(BaseModel):
     display_name: str
     description: str | None = None
     section: str
-    unit: Literal["USD", "ratio", "fraction", "days", "shares", "score", "count"]
+    # ounces, pounds, tons: production and shipment volumes (Phase 17, D-055); shown and given
+    # year-over-year growth like other metrics.
+    unit: Literal[
+        "USD", "ratio", "fraction", "days", "shares", "score", "count", "ounces", "pounds", "tons"
+    ]
     kind: Literal["formula", "growth", "text", "external"] = "formula"  # external: Phase 15
     formula: list[str] = Field(default_factory=list)
     optional: list[str] = Field(default_factory=list)
@@ -274,6 +278,13 @@ class Registry(BaseModel):
             for m in catalog
             if m.code in wanted
         ]
+        # A concept read from XBRL instances (dimensional or company tags) only when one of
+        # the company's metrics uses it: otherwise every company would read an instance per
+        # filing for, say, casino revenue (Phase 17). Other concepts stay, as stages other
+        # than compute read their facts.
+        used = {n for m in metrics for n in m.inputs()}
+        concepts = {code: tags for code, tags in concepts.items()
+                    if code in used or not any(t.needs_instance for t in tags)}  # fmt: skip
         return CompanyRegistry(concepts=concepts, units=units, metrics=metrics)
 
 

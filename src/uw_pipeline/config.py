@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import itertools
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -141,6 +142,12 @@ class IndustryConfig(BaseModel):
         unknown = referenced - self.groups.keys()
         if unknown:
             raise ValueError(f"unknown industry group(s) referenced: {sorted(unknown)}")
+        # Ranges must not overlap, so a company's group never depends on their order (D-055).
+        ranges = sorted(self.sic_ranges, key=lambda r: r.from_sic)
+        for a, b in itertools.pairwise(ranges):
+            if b.from_sic <= a.to_sic:
+                raise ValueError(f"sic_ranges overlap: {a.from_sic}-{a.to_sic} {a.group} and "
+                                 f"{b.from_sic}-{b.to_sic} {b.group}")  # fmt: skip
         return self
 
     def check_companies(self, companies: list[CompanyConfig]) -> None:

@@ -1,0 +1,7 @@
+# Yum China reports franchise fees and income as its own revenue member (Phase 17, D-055), read
+# from each filing's XBRL instance.
+concepts:
+  franchise_revenue:
+    tags:
+      - tag: us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
+        dims: {srt:ProductOrServiceAxis: yumc:FranchiseFeesAndIncomeMember}

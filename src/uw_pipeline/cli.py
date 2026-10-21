@@ -26,6 +26,7 @@ from uw_pipeline.schema import company, dq_finding, metric_value, pipeline_run, 
 from uw_pipeline.schema_app import app_metadata
 from uw_pipeline.settings import Settings
 from uw_pipeline.signals.rules import load_signal_rules
+from uw_pipeline.universe import load_universe_config
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 log = logging.getLogger("uw_pipeline")
@@ -453,6 +454,8 @@ def config_check() -> None:
     """Validate config/ the way a run does, and list the company and industry settings."""
     try:
         companies, industry, _, rules = _load_all(_config_dir())
+        # Read only by scripts/build_universe.py, but checked here too (D-055).
+        load_universe_config(_config_dir()).check(industry)
     except ValueError as exc:  # pydantic ValidationError is a ValueError
         typer.echo(f"INVALID: {exc}", err=True)
         raise typer.Exit(code=1) from exc

@@ -52,8 +52,9 @@ swap them for fakes.
 |---|---|
 | `cli.py` | Typer CLI: `run`, `runs`, `dq-report`, `coverage-report`, `audit-insights`, `review` (list / approve / reject), `init-db` |
 | `settings.py` | Settings from environment / `.env` (pydantic-settings), §13 |
-| `config.py` | Loads companies and industry groups (traits merged into each group's metric sets) |
-| `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing), `alphavantage.py` (quota, key masking), `llm.py` (Claude), `securegpt.py` (Azure OpenAI gateway), `runware.py` (Runware gateway), `openai_chat.py` (shared OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py` |
+| `config.py` | Loads companies and industry groups (traits merged into each group's metric sets; SIC ranges must not overlap, D-055) |
+| `universe.py` | Company universe and development sample for `scripts/build_universe.py` (Phase 17, D-055): scope rule, revenue for ranking, the largest companies per group |
+| `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing; exchange ticker list and XBRL frames for the universe), `alphavantage.py` (quota, key masking), `llm.py` (Claude), `securegpt.py` (Azure OpenAI gateway), `runware.py` (Runware gateway), `openai_chat.py` (shared OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py` |
 | `extract/` | Company metadata, filing lists from submissions |
 | `normalize/` | XBRL facts, fiscal periods (restatement basis), HTML to text, table grids (`table_grid.py`), section splitting, news normalisation |
 | `compute/` | Metric registry (from `config/metrics.yaml`), formulas, coverage |
@@ -213,6 +214,7 @@ versioned with the code.
 | `industry_groups.yaml` | SIC → industry group, metric sets, `traits`, `trait_metric_sets`, `common_metric_sets` (governance), `is_financial`, `mdna_history_years`, `exclude_metrics` / `exclude_signals` / `signal_params` (D-049) |
 | `metrics.yaml` | Metric definitions, formulas (`x_py` = a year earlier), text and table extraction specs (`table:` column, scope, excluded rows, `dual_check`), `kind: external` (market and Form 4 metrics, D-050), `insight_input`, `metric_sets`, `hidden_metric_sets` (computed, not shown, D-054) |
 | `concept_map.yaml` | Concept → candidate XBRL tags (with dimensions) |
+| `universe.yaml` | Sample review for `scripts/build_universe.py` only: `industry` for registrants whose SIC misleads, `sample_skip` (D-055) |
 | `coverage_notes.yaml` | Reason for every metric gap `coverage-report` shows: per company, or per industry group under `groups:` (`"*"` = every company, D-052) |
 | `signal_rules.yaml` | 8-K item mapping, keyword and role rules, board rules, metric `thresholds`, `industries` per rule (D-049), `fetch_body_items`; `ownership_forms` (13D), `market`, `insiders`, `legal` (D-050) |
 | `text_extraction.yaml` | Text-metric chunk budget, effort, loan portfolio settings |
@@ -321,7 +323,9 @@ so data moves between backends without rewriting the database.
 
 Key layout: `{source}/{endpoint}/{id}/{YYYY-MM-DD}.json` (one file per resource per UTC day,
 D-004); scheduled jobs add a timestamp; filing documents and published transcripts are immutable
-and cached without a date.
+and cached without a date. The universe build lands `sec/company_tickers_exchange/`,
+`sec/frames/{taxonomy}/{tag}/{unit}/{period}/` and one summary line per registrant in
+`sec/universe/{date}.jsonl` instead of ~6,000 submissions responses (D-055).
 
 ## 10. Databases
 
@@ -475,6 +479,7 @@ scripts/test_mssql.sh --all               # whole suite on SQL Server 2022 in Do
 | Change | Steps |
 |---|---|
 | Add a company | `config/companies.yaml` (pinned CIK); run; fill gaps in `coverage_notes.yaml` (OPERATIONS §2) |
+| Find companies to add, or review the universe | `scripts/build_universe.py [--sample N]`: scope, groups, coverage, the N largest per group (D-055) |
 | Add or change a metric | `config/metrics.yaml` and the group's metric set; never per run (OPERATIONS §3) |
 | Change a prompt | New `_v<N+1>.md`, bump the version in config, rerun golden companies, `export_golden.py`, review the diff (OPERATIONS §6) |
 | Change grounding | Bump `GROUNDING_VERSION` |

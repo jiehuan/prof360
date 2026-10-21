@@ -119,6 +119,9 @@ class Package:
 # -- formatting --------------------------------------------------------------------------------
 
 
+_VOLUME = {"count": "", "ounces": " oz", "pounds": " lb", "tons": " tons"}
+
+
 def fmt_value(value: float | None, unit: str, status: str = "OK") -> str:
     if status == "NM" or value is None:
         return "N/M"
@@ -132,8 +135,11 @@ def fmt_value(value: float | None, unit: str, status: str = "OK") -> str:
         return f"{value / 1e6:,.1f}M shares"
     if unit == "score":
         return f"{value:.2f}"
-    if unit == "count":  # members, vehicles, subscribers, barrels per day (Phase 16)
-        return f"{value / 1e6:,.2f}M" if abs(value) >= 1e6 else f"{value:,.0f}"
+    if unit in _VOLUME:  # members, vehicles, barrels per day (Phase 16); oz, lb, tons (Phase 17)
+        suffix = _VOLUME[unit]
+        if abs(value) >= 1e9:
+            return f"{value / 1e9:,.2f}B{suffix}"
+        return f"{value / 1e6:,.2f}M{suffix}" if abs(value) >= 1e6 else f"{value:,.0f}{suffix}"
     if abs(value) >= 1e9:
         return f"${value / 1e9:,.2f}B"
     if abs(value) >= 1e6:

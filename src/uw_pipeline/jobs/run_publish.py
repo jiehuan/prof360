@@ -209,7 +209,7 @@ class Publisher:
         cat = self.cfg.metric_categories.get(section, section)
         cat_id = self._lookup(metric_category, section, {"categoryName": cat})
         unit = {"USD": "USD", "fraction": "%", "ratio": "x", "days": "days", "shares": "shares",
-                "count": "count"}  # fmt: skip
+                "count": "count", "ounces": "oz", "pounds": "lb", "tons": "tons"}  # fmt: skip
         m = self.defs.get(code)
         return self.w.put(metrics, code, {
             "metric_name": name, "metric_category_Id": cat_id,

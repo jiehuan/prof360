@@ -18,6 +18,9 @@ concepts:
       - us-gaap:Revenues
       - us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
       - us-gaap:SalesRevenueNet
+      # Phase 17: revenue including excise and gaming taxes is some filers' only total (Valero,
+      # Wynn Resorts since 2019).
+      - us-gaap:RevenueFromContractWithCustomerIncludingAssessedTax
     by_group:
       # Banks report "total net revenue" (net of interest expense). us-gaap:Revenues means
       # something different for JPM and stops in 2025, so mixing the two would distort growth.
@@ -211,3 +214,31 @@ concepts:
            us-gaap:PensionAndOtherPostretirementAndPostemploymentBenefitPlansLiabilitiesNoncurrent,
            us-gaap:DefinedBenefitPensionPlanLiabilitiesNoncurrent]
   regulatory_assets: {tags: [us-gaap:RegulatoryAssetsNoncurrent]}
+  # Industry modules (Phase 17, D-055).
+  env_accrual: {tags: [us-gaap:AccrualForEnvironmentalLossContingencies]}
+  env_accrual_current: {tags: [us-gaap:AccruedEnvironmentalLossContingenciesCurrent]}
+  env_accrual_noncurrent: {tags: [us-gaap:AccruedEnvironmentalLossContingenciesNoncurrent]}
+  aro: {tags: [us-gaap:AssetRetirementObligation]}
+  aro_current: {tags: [us-gaap:AssetRetirementObligationCurrent]}
+  aro_noncurrent: {tags: [us-gaap:AssetRetirementObligationsNoncurrent]}
+  homebuilding_inventory: {tags: [us-gaap:InventoryOperativeBuilders, us-gaap:InventoryRealEstate]}
+  homes_under_construction: {tags: [us-gaap:InventoryHomesUnderConstruction]}
+  land_development: {tags: [us-gaap:InventoryRealEstateLandAndLandDevelopmentCosts]}
+  land_held: {tags: [us-gaap:InventoryLandHeldForDevelopmentAndSale]}
+  inventory_writedown: {tags: [us-gaap:InventoryWriteDown]}
+  # Hospitals tag salaries and benefits; restaurants restaurant-level labor.
+  labor_expense: {tags: [us-gaap:LaborAndRelatedExpense, us-gaap:CostDirectLabor]}
+  casino_revenue:
+    tags:
+      - tag: us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
+        dims: {srt:ProductOrServiceAxis: us-gaap:CasinoMember}
+      - tag: us-gaap:Revenues
+        dims: {srt:ProductOrServiceAxis: us-gaap:CasinoMember}
+      - tag: us-gaap:RevenueFromContractWithCustomerIncludingAssessedTax
+        dims: {srt:ProductOrServiceAxis: us-gaap:CasinoMember}
+  franchise_revenue:
+    tags:
+      - tag: us-gaap:Revenues
+        dims: {us-gaap:FranchisorDisclosureAxis: us-gaap:FranchisedUnitsMember}
+      - tag: us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
+        dims: {us-gaap:FranchisorDisclosureAxis: us-gaap:FranchisedUnitsMember}

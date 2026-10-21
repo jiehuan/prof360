@@ -69,7 +69,7 @@ groups:
     is_financial: false
     metric_sets: [FINANCIAL_CORE, INSURANCE_OPERATING]
   RETAIL:
-    label: Retail & Restaurants
+    label: Retail
     is_financial: false
     metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, RETAIL_OPERATING]
   TELECOM:
@@ -138,6 +138,76 @@ groups:
     label: Payments Networks
     is_financial: false
     metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, PAYMENTS_OPERATING]
+  # -- Phase 17 (D-055): groups with their own module (17b) ---------------------------------
+  CHEMICALS_MATERIALS:
+    label: Chemicals & Materials
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, CHEMICALS_OPERATING]
+  # PLAN 17b had one mining-and-metals group; miners (reserves, ounces and pounds, retirement
+  # obligations) and steel and metal makers (tons shipped, mill utilization) differ (D-055).
+  MINING:
+    label: Mining & Quarrying
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, MINING_OPERATING]
+  METALS:
+    label: Steel & Metals
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, METALS_OPERATING]
+    traits: [manufacturing]
+  HEALTHCARE_SERVICES:
+    label: Healthcare Services & Facilities
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, HEALTHCARE_OPERATING]
+  # PLAN 17b had one construction group; homebuilders (land, closings, cancellations) and
+  # contractors (backlog as contracted revenue) differ (D-055).
+  HOMEBUILDERS:
+    label: Homebuilders
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, HOMEBUILDING_OPERATING]
+  LEISURE_GAMING:
+    label: Gaming, Leisure & Recreation
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, GAMING_OPERATING]
+  RESTAURANTS:
+    label: Restaurants
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY, RESTAURANT_OPERATING]
+  # -- Phase 17 (D-055): groups that use the core and existing traits only ------------------
+  CONSTRUCTION_ENGINEERING:
+    label: Construction & Engineering
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
+    traits: [contract_revenue]
+  BUSINESS_SERVICES:
+    label: Business & Professional Services
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
+    traits: [contract_revenue]
+  WHOLESALE_DISTRIBUTION:
+    label: Wholesale & Distribution
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
+  INSTRUMENTS:
+    label: Instruments & Measurement
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
+    traits: [contract_revenue]
+  CONSUMER_DURABLES_APPAREL:
+    label: Consumer Durables & Apparel
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
+  REAL_ESTATE_OPERATING:
+    label: Real Estate Operating & Development
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
+  AGRICULTURE:
+    label: Agriculture
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
+  CONSUMER_SERVICES:
+    label: Consumer Services
+    is_financial: false
+    metric_sets: [COMMERCIAL_CORE, REPORTING_QUALITY]
 
 # Exact SIC codes (MVP companies).
 sic:
@@ -155,8 +225,14 @@ sic:
   6324: MANAGED_CARE    # hospital & medical service plans (within the insurance range)
   4513: TRANSPORT       # air courier (within the airline range)
   3600: INDUSTRIALS     # electrical equipment, not elsewhere classified
+  # Phase 17 (D-055)
+  5810: RESTAURANTS     # eating and drinking places (within the retail range)
+  5812: RESTAURANTS     # eating places
+  6099: PAYMENTS        # functions related to depository banking (within the bank range)
+  3826: MEDTECH         # laboratory analytical instruments: life-science tools (Agilent)
 
-# Fallbacks for SIC codes not listed above.
+# Fallbacks for SIC codes not listed above. Ranges must not overlap (checked on load, D-055),
+# so their order does not matter.
 sic_ranges:
   # Phase 16 (D-052), by SEC SIC code; companies whose SIC misleads have `industry` set.
   - {from: 2833, to: 2836, group: PHARMA}
@@ -174,7 +250,9 @@ sic_ranges:
   - {from: 3812, to: 3812, group: AEROSPACE_DEFENSE}
   - {from: 3510, to: 3569, group: INDUSTRIALS}
   - {from: 3580, to: 3599, group: INDUSTRIALS}
-  - {from: 3610, to: 3659, group: INDUSTRIALS}
+  - {from: 3610, to: 3629, group: INDUSTRIALS}
+  - {from: 3640, to: 3650, group: INDUSTRIALS}   # lighting and wiring (Acuity)
+  - {from: 3653, to: 3659, group: INDUSTRIALS}   # 3630-3639, 3651-3652: consumer durables (Phase 17)
   - {from: 3690, to: 3699, group: INDUSTRIALS}
   - {from: 8711, to: 8711, group: INDUSTRIALS}
   - {from: 3570, to: 3579, group: HARDWARE}
@@ -198,3 +276,61 @@ sic_ranges:
   - {from: 6100, to: 6199, group: CREDIT}
   - {from: 6200, to: 6299, group: BROKER_DEALERS}
   - {from: 6300, to: 6411, group: INSURANCE}
+  # Phase 17 (D-055). New groups.
+  - {from: 2400, to: 2499, group: CHEMICALS_MATERIALS}   # lumber and wood
+  - {from: 2600, to: 2679, group: CHEMICALS_MATERIALS}   # paper and packaging
+  - {from: 2800, to: 2829, group: CHEMICALS_MATERIALS}   # chemicals, plastics materials
+  - {from: 2850, to: 2899, group: CHEMICALS_MATERIALS}   # paints, agricultural and other chemicals
+  - {from: 3000, to: 3099, group: CHEMICALS_MATERIALS}   # rubber and plastics products
+  - {from: 3200, to: 3299, group: CHEMICALS_MATERIALS}   # glass, cement, stone and clay
+  - {from: 1000, to: 1310, group: MINING}                # metal ores, coal
+  - {from: 1390, to: 1499, group: MINING}                # aggregates and other minerals
+  - {from: 3310, to: 3399, group: METALS}                # steel, aluminum, primary metals
+  - {from: 8000, to: 8099, group: HEALTHCARE_SERVICES}
+  - {from: 1500, to: 1531, group: HOMEBUILDERS}          # residential builders, operative builders
+  - {from: 1540, to: 1799, group: CONSTRUCTION_ENGINEERING}  # contractors, heavy construction
+  - {from: 7000, to: 7010, group: LEISURE_GAMING}
+  - {from: 7900, to: 7999, group: LEISURE_GAMING}
+  - {from: 7300, to: 7369, group: BUSINESS_SERVICES}
+  - {from: 7375, to: 7399, group: BUSINESS_SERVICES}     # incl. 7389 business services NEC
+  - {from: 8100, to: 8199, group: BUSINESS_SERVICES}
+  - {from: 8300, to: 8710, group: BUSINESS_SERVICES}
+  - {from: 8712, to: 8730, group: BUSINESS_SERVICES}
+  - {from: 8735, to: 8999, group: BUSINESS_SERVICES}
+  - {from: 5000, to: 5139, group: WHOLESALE_DISTRIBUTION}
+  - {from: 5150, to: 5199, group: WHOLESALE_DISTRIBUTION}
+  - {from: 3800, to: 3811, group: INSTRUMENTS}
+  - {from: 3813, to: 3840, group: INSTRUMENTS}
+  - {from: 3852, to: 3899, group: INSTRUMENTS}
+  - {from: 2200, to: 2399, group: CONSUMER_DURABLES_APPAREL}   # textiles and apparel
+  - {from: 2500, to: 2599, group: CONSUMER_DURABLES_APPAREL}   # furniture
+  - {from: 3100, to: 3199, group: CONSUMER_DURABLES_APPAREL}   # leather and footwear
+  - {from: 3630, to: 3639, group: CONSUMER_DURABLES_APPAREL}   # household appliances
+  - {from: 3651, to: 3652, group: CONSUMER_DURABLES_APPAREL}   # household audio and video
+  - {from: 3750, to: 3759, group: CONSUMER_DURABLES_APPAREL}   # motorcycles and bicycles
+  - {from: 3790, to: 3799, group: CONSUMER_DURABLES_APPAREL}   # recreational vehicles (Polaris)
+  - {from: 3900, to: 3999, group: CONSUMER_DURABLES_APPAREL}   # jewelry, toys, sporting goods
+  - {from: 6500, to: 6599, group: REAL_ESTATE_OPERATING}
+  - {from: 100, to: 999, group: AGRICULTURE}
+  - {from: 7012, to: 7299, group: CONSUMER_SERVICES}
+  - {from: 7500, to: 7500, group: CONSUMER_SERVICES}      # automotive repair and parking
+  - {from: 7600, to: 7600, group: CONSUMER_SERVICES}      # repair services
+  - {from: 8200, to: 8299, group: CONSUMER_SERVICES}      # education
+  # Phase 17 (D-055). Wider ranges for existing groups.
+  - {from: 3400, to: 3509, group: INDUSTRIALS}           # fabricated metal products
+  - {from: 3740, to: 3749, group: INDUSTRIALS}           # railroad equipment (Wabtec)
+  - {from: 3670, to: 3670, group: HARDWARE}
+  - {from: 3675, to: 3689, group: HARDWARE}              # electronic components
+  - {from: 8731, to: 8734, group: PHARMA}                # research and testing services
+  - {from: 3729, to: 3739, group: AEROSPACE_DEFENSE}     # aircraft parts NEC, shipbuilding
+  - {from: 4100, to: 4209, group: TRANSPORT}
+  - {from: 4232, to: 4399, group: TRANSPORT}
+  - {from: 4500, to: 4511, group: TRANSPORT}
+  - {from: 4523, to: 4599, group: TRANSPORT}             # airports and air services
+  - {from: 4790, to: 4799, group: TRANSPORT}
+  - {from: 7510, to: 7519, group: TRANSPORT}             # truck and car rental
+  - {from: 4600, to: 4699, group: ENERGY}                # crude and products pipelines
+  - {from: 2742, to: 2799, group: MEDIA}                 # printing and publishing
+  - {from: 7830, to: 7841, group: MEDIA}                 # cinemas, video rental and streaming
+  - {from: 4814, to: 4829, group: TELECOM}
+  - {from: 4900, to: 4909, group: UTILITIES}
