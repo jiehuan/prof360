@@ -683,10 +683,11 @@ metrics:
     extraction:
       definition: >-
         Company-wide manufacturing capacity utilization for the period, as a percentage (a
-        level, not a change).
-      keywords: [capacity utilization]
+        level, not a change). For a steel or metals producer: the steel mills' utilization or
+        operating rate (Phase 17), not one mill or the downstream products segment.
+      keywords: [capacity utilization, mill utilization, utilization rate, operating rates]
       table:
-        column: [capacity utilization, capacity utilisation]
+        column: [capacity utilization, capacity utilisation, utilization, operating rate]
 
   # -- Market data (Phase 15a) ------------------------------------------------------------------
   # kind: external -> written by another stage, here the market stage (prices at the period
@@ -1362,10 +1363,11 @@ metrics:
     kind: text
     extraction:
       definition: >-
-        Growth in net revenue on a same-facility (same-hospital) basis versus the same period a
-        year earlier, company total, a growth rate: give a decrease as a negative number. Not
-        revenue per admission, not total growth including acquired facilities.
-      keywords: [same facility, same-facility, same hospital, same-hospital, same store]
+        Growth in net revenue (net patient service revenues) on a same-facility or
+        same-hospital basis versus the same period a year earlier, company total, a growth rate:
+        give a decrease as a negative number. Not revenue per admission or per adjusted
+        admission, not total growth including acquired facilities.
+      keywords: [same facility, same-facility, same hospital, same-hospital, same store, net patient service revenues]
       dual_check: true
   - code: same_facility_volume_growth
     display_name: Same-Facility Volume Growth
@@ -1377,12 +1379,12 @@ metrics:
     kind: text
     extraction:
       definition: >-
-        Growth in patient volume versus the same period a year earlier on a same-facility or
-        organic basis, company total, a growth rate (give a decrease as a negative number):
-        equivalent admissions for hospitals (admissions when no equivalent admissions are
-        given), treatments for dialysis, requisitions or organic volume for laboratories. Not
-        revenue growth, not per-day or per-admission figures.
-      keywords: [equivalent admissions, admissions, treatments, requisitions, organic volume, same facility]
+        Growth in patient volume versus the same period a year earlier on a same-facility,
+        same-hospital or organic basis, company total, a growth rate (give a decrease as a
+        negative number): equivalent (adjusted) admissions for hospitals, admissions when
+        neither is given; treatments for dialysis; requisitions or organic volume for
+        laboratories. Not revenue growth, not per-day or per-admission figures.
+      keywords: [equivalent admissions, adjusted admissions, admissions, treatments, requisitions, organic volume, same facility, same-hospital]
       dual_check: true
   - code: admissions
     display_name: Hospital Admissions

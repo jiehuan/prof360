@@ -1305,6 +1305,21 @@ LLM runs until the end, then one comparison.
   both definitions (the difference also holds model homes).
 - Company overrides (sample companies, PLAN 17a′): McDonald's and Yum China tag franchise
   revenue under their own tag and member.
+- Text-metric holdouts (PLAN 17e), fixed before the first run: definitions are tuned on the
+  development companies only; the holdouts are read once the definitions are final.
+
+  | Metrics | Development | Holdout |
+  |---|---|---|
+  | volume and price effect | DOW, LYB, LIN | CRH, SW |
+  | gold produced | NEM | FCX (gold by-product) |
+  | copper produced | FCX | SCCO, NEM |
+  | aggregates shipped | VMC | MLM |
+  | tons shipped, selling price per ton | NUE, STLD | CLF, AA |
+  | homes closed, backlog, cancellation rate | DHI, LEN, PHM | TOL, NVR |
+  | same-facility revenue and volume growth, admissions | HCA, THC | UHS, DVA, LH (volume) |
+  | attendance | LYV | none: no other sample company reports it |
+  | restaurants, franchised share | MCD, SBUX, CMG | DRI, YUMC |
+
 - Core change found on the sample: `RevenueFromContractWithCustomerIncludingAssessedTax` is the
   last revenue candidate; it is Valero's only total and Wynn Resorts' since 2019 (both had no
   current revenue). It fills only periods where no earlier candidate is tagged.
@@ -1329,3 +1344,7 @@ LLM runs until the end, then one comparison.
 - The Databricks copy notebook connects the same way (pyodbc, secret-scope keys from
   config/azure.yaml) instead of Spark JDBC with an Azure AD token: no tenant id or
   azure-identity, and no single-user cluster requirement.
+- Tuned on development companies after the first run (2026-10-21): the same-facility metrics
+  name Tenet's terms (same-hospital, adjusted admissions, net patient service revenues); capacity
+  utilization (Phase 16, manufacturing trait) also reads steel mill utilization and operating
+  rates (Nucor 83%, Steel Dynamics 90%), which re-reads it once for the other manufacturers.

@@ -1,7 +1,8 @@
 """Rebuild tests/fixtures/sec from the latest raw files under data/raw/sec.
 
-Run `uw-pipeline run --all` first, then this script. Fixtures are trimmed to keep the repo
-small:
+Run `uw-pipeline run --all` first, then this script. `--only T1 T2 ...` writes the fixtures of
+those tickers only and keeps every other fixture as it is (a full rebuild re-trims the existing
+ones to the past 13 months from today). Fixtures are trimmed to keep the repo small:
 - ticker list: only the tickers tests need
 - submissions (the MVP and golden companies): the latest few filings plus the 10-K/10-Qs of
   the past ~13 months
@@ -35,6 +36,9 @@ PERIODIC_LOOKBACK_DAYS = 400
 GOLDEN = {
     "MAR", "PFE", "MSFT", "CRM", "CSCO", "AAPL", "NVDA", "AMD", "MDT", "ISRG", "KO", "PG",
     "DUK", "NEE", "LMT", "BA", "UNP", "UPS", "V", "MA", "BAC", "COF", "GS", "MS", "COST", "WMT",
+    # Phase 17 (D-056): two companies per new industry module.
+    "DOW", "LYB", "NEM", "FCX", "AA", "CLF", "DHI", "TOL", "HCA", "UHS", "MGM", "LVS", "MCD",
+    "SBUX",
 }  # fmt: skip
 FACT_YEARS = 7
 
@@ -110,9 +114,17 @@ def _bytes_io(data: bytes):  # type: ignore[no-untyped-def]
 
 def main() -> None:
     today = date.today()
+    only = set(sys.argv[sys.argv.index("--only") + 1 :]) if "--only" in sys.argv else None
+    unknown = (only or set()) - (KEEP_TICKERS | GOLDEN)
+    if unknown:
+        sys.exit(f"add {sorted(unknown)} to KEEP_TICKERS or GOLDEN first")
     tickers = json.loads(latest(RAW / "company_tickers").read_text())
     kept = [row for row in tickers.values() if row["ticker"] in KEEP_TICKERS | GOLDEN]
     OUT.mkdir(parents=True, exist_ok=True)
+    if only is not None:  # existing rows stay as they are; the new tickers are added
+        old = list(json.loads((OUT / "company_tickers.json").read_text()).values())
+        have = {row["ticker"] for row in old}
+        kept = old + [row for row in kept if row["ticker"] in only and row["ticker"] not in have]
     out = {str(i): row for i, row in enumerate(kept)}
     (OUT / "company_tickers.json").write_text(json.dumps(out, indent=1) + "\n")
 
@@ -122,7 +134,7 @@ def main() -> None:
     by_cik = {f"CIK{c.cik:010d}": c for c in load_companies(config) if c.cik}
 
     (OUT / "submissions").mkdir(exist_ok=True)
-    wanted = KEEP_TICKERS | GOLDEN
+    wanted = only if only is not None else KEEP_TICKERS | GOLDEN
     for cik_dir in sorted(d for d in (RAW / "submissions").iterdir() if d.is_dir()):
         cfg = by_cik.get(cik_dir.name)
         if cfg is None or cfg.ticker not in wanted:

@@ -1,0 +1,225 @@
+{
+ "cik": "0001751788",
+ "entityType": "operating",
+ "sic": "2821",
+ "sicDescription": "Plastic Materials, Synth Resins & Nonvulcan Elastomers",
+ "ownerOrg": "08 Industrial Applications and Services",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "DOW INC.",
+ "tickers": [
+  "DOW"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "301128146",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "2211 H.H. DOW WAY",
+   "street2": null,
+   "city": "MIDLAND",
+   "stateOrCountry": "MI",
+   "zipCode": "48674",
+   "stateOrCountryDescription": "MI",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "2211 H.H. DOW WAY",
+   "street2": null,
+   "city": "MIDLAND",
+   "stateOrCountry": "MI",
+   "zipCode": "48674",
+   "stateOrCountryDescription": "MI",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "9896361000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "Dow Holdings Inc.",
+   "from": "2018-09-07T00:00:00.000Z",
+   "to": "2019-02-12T00:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001959173-26-006852",
+    "0001751788-26-000152",
+    "0000093751-26-000452",
+    "0001751788-26-000147",
+    "0001751788-26-000144",
+    "0001751788-26-000134",
+    "0001751788-26-000018",
+    "0001751788-25-000156"
+   ],
+   "filingDate": [
+    "2026-09-10",
+    "2026-08-14",
+    "2026-08-07",
+    "2026-07-24",
+    "2026-07-23",
+    "2026-04-24",
+    "2026-02-03",
+    "2025-10-24"
+   ],
+   "reportDate": [
+    "",
+    "2026-08-12",
+    "",
+    "2026-06-30",
+    "2026-07-23",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-09-10T17:45:12.000Z",
+    "2026-08-14T20:18:35.000Z",
+    "2026-08-07T13:25:04.000Z",
+    "2026-07-24T11:41:52.000Z",
+    "2026-07-23T10:59:27.000Z",
+    "2026-04-24T11:30:32.000Z",
+    "2026-02-03T12:53:43.000Z",
+    "2025-10-24T11:49:00.000Z"
+   ],
+   "act": [
+    "33",
+    "",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "144",
+    "3",
+    "SCHEDULE 13G",
+    "10-Q",
+    "8-K",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "001-38646",
+    "",
+    "005-91339",
+    "001-38646",
+    "001-38646",
+    "001-38646",
+    "001-38646",
+    "001-38646"
+   ],
+   "filmNumber": [
+    "261370564",
+    "",
+    "261251781",
+    "261198460",
+    "261195164",
+    "26890483",
+    "26590179",
+    "251414304"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "2.02,9.01",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "144",
+    "3",
+    "SCHEDULE 13G",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    7593,
+    12063,
+    8402,
+    17861116,
+    1328116,
+    13915417,
+    31466642,
+    17678306
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xsl144X01/primary_doc.xml",
+    "xslF345X06/wk-form3_1786738712.xml",
+    "xslSCHEDULE_13G_X02/primary_doc.xml",
+    "dow-20260630.htm",
+    "dow-20260723.htm",
+    "dow-20260331.htm",
+    "dow-20251231.htm",
+    "dow-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "",
+    "FORM 3",
+    "",
+    "10-Q",
+    "8-K",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

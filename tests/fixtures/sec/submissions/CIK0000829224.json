@@ -1,0 +1,235 @@
+{
+ "cik": "0000829224",
+ "entityType": "operating",
+ "sic": "5810",
+ "sicDescription": "Retail-Eating & Drinking Places",
+ "ownerOrg": "07 Trade & Services",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "STARBUCKS CORP",
+ "tickers": [
+  "SBUX"
+ ],
+ "exchanges": [
+  "Nasdaq"
+ ],
+ "ein": "911325671",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "0928",
+ "stateOfIncorporation": "WA",
+ "stateOfIncorporationDescription": "WA",
+ "addresses": {
+  "mailing": {
+   "street1": "2401 UTAH AVENUE SOUTH",
+   "street2": null,
+   "city": "SEATTLE",
+   "stateOrCountry": "WA",
+   "zipCode": "98134",
+   "stateOrCountryDescription": "WA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "P O BOX 34067",
+   "street2": null,
+   "city": "SEATTLE",
+   "stateOrCountry": "WA",
+   "zipCode": "98124-1067",
+   "stateOrCountryDescription": "WA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "2064471575",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001959173-26-007428",
+    "0000829224-26-000147",
+    "0001959173-26-007253",
+    "0000829224-26-000145",
+    "0000829224-26-000139",
+    "0000829224-26-000130",
+    "0000829224-26-000080",
+    "0000829224-26-000011",
+    "0000829224-25-000114"
+   ],
+   "filingDate": [
+    "2026-10-20",
+    "2026-10-07",
+    "2026-10-05",
+    "2026-09-24",
+    "2026-09-17",
+    "2026-07-29",
+    "2026-04-28",
+    "2026-01-28",
+    "2025-11-14"
+   ],
+   "reportDate": [
+    "",
+    "2026-10-05",
+    "",
+    "2026-09-22",
+    "2026-09-15",
+    "2026-06-28",
+    "2026-03-29",
+    "2025-12-28",
+    "2025-09-28"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-20T15:40:54.000Z",
+    "2026-10-08T02:29:17.000Z",
+    "2026-10-05T19:05:15.000Z",
+    "2026-09-24T14:55:27.000Z",
+    "2026-09-18T02:49:18.000Z",
+    "2026-07-30T01:17:24.000Z",
+    "2026-04-29T00:11:54.000Z",
+    "2026-01-28T17:48:42.000Z",
+    "2025-11-15T02:08:41.000Z"
+   ],
+   "act": [
+    "33",
+    "",
+    "33",
+    "34",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "144",
+    "4",
+    "144",
+    "8-K",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-Q",
+    "10-K"
+   ],
+   "fileNumber": [
+    "000-20322",
+    "",
+    "000-20322",
+    "000-20322",
+    "",
+    "000-20322",
+    "000-20322",
+    "000-20322",
+    "000-20322"
+   ],
+   "filmNumber": [
+    "261471362",
+    "",
+    "261439322",
+    "261402126",
+    "",
+    "261218946",
+    "26907878",
+    "26568364",
+    "251486050"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "2.05,7.01",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "144",
+    "4",
+    "144",
+    "XBRL",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    6035,
+    4593,
+    6038,
+    1550520,
+    4969,
+    15496517,
+    14675481,
+    13168990,
+    18541556
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xsl144X01/primary_doc.xml",
+    "xslF345X06/form4.xml",
+    "xsl144X01/primary_doc.xml",
+    "sbux-20260922.htm",
+    "xslF345X06/form4.xml",
+    "sbux-20260628.htm",
+    "sbux-20260329.htm",
+    "sbux-20251228.htm",
+    "sbux-20250928.htm"
+   ],
+   "primaryDocDescription": [
+    "",
+    "PRIMARY DOCUMENT",
+    "",
+    "8-K",
+    "PRIMARY DOCUMENT",
+    "10-Q",
+    "10-Q",
+    "10-Q",
+    "10-K"
+   ]
+  },
+  "files": []
+ }
+}

@@ -129,9 +129,11 @@ def company_coverage(
             if r["period_type"] == "Q" and (r["fiscal_year"], r["fiscal_quarter"]) in q_window
         ]  # fmt: skip
         recent = in_fy + in_q
+        # XBRL values list their tags; text values name their document (one string).
         tags = sorted(
-            {t for r in recent for ts in json.loads(r["source_tags"]).values() for t in ts}
-        )
+            {t for r in recent for ts in json.loads(r["source_tags"]).values()
+             for t in (["filing text"] if isinstance(ts, str) else ts)}
+        )  # fmt: skip
         latest = max((r["period_end"] for r in mine), default="")
         cov.metrics.append(
             (

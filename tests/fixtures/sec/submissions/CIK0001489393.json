@@ -1,0 +1,219 @@
+{
+ "cik": "0001489393",
+ "entityType": "operating",
+ "sic": "2860",
+ "sicDescription": "Industrial Organic Chemicals",
+ "ownerOrg": "08 Industrial Applications and Services",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "LyondellBasell Industries N.V.",
+ "tickers": [
+  "LYB"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "980646235",
+ "lei": "BN6WCCZ8OVP3ITUUVN49",
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "P7",
+ "stateOfIncorporationDescription": "Netherlands",
+ "addresses": {
+  "mailing": {
+   "street1": "4TH FLOOR",
+   "street2": "ONE VINE STREET",
+   "city": "LONDON",
+   "stateOrCountry": null,
+   "zipCode": "W1J 0AH",
+   "stateOrCountryDescription": null,
+   "isForeignLocation": 1,
+   "foreignStateTerritory": null,
+   "country": "United Kingdom",
+   "countryCode": "X0"
+  },
+  "business": {
+   "street1": "2800 POST OAK BLVD",
+   "street2": "SUITE 5100",
+   "city": "HOUSTON",
+   "stateOrCountry": "TX",
+   "zipCode": "77056",
+   "stateOrCountryDescription": "TX",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "713-309-7200",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0002062500-26-000010",
+    "0001797157-26-000008",
+    "0001059614-26-000008",
+    "0001193125-26-349408",
+    "0001489393-26-000061",
+    "0001489393-26-000028",
+    "0001489393-26-000012",
+    "0001489393-25-000056"
+   ],
+   "filingDate": [
+    "2026-10-16",
+    "2026-10-02",
+    "2026-10-02",
+    "2026-08-13",
+    "2026-07-31",
+    "2026-05-01",
+    "2026-02-20",
+    "2025-10-31"
+   ],
+   "reportDate": [
+    "2026-10-15",
+    "2026-09-30",
+    "2026-09-30",
+    "",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-17T00:02:55.000Z",
+    "2026-10-03T00:02:55.000Z",
+    "2026-10-03T00:02:34.000Z",
+    "2026-08-14T00:41:36.000Z",
+    "2026-07-31T20:14:16.000Z",
+    "2026-05-01T20:27:19.000Z",
+    "2026-02-21T00:59:12.000Z",
+    "2025-10-31T21:24:24.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "4",
+    "4",
+    "SCHEDULE 13G/A",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "005-85725",
+    "001-34726",
+    "001-34726",
+    "001-34726",
+    "001-34726"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "261274370",
+    "261226947",
+    "26930548",
+    "26658909",
+    "251439639"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "4",
+    "SCHEDULE 13G/A",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    6240,
+    7200,
+    7241,
+    7192,
+    10813854,
+    9068001,
+    24297001,
+    11452637
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/primarydocument.xml",
+    "xslF345X06/primarydocument.xml",
+    "xslF345X06/primarydocument.xml",
+    "xslSCHEDULE_13G_X02/primary_doc.xml",
+    "lyb-20260630.htm",
+    "lyb-20260331.htm",
+    "lyb-20251231.htm",
+    "lyb-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

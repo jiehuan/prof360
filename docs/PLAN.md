@@ -837,6 +837,11 @@ uw-pipeline dq-report --run-id <id>
 - 样本：`coverage-report` 每个缺口有说明（行业组级优先）；DQ 无 Error；`audit-insights` 每个新组抽 2 家。
 - 全量上线后：覆盖率和 DQ 按行业组出比例，作为监控指标，不逐家处理。
 - 临床阶段特性：抽 20 家核对收入判断和管线事实。
+- 样本 XBRL 先跑后的发现（2026-10-21，留到本关口处理，按通用规则优先）：
+  - 历史短的公司（新上市、分拆、从 20-F 改报 10-K：MDLN、INGM、SW、DOLE、CSTM、CRH、VLTO、BG）达不到 5 年 / 8 季目标：覆盖率目标改从公司第一份 10-K / 10-Q 算起（通用规则），BG 可用 `predecessor_ciks` 补历史。
+  - 季度利息费用：约 15 家的 10-Q 只标净利息（InterestIncomeExpenseNonoperatingNet）或不标，年度来自 10-K 或付现利息；用 `"*"` 说明或通用规则。
+  - capex、债务、营业利润的 tag 变体（ALK、URI、VLO、PHM、CMG、OMC、EME、MTZ、BKR、ROK、COHR）逐个查；BFH 的收入（CREDIT 组）缺。
+  - 弃置义务和环境计提多数只在 10-K 标注（FCX、MLM、NUE 2021 年后停标）：MINING / METALS / CHEMICALS 行业组说明。
 
 **要改的文件**：新 `scripts/build_universe.py`；`config/companies.yaml`（或 `config/universe/`）、`config/industry_groups.yaml`（新组、SIC 范围、`clinical_stage`）、`config/metrics.yaml`（新指标集）、`config/concept_map.yaml`、`config/coverage_notes.yaml`、`config/signal_rules.yaml`（SPAC 事件、现金可支撑阈值）、`config/app_publish.yaml`（新指标类别）；`compute/registry.py`（新单位：盎司、吨、磅、月）；管线事实的 prompt 和阶段；测试、golden 和留出 fixture；文档。
 
