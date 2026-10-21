@@ -105,13 +105,13 @@
 
 ## 10. Azure SQL 和 ADLS（D-040）
 
-- 公司网络内：`DATABASE_BACKEND=azure_sql`、`STORAGE_BACKEND=adls`、`AZURE_ENV`（dv / pp / pr），凭证用 `AZURE_SQL_CLIENT_ID/SECRET` 和 `ADLS_CLIENT_ID/SECRET`。服务器、数据库、schema、存储账户、容器、路径前缀在 `config/azure.yaml`（目前是占位值，标了 TO EDIT）。
+- 公司网络内：`DATABASE_BACKEND=azure_sql`、`STORAGE_BACKEND=adls`、`AZURE_ENV`（dv / pp / pr），凭证用 `AZURE_SQL_CLIENT_ID/SECRET` 和 `ADLS_CLIENT_ID/SECRET`；在 Databricks 上不设这些变量时，从 `config/azure.yaml` 写明的 secret scope 和 key 名读取，与 loss-run 项目的连接方式相同（ODBC Driver 17、ActiveDirectoryServicePrincipal，D-057）。服务器、数据库、schema、存储账户、容器、路径前缀在 `config/azure.yaml`（目前是占位值，标了 TO EDIT）。
 - 公司网络外：不设这些变量，照常用 SQLite 和 `data/raw`。
 - 管线表和应用表在两个 schema（`pipeline_schema`、`app_schema`），**不能放在同一个 schema**：SQL Server 表名不区分大小写，应用的 `Company` 和管线的 `company` 会冲突。
 - 建表：由工程师执行 `deploy/sql/pipeline_schema_full.sql`、`app_schema_full.sql`（新环境）或 `app_schema_changes.sql`（已有数据模型）。改了表结构或 schema 名后，运行 `python scripts/export_app_ddl.py` 重新生成。
 - 首次运行前：`python scripts/azure_smoke.py`，检查连接、schema、表、权限和 ADLS 读写，不会改动任何业务表。ALTER 和 CREATE TABLE 只显示 WARN：只有自己建表才需要，日常运行只用临时表。
 - `uw-pipeline init-db` 只用于本地 SQLite；在 Azure SQL 上它会提示改用 `deploy/sql/` 的脚本。
-- 把本地 SQLite 结果一次性复制到 Azure SQL（保留 id）：Databricks notebook `scripts/databricks/copy_sqlite_to_azure.py`，说明见 `docs/databricks-copy.md`。
+- 在 Databricks 里建表：notebook `scripts/databricks/run_sql_script.py` 按 `GO` 分批执行 `deploy/sql/` 的脚本（先 `dry_run`，再 `run`；可重复执行）。把本地 SQLite 结果一次性复制到 Azure SQL（保留 id）：`scripts/databricks/copy_sqlite_to_azure.py`。说明见 `docs/databricks-copy.md`。
 - 改了涉及数据库的代码后，在本机跑 `scripts/test_mssql.sh --all`：用本地 Docker 的 SQL Server 运行全部测试（不需要公司网络）。用完 `scripts/test_mssql.sh --stop`。
 
 ## 10a. 结构化数据优先和恒等式（Phase 13，D-042）

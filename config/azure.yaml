@@ -1,6 +1,8 @@
 # Azure SQL and ADLS (Phase 12, decisions D-040). Non-secret settings only.
-# Credentials from the environment: AZURE_SQL_CLIENT_ID / AZURE_SQL_CLIENT_SECRET (service
-# principal for SQL), ADLS_CLIENT_ID / ADLS_CLIENT_SECRET (service principal for storage).
+# Credentials: from the environment when set, AZURE_SQL_CLIENT_ID / AZURE_SQL_CLIENT_SECRET
+# (service principal for SQL) and ADLS_CLIENT_ID / ADLS_CLIENT_SECRET (for storage); else from
+# the Databricks secret scope below, by key name, as the loss-run project connects (D-057).
+# Only key names are here, never secret values.
 # Environment: AZURE_ENV (dv | pp | pr), default `default_env`.
 #
 # TO EDIT: the server, database, schema, storage account and container values below are copied
@@ -10,8 +12,11 @@
 default_env: dv
 
 azure_sql:
-  driver: "ODBC Driver 18 for SQL Server"
+  driver: "ODBC Driver 17 for SQL Server"   # what the team's Databricks clusters have (D-057)
   authentication: ActiveDirectoryServicePrincipal
+  # The loss-run project sets TrustServerCertificate=yes; here the certificate is checked.
+  # Set true only if the cluster cannot verify it (connection fails with a certificate error).
+  trust_server_certificate: false
   environments:
     dv:
       server: z-xlc-0122-axio-dv-ue2-sql01-axiomaisubmissionprioriti.database.windows.net  # TO EDIT
@@ -19,18 +24,28 @@ azure_sql:
       database: z-xlc-0122-axio-dv-ue2-sdb01-axiomaisubmissionprioriti                     # TO EDIT
       pipeline_schema: uw_pipeline        # TO EDIT: pipeline's own tables
       app_schema: dbo_professional360     # TO EDIT: tables the BFF reads (schema_app.py)
+      # TO VERIFY: loss-run's [databricks_general] secret_scope (assumed the ADLS one).
+      secret_scope: zxlc0122axiodvue2key02
+      username_key: svcxlc0122axiodvsql01rwspnclientid
+      password_key: svcxlc0122axiodvsql01rwspnclientsecret
     pp:
       server: z-xlc-0328-axio-pp-ue2-sql01-axiomaisubmissionprioriti.database.windows.net  # TO EDIT
       port: 1433
       database: z-xlc-0328-axio-pp-ue2-sdb02-axiomaisubmissionprioriti                     # TO EDIT
       pipeline_schema: uw_pipeline
       app_schema: dbo_professional360
+      secret_scope: zxlc0328axioppue2key02                     # TO VERIFY (as for dv)
+      username_key: svc-xlc-0328-axio-pp-ue2-sql01-rw-spn-client-id-2
+      password_key: svc-xlc-0328-axio-pp-ue2-sql01-rw-spn-client-secret
     pr:
       server: z-xlc-0328-axio-pr-ue2-sql01-axiomaisubmissionprioriti.database.windows.net  # TO EDIT
       port: 1433
       database: z-xlc-0328-axio-pr-ue2-sdb02-axiomaisubmissionprioriti                     # TO EDIT
       pipeline_schema: uw_pipeline
       app_schema: dbo_professional360
+      secret_scope: zxlc0328axioprue2key02                     # TO VERIFY (as for dv)
+      username_key: svc-xlc-0328-axio-pr-ue2-sql01-rw-spn-client-id
+      password_key: svc-xlc-0328-axio-pr-ue2-sql01-rw-spn-client-secret
 
 adls:
   tenant_id: 451fd7f5-4b59-4f2f-9b45-16ab9c30036f   # AXA XL tenant (not a secret)
@@ -39,11 +54,20 @@ adls:
       storage_account: zxlc0149adlsdvue2dls01                          # TO EDIT
       container: z-xlc-0122-axio-dv-ue2-dlc01-axiomaisubmissionprioriti # TO EDIT
       root: professional360/raw                                        # TO EDIT: path prefix
+      secret_scope: zxlc0122axiodvue2key02
+      client_id_key: svc-xlc-0122-axio-dv-dlc01-rw-spn-client-id
+      client_secret_key: svc-xlc-0122-axio-dv-dlc01-rw-spn-client-secret
     pp:
       storage_account: zxlc0159adlsppue2dls01                          # TO EDIT
       container: z-xlc-0328-axio-pp-ue2-dlc04-axiomaisubmissionprioriti # TO EDIT
       root: professional360/raw
+      secret_scope: zxlc0328axioppue2key02
+      client_id_key: svc-xlc-0328-axio-pp-ue2-dlc04-rw-spn-client-id
+      client_secret_key: svc-xlc-0328-axio-pp-ue2-dlc04-rw-spn-client-secret
     pr:
       storage_account: zxlc0159adlsprue2dls01                          # TO EDIT
       container: z-xlc-0328-axio-pr-ue2-dlc04-axiomaisubmissionprioriti # TO EDIT
       root: professional360/raw
+      secret_scope: zxlc0328axioprue2key02                             # TO VERIFY
+      client_id_key: svc-xlc-0328-axio-pr-ue2-dlc04-rw-spn-client-id   # TO VERIFY
+      client_secret_key: svc-xlc-0328-axio-pr-ue2-dlc04-rw-spn-client-secret  # TO VERIFY
