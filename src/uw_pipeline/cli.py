@@ -43,6 +43,7 @@ class Stage(StrEnum):
     textmetrics = "textmetrics"
     governance = "governance"
     legal = "legal"
+    clinical = "clinical"
     signals = "signals"
     insights = "insights"
     metricdetail = "metricdetail"
@@ -55,7 +56,7 @@ class Stage(StrEnum):
 STAGE_ORDER = [
     Stage.company, Stage.facts, Stage.compute, Stage.market, Stage.documents,
     Stage.transcripts, Stage.news, Stage.scores, Stage.textmetrics, Stage.governance,
-    Stage.legal, Stage.signals,
+    Stage.legal, Stage.clinical, Stage.signals,
     Stage.insights,
     Stage.metricdetail, Stage.publish, Stage.dq,
 ]  # fmt: skip
@@ -240,7 +241,7 @@ def coverage_report(
     with engine.connect() as conn:
         for cfg in selected:
             row = company_row(conn, cfg)
-            creg = registry.for_company(cfg.ticker, industry.groups[row["industry_group"]])
+            creg = registry.for_company(cfg.ticker, industry.group_of(row["industry_group"], cfg))
             values = [
                 dict(r)
                 for r in conn.execute(

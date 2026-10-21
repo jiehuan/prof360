@@ -39,6 +39,8 @@ GOLDEN = {
     # Phase 17 (D-056): two companies per new industry module.
     "DOW", "LYB", "NEM", "FCX", "AA", "CLF", "DHI", "TOL", "HCA", "UHS", "MGM", "LVS", "MCD",
     "SBUX",
+    # Phase 17c (D-058): cash runway over four quarters, and the latest-quarter fallback.
+    "VKTX", "XENE",
 }  # fmt: skip
 FACT_YEARS = 7
 
@@ -148,8 +150,7 @@ def main() -> None:
         if cfg.ticker not in GOLDEN:
             continue
         # The company's own industry (D-049), else its SIC code's.
-        group = (industry.groups[cfg.industry] if cfg.industry
-                 else industry.classify(parse_sic(subs))[0])  # fmt: skip
+        group = industry.classify(parse_sic(subs), cfg)[0]
         refs = registry.for_company(cfg.ticker, group).tag_refs()
         cf = json.loads(latest(RAW / "companyfacts" / cik_dir.name).read_text())
         std = {(r.taxonomy, r.name) for r in refs if not r.needs_instance}

@@ -243,5 +243,15 @@
   "cik_str": 764065,
   "ticker": "CLF",
   "title": "CLEVELAND-CLIFFS INC."
+ },
+ "49": {
+  "cik_str": 1607678,
+  "ticker": "VKTX",
+  "title": "Viking Therapeutics, Inc."
+ },
+ "50": {
+  "cik_str": 1582313,
+  "ticker": "XENE",
+  "title": "Xenon Pharmaceuticals Inc."
  }
 }

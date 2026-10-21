@@ -16,10 +16,12 @@ def test_mvp_company_list() -> None:
         "MAR", "LUV", "F", "PFE", "JPM", "M", "LUMN", "SKYD", "ENPH",
     ]  # fmt: skip
     # Phase 16: the S&P 100 (100 companies; GOOGL and GOOG are one) plus seven MVP companies;
-    # Phase 17a': 123 more from the development sample (5 per industry group, D-055).
-    assert len(companies) == 230 and {"AAPL", "GOOGL", "BRK.B", "XOM", "DHI", "NEM"} <= {
+    # Phase 17a': 123 more from the development sample (5 per industry group, D-055); 17c: 20
+    # clinical-stage companies (D-058).
+    assert len(companies) == 250 and {"AAPL", "GOOGL", "BRK.B", "XOM", "DHI", "NEM"} <= {
         c.ticker for c in companies
     }
+    assert sum("clinical_stage" in c.traits for c in companies) == 20
     assert all(c.cik for c in companies), "every company pins its CIK"
     assert len({c.cik for c in companies}) == len(companies), "one entry per CIK"
 
@@ -114,3 +116,36 @@ def test_llm_provider_profiles(monkeypatch) -> None:
     assert load_llm_config(CONFIG_DIR, "securegpt").provider == "securegpt"  # explicit wins
     with pytest.raises(ValueError, match=r"not in config/llm\.yaml"):
         load_llm_config(CONFIG_DIR, "nope")
+
+
+def test_company_traits_add_their_sets_and_drop_their_exclusions() -> None:
+    """D-058: a clinical-stage company keeps its SIC group; the trait adds cash runway and
+    R&D / operating expenses and drops the product metrics."""
+    from uw_pipeline.compute.registry import load_registry
+    from uw_pipeline.config import CompanyConfig
+
+    industry = load_industry_config(CONFIG_DIR)
+    registry = load_registry(CONFIG_DIR)
+    trial = CompanyConfig(ticker="VKTX", cik=1, traits=["clinical_stage"])
+    group, how = industry.classify(2834, trial)
+    assert (group.code, how, group.traits) == ("PHARMA", "sic", ["clinical_stage"])
+    shown = {m.code for m in registry.for_company("VKTX", group).metrics if m.display}
+    assert {"cash_runway_months", "rnd_to_opex"} <= shown
+    assert not shown & {"gross_margin", "rnd_to_revenue", "top_product_share"}
+    assert industry.group_of("PHARMA", trial).traits == ["clinical_stage"]
+    # Without the trait the group is unchanged.
+    plain = registry.for_company("PFE", industry.classify(2834)[0]).metrics
+    assert "rnd_to_revenue" in {m.code for m in plain}
+    with pytest.raises(ValueError, match="unknown trait"):
+        industry.check_companies([CompanyConfig(ticker="X", cik=2, traits=["nope"])])
+
+
+def test_a_key_given_twice_in_config_is_an_error(tmp_path) -> None:
+    """D-058: plain YAML keeps the later of two equal keys; config files refuse them."""
+    import yaml
+
+    from uw_pipeline.yaml_load import safe_load
+
+    assert safe_load("a: 1\nb: {c: 2}\n") == {"a": 1, "b": {"c": 2}}
+    with pytest.raises(yaml.YAMLError, match="duplicate key 'cash'"):
+        safe_load("concepts:\n  cash: {tags: [a]}\n  cash: {tags: [b]}\n")

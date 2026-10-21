@@ -209,7 +209,8 @@ class Publisher:
         cat = self.cfg.metric_categories.get(section, section)
         cat_id = self._lookup(metric_category, section, {"categoryName": cat})
         unit = {"USD": "USD", "fraction": "%", "ratio": "x", "days": "days", "shares": "shares",
-                "count": "count", "ounces": "oz", "pounds": "lb", "tons": "tons"}  # fmt: skip
+                "count": "count", "ounces": "oz", "pounds": "lb", "tons": "tons",
+                "months": "months"}  # fmt: skip
         m = self.defs.get(code)
         return self.w.put(metrics, code, {
             "metric_name": name, "metric_category_Id": cat_id,
@@ -706,7 +707,7 @@ def publish_company(
     now: datetime,
 ) -> tuple[Stats, AppWriter]:
     row = company_row(src, cfg)
-    group = industry.groups[row["industry_group"]]
+    group = industry.group_of(row["industry_group"], cfg)
     defs = registry.for_company(cfg.ticker, group).metrics
     names = {m.code: m.display_name for m in defs} | labels.concepts
     w = AppWriter(dst, now, scope=f"{row['cik']}:")

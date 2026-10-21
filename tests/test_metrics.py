@@ -145,3 +145,43 @@ def test_quarter_derived_across_tag_switch() -> None:
     assert (q4.value, q4.derivation) == (25, "DERIVED")
     assert q4.source_map() == {"capex": [prod, ppe]}
     assert not any(k[0] == "YTD" for k in out["capex"])
+
+
+def test_trailing_four_quarters_and_cash_runway() -> None:
+    """D-058: `x_ttm` sums the four quarters ending at the period (a year uses its own value);
+    cash runway in months is N/M without a cash burn."""
+    reg = registry(
+        {"cash": ["us-gaap:CashAndCashEquivalentsAtCarryingValue"],
+         "sti": ["us-gaap:ShortTermInvestments"],
+         "ocf": ["us-gaap:NetCashProvidedByUsedInOperatingActivities"]},
+        [{"code": "burn", "formula": ["-ocf_ttm / 12", "-ocf / 3"]},
+         {"code": "runway", "unit": "months", "formula": "(cash + sti) / burn",
+          "optional": ["sti"], "nm_when": "burn <= 0"}],
+    )  # fmt: skip
+    ocf = "us-gaap:NetCashProvidedByUsedInOperatingActivities"
+    rows = [p(ocf, "Q", 2025, q, -30) for q in (2, 3, 4)] + [
+        p(ocf, "Q", 2026, 1, -30), p(ocf, "Q", 2026, 2, 10), p(ocf, "FY", 2025, 0, -100),
+        p("us-gaap:CashAndCashEquivalentsAtCarryingValue", "Q", 2026, 1, 300),
+        p("us-gaap:ShortTermInvestments", "Q", 2026, 1, 60),
+        p("us-gaap:CashAndCashEquivalentsAtCarryingValue", "Q", 2026, 2, 280),
+        p("us-gaap:CashAndCashEquivalentsAtCarryingValue", "Q", 2025, 2, 500),
+        p("us-gaap:CashAndCashEquivalentsAtCarryingValue", "FY", 2025, 0, 400),
+    ]  # fmt: skip
+    out = {k: (v.value, v.status) for k, v in run(rows, reg)["runway"].items()}
+    assert out[("Q", 2026, 1)] == (pytest.approx(360 / (120 / 12)), "OK")  # Q2-Q4 2025, Q1 2026
+    assert out[("Q", 2026, 2)] == (pytest.approx(280 / (80 / 12)), "OK")  # -30*3 + 10 = -80
+    assert out[("FY", 2025, 0)] == (pytest.approx(400 / (100 / 12)), "OK")  # the year itself
+    # Three quarters before Q2 2025 are missing: that quarter's own burn (30 a quarter).
+    assert out[("Q", 2025, 2)] == (pytest.approx(500 / (30 / 3)), "OK")
+
+
+def test_trailing_sum_without_burn_is_not_meaningful() -> None:
+    reg = registry(
+        {"cash": ["us-gaap:Cash"], "ocf": ["us-gaap:NetCashProvidedByUsedInOperatingActivities"]},
+        [{"code": "burn", "formula": ["-ocf_ttm / 12", "-ocf / 3"]},
+         {"code": "runway", "unit": "months", "formula": "cash / burn", "nm_when": "burn <= 0"}],
+    )  # fmt: skip
+    rows = [p("us-gaap:NetCashProvidedByUsedInOperatingActivities", "Q", 2026, q, 5)
+            for q in (1, 2, 3, 4)] + [p("us-gaap:Cash", "Q", 2026, 4, 100)]  # fmt: skip
+    [(value, status)] = [(v.value, v.status) for v in run(rows, reg)["runway"].values()]
+    assert (value, status) == (None, "NM")

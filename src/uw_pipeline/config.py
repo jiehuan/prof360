@@ -7,13 +7,14 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
+
+from uw_pipeline.yaml_load import safe_load
 
 
 def _load_yaml(path: Path) -> Any:
     with path.open(encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        return safe_load(f)
 
 
 # -- companies.yaml ----------------------------------------------------------------------------
@@ -41,6 +42,9 @@ class CompanyConfig(BaseModel):
     # reason is required and shown by `uw-pipeline config show`.
     industry: str | None = None
     industry_reason: str | None = None
+    # Business-model traits of this company on top of its group's (D-058), e.g. clinical_stage:
+    # their metric sets are added and `trait_exclude_metrics` dropped.
+    traits: list[str] = Field(default_factory=list)
     notes: str | None = None
 
     @model_validator(mode="after")
@@ -126,6 +130,8 @@ class IndustryConfig(BaseModel):
     sic: dict[int, str] = Field(default_factory=dict)
     sic_ranges: list[SicRange] = Field(default_factory=list)
     trait_metric_sets: dict[str, list[str]] = Field(default_factory=dict)
+    # Metrics a trait makes meaningless, dropped for companies with it (D-058).
+    trait_exclude_metrics: dict[str, list[str]] = Field(default_factory=dict)
     common_metric_sets: list[str] = Field(default_factory=list)  # every group (governance)
 
     @model_validator(mode="after")
@@ -155,12 +161,39 @@ class IndustryConfig(BaseModel):
                    if c.industry and c.industry not in self.groups}  # fmt: skip
         if unknown:
             raise ValueError(f"companies.yaml: unknown industry group(s) {unknown}")
+        traits = {c.ticker: t for c in companies for t in c.traits
+                  if t not in self.trait_metric_sets}  # fmt: skip
+        if traits:
+            raise ValueError(f"companies.yaml: unknown trait(s) {traits}")
+
+    def group_of(self, code: str, company: CompanyConfig) -> IndustryGroup:
+        """The company's group by its stored code (company.industry_group), with the company's
+        own traits (D-058)."""
+        return self.with_traits(self.groups[code], company.traits)
+
+    def with_traits(self, group: IndustryGroup, traits: list[str]) -> IndustryGroup:
+        """The group as a company with extra `traits` sees it (D-058): their metric sets added,
+        their excluded metrics dropped."""
+        extra = [t for t in traits if t not in group.traits]
+        if not extra:
+            return group
+        sets = [s for t in extra for s in self.trait_metric_sets[t]]
+        drop = [m for t in extra for m in self.trait_exclude_metrics.get(t, [])]
+        return group.model_copy(update={
+            "traits": [*group.traits, *extra],
+            "metric_sets": list(dict.fromkeys([*group.metric_sets, *sets])),
+            "exclude_metrics": list(dict.fromkeys([*group.exclude_metrics, *drop])),
+        })  # fmt: skip
 
     def classify(
         self, sic: int | None, company: CompanyConfig | None = None
     ) -> tuple[IndustryGroup, str]:
         """Return (group, how) where how is 'company' (the company's `industry` in
         companies.yaml, D-049), 'sic', 'range' or 'default'."""
+        group, how = self._group(sic, company)
+        return (self.with_traits(group, company.traits) if company else group), how
+
+    def _group(self, sic: int | None, company: CompanyConfig | None) -> tuple[IndustryGroup, str]:
         if company is not None and company.industry:
             return self.groups[company.industry], "company"
         if sic is not None:

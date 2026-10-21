@@ -9,7 +9,6 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-import yaml
 from pydantic import BaseModel
 from sqlalchemy import Connection, desc, false, func, or_, select, true
 
@@ -37,6 +36,7 @@ from uw_pipeline.schema import (
     signal,
     source_document,
 )
+from uw_pipeline.yaml_load import safe_load
 
 
 class _Rule(BaseModel):
@@ -102,7 +102,7 @@ class DqConfig(BaseModel):
 
 def load_dq_config(config_dir: Path) -> DqConfig:
     with (config_dir / "dq_rules.yaml").open(encoding="utf-8") as f:
-        return DqConfig.model_validate(yaml.safe_load(f))
+        return DqConfig.model_validate(safe_load(f))
 
 
 @dataclass(frozen=True)

@@ -12,9 +12,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 from uw_pipeline.compute.registry import MetricDef
+from uw_pipeline.yaml_load import safe_load
 
 TARGET_FY = 5
 TARGET_Q = 8
@@ -86,7 +85,7 @@ def load_notes(config_dir: Path) -> CoverageNotes:
     if not path.exists():
         return CoverageNotes()
     with path.open(encoding="utf-8") as f:
-        raw = yaml.safe_load(f) or {}
+        raw = safe_load(f) or {}
     groups = raw.pop("groups", None) or {}
     return CoverageNotes({t.upper(): notes for t, notes in raw.items()},
                          {g.upper(): notes for g, notes in groups.items()})  # fmt: skip

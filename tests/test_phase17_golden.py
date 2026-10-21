@@ -143,3 +143,30 @@ def test_restaurants_starbucks_q3_fy2026(make_sec_client) -> None:
         "franchise_revenue_share": 1_200.8 / 9_322.7,
         "labor_to_revenue": 2_457.8 / 9_322.7,
     })  # fmt: skip
+
+
+@pytest.mark.usefixtures("sec_routes")
+def test_clinical_stage_viking_q2_2026(make_sec_client) -> None:
+    """VKTX 10-Q Q2 2026 (trait clinical_stage, D-058): cash 125.750, available-for-sale
+    securities (current) 375.913; operating cash flow FY2025 -278.685, first half 2025 -99.392,
+    first half 2026 -239.148, so the last four quarters -418.441; Q2 R&D 115.754 of operating
+    expenses 132.597."""
+    four_quarters = -278.685 + 99.392 - 239.148
+    _check(make_sec_client, "VKTX", ("Q", 2026, 2), {
+        "monthly_cash_burn": -four_quarters / 12 * 1e6,
+        "cash_runway_months": (125.750 + 375.913) / (-four_quarters / 12),
+        "rnd_to_opex": 115.754 / 132.597,
+    })  # fmt: skip
+
+
+@pytest.mark.usefixtures("sec_routes")
+def test_clinical_stage_xenon_q2_2026_latest_quarter_burn(make_sec_client) -> None:
+    """XENE 10-Q Q2 2026: its Q4 2025 operating cash flow is N/M (restated year), so the burn is
+    the latest quarter's: first half 2026 -184.287 less Q1 -88.897 = -95.390. Cash 119.527,
+    marketable securities 811.159; Q2 R&D 99.224 of operating expenses 123.155."""
+    quarter = -184.287 + 88.897
+    _check(make_sec_client, "XENE", ("Q", 2026, 2), {
+        "monthly_cash_burn": -quarter / 3 * 1e6,
+        "cash_runway_months": (119.527 + 811.159) / (-quarter / 3),
+        "rnd_to_opex": 99.224 / 123.155,
+    })  # fmt: skip

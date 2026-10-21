@@ -424,7 +424,7 @@ def process_company(
     row = company_row(conn, cfg)
     resolver = SourceResolver(conn, row, labels)
     company_id = row["company_id"]
-    group = industry.groups[row["industry_group"]]
+    group = industry.group_of(row["industry_group"], cfg)
     metrics = registry.for_company(cfg.ticker, group).metrics
     common = (PROMPTS_DIR / f"{icfg.prompt_versions['common']}.md").read_text(encoding="utf-8")
     runner = TaskRunner(client, conn, lambda: now, common, commit=True)

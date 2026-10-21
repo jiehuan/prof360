@@ -59,7 +59,7 @@ def company_row(conn: Connection, cfg: CompanyConfig) -> dict[str, Any]:
 def _company_registry(
     registry: Registry, industry: IndustryConfig, cfg: CompanyConfig, row: dict[str, Any]
 ) -> CompanyRegistry:
-    return registry.for_company(cfg.ticker, industry.groups[row["industry_group"]])
+    return registry.for_company(cfg.ticker, industry.group_of(row["industry_group"], cfg))
 
 
 def _fact_key(cik: str, r: dict[str, Any]) -> str:

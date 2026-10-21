@@ -23,6 +23,12 @@ trait_metric_sets:
   contract_revenue: [CONTRACT_REVENUE]   # remaining performance obligations (RPO)
   manufacturing: [MANUFACTURING_OPERATING]
   captive_finance: []                    # debt includes a finance arm (Ford Credit): see coverage
+  # Per company in companies.yaml (D-058): revenue under USD 10M in life sciences.
+  clinical_stage: [CLINICAL_STAGE]
+
+# Metrics a trait makes meaningless, dropped for companies with it (D-058).
+trait_exclude_metrics:
+  clinical_stage: [gross_margin, rnd_to_revenue, top_product_revenue, top_product_share]
 
 groups:
   UNCLASSIFIED:

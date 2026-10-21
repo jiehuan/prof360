@@ -354,7 +354,7 @@ def process_company(
     identities = identities or Identities()
     row = company_row(conn, cfg)
     company_id = row["company_id"]
-    group = industry.groups[row["industry_group"]]
+    group = industry.group_of(row["industry_group"], cfg)
     creg = registry.for_company(cfg.ticker, group)
     text_metrics: dict[str, MetricDef] = {m.code: m for m in creg.metrics if m.extraction}
     listed = {m.code: m for m in creg.metrics}

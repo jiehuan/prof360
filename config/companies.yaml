@@ -1054,3 +1054,107 @@ companies:
     cik: 1897762
     display_name: "Ingram Micro"
     news_aliases: ["Ingram Micro"]
+
+  # Clinical-stage development set (Phase 17c, D-058): the 20 clinical-stage candidates with the
+  # largest R&D expense (scripts/build_universe.py --clinical, 2026-10-21), reviewed: Arrowhead
+  # and IDEAYA left out (2025 license and collaboration revenue of $0.8B and $0.2B).
+  - ticker: RVMD
+    cik: 1628171
+    display_name: "Revolution Medicines"
+    news_aliases: ["Revolution Medicines"]
+    traits: [clinical_stage]
+  - ticker: PCVX
+    cik: 1649094
+    display_name: "Vaxcyte"
+    news_aliases: ["Vaxcyte"]
+    traits: [clinical_stage]
+  - ticker: ROIV
+    cik: 1635088
+    display_name: "Roivant Sciences"
+    news_aliases: ["Roivant"]
+    traits: [clinical_stage]
+  - ticker: BHVN
+    cik: 1935979
+    display_name: "Biohaven"
+    news_aliases: ["Biohaven"]
+    traits: [clinical_stage]
+  - ticker: DNLI
+    cik: 1714899
+    display_name: "Denali Therapeutics"
+    news_aliases: ["Denali Therapeutics", "Denali"]
+    traits: [clinical_stage]
+  - ticker: DYN
+    cik: 1818794
+    display_name: "Dyne Therapeutics"
+    news_aliases: ["Dyne Therapeutics", "Dyne"]
+    traits: [clinical_stage]
+  - ticker: VKTX
+    cik: 1607678
+    display_name: "Viking Therapeutics"
+    news_aliases: ["Viking Therapeutics"]
+    traits: [clinical_stage]
+  - ticker: VOR
+    cik: 1817229
+    display_name: "Vor Biopharma"
+    news_aliases: ["Vor Bio", "Vor Biopharma"]
+    traits: [clinical_stage]
+  - ticker: XENE
+    cik: 1582313
+    display_name: "Xenon Pharmaceuticals"
+    news_aliases: ["Xenon Pharmaceuticals", "Xenon"]
+    traits: [clinical_stage]
+  - ticker: CRSP
+    cik: 1674416
+    display_name: "CRISPR Therapeutics"
+    news_aliases: ["CRISPR Therapeutics"]
+    traits: [clinical_stage]
+  - ticker: COGT
+    cik: 1622229
+    display_name: "Cogent Biosciences"
+    news_aliases: ["Cogent Biosciences", "Cogent"]
+    traits: [clinical_stage]
+  - ticker: PRAX
+    cik: 1689548
+    display_name: "Praxis Precision Medicines"
+    news_aliases: ["Praxis Precision", "Praxis"]
+    traits: [clinical_stage]
+  - ticker: CLDX
+    cik: 744218
+    display_name: "Celldex Therapeutics"
+    news_aliases: ["Celldex"]
+    traits: [clinical_stage]
+  - ticker: GPCR
+    cik: 1888886
+    display_name: "Structure Therapeutics"
+    news_aliases: ["Structure Therapeutics"]
+    traits: [clinical_stage]
+  - ticker: REPL
+    cik: 1737953
+    display_name: "Replimune"
+    news_aliases: ["Replimune"]
+    traits: [clinical_stage]
+  - ticker: VERA
+    cik: 1831828
+    display_name: "Vera Therapeutics"
+    news_aliases: ["Vera Therapeutics"]
+    traits: [clinical_stage]
+  - ticker: SRRK
+    cik: 1727196
+    display_name: "Scholar Rock"
+    news_aliases: ["Scholar Rock"]
+    traits: [clinical_stage]
+  - ticker: MLTX
+    cik: 1821586
+    display_name: "MoonLake Immunotherapeutics"
+    news_aliases: ["MoonLake"]
+    traits: [clinical_stage]
+  - ticker: CGEM
+    cik: 1789972
+    display_name: "Cullinan Therapeutics"
+    news_aliases: ["Cullinan"]
+    traits: [clinical_stage]
+  - ticker: ANNX
+    cik: 1528115
+    display_name: "Annexon"
+    news_aliases: ["Annexon"]
+    traits: [clinical_stage]

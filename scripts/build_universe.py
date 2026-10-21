@@ -3,6 +3,7 @@ the N largest companies of each industry group, as a review list.
 
     python scripts/build_universe.py                  # data/reports/universe-<date>.{csv,md}
     python scripts/build_universe.py --sample 5       # ... and sample-<date>.{md,yaml}
+    python scripts/build_universe.py --clinical 20    # ... and clinical-<date>.{md,yaml} (D-058)
 
 Reads SEC's exchange ticker list, every listed registrant's submissions (about 6,000 requests
 at the SEC rate limit, about 45 minutes; a rerun the same day resumes) and the revenue frames. Lands
@@ -152,6 +153,35 @@ def sample_yaml(chosen: dict[str, list[uv.Entry]], today: date) -> str:
     return "\n".join(out) + "\n"
 
 
+def clinical_md(cands: list[uv.Entry], rnd: dict[int, float], n: int, today: date) -> str:
+    ranked = sorted(cands, key=lambda e: -rnd.get(e.cik, 0.0))
+    out = [f"# Clinical-stage candidates {today}", "",
+           f"Life-sciences SIC codes, revenue under ${uv.CLINICAL_REVENUE / 1e6:.0f}M or none "
+           f"tagged (D-058): {len(cands)} companies; the {n} with the largest R&D expense are "
+           "the development set. Confirm each (pre-revenue, not a revenue tag the frames miss) "
+           "before adding `traits: [clinical_stage]`.", "",
+           "| # | Ticker | Name | SIC | Group | Revenue | R&D | In companies.yaml |",
+           "|---|---|---|---|---|---|---|---|"]  # fmt: skip
+    for i, e in enumerate(ranked, 1):
+        r = rnd.get(e.cik)
+        shown = f"${r / 1e6:,.0f}M" if r else "—"
+        out.append(f"| {i} | {e.ticker} | {e.name} | {e.sic} | {e.group} | {money(e.revenue)} | "
+                   f"{shown} | {'yes' if e.configured else ''} |")  # fmt: skip
+    return "\n".join(out) + "\n"
+
+
+def clinical_yaml(cands: list[uv.Entry], rnd: dict[int, float], n: int, today: date) -> str:
+    out = [f"# Clinical-stage development set {today} (D-058): to review and copy into",
+           "# config/companies.yaml."]  # fmt: skip
+    for e in sorted(cands, key=lambda e: -rnd.get(e.cik, 0.0))[:n]:
+        if e.configured:
+            continue
+        name = json.dumps(uv.display_name(e.name), ensure_ascii=False)
+        out += [f"  - ticker: {e.ticker}", f"    cik: {e.cik}", f"    display_name: {name}",
+                f"    news_aliases: [{name}]", "    traits: [clinical_stage]"]  # fmt: skip
+    return "\n".join(out) + "\n"
+
+
 def entries_csv(entries: list[uv.Entry]) -> str:
     buf = io.StringIO()
     w = csv.writer(buf)
@@ -169,6 +199,8 @@ def entries_csv(entries: list[uv.Entry]) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--sample", type=int, default=0, help="also list the N largest per group")
+    ap.add_argument("--clinical", type=int, default=0,
+                    help="also list clinical-stage candidates, most R&D first")  # fmt: skip
     ap.add_argument("--since", type=date.fromisoformat, default=date(2024, 7, 1),
                     help="annual report on or after this date (default 2024-07-01)")  # fmt: skip
     args = ap.parse_args()
@@ -190,6 +222,13 @@ def main() -> int:
         print(f"listed on {', '.join(uv.EXCHANGES)}: {len(listing)} registrants", flush=True)
         summ = summaries(sec, storage, sorted(listing), f"sec/universe/{today}.jsonl")
         revenue = uv.revenue_by_cik(frames(sec, periods), periods)
+        rnd_frames: dict[str, dict] = {}
+        if args.clinical:
+            for period in periods:
+                try:
+                    rnd_frames[period] = sec.frame(uv.RND_TAG, "USD", period).payload
+                except httpx.HTTPStatusError as exc:
+                    print(f"frame {uv.RND_TAG} {period}: HTTP {exc.response.status_code}")
     entries = uv.build(listing, summ, revenue, industry, companies, args.since, universe)
     reports = ROOT / "data" / "reports"
     reports.mkdir(parents=True, exist_ok=True)
@@ -204,6 +243,14 @@ def main() -> int:
             sample_md(chosen, industry, args.sample, today), encoding="utf-8")  # fmt: skip
         (reports / f"sample-{today}.yaml").write_text(sample_yaml(chosen, today), encoding="utf-8")
         print(f"wrote data/reports/sample-{today}.md and .yaml")
+    if args.clinical:
+        cands = uv.clinical_candidates(entries)
+        rnd = uv.latest_by_cik(rnd_frames, periods)
+        (reports / f"clinical-{today}.md").write_text(
+            clinical_md(cands, rnd, args.clinical, today), encoding="utf-8")  # fmt: skip
+        (reports / f"clinical-{today}.yaml").write_text(
+            clinical_yaml(cands, rnd, args.clinical, today), encoding="utf-8")  # fmt: skip
+        print(f"wrote data/reports/clinical-{today}.md and .yaml ({len(cands)} candidates)")
     return 0
 
 

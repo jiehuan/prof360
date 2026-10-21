@@ -8,10 +8,10 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, Literal
 
-import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from uw_pipeline.config import IndustryGroup
+from uw_pipeline.yaml_load import safe_load
 
 # Taxonomies SEC includes in companyfacts. Anything else (company extensions) needs the
 # filing's XBRL instance.
@@ -133,7 +133,17 @@ class MetricDef(BaseModel):
     # ounces, pounds, tons: production and shipment volumes (Phase 17, D-055); shown and given
     # year-over-year growth like other metrics.
     unit: Literal[
-        "USD", "ratio", "fraction", "days", "shares", "score", "count", "ounces", "pounds", "tons"
+        "USD",
+        "ratio",
+        "fraction",
+        "days",
+        "shares",
+        "score",
+        "count",
+        "ounces",
+        "pounds",
+        "tons",
+        "months",
     ]
     kind: Literal["formula", "growth", "text", "external"] = "formula"  # external: Phase 15
     formula: list[str] = Field(default_factory=list)
@@ -175,7 +185,8 @@ class MetricDef(BaseModel):
             return {self.base} if self.base else set()
         exprs = [*self.formula, *([self.nm_when] if self.nm_when else [])]
         return {
-            n.id.removesuffix("_py")  # `x_py` = x a year earlier (compute/metrics.PRIOR_YEAR)
+            # `x_py`: x a year earlier; `x_ttm`: the last four quarters (compute/metrics.py)
+            n.id.removesuffix("_py").removesuffix("_ttm")
             for e in exprs
             for n in ast.walk(ast.parse(e, mode="eval"))
             if isinstance(n, ast.Name)
@@ -301,7 +312,7 @@ class CompanyRegistry(BaseModel):
 
 def _load(path: Path) -> Any:
     with path.open(encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        return safe_load(f)
 
 
 def load_registry(config_dir: Path) -> Registry:

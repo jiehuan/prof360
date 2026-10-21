@@ -20,11 +20,11 @@ from pathlib import Path
 from typing import Any
 
 import httpx
-import yaml
 from pydantic import BaseModel
 
 from uw_pipeline.clients.llm import LLMError, LLMResult, LLMSetupError
 from uw_pipeline.clients.openai_chat import EFFORT, chat_result, error_text
+from uw_pipeline.yaml_load import safe_load
 
 log = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class SecureGPTConfig(BaseModel):
 
 def load_securegpt_config(config_dir: Path) -> SecureGPTConfig:
     with (config_dir / "securegpt.yaml").open(encoding="utf-8") as f:
-        return SecureGPTConfig.model_validate(yaml.safe_load(f))
+        return SecureGPTConfig.model_validate(safe_load(f))
 
 
 class SecureGPTClient:

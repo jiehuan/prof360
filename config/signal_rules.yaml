@@ -253,3 +253,15 @@ thresholds:
     op: "<"
     value: 1.81
     period: FY
+
+  # Phase 17c (D-058): less than a year of cash at the last four quarters' burn rate. Only
+  # companies with the clinical_stage trait track the metric.
+  - id: short_cash_runway
+    category: Risk & Legal
+    subcategory: Liquidity & Leverage
+    severity: Warning
+    title: Cash runway under 12 months at the current burn rate
+    metric: cash_runway_months
+    op: "<"
+    value: 12
+    period: Q

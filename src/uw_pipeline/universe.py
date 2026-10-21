@@ -15,10 +15,10 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-import yaml
 from pydantic import BaseModel, Field
 
 from uw_pipeline.config import CompanyConfig, IndustryConfig
+from uw_pipeline.yaml_load import safe_load
 
 EXCHANGES = ("NYSE", "Nasdaq", "CBOE")
 ANNUAL_FORMS = ("10-K", "10-KT", "20-F", "40-F", "N-CSR")
@@ -135,7 +135,7 @@ def load_universe_config(config_dir: Path) -> UniverseConfig:
     path = config_dir / "universe.yaml"
     if not path.exists():
         return UniverseConfig()
-    return UniverseConfig.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")) or {})
+    return UniverseConfig.model_validate(safe_load(path.read_text(encoding="utf-8")) or {})
 
 
 @dataclass(frozen=True)
@@ -246,6 +246,34 @@ def sample(
         return (e.revenue is None, -(e.revenue.value if e.revenue else 0.0))
 
     return {g: sorted(rows, key=largest_first)[:n] for g, rows in sorted(by_group.items())}
+
+
+# Clinical-stage candidates (D-058): life-sciences SIC codes and revenue under this, or none.
+LIFE_SCIENCES = ((2833, 2836), (8731, 8734), (3826, 3826), (3841, 3851))
+CLINICAL_REVENUE = 10e6
+RND_TAG = "ResearchAndDevelopmentExpense"
+
+
+def clinical_candidates(entries: Iterable[Entry]) -> list[Entry]:
+    """In-scope life-sciences companies with revenue under CLINICAL_REVENUE or none tagged;
+    a person confirms each before the trait goes into companies.yaml."""
+    return [
+        e for e in entries
+        if e.scope == IN_SCOPE and e.sic is not None
+        and any(lo <= e.sic <= hi for lo, hi in LIFE_SCIENCES)
+        and (e.revenue is None or e.revenue.value < CLINICAL_REVENUE)
+    ]  # fmt: skip
+
+
+def latest_by_cik(
+    frames: Mapping[str, Mapping[str, Any]], periods: Sequence[str]
+) -> dict[int, float]:
+    """One tag's value per filer in the newest of `periods` it reported (frames by period)."""
+    out: dict[int, float] = {}
+    for period in reversed(periods):  # newest last, so it wins
+        for row in frames.get(period, {}).get("data", []):
+            out[int(row["cik"])] = float(row["val"])
+    return out
 
 
 _STATE = re.compile(r"\s*/[A-Z]{2,3}/?\s*$", re.IGNORECASE)  # "/DE/", "/md/"

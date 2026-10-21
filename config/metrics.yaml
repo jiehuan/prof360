@@ -210,6 +210,8 @@ metric_sets:
   GAMING_OPERATING: [casino_revenue_share, attendance]
   RESTAURANT_OPERATING: [comparable_sales_growth, labor_to_revenue, franchise_revenue_share,
                          restaurant_count, franchised_unit_share]
+  # Trait clinical_stage (Phase 17c, D-058), set per company in companies.yaml.
+  CLINICAL_STAGE: [cash_runway_months, rnd_to_opex]
 
 metrics:
   # -- Financial -------------------------------------------------------------------------
@@ -1449,3 +1451,32 @@ metrics:
         revenue or sales.
       keywords: [franchised, licensed stores, franchisees, percent franchised]
       dual_check: true
+  # Clinical-stage companies (Phase 17c, D-058).
+  - code: monthly_cash_burn
+    display_name: Monthly Cash Burn
+    description: >-
+      Operating cash outflow per month over the last four quarters; the latest quarter's when
+      the four are not all available or one is N/M (Xenon's Q4 2025). Negative: cash generated.
+    section: liquidity
+    unit: USD
+    display: false
+    formula:
+      - -operating_cash_flow_ttm / 12
+      - -operating_cash_flow / 3
+  - code: cash_runway_months
+    display_name: Cash Runway (months)
+    description: >-
+      Cash and short-term investments / the monthly operating cash outflow of the last four
+      quarters (or the latest quarter). N/M when there is no cash burn.
+    section: liquidity
+    unit: months
+    formula: (cash + short_term_investments) / monthly_cash_burn
+    optional: [short_term_investments]
+    nm_when: monthly_cash_burn <= 0
+  - code: rnd_to_opex
+    display_name: R&D / Operating Expenses
+    description: Research and development / total operating expenses.
+    section: operational
+    unit: fraction
+    formula: research_development / operating_expenses
+    nm_when: operating_expenses <= 0

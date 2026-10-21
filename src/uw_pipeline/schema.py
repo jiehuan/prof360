@@ -688,6 +688,28 @@ legal_matter = Table(
     Column("updated_at", DateTime(timezone=True), nullable=False),
 )
 
+# Clinical-stage pipeline (Phase 17c, D-058): the programs of a company with the clinical_stage
+# trait, from its latest 10-K and later 10-Qs, both models agreeing. One row per candidate and
+# indication; a program no longer in the latest filings is kept with is_current = False.
+clinical_program = Table(
+    "clinical_program",
+    metadata,
+    Column("company_id", Integer, ForeignKey("company.company_id"), primary_key=True),
+    Column("program_key", Unicode(200), primary_key=True),  # name words:indication words
+    Column("name", Unicode(200), nullable=False),
+    Column("indication", Unicode(300), nullable=False),
+    Column("phase", Unicode(20), nullable=False),  # preclinical ... phase_3 | submitted | approved
+    Column("next_milestone", Unicode(300)),
+    Column("milestone_timing", Unicode(100)),  # as written ("second half of 2026")
+    Column("quote", UnicodeText, nullable=False),
+    Column("milestone_quote", UnicodeText),
+    Column("doc_id", Integer, ForeignKey("source_document.doc_id"), nullable=False),
+    Column("is_current", Boolean, nullable=False),
+    Column("model", Unicode(60), nullable=False),
+    Column("prompt_version", Unicode(40), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+)
+
 # Human decisions on items the pipeline could not settle (`uw-pipeline review`, decisions D-045):
 # DISPUTED / OVERRULED signals and identity breaks. Only a named reviewer decides; a rejected
 # signal is left out of insights and the review queue.

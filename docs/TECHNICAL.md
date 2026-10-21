@@ -85,6 +85,7 @@ flowchart LR
   documents --> signals
   documents --> governance
   documents --> legal
+  documents --> clinical
   signals --> insights
   textmetrics --> insights
   insights --> metricdetail
@@ -106,6 +107,7 @@ flowchart LR
 | textmetrics | `run_text_metrics` | Figures from MD&A and releases (NIM, LCR, …); table metrics read by cell (RevPAR, occupancy, ADR, AUM, VaR, international revenue, average interest-earning assets, capacity utilization) and the loan book; values XBRL covers (capital ratios, release figures) only cross-checked; identity gate (D-022, D-032, D-042, D-044) | `metric_value` (LLM_EXTRACTED, PRELIMINARY), `loan_portfolio_*`, `release_check` | LLM |
 | governance | `run_governance` | Board composition, auditor fees, dual-class shares and CEO start year from the latest proxy, both models, facts kept only when quoted and agreed (D-045, D-050) | `board_composition` | LLM |
 | legal | `run_legal` | Litigation and regulatory matters from the latest 10-K and later 10-Qs, both models, matched across filings; new matters to review (D-050) | `legal_matter` | LLM |
+| clinical | `run_clinical` | Pipeline of companies with the `clinical_stage` trait: candidates, phase, next milestone and its timing from the latest 10-K and later 10-Qs, both models agreeing; an insight input, not published (D-058) | `clinical_program` | LLM |
 | signals | `run_signals` | 8-K, keyword, auditor, metric, threshold, board, 13D, market, insider and legal signals; LLM vote on judgment topics (D-027, D-028, D-045, D-049, D-050) | `signal`, `signal_vote` | LLM |
 | insights | `run_insights` | Activity summaries, behavioral, strategic & risk, key insights, follow-up questions (D-033), key takeaways (D-053) | `insight*`, `followup_question*`, `activity` | LLM |
 | metricdetail | `run_metric_detail` | Methodology and sources by rules; underwriting relevance by LLM (D-036) | `metric_detail`, `metric_source`, `metric_insight` | LLM |
@@ -135,7 +137,7 @@ America/New_York, `concurrencyPolicy: Forbid`):
 
 | Job | Schedule (ET) | Stages |
 |---|---|---|
-| `nightly` | 23:30 | company, facts, compute, market, documents, transcripts, scores, textmetrics, governance, legal, signals, insights, metricdetail, publish, dq |
+| `nightly` | 23:30 | company, facts, compute, market, documents, transcripts, scores, textmetrics, governance, legal, clinical, signals, insights, metricdetail, publish, dq |
 | `morning` | 05:30 | same as nightly (catch-up) |
 | `news` | 03:00, 09:00, 15:00, 21:00 | news, scores, publish |
 
@@ -171,6 +173,7 @@ SUCCEEDED run can have Errors; the summary then points to `uw-pipeline dq-report
 | Governance | `board_composition` |
 | Market and insiders | `market_daily`, `earnings_report` (by symbol), `insider_transaction` (Form 4 lines) |
 | Litigation | `legal_matter` |
+| Clinical pipeline | `clinical_program` (current programs of clinical-stage companies, D-058) |
 
 Conventions:
 
@@ -209,10 +212,10 @@ versioned with the code.
 
 | File | Controls |
 |---|---|
-| `companies.yaml` | Companies: pinned CIK, display ticker, former tickers, `history_start`, `news_aliases`, `av_symbols`, `industry` (D-049), `predecessor_ciks` (D-052) |
+| `companies.yaml` | Companies: pinned CIK, display ticker, former tickers, `history_start`, `news_aliases`, `av_symbols`, `industry` (D-049), `predecessor_ciks` (D-052), company `traits` such as `clinical_stage` (D-058) |
 | `company_overrides/*.yaml` | Company metrics and `sections:` rules (JPM, MAR) |
-| `industry_groups.yaml` | SIC → industry group, metric sets, `traits`, `trait_metric_sets`, `common_metric_sets` (governance), `is_financial`, `mdna_history_years`, `exclude_metrics` / `exclude_signals` / `signal_params` (D-049) |
-| `metrics.yaml` | Metric definitions, formulas (`x_py` = a year earlier), text and table extraction specs (`table:` column, scope, excluded rows, `dual_check`), `kind: external` (market and Form 4 metrics, D-050), `insight_input`, `metric_sets`, `hidden_metric_sets` (computed, not shown, D-054) |
+| `industry_groups.yaml` | SIC → industry group, metric sets, `traits`, `trait_metric_sets`, `trait_exclude_metrics` (D-058), `common_metric_sets` (governance), `is_financial`, `mdna_history_years`, `exclude_metrics` / `exclude_signals` / `signal_params` (D-049) |
+| `metrics.yaml` | Metric definitions, formulas (`x_py` = a year earlier, `x_ttm` = the last four quarters, D-058), text and table extraction specs (`table:` column, scope, excluded rows, `dual_check`), `kind: external` (market and Form 4 metrics, D-050), `insight_input`, `metric_sets`, `hidden_metric_sets` (computed, not shown, D-054) |
 | `concept_map.yaml` | Concept → candidate XBRL tags (with dimensions) |
 | `universe.yaml` | Sample review for `scripts/build_universe.py` only: `industry` for registrants whose SIC misleads, `sample_skip` (D-055) |
 | `coverage_notes.yaml` | Reason for every metric gap `coverage-report` shows: per company, or per industry group under `groups:` (`"*"` = every company, D-052) |

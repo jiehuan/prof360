@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 
 from sqlalchemy import Connection, false, func, select, true
 
+from uw_pipeline.enrich.clinical import clinical_text, current_programs
 from uw_pipeline.enrich.grounding import is_grounded
 from uw_pipeline.enrich.legal import legal_matters
 from uw_pipeline.enrich.package import board_text, legal_text
@@ -73,6 +74,9 @@ def _source_text(conn: Connection, ev: dict[str, object]) -> str:
             matters = legal_matters(conn, company_id)
             if any(m["last_doc_id"] == ev["doc_id"] for m in matters):
                 texts.append(legal_text(matters))
+            programs = current_programs(conn, company_id)  # Phase 17c
+            if any(p["doc_id"] == ev["doc_id"] for p in programs):
+                texts.append(clinical_text(programs))
         return " ".join(texts)
     if kind == "SIGNAL" and ev["signal_id"] is not None:
         row = conn.execute(

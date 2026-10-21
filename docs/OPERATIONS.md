@@ -148,6 +148,13 @@
 - 覆盖率：`coverage-report` 每个缺口要有行业组或公司说明。先看是不是整个行业都缺（写 `groups:`），再写公司说明；写之前在 companyfacts 里核对该 tag 确实不存在。
 - 首次全量 LLM（Haiku）约 1–2 小时、费用见运行统计（`uw-pipeline runs` 的 `llm=`）。
 
+## 10e. Phase 17：公司范围、样本和行业模块（D-055、D-056、D-058）
+
+- 公司范围和样本：`python scripts/build_universe.py --sample 5`（见第 2 节第 7 条）。SIC 分错组的样本公司写进 `config/universe.yaml`（`industry`，写原因），加进 `companies.yaml` 时一起带上。
+- 行业组 39 个；7 个模块组（化工材料、采矿、钢铁金属、住宅建筑商、医疗服务、博彩休闲、餐饮）有自己的 XBRL 和文本指标。产量和发货量的单位是盎司、磅、吨，现金可支撑是月。
+- 临床阶段公司：`python scripts/build_universe.py --clinical 20` 列出候选（生命科学 SIC、收入低于 1,000 万美元或没有收入 tag）。逐家确认后在 `companies.yaml` 写 `traits: [clinical_stage]`：加现金可支撑月数、研发 / 运营支出，去掉毛利率、研发 / 收入等产品指标，并由 `clinical` 阶段读取在研项目（阶段、下一个节点和时间）。注意：收入一年跳到 20 倍以上的公司（授权收入，例如 Arrowhead），报告会标"set aside"，这类不是临床阶段。每季度重建范围时复核。
+- 现金可支撑少于 12 个月会发出信号 `short_cash_runway`。
+
 ## 11. 常见故障
 
 | 现象 | 原因与处理 |

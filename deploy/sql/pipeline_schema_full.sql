@@ -486,6 +486,28 @@ IF COL_LENGTH(N'uw_pipeline.board_composition', N'ceo_since') IS NULL
     ALTER TABLE uw_pipeline.board_composition ADD ceo_since INTEGER NULL;
 GO
 
+IF OBJECT_ID(N'uw_pipeline.clinical_program', N'U') IS NULL
+CREATE TABLE uw_pipeline.clinical_program (
+	company_id INTEGER NOT NULL, 
+	program_key NVARCHAR(200) NOT NULL, 
+	name NVARCHAR(200) NOT NULL, 
+	indication NVARCHAR(300) NOT NULL, 
+	phase NVARCHAR(20) NOT NULL, 
+	next_milestone NVARCHAR(300) NULL, 
+	milestone_timing NVARCHAR(100) NULL, 
+	quote NVARCHAR(max) NOT NULL, 
+	milestone_quote NVARCHAR(max) NULL, 
+	doc_id INTEGER NOT NULL, 
+	is_current BIT NOT NULL, 
+	model NVARCHAR(60) NOT NULL, 
+	prompt_version NVARCHAR(40) NOT NULL, 
+	updated_at DATETIMEOFFSET NOT NULL, 
+	PRIMARY KEY (company_id, program_key), 
+	FOREIGN KEY(company_id) REFERENCES uw_pipeline.company (company_id), 
+	FOREIGN KEY(doc_id) REFERENCES uw_pipeline.source_document (doc_id)
+);
+GO
+
 IF OBJECT_ID(N'uw_pipeline.filing_section', N'U') IS NULL
 CREATE TABLE uw_pipeline.filing_section (
 	section_id INTEGER NOT NULL IDENTITY, 

@@ -60,6 +60,9 @@ DEPENDS: dict[str, tuple[str, ...]] = {
     "governance": ("documents",),
     # Litigation and regulatory matters (Phase 15e); like governance, signals do not wait.
     "legal": ("documents",),
+    # Pipeline facts of clinical-stage companies (Phase 17c, D-058); insights read them when
+    # present.
+    "clinical": ("documents",),
     "signals": ("compute", "documents"),
     "insights": ("signals", "textmetrics"),
     "metricdetail": ("compute", "insights"),

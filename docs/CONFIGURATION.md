@@ -31,6 +31,7 @@ code. Decisions D-016 and D-049 explain the design.
 |---|---|---|
 | Add a company | `companies.yaml` | `ticker`, `cik` (pinned; the ticker is only for display), `display_name`, `news_aliases`; candidates from `scripts/build_universe.py --sample N` (D-055) |
 | Put a company in an industry, whatever its SIC code | `companies.yaml` | `industry: GROUP` and `industry_reason: "..."` (required) |
+| Mark a company clinical-stage (pre-revenue life sciences) | `companies.yaml` | `traits: [clinical_stage]`: adds cash runway, R&D / operating expenses and the `clinical` stage; drops the product metrics (`trait_exclude_metrics`); candidates from `scripts/build_universe.py --clinical N` (D-058) |
 | Correct a group in the company universe or sample (before the company is added) | `universe.yaml` | under `industry`: `cik`, `ticker`, `industry`, `reason`; `sample_skip` to leave one out of the sample (D-055) |
 | Keep a company's history across a new parent registrant | `companies.yaml` | `predecessor_ciks: [old CIK]` (D-052) |
 | Create an industry, or map SIC codes to one | `industry_groups.yaml` | a group under `groups` (`label`, `is_financial`, `metric_sets`); codes under `sic` |
@@ -203,7 +204,7 @@ MSFT:                        # one company; wins over its group's note
 | Different insight tasks per industry, or a new kind of insight | Behavioral, strategic & risk, key insights and follow-up questions run for every company; their wording is in versioned prompts. |
 | Changing a prompt | Prompts live in `src/uw_pipeline/enrich/prompts/`; a change needs a new version and a review of the golden outputs. |
 | Functions in formulas (min, max, abs, if) | Formulas support + - * /, unary minus, parentheses; comparisons only in `nm_when`. |
-| Units other than USD, ratio, fraction, days, shares, score, count, ounces, pounds, tons; periods other than quarter and fiscal year | Fixed in the metric model and the period logic. |
+| Units other than USD, ratio, fraction, days, shares, score, count, ounces, pounds, tons, months; periods other than quarter and fiscal year | Fixed in the metric model and the period logic. |
 | A new market, insider or litigation metric (`kind: external`) | Written by the market or documents stage in code. |
 | A new section code or document type | Section splitting is in code. |
 | New data sources, a new LLM provider | Clients live in `src/uw_pipeline/clients/`. |

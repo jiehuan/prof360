@@ -26,6 +26,7 @@ from uw_pipeline.enrich.llm import DailyBudget, LLMConfig, load_llm_config
 from uw_pipeline.enrich.package import load_insights_config
 from uw_pipeline.enrich.sources import load_source_labels
 from uw_pipeline.enrich.text_metrics import load_text_config
+from uw_pipeline.jobs.run_clinical import run_clinical_stage
 from uw_pipeline.jobs.run_company import TaskResult, run_company_stage
 from uw_pipeline.jobs.run_documents import run_documents_stage
 from uw_pipeline.jobs.run_dq import run_dq_stage
@@ -218,6 +219,8 @@ class StageRunner:
             return lambda c: run_governance_stage(c, self.llm, self.storage, e)
         if stage == "legal":
             return lambda c: run_legal_stage(c, self.llm, self.storage, e)
+        if stage == "clinical":
+            return lambda c: run_clinical_stage(c, self.llm, self.storage, e)
         if stage == "signals":
             return lambda c: run_signals_stage(
                 c, self.sec, self.signal_rules, e, llm=self.llm, industry=ind,

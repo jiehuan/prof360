@@ -65,6 +65,9 @@ concepts:
       - us-gaap:ShortTermInvestments
       - us-gaap:MarketableSecuritiesCurrent
       - us-gaap:OtherShortTermInvestments
+      # Phase 17c (D-058): biotechs often tag their marketable securities this way.
+      - us-gaap:AvailableForSaleSecuritiesDebtSecuritiesCurrent
+      - us-gaap:HeldToMaturitySecuritiesCurrent
   current_assets:
     tags: [us-gaap:AssetsCurrent]
   current_liabilities:
@@ -242,3 +245,5 @@ concepts:
         dims: {us-gaap:FranchisorDisclosureAxis: us-gaap:FranchisedUnitsMember}
       - tag: us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
         dims: {us-gaap:FranchisorDisclosureAxis: us-gaap:FranchisedUnitsMember}
+  # Clinical-stage companies (Phase 17c, D-058).
+  operating_expenses: {tags: [us-gaap:OperatingExpenses, us-gaap:CostsAndExpenses]}

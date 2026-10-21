@@ -1359,3 +1359,45 @@ LLM runs until the end, then one comparison.
   name Tenet's terms (same-hospital, adjusted admissions, net patient service revenues); capacity
   utilization (Phase 16, manufacturing trait) also reads steel mill utilization and operating
   rates (Nucor 83%, Steel Dynamics 90%), which re-reads it once for the other manufacturers.
+
+**D-058 Clinical-stage companies (Phase 17c, 2026-10-21).**
+- Which companies: life-sciences SIC codes (2833–2836, 8731–8734, 3826, 3841–3851) with latest
+  fiscal-year revenue under USD 10M or none (D-055 threshold); about 390 of the universe.
+  `scripts/build_universe.py` lists them; a person confirms each, and the result is pinned in
+  companies.yaml as a company trait, reviewed with the quarterly universe rebuild. Never decided
+  at run time.
+- How: `traits: [clinical_stage]` on a company (new; traits were per industry group). Options
+  for the metrics that do not fit (R&D / revenue, gross margin, largest product share): (a) a
+  separate CLINICAL group, which would lose the SIC group's other settings; (b) the trait adds
+  its sets and drops the metrics listed under `trait_exclude_metrics`. Chosen: (b); the company
+  keeps its PHARMA or MEDTECH group.
+- Metrics (XBRL, set CLINICAL_STAGE): cash runway in months = (cash + short-term investments) /
+  (operating cash outflow of the last four quarters / 12), N/M when operating cash flow is not
+  negative; R&D / total operating expenses. When the four quarters are not all available, or
+  one is N/M (a restated year, Xenon's Q4 2025), the latest quarter's burn is used. The four-quarter sum is a new formula suffix,
+  `x_ttm` (the four quarters ending at the period; the year itself for a fiscal year), like
+  `x_py`. Unit: months (D-055).
+- Signal: cash runway under 12 months (4 quarters), a threshold rule. Going concern and
+  dilution signals exist already.
+- Pipeline facts (LLM stage `clinical`, after `legal`): the lead programs from the latest 10-K
+  (Item 1) and 10-Q (MD&A): name, indication, phase, next milestone and its timing as written.
+  Both models read; a program is kept when its quote is in the filing, names the program and the
+  phase, and both models give it the same phase; a milestone only when both give the same
+  timing. Stored in `clinical_program` (one row per program, `is_current`); an insight input
+  like the board facts, not published to MatrixData.
+- Development set: the 20 clinical-stage candidates with the largest R&D expense (XBRL frames,
+  latest year), reviewed and added to companies.yaml; PLAN 17e checks revenue judgment and
+  pipeline facts on them.
+- Found while building it: a second `short_term_investments` concept in concept_map.yaml
+  silently replaced the Phase 15c one (plain YAML keeps the later key), which a golden test
+  caught. Config files are now read with a loader that refuses a key given twice
+  (`uw_pipeline/yaml_load.py`); the two biotech tags were added to the original concept.
+- Result on the 20 (runs 127–130, 2026-10-21; `clinical` on Haiku $0.29): all 20 are
+  pre-revenue (latest year at most $8.3M, nine tag none); cash runway at Q2 2026 from 6.3
+  months (Biohaven) to 77 (CRISPR), two under 12 (Biohaven, Replimune: `short_cash_runway`).
+  85 current programs, 52 with a dated milestone (Cogent's PDUFA date December 30, 2026;
+  Vaxcyte's VAX-31 adult Phase 3 topline data in Q4 2026; Xenon's azetukalner NDA in Q3
+  2026); seven companies checked against their filings. Tuned on them: a candidate named in
+  the heading just before a quote counts (Celldex states barzolvolimab once per section), and
+  indications are compared without their parenthetical detail (one CDX-622 program, not two).
+  Golden values: Viking (four quarters) and Xenon (latest-quarter burn).

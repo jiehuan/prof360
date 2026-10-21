@@ -78,6 +78,10 @@ IF OBJECT_ID(N'uw_pipeline.filing_section', N'U') IS NOT NULL
     DROP TABLE uw_pipeline.[filing_section];
 GO
 
+IF OBJECT_ID(N'uw_pipeline.clinical_program', N'U') IS NOT NULL
+    DROP TABLE uw_pipeline.[clinical_program];
+GO
+
 IF OBJECT_ID(N'uw_pipeline.board_composition', N'U') IS NOT NULL
     DROP TABLE uw_pipeline.[board_composition];
 GO

@@ -1,0 +1,235 @@
+{
+ "cik": "0001607678",
+ "entityType": "operating",
+ "sic": "2834",
+ "sicDescription": "Pharmaceutical Preparations",
+ "ownerOrg": "03 Life Sciences",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Viking Therapeutics, Inc.",
+ "tickers": [
+  "VKTX"
+ ],
+ "exchanges": [
+  "Nasdaq"
+ ],
+ "ein": "461073877",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "9920 PACIFIC HEIGHTS BLVD, SUITE 500",
+   "street2": null,
+   "city": "SAN DIEGO",
+   "stateOrCountry": "CA",
+   "zipCode": null,
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "9920 PACIFIC HEIGHTS BLVD, SUITE 500",
+   "street2": null,
+   "city": "SAN DIEGO",
+   "stateOrCountry": "CA",
+   "zipCode": null,
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "858-704-4660",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001193125-26-405580",
+    "0001193125-26-401385",
+    "0001193125-26-401384",
+    "0001213900-26-102798",
+    "0001213900-26-102782",
+    "0001193125-26-324219",
+    "0001193125-26-193315",
+    "0001193125-26-046876",
+    "0001193125-25-247059"
+   ],
+   "filingDate": [
+    "2026-09-28",
+    "2026-09-25",
+    "2026-09-25",
+    "2026-09-24",
+    "2026-09-24",
+    "2026-07-29",
+    "2026-04-30",
+    "2026-02-11",
+    "2025-10-23"
+   ],
+   "reportDate": [
+    "2026-09-23",
+    "",
+    "",
+    "",
+    "",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-09-28T21:27:17.000Z",
+    "2026-09-25T01:05:07.000Z",
+    "2026-09-25T01:04:07.000Z",
+    "2026-09-24T10:07:42.000Z",
+    "2026-09-24T01:31:31.000Z",
+    "2026-07-29T21:15:35.000Z",
+    "2026-04-30T01:50:35.000Z",
+    "2026-02-11T22:25:49.000Z",
+    "2025-10-22T21:35:43.000Z"
+   ],
+   "act": [
+    "34",
+    "33",
+    "33",
+    "34",
+    "33",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "8-K",
+    "424B5",
+    "424B5",
+    "FWP",
+    "305B2",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "001-37355",
+    "333-297820",
+    "333-297820",
+    "333-297820",
+    "333-297820",
+    "001-37355",
+    "001-37355",
+    "001-37355",
+    "001-37355"
+   ],
+   "filmNumber": [
+    "261418399",
+    "261406033",
+    "261406032",
+    "261402077",
+    "261402012",
+    "261218930",
+    "26919568",
+    "26622128",
+    "251410933"
+   ],
+   "items": [
+    "1.01,2.03,9.01",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "XBRL",
+    "424B5",
+    "424B5",
+    "FWP",
+    "305B2",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    3747206,
+    1815013,
+    1227246,
+    52360,
+    458823,
+    10074813,
+    8502302,
+    13600726,
+    9170896
+   ],
+   "isXBRL": [
+    1,
+    1,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    1,
+    1,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "vktx-20260923.htm",
+    "vktx-20260925.htm",
+    "vktx-20260925.htm",
+    "ea0306515-fwp_viking.htm",
+    "ea0306175-305b2_viking.htm",
+    "vktx-20260630.htm",
+    "vktx-20260331.htm",
+    "vktx-20251231.htm",
+    "vktx-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "8-K",
+    "424B5",
+    "424B5",
+    "FREE WRITING PROSPECTUS",
+    "APPLICATION FOR DESIGNATION OF A NEW TRUSTEE",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

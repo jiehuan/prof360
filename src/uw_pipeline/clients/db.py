@@ -13,7 +13,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import yaml
 from pydantic import BaseModel
 from sqlalchemy import (
     URL,
@@ -30,6 +29,7 @@ from sqlalchemy.schema import CreateColumn, CreateSchema
 
 from uw_pipeline.clients.secrets import SecretGetter, databricks_secret
 from uw_pipeline.schema import metadata
+from uw_pipeline.yaml_load import safe_load
 
 if TYPE_CHECKING:
     from uw_pipeline.settings import Settings
@@ -80,7 +80,7 @@ class AzureConfig(BaseModel):
 
 def load_azure_config(config_dir: Path) -> AzureConfig:
     with (config_dir / "azure.yaml").open(encoding="utf-8") as f:
-        return AzureConfig.model_validate(yaml.safe_load(f))
+        return AzureConfig.model_validate(safe_load(f))
 
 
 def _sqlite_wal(dbapi_conn: Any, _record: Any) -> None:

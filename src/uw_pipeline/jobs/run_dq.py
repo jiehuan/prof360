@@ -38,7 +38,7 @@ def run_dq_stage(
             with engine.begin() as conn:
                 row = company_row(conn, company)
                 metrics = registry.for_company(
-                    company.ticker, industry.groups[row["industry_group"]]
+                    company.ticker, industry.group_of(row["industry_group"], company)
                 ).metrics
                 findings = run_rules(conn, row["company_id"], company.ticker, metrics,
                                      notes.for_company(company.ticker, row["industry_group"]),

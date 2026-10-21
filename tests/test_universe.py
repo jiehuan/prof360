@@ -189,3 +189,22 @@ def test_the_repository_universe_settings_are_valid() -> None:
         {"industry": [{"cik": 1, "ticker": "X", "industry": "NOPE", "reason": "r"}]})  # fmt: skip
     with pytest.raises(ValueError, match="NOPE"):
         bad.check(industry)
+
+
+def test_clinical_candidates_are_pre_revenue_life_sciences() -> None:
+    """D-058: life-sciences SIC codes with revenue under $10M or none tagged."""
+    industry = load_industry_config(CONFIG_DIR)
+    listing = {c: (f"T{c}", "Nasdaq") for c in range(1, 6)}
+    summaries = {
+        1: _summary("Pre Revenue Bio", 2834, **{"10_K": "2026-03-01"}),
+        2: _summary("Small Revenue Bio", 2836, **{"10_K": "2026-03-01"}),
+        3: _summary("Big Pharma", 2834, **{"10_K": "2026-03-01"}),
+        4: _summary("Software Startup", 7372, **{"10_K": "2026-03-01"}),
+        5: _summary("Device Startup", 3841, **{"20_F": "2026-03-01"}),  # foreign: out of scope
+    }
+    revenue = {2: uv.Revenue(4e6, "CY2025", "Revenues"), 3: uv.Revenue(60e9, "CY2025", "Revenues")}
+    entries = uv.build(listing, summaries, revenue, industry, [], SINCE)
+    assert [e.cik for e in uv.clinical_candidates(entries)] == [1, 2]
+    frames = {"CY2025": {"data": [{"cik": 1, "val": 300e6}]},
+              "CY2024": {"data": [{"cik": 1, "val": 200e6}, {"cik": 2, "val": 50e6}]}}  # fmt: skip
+    assert uv.latest_by_cik(frames, ("CY2025", "CY2024")) == {1: 300e6, 2: 50e6}

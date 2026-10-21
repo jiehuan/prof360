@@ -67,7 +67,7 @@ def main() -> None:
         runner = TaskRunner(client, conn, lambda: datetime.now(UTC), common)
         for t in args.tickers:
             row = company_row(conn, companies[t])
-            group = industry.groups[row["industry_group"]]
+            group = industry.group_of(row["industry_group"], companies[t])
             metrics = registry.for_company(t, group).metrics
             since = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=icfg.news_days)
             pkg = build_package(conn, row, metrics, group.label, icfg, news_since=since)

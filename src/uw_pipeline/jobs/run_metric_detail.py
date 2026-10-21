@@ -281,7 +281,7 @@ def process_company(
 ) -> Stats:
     row = company_row(conn, cfg)
     company_id = row["company_id"]
-    group = industry.groups[row["industry_group"]]
+    group = industry.group_of(row["industry_group"], cfg)
     all_metrics = registry.for_company(cfg.ticker, group).metrics
     values = _values(conn, company_id)
     shown = [m for m in all_metrics if m.display and values.get(m.code)]
