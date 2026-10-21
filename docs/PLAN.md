@@ -735,9 +735,10 @@ uw-pipeline dq-report --run-id <id>
 - [x] 17b-1 只改映射的 7 个新组和 9 个已有组的 SIC 范围（SIC 范围不得重叠，加载时检查）
 - [x] 17b-2 带模块的 6 个新组（不含 SPAC；拆分后 7 个模块组，D-056）：指标、golden 值（14 家）、文本指标留出测试（取到的值全部正确）
 - [x] 17c 临床阶段特性：公司级 `traits`、现金可支撑月数和研发 / 运营支出、信号、`clinical` 阶段（在研项目和下一个节点）、20 家开发集（D-058）
-- [ ] 17d 其余 LLM 阶段改短事务、公司内并行、银行 MD&A
+- [x] 17d 其余 LLM 阶段改短事务、公司内并行、银行 MD&A
   - [x] 银行 MD&A：Exhibit 13 年报作为 10-K 的 PRIMARY 文档（WFC、USB、BNY），BAC、BNY、C、MS、USB、WFC 的章节规则（D-060）
   - [x] 其余 LLM 阶段改短事务：textmetrics、governance、legal、clinical、industry、signals、scores、news（D-061）；每个阶段一个并行与串行一致、等待模型时无写锁的测试（news 除外，它不并行）
+  - [x] 公司内的调用并行：先取（prefetch）各家公司互不依赖的请求，几个同时调用，答案进缓存，之后的顺序代码从缓存取；insights 的 behavioral 和 strategic、textmetrics 的各文件和双重读取（D-062，`company_calls: 3`）
 - [x] 17g 行业组以外的公司由 LLM 选行业组：`industry` 阶段、`industry_choice` 表、review 类型 INDUSTRY、应用里的说明（D-059；6 家试运行，两个模型全部一致）
 - [ ] 17e 样本上的质量关口，然后冻结
 

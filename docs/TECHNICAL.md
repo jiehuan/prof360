@@ -132,7 +132,7 @@ FAILED / SKIPPED. Run states: SUCCEEDED, PARTIAL, FAILED, RUNNING.
 | Heartbeat | A background thread refreshes `heartbeat_at` while a task runs | `heartbeat_minutes: 5` |
 | Resume | A dead run (stale heartbeat) is resumed only by the same job with the same stages and companies, started less than `resume_within_hours` ago; finished tasks are kept | `resume_within_hours: 12` |
 | Abandon | Older or different dead runs are closed (FAILED, `"abandoned": true`) and the new run starts fresh | – |
-| Parallel | A stage's companies run in threads (D-050). On a SQLite file only the LLM stages run in parallel: they open each company's connection with `enrich/llm.short_transactions`, so `cached_call` commits before and after every model call and no write lock is held while waiting (D-052, D-061); other stages run one at a time (single writer). LLM calls share per-model RPM / TPM limits (§8) | `parallel: {insights: 4, ...}` |
+| Parallel | A stage's companies run in threads (D-050). On a SQLite file only the LLM stages run in parallel: they open each company's connection with `enrich/llm.short_transactions`, so `cached_call` commits before and after every model call and no write lock is held while waiting (D-052, D-061); other stages run one at a time (single writer). Within a company, independent model calls (insights' behavioral and strategic syntheses, textmetrics' document reads) are asked `company_calls` at a time by `enrich/llm.prefetch` before the sequential code, which finds them in the cache (D-062). LLM calls share per-model RPM / TPM limits (§8) | `parallel: {insights: 4, ...}` |
 
 **Jobs** (`config/jobs.yaml`) and OpenShift CronJobs (`deploy/openshift/cronjobs.yaml`, time zone
 America/New_York, `concurrencyPolicy: Forbid`):

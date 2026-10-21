@@ -140,7 +140,7 @@
 - 13D：EDGAR 的列表里也有公司自己就其他发行人提交的 13D，只保留 index headers 里 SUBJECT COMPANY 是本公司的。
 - 诉讼和监管调查：`legal` 阶段读最新 10-K 和之后的 10-Q，输入不变不重复调用。一家公司第一次运行找到的事项是基线；之后新出现的（或换了名字的已知事项）进 `uw-pipeline review`（类型 MATTER）。重复的旧事项驳回即可：被驳回的不再出信号，也不进洞察。两个模型类型不一致的不保存（日志里的 `unpaired`），多半是本来就有两种读法的事项。
 - 委托书 `board_v2`：审计费、双重股权、CEO 任期。JPM 的审计费是文字叙述，两个模型读法不同时为空，属于正常。
-- 并行：`config/jobs.yaml` 的 `parallel` 设各阶段同时处理几家公司，在 Azure SQL 上对所有阶段生效；在本地 SQLite 文件上只对调用 LLM 的阶段生效（textmetrics、governance、legal、clinical、industry、signals、scores、insights、metricdetail；短事务：等待模型时不占写锁，D-052、D-061），其他阶段一次一家。news 不并行（Alpha Vantage 配额）。新增调用 LLM 的阶段时，用 `short_transactions(engine)` 打开每家公司的连接，加进 `SHORT_TRANSACTION_STAGES`，并在 `tests/test_short_transactions.py` 加一个用例。SecureGPT 每个部署的 TPM 设为 50 万（`config/llm.yaml` 的 `rate_limits`，D-051）；RPM 网关团队给出后再加。出现 429 失败或数据库死锁时，先调小该阶段的 workers。
+- 并行：`config/jobs.yaml` 的 `parallel` 设各阶段同时处理几家公司，在 Azure SQL 上对所有阶段生效；在本地 SQLite 文件上只对调用 LLM 的阶段生效（textmetrics、governance、legal、clinical、industry、signals、scores、insights、metricdetail；短事务：等待模型时不占写锁，D-052、D-061），其他阶段一次一家。news 不并行（Alpha Vantage 配额）。同一家公司内互不依赖的调用（insights 的 behavioral 和 strategic、textmetrics 的各文件）同时发出，个数由 `config/llm.yaml` 的 `company_calls` 控制（D-062）；总并发约为 workers × company_calls，仍受 `rate_limits` 限制。新增调用 LLM 的阶段时，用 `short_transactions(engine)` 打开每家公司的连接，加进 `SHORT_TRANSACTION_STAGES`，并在 `tests/test_short_transactions.py` 加一个用例。SecureGPT 每个部署的 TPM 设为 50 万（`config/llm.yaml` 的 `rate_limits`，D-051）；RPM 网关团队给出后再加。出现 429 失败或数据库死锁时，先调小该阶段的 workers。
 - 按任务的 max_tokens（`task_max_tokens`，每个提供方各自配置）：用 `SELECT task, model, MAX(output_tokens) FROM llm_call GROUP BY task, model` 看最大输出（gpt-6 含推理 token），取约 2 倍。它不在缓存 key 里，改了不会重复调用；某任务出现截断（`llm_call.error`）时调大。
 
 ## 10d. S&P 100（Phase 16，D-052）

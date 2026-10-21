@@ -1493,3 +1493,29 @@ LLM runs until the end, then one comparison.
   call another connection gets the write lock at once (a stage switched back to one long
   transaction fails this). Live (run 136, 2026-10-21): signals for eight companies, four
   workers on `data/uw.db`, 23 s, no lock errors.
+
+**D-062 Model calls within one company in parallel (Phase 17d, 2026-10-21).**
+- Where: insights' behavioral and strategic-risk syntheses (independent: both prompts are
+  built from the package before either runs); textmetrics' reads of all documents, each with
+  its dual-check read and table reads, and the loan book (no request depends on another
+  answer: the second read is made whatever the first returns).
+- How, options: (a) run the stage's steps in threads, each with its own connection; (b) a
+  pre-fetch: build the company's requests first, ask the model for those not in `llm_call` a few
+  at a time in threads that do not touch the database, store the answers on the caller's
+  connection, then run the stage's code unchanged: every call finds its answer in the cache.
+  Chosen: (b). A connection cannot be shared between threads, and (a) would split one company's
+  writes across connections; with (b) validation, grounding, dual checks and writes stay
+  sequential and as tested.
+- textmetrics builds its requests by running its document loop once in a planning mode in
+  which the extractor records each request instead of calling (parsed tables are kept for the
+  real pass). A pre-fetched call that fails is not stored; the call that follows asks again and
+  records the error, as before. An answer that fails validation is stored as such (its tokens
+  count) and asked again by that call.
+- How many at a time: `company_calls` in config/llm.yaml (3); the per-model rate limits
+  (`rate_limits`) still apply across all threads, and the daily budget is checked first.
+- Tests (`tests/test_prefetch.py`): requests asked three at a time, duplicates and cached ones
+  not asked, a failed call not stored and asked again, an invalid answer kept for its tokens
+  and asked again; textmetrics on three releases stores the same values with one or three
+  calls at a time. The insights parallel test now sees four calls at once (two companies, two
+  syntheses each). Live (run 137, 2026-10-21): textmetrics for the six banks and JPMorgan from
+  the cache: no model calls, the stored values unchanged.

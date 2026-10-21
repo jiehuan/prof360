@@ -36,7 +36,9 @@ from uw_pipeline.enrich.llm import (
     PROMPTS_DIR,
     LLMConfig,
     ModelSpec,
+    Request,
     cached_call,
+    prefetch,
     short_transactions,
 )
 from uw_pipeline.enrich.package import fmt_value
@@ -190,11 +192,23 @@ class Extractor:
         self.table_system = (PROMPTS_DIR / f"{self.table_version}.md").read_text(encoding="utf-8")
         self.loan_version = cfg.loan_portfolio.prompt_version
         self.loan_system = (PROMPTS_DIR / f"{self.loan_version}.md").read_text(encoding="utf-8")
+        # Planning mode (D-062): calls are recorded here instead of made, for `prefetch`.
+        self.planned: list[Request] | None = None
+        self._tables: dict[str, list[Any]] = {}  # parsed once for both passes
+
+    def tables_of(self, storage: Storage, raw_path: str) -> list[Any]:
+        if raw_path not in self._tables:
+            self._tables[raw_path] = tables(storage.read_bytes(raw_path))
+        return self._tables[raw_path]
 
     def _call(
         self, spec: ModelSpec, task: str, system: str, user: str, schema: dict[str, Any],
         model: type[BaseModel], prompt_version: str | None = None,
     ) -> Any:  # fmt: skip
+        if self.planned is not None:
+            self.planned.append(Request(spec, task, prompt_version or self.cfg.prompt_version,
+                                        system, user, schema, model.model_validate))  # fmt: skip
+            return None
         raw = cached_call(
             self.conn, self.client, spec, task=task,
             prompt_version=prompt_version or self.cfg.prompt_version,
@@ -253,7 +267,7 @@ class Extractor:
             return False, [], [], 0
         specs = [sp for m in metrics.values() if m.extraction and (sp := m.extraction.table)]
         terms = sorted({t for sp in specs for t in (sp.find or sp.column)})
-        grid = [t for t in tables(storage.read_bytes(doc.raw_path))
+        grid = [t for t in self.tables_of(storage, doc.raw_path)
                 if any(could_pass(t, sp) for sp in specs)]  # fmt: skip
         chosen = relevant(grid, terms, self.cfg.max_chars)
         if not chosen:
@@ -300,7 +314,7 @@ class Extractor:
         if doc.raw_path is None:
             return None, None
         # Credit-portfolio tables: loans and, in the same table, nonaccrual / nonperforming.
-        grid = [t for t in tables(storage.read_bytes(doc.raw_path))
+        grid = [t for t in self.tables_of(storage, doc.raw_path)
                 if any(w in t.render().lower() for w in NONACCRUAL_HEADERS)]  # fmt: skip
         chosen = relevant(grid, keywords, self.cfg.max_chars)
         if not chosen:
@@ -377,46 +391,61 @@ def process_company(
         docs += _release_docs(conn, company_id, storage)
     start = cfg.history_start.isoformat() if cfg.history_start else ""
 
-    found: list[tuple[DocText, Candidate]] = []
-    # A document whose LLM call failed this run (not one without relevant text) must not make
-    # its earlier values look stale: they would vanish from the app until a later run succeeds.
-    incomplete = False
     table_metrics = {c: m for c, m in text_metrics.items() if m.extraction and m.extraction.table}
     quote_metrics = {c: m for c, m in text_metrics.items() if c not in table_metrics}
-    for doc in sorted(docs, key=lambda d: (d.filed_at, d.accession_no)):
-        if table_metrics:
-            found += _table_candidates(doc, company, table_metrics, ex, storage, cal, stats,
-                                       start)  # fmt: skip
-            incomplete = incomplete or stats.table_failed
-        wanted = {c: m.extraction.definition for c, m in quote_metrics.items() if m.extraction}
-        groups = [m.extraction.keywords for m in quote_metrics.values() if m.extraction]
-        if doc.doc_role == "EX-99.1":
-            wanted |= prelim
-            groups.append(PRELIMINARY_KEYWORDS)
-        if not wanted:
-            continue
-        dual_codes = {
-            c for c, m in quote_metrics.items() if m.extraction and m.extraction.dual_check
-        }
-        source, first, second = ex.values(doc, company, wanted, groups, bool(dual_codes))
-        if source and (first is None or (dual_codes and second is None)):
-            incomplete = True
-        if first is None:
-            continue
-        stats.documents += 1
-        # Only what this path asked for: a table metric answered from a quote would skip
-        # its cell check (D-044).
-        convert = quote_metrics | {c: listed[c] for c in prelim}
-        got, rejected = candidates(first.values, convert, source, cal)
-        stats.rejected += rejected
-        if dual_codes:
-            single = [c for c in got if c.metric_code not in dual_codes]
-            double = [c for c in got if c.metric_code in dual_codes]
-            other = candidates(second.values, convert, source, cal)[0] if second else []
-            checked, dropped = dual_checked(double, other, doc.label)
-            stats.dual_dropped += dropped
-            got = single + checked
-        found += [(doc, c) for c in got if c.period_end >= start]
+
+    def read_documents(stats: Stats) -> tuple[list[tuple[DocText, Candidate]], bool]:
+        found: list[tuple[DocText, Candidate]] = []
+        # A document whose LLM call failed this run (not one without relevant text) must not
+        # make its earlier values look stale: they would vanish from the app until a later run
+        # succeeds.
+        incomplete = False
+        for doc in sorted(docs, key=lambda d: (d.filed_at, d.accession_no)):
+            if table_metrics:
+                found += _table_candidates(doc, company, table_metrics, ex, storage, cal, stats,
+                                           start)  # fmt: skip
+                incomplete = incomplete or stats.table_failed
+            wanted = {c: m.extraction.definition for c, m in quote_metrics.items() if m.extraction}
+            groups = [m.extraction.keywords for m in quote_metrics.values() if m.extraction]
+            if doc.doc_role == "EX-99.1":
+                wanted |= prelim
+                groups.append(PRELIMINARY_KEYWORDS)
+            if not wanted:
+                continue
+            dual_codes = {
+                c for c, m in quote_metrics.items() if m.extraction and m.extraction.dual_check
+            }
+            source, first, second = ex.values(doc, company, wanted, groups, bool(dual_codes))
+            if source and (first is None or (dual_codes and second is None)):
+                incomplete = True
+            if first is None:
+                continue
+            stats.documents += 1
+            # Only what this path asked for: a table metric answered from a quote would skip
+            # its cell check (D-044).
+            convert = quote_metrics | {c: listed[c] for c in prelim}
+            got, rejected = candidates(first.values, convert, source, cal)
+            stats.rejected += rejected
+            if dual_codes:
+                single = [c for c in got if c.metric_code not in dual_codes]
+                double = [c for c in got if c.metric_code in dual_codes]
+                other = candidates(second.values, convert, source, cal)[0] if second else []
+                checked, dropped = dual_checked(double, other, doc.label)
+                stats.dual_dropped += dropped
+                got = single + checked
+            found += [(doc, c) for c in got if c.period_end >= start]
+        return found, incomplete
+
+    # Every model call the reads make, asked a few at a time first (D-062); the reads below
+    # then find their answers in the cache.
+    ex.planned = []
+    read_documents(Stats())
+    if group.code in text_cfg.loan_portfolio.groups and (latest := _latest_periodic(docs)):
+        lp = text_cfg.loan_portfolio
+        ex.loan_book(latest, company, lp.keywords, lp.definition, storage)
+    planned, ex.planned = ex.planned, None
+    prefetch(conn, client, planned, now=now, workers=llm.company_calls)
+    found, incomplete = read_documents(stats)
 
     # One value per (metric, period): the latest-filed document wins; disagreements are counted.
     chosen: dict[tuple[str, tuple[str, int, int]], tuple[DocText, Candidate]] = {}
@@ -606,6 +635,12 @@ def _rolled_up(
     return kept
 
 
+def _latest_periodic(docs: Sequence[DocText]) -> DocText | None:
+    """The latest 10-K or 10-Q: the loan book is read from it."""
+    periodic = [d for d in docs if d.doc_role == "PRIMARY"]
+    return max(periodic, key=lambda d: (d.filed_at, d.accession_no)) if periodic else None
+
+
 def _loan_book(
     conn: Connection,
     ex: Extractor,
@@ -620,10 +655,9 @@ def _loan_book(
 ) -> int:
     """Loan book by class from the latest periodic report's MD&A, for the latest period and the
     prior year-end shown with it; both models must agree on each row."""
-    periodic = [d for d in docs if d.doc_role == "PRIMARY"]
-    if not periodic or storage is None:
+    doc = _latest_periodic(docs)
+    if doc is None or storage is None:
         return 0
-    doc = max(periodic, key=lambda d: (d.filed_at, d.accession_no))
     lp = text_cfg.loan_portfolio
     rows_a, rows_b = ex.loan_book(doc, company, lp.keywords, lp.definition, storage)
     if rows_a is None or rows_b is None:

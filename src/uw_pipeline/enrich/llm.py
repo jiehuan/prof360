@@ -8,8 +8,10 @@ import json
 import logging
 import os
 import threading
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Sequence
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -65,6 +67,8 @@ class LLMConfig(BaseModel):
     tiebreak_prompt_version: str
     max_input_chars: int
     topics: dict[str, list[str]]
+    # Model calls of one company asked at a time by `prefetch` (D-062).
+    company_calls: int = 1
 
     def prompt(self) -> str:
         return (PROMPTS_DIR / f"{self.prompt_version}.md").read_text(encoding="utf-8")
@@ -187,6 +191,102 @@ def short_transactions(engine: Engine) -> Iterator[Connection]:
             conn.info.pop(SHORT_TRANSACTIONS, None)  # the DBAPI connection goes back to the pool
 
 
+def _prepared(
+    spec: ModelSpec, task: str, prompt_version: str, system: str, user: str,
+    schema: dict[str, Any],
+) -> tuple[str, str, str, str]:  # fmt: skip
+    """(system, user, prompt version, cache key) as sent and stored."""
+    # Source text is data (D-044): invisible characters made visible, and the data rule
+    # appended to the system prompt; its version is part of the stored prompt version.
+    user = neutralize(user)
+    system = f"{system.rstrip()}\n{_guard()}"
+    prompt_version = f"{prompt_version}+{GUARD_PROMPT}"
+    key_src = json.dumps(
+        [task, prompt_version, spec.model, spec.effort, system, user, schema], sort_keys=True
+    )
+    return system, user, prompt_version, hashlib.sha256(key_src.encode()).hexdigest()
+
+
+@dataclass(frozen=True)
+class Request:
+    """A `cached_call` to be made, for `prefetch`."""
+
+    spec: ModelSpec
+    task: str
+    prompt_version: str
+    system: str
+    user: str
+    schema: dict[str, Any]
+    validate: Callable[[Any], Any] | None = None
+
+
+def prefetch(
+    conn: Connection, client: LLMClient, requests: Sequence[Request], *, now: datetime,
+    workers: int,
+) -> int:  # fmt: skip
+    """Ask the model for the requests not answered yet, `workers` at a time, and store the
+    answers in `llm_call`, where the `cached_call`s that follow find them (D-062). Only the model
+    calls run in threads; the database is used on this thread. A failed call is not stored: the
+    call that follows asks again and records the error. Returns the answers stored."""
+    todo: dict[str, tuple[Request, str, str, str]] = {}
+    for r in requests:
+        system, user, version, key = _prepared(r.spec, r.task, r.prompt_version, r.system,
+                                               r.user, r.schema)  # fmt: skip
+        if key in todo:
+            continue
+        cached = conn.execute(
+            select(llm_call.c.output_json).where(llm_call.c.input_hash == key)
+        ).scalar_one_or_none()
+        if cached is None:
+            todo[key] = (r, system, user, version)
+    if workers < 2 or len(todo) < 2:
+        return 0  # nothing to overlap: the calls are made one by one as before
+    budget: DailyBudget | None = getattr(client, "budget", None)
+    if budget is not None:
+        try:
+            budget.check(conn, now)
+        except BudgetExceededError:
+            return 0  # the calls that follow report it
+    caps: dict[str, int] = getattr(client, "task_max_tokens", None) or {}
+    commit = bool(conn.info.get(SHORT_TRANSACTIONS))
+    if commit:
+        conn.commit()  # nothing stays locked while the calls run
+
+    def ask(item: tuple[Request, str, str, str]) -> Any:
+        r, system, user, _ = item
+        try:
+            return client.complete_json(
+                model=r.spec.model, effort=r.spec.effort,
+                max_tokens=min(r.spec.max_tokens, caps.get(r.task, r.spec.max_tokens)),
+                system=system, user=user, schema=r.schema,
+            )  # fmt: skip
+        except Exception as exc:  # asked again, and the error recorded, by the call that follows
+            log.info("%s on %s: prefetch failed: %s", r.task, r.spec.model, exc)
+            return None
+
+    with ThreadPoolExecutor(max_workers=min(workers, len(todo))) as pool:
+        answers = list(pool.map(ask, todo.values()))
+    stored = 0
+    for (key, (r, _, _, version)), result in zip(todo.items(), answers, strict=True):
+        if result is None:
+            continue
+        if budget is not None:
+            budget.add(r.spec.model, result.input_tokens, result.output_tokens)
+        row: dict[str, Any] = {
+            "input_hash": key, "task": r.task, "prompt_version": version, "model": r.spec.model,
+            "created_at": now, "served_model": result.model, "input_tokens": result.input_tokens,
+            "output_tokens": result.output_tokens,
+        }  # fmt: skip
+        if r.validate is not None and not _valid(r.validate, result.output):
+            # Stored so its tokens count; not cached as an answer, so the call asks again.
+            _store(conn, row | {"output_json": None, "error": "output failed schema validation"},
+                   commit)  # fmt: skip
+            continue
+        _store(conn, row | {"output_json": json.dumps(result.output), "error": None}, commit)
+        stored += 1
+    return stored
+
+
 def cached_call(
     conn: Connection,
     client: LLMClient,
@@ -212,15 +312,9 @@ def cached_call(
     waiting for the model and other companies can write meanwhile (parallel workers on SQLite).
     A connection opened with `short_transactions` always does so."""
     commit = commit or bool(conn.info.get(SHORT_TRANSACTIONS))
-    # Source text is data (D-044): invisible characters made visible, and the data rule
-    # appended to the system prompt; its version is part of the stored prompt version.
-    user = neutralize(user)
-    system = f"{system.rstrip()}\n{_guard()}"
-    prompt_version = f"{prompt_version}+{GUARD_PROMPT}"
-    key_src = json.dumps(
-        [task, prompt_version, spec.model, spec.effort, system, user, schema], sort_keys=True
+    system, user, prompt_version, input_hash = _prepared(
+        spec, task, prompt_version, system, user, schema
     )
-    input_hash = hashlib.sha256(key_src.encode()).hexdigest()
     cached = conn.execute(
         select(llm_call.c.output_json).where(llm_call.c.input_hash == input_hash)
     ).scalar_one_or_none()

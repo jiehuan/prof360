@@ -334,10 +334,12 @@ def test_companies_run_in_parallel_on_a_sqlite_file(tmp_path) -> None:
                                 companies))  # fmt: skip
     elapsed = time.monotonic() - started
     assert all(r.ok for r in results), results
-    assert state["peak"] == 2 and len(llm.calls) == 10  # five calls each, two at a time
-    # 1.5 s of calls per company: together ~1.6 s; one after the other (the second waiting on
-    # the first one's transaction) ~2.7 s.
-    assert elapsed < 2.2, elapsed
+    # Five calls each; within a company behavioral and strategic run together (D-062): four at
+    # a time at the peak.
+    assert state["peak"] == 4 and len(llm.calls) == 10
+    # 1.2 s of calls per company: together ~1.3 s; one after the other (the second waiting on
+    # the first one's transaction) ~2.4 s.
+    assert elapsed < 1.9, elapsed
     with engine.connect() as c:
         per_company = dict(c.execute(select(insight.c.company_id, func.count())
                                      .group_by(insight.c.company_id)).all())  # fmt: skip
