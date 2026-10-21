@@ -1224,6 +1224,26 @@ LLM runs until the end, then one comparison.
 - BFF: no change if it builds a company's metric list from SIC_Preferences or MatrixData and hides
   categories without metrics; "Market & Trading" and "Reporting Quality" are now empty.
 
+**D-057 Azure credentials from a Databricks secret scope (2026-10-21).**
+- User request: connect to Azure SQL the way the team's loss-run project does on Databricks
+  (`loss_run_integration`, data_io/sql_connect.py and config/main_config.cfg): an
+  `mssql+pyodbc` URL with the service principal as user name and password,
+  `ActiveDirectoryServicePrincipal`, `ODBC Driver 17 for SQL Server`, and the service
+  principal's id and secret read from a Databricks secret scope whose key names are in config
+  per environment (`username_key`, `password_key`; for ADLS `client_id_key`,
+  `client_secret_key`).
+- Options for where credentials come from: (a) environment variables only (until now); (b) the
+  secret scope only; (c) environment variables when set, else the secret scope named in
+  config/azure.yaml. Chosen: (c). Local runs, containers and tests keep using environment
+  variables; a Databricks job needs no extra setup. Only key names are in config, never values;
+  secrets are not logged (the log names the scope and key).
+- Driver: `ODBC Driver 17 for SQL Server`, which the team's clusters have (was 18).
+- `TrustServerCertificate`: the loss-run project sets `yes` (the server certificate is not
+  checked). Kept `no` (checked, D-040) as `trust_server_certificate: false` in azure.yaml;
+  set it to true only if the cluster cannot verify the certificate.
+- The Databricks copy notebook connects the same way (pyodbc, secret-scope keys from
+  config/azure.yaml) instead of Spark JDBC with an Azure AD token: no tenant id or
+  azure-identity, and no single-user cluster requirement.
 
 **D-065 Key Insights: summary at most 180 characters (2026-10-24).**
 - Need (user, 2026-10-24): the summary of a Key Insight card fits in 180 characters. Before:

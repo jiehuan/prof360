@@ -222,7 +222,7 @@ versioned with the code.
 | `llm.yaml` | Provider profiles (models, effort, token limits, prices, `rate_limits`, `task_max_tokens`), signal topics, `max_input_chars` |
 | `securegpt.yaml` | Gateway and token URLs per environment, API version, deployments |
 | `runware.yaml` | Runware base URL, output mode per model, `reasoning_effort` models, retries |
-| `azure.yaml` | Azure SQL server, database, schemas; ADLS account, container, root (placeholders) |
+| `azure.yaml` | Azure SQL server, database, schemas, ODBC driver, certificate check; ADLS account, container, root; Databricks secret scope and key names per environment (D-057; placeholders) |
 | `app_publish.yaml` | Metric categories, RiskTypes regex rules, confidence rules, trend and loan metrics |
 | `source_labels.yaml` | Readable names for sections and concepts |
 | `dq_rules.yaml` | Data-quality thresholds; `metric_identities` (also the textmetrics gate: RevPAR, capital ratios, loan book, debt completeness, NIM relation) |
@@ -403,8 +403,8 @@ because the service echoes the key.
 | `DATABASE_BACKEND` | `url` | `azure_sql` for Azure SQL; any other value fails at startup |
 | `STORAGE_BACKEND` | `local` | `adls` for ADLS |
 | `AZURE_ENV` | from `azure.yaml` | dv / pp / pr |
-| `AZURE_SQL_CLIENT_ID`, `AZURE_SQL_CLIENT_SECRET` | – | Azure SQL service principal |
-| `ADLS_CLIENT_ID`, `ADLS_CLIENT_SECRET` | – | ADLS service principal |
+| `AZURE_SQL_CLIENT_ID`, `AZURE_SQL_CLIENT_SECRET` | – | Azure SQL service principal; unset on Databricks: read from the secret scope and key names in `azure.yaml` (D-057) |
+| `ADLS_CLIENT_ID`, `ADLS_CLIENT_SECRET` | – | ADLS service principal; same fallback |
 | `LLM_PROVIDER` | `securegpt` | `anthropic` for development off the corporate network; `runware` for DeepSeek + Claude via Runware |
 | `SECUREGPT_CLIENT_ID`, `SECUREGPT_CLIENT_SECRET`, `SECUREGPT_SUBSCRIPTION_KEY`, `SECUREGPT_ENV` | – | SecureGPT gateway |
 | `RUNWARE_API_KEY` | – | Runware gateway (`LLM_PROVIDER=runware`) |

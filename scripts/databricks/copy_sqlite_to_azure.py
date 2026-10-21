@@ -8,31 +8,36 @@
 # MAGIC 1. Create the target tables first with the repo's DDL (`deploy/sql/pipeline_schema_full.sql`
 # MAGIC    or `deploy/sql/app_schema_full.sql`).
 # MAGIC 2. Upload the `.db` file to a Unity Catalog volume.
-# MAGIC 3. Fill in the widgets, run with `mode = dry_run`, read the plan, then run with
+# MAGIC 3. Pick the environment, run with `mode = dry_run`, read the plan, then run with
 # MAGIC    `mode = load`.
 # MAGIC
-# MAGIC Needs a single-user (dedicated) cluster: shared access mode blocks the JDBC connection used
-# MAGIC to run T-SQL statements.
+# MAGIC Connects with `azure_sql_connect` (D-057): the service principal from the secret scope,
+# MAGIC server, database, schemas and secret key names from `config/azure.yaml` of the checked-out
+# MAGIC repo (the widgets override them). The cluster needs the ODBC Driver 17 for SQL Server, as
+# MAGIC the loss-run clusters have.
 
 # COMMAND ----------
 
-# MAGIC %pip install azure-identity
+# MAGIC %pip install pyodbc pyyaml
+
+# COMMAND ----------
+
+# MAGIC %run ./azure_sql_connect
 
 # COMMAND ----------
 
 dbutils.widgets.dropdown("database", "pipeline", ["pipeline", "app"], "1. Database")
 dbutils.widgets.text("sqlite_path", "/Volumes/<catalog>/<schema>/<volume>/uw.db", "2. SQLite file")
-dbutils.widgets.text("server", "", "3. Azure SQL server (*.database.windows.net)")
-dbutils.widgets.text("sql_database", "", "4. Azure SQL database")
-dbutils.widgets.text(
-    "target_schema", "", "5. Target schema (blank: uw_pipeline / dbo_professional360)"
-)
-dbutils.widgets.text("staging_schema", "stg_uw_copy", "6. Staging schema (dropped at the end)")
-dbutils.widgets.text("secret_scope", "uw", "7. Secret scope")
-dbutils.widgets.text("tenant_key", "tenant-id", "8. Secret: tenant id")
-dbutils.widgets.text("client_id_key", "sp-client-id", "9. Secret: client id")
-dbutils.widgets.text("client_secret_key", "sp-client-secret", "10. Secret: client secret")
-dbutils.widgets.dropdown("mode", "dry_run", ["dry_run", "load"], "11. Mode")
+dbutils.widgets.dropdown("env", "dv", ["dv", "pp", "pr"], "3. Environment (config/azure.yaml)")
+dbutils.widgets.text("target_schema", "", "4. Target schema (blank: from azure.yaml)")
+dbutils.widgets.text("staging_schema", "stg_uw_copy", "5. Staging schema (dropped at the end)")
+dbutils.widgets.dropdown("mode", "dry_run", ["dry_run", "load"], "6. Mode")
+# Blank: from config/azure.yaml for the environment.
+dbutils.widgets.text("server", "", "7. Server (blank: azure.yaml)")
+dbutils.widgets.text("sql_database", "", "8. Database (blank: azure.yaml)")
+dbutils.widgets.text("secret_scope", "", "9. Secret scope (blank: azure.yaml)")
+dbutils.widgets.text("username_key", "", "10. Secret: client id key (blank: azure.yaml)")
+dbutils.widgets.text("password_key", "", "11. Secret: client secret key (blank: azure.yaml)")
 
 # COMMAND ----------
 
@@ -41,49 +46,19 @@ import shutil
 import sqlite3
 import time
 
-from azure.identity import ClientSecretCredential
-from pyspark.sql.types import StringType, StructField, StructType
-
-DEFAULT_SCHEMA = {"pipeline": "uw_pipeline", "app": "dbo_professional360"}  # config/azure.yaml
 W = {k: dbutils.widgets.get(k).strip() for k in (
-    "database", "sqlite_path", "server", "sql_database", "target_schema", "staging_schema",
-    "secret_scope", "tenant_key", "client_id_key", "client_secret_key", "mode")}  # fmt: skip
-TARGET = W["target_schema"] or DEFAULT_SCHEMA[W["database"]]
+    "database", "sqlite_path", "env", "target_schema", "staging_schema", "mode", "server",
+    "sql_database", "secret_scope", "username_key", "password_key")}  # fmt: skip
+S = azure_sql_settings(W["env"], server=W["server"], database=W["sql_database"],
+                       secret_scope=W["secret_scope"], username_key=W["username_key"],
+                       password_key=W["password_key"])  # fmt: skip
+DEFAULT_SCHEMA = {"pipeline": "uw_pipeline", "app": "dbo_professional360"}
+TARGET = (W["target_schema"] or S.get(f"{W['database']}_schema")
+          or DEFAULT_SCHEMA[W["database"]])  # fmt: skip
 STAGE = W["staging_schema"]
-assert W["server"] and W["sql_database"], "fill in the server and database widgets"
 assert TARGET != STAGE, "the staging schema must differ from the target schema"
-
-# Service principal from the secret scope; the access token is never printed.
-token = (
-    ClientSecretCredential(
-        dbutils.secrets.get(W["secret_scope"], W["tenant_key"]),
-        dbutils.secrets.get(W["secret_scope"], W["client_id_key"]),
-        dbutils.secrets.get(W["secret_scope"], W["client_secret_key"]),
-    )
-    .get_token("https://database.windows.net/.default")
-    .token
-)
-
-URL = (f"jdbc:sqlserver://{W['server']}:1433;database={W['sql_database']};"
-       "encrypt=true;trustServerCertificate=false;loginTimeout=30")  # fmt: skip
-PROPS = {"accessToken": token, "driver": "com.microsoft.sqlserver.jdbc.SQLServerDriver"}
-
-
-def query(sql: str) -> list:
-    """Rows of a T-SQL query."""
-    return (spark.read.format("jdbc").option("url", URL).option("query", sql)
-            .options(**PROPS).load().collect())  # fmt: skip
-
-
-def run_sql(sql: str) -> None:
-    """Run T-SQL statements in one batch on their own connection."""
-    props = spark._jvm.java.util.Properties()
-    props.setProperty("accessToken", token)
-    conn = spark._jvm.java.sql.DriverManager.getConnection(URL, props)
-    try:
-        conn.createStatement().execute(sql)
-    finally:
-        conn.close()
+engine = sql_engine(S)
+print(f"target {S['server']} / {S['database']} / schema {TARGET} ({W['env']})")
 
 
 def q(name: str) -> str:
@@ -109,7 +84,10 @@ src_tables = {
 }
 src_rows = {t: src.execute(f"SELECT COUNT(*) FROM {q(t)}").fetchone()[0] for t in src_tables}
 
-cols = query(f"""
+target: dict[str, dict[str, dict]] = {}
+for r in query(
+    engine,
+    f"""
     SELECT c.TABLE_NAME, c.COLUMN_NAME, c.DATA_TYPE, c.IS_NULLABLE,
            COLUMNPROPERTY(OBJECT_ID(QUOTENAME(c.TABLE_SCHEMA) + '.' + QUOTENAME(c.TABLE_NAME)),
                           c.COLUMN_NAME, 'IsIdentity') AS IS_IDENTITY,
@@ -117,18 +95,26 @@ cols = query(f"""
     FROM INFORMATION_SCHEMA.COLUMNS c
     JOIN INFORMATION_SCHEMA.TABLES t
       ON t.TABLE_SCHEMA = c.TABLE_SCHEMA AND t.TABLE_NAME = c.TABLE_NAME
-    WHERE c.TABLE_SCHEMA = '{TARGET}' AND t.TABLE_TYPE = 'BASE TABLE'""")
-target: dict[str, dict[str, dict]] = {}
-for r in cols:
-    target.setdefault(r.TABLE_NAME, {})[r.COLUMN_NAME] = r.asDict()
-target_rows = {
-    r.name: int(r.n)
-    for r in query(f"""
-    SELECT t.name, SUM(p.rows) AS n FROM sys.tables t
-    JOIN sys.schemas s ON s.schema_id = t.schema_id
-    JOIN sys.partitions p ON p.object_id = t.object_id AND p.index_id IN (0, 1)
-    WHERE s.name = '{TARGET}' GROUP BY t.name""")
-}
+    WHERE c.TABLE_SCHEMA = '{TARGET}' AND t.TABLE_TYPE = 'BASE TABLE'""",
+):
+    target.setdefault(r["TABLE_NAME"], {})[r["COLUMN_NAME"]] = r
+
+
+def row_counts() -> dict[str, int]:
+    return {
+        r["name"]: int(r["n"])
+        for r in query(
+            engine,
+            f"""
+        SELECT t.name, SUM(p.rows) AS n FROM sys.tables t
+        JOIN sys.schemas s ON s.schema_id = t.schema_id
+        JOIN sys.partitions p ON p.object_id = t.object_id AND p.index_id IN (0, 1)
+        WHERE s.name = '{TARGET}' GROUP BY t.name""",
+        )
+    }
+
+
+target_rows = row_counts()
 
 # COMMAND ----------
 
@@ -184,6 +170,14 @@ def as_text(v: object) -> str | None:
     return str(v)
 
 
+def widths(t: str, cols: list[str]) -> list[str]:
+    """NVARCHAR size of each staging column: twice the longest SQLite value (room for the
+    text form of numbers and hex of blobs), MAX past 4,000."""
+    longest = src.execute(f"SELECT {', '.join(f'MAX(LENGTH({q(c)}))' for c in cols)} "
+                          f"FROM {q(t)}").fetchone()  # fmt: skip
+    return ["MAX" if 2 * (n or 0) > 4000 else str(max(1, 2 * (n or 0))) for n in longest]
+
+
 TIME_TYPES = ("date", "datetime", "datetime2", "smalldatetime", "datetimeoffset")
 
 
@@ -203,41 +197,56 @@ def select_list(t: str, shared: list[str]) -> str:
     return ", ".join(out)
 
 
-CHUNK = 100_000  # rows per write: the largest table (xbrl_fact) has about 600,000
-run_sql(f"IF SCHEMA_ID('{STAGE}') IS NULL EXEC('CREATE SCHEMA {q(STAGE)}')")
+run_sql(engine, f"IF SCHEMA_ID('{STAGE}') IS NULL EXEC('CREATE SCHEMA {q(STAGE)}')")
 started = time.time()
 for t, shared in plan:
     if not src_rows[t]:
         continue
-    schema = StructType([StructField(c, StringType(), True) for c in shared])
-    cur = src.execute(f"SELECT {', '.join(q(c) for c in shared)} FROM {q(t)}")
-    mode, staged = "overwrite", 0
-    while batch := cur.fetchmany(CHUNK):
-        rows = [[as_text(v) for v in r] for r in batch]
-        writer = spark.createDataFrame(rows, schema).write.mode(mode).option("batchsize", 10000)
-        writer.jdbc(URL, f"{q(STAGE)}.{q(t)}", properties=PROPS)
-        mode, staged = "append", staged + len(rows)
+    ws = widths(t, shared)
+    cols = ", ".join(f"{q(c)} NVARCHAR({w}) NULL" for c, w in zip(shared, ws, strict=True))
+    staged_table = f"{q(STAGE)}.{q(t)}"
+    run_sql(engine, f"DROP TABLE IF EXISTS {staged_table}; CREATE TABLE {staged_table} ({cols})")
+    insert = (f"INSERT INTO {q(STAGE)}.{q(t)} ({', '.join(q(c) for c in shared)}) "
+              f"VALUES ({', '.join('?' * len(shared))})")  # fmt: skip
+    # pyodbc's fast mode sends whole batches, sized by the column width; long text columns
+    # (NVARCHAR(MAX)) go row by row in smaller batches instead.
+    long_text = "MAX" in ws
+    raw = engine.raw_connection()
+    try:
+        cur = raw.cursor()
+        cur.fast_executemany = not long_text
+        rows = src.execute(f"SELECT {', '.join(q(c) for c in shared)} FROM {q(t)}")
+        staged = 0
+        while batch := rows.fetchmany(2_000 if long_text else 50_000):
+            cur.executemany(insert, [[as_text(v) for v in r] for r in batch])
+            raw.commit()
+            staged += len(batch)
+    finally:
+        raw.close()
     print(f"staged {t}: {staged} rows ({time.time() - started:.0f} s)")
 
 loaded = []
 try:
     for t, _ in plan:
-        run_sql(f"ALTER TABLE {q(TARGET)}.{q(t)} NOCHECK CONSTRAINT ALL")
+        run_sql(engine, f"ALTER TABLE {q(TARGET)}.{q(t)} NOCHECK CONSTRAINT ALL")
     for t, shared in plan:
         if not src_rows[t]:
             continue
         identity = any(target[t][c]["IS_IDENTITY"] for c in shared)
         on = f"SET IDENTITY_INSERT {q(TARGET)}.{q(t)} ON;" if identity else ""
         off = f"SET IDENTITY_INSERT {q(TARGET)}.{q(t)} OFF;" if identity else ""
-        run_sql(f"""{on}
+        run_sql(
+            engine,
+            f"""{on}
             INSERT INTO {q(TARGET)}.{q(t)} ({", ".join(q(c) for c in shared)})
             SELECT {select_list(t, shared)} FROM {q(STAGE)}.{q(t)};
-            {off}""")
+            {off}""",
+        )
         loaded.append(t)
         print(f"loaded {t}")
 finally:  # keys are checked again even when a table failed
     for t, _ in plan:
-        run_sql(f"ALTER TABLE {q(TARGET)}.{q(t)} WITH CHECK CHECK CONSTRAINT ALL")
+        run_sql(engine, f"ALTER TABLE {q(TARGET)}.{q(t)} WITH CHECK CHECK CONSTRAINT ALL")
 
 # COMMAND ----------
 
@@ -245,19 +254,12 @@ finally:  # keys are checked again even when a table failed
 
 # COMMAND ----------
 
-after = {
-    r.name: int(r.n)
-    for r in query(f"""
-    SELECT t.name, SUM(p.rows) AS n FROM sys.tables t
-    JOIN sys.schemas s ON s.schema_id = t.schema_id
-    JOIN sys.partitions p ON p.object_id = t.object_id AND p.index_id IN (0, 1)
-    WHERE s.name = '{TARGET}' GROUP BY t.name""")
-}
+after = row_counts()
 diff = [(t, src_rows[t], after.get(t, 0)) for t, _ in plan if src_rows[t] != after.get(t, 0)]
 for t, a, b in diff:
     print(f"MISMATCH {t}: SQLite {a}, Azure SQL {b}")
 assert not diff, "row counts differ; the staging tables are kept for checking"
 for t, _ in plan:
-    run_sql(f"DROP TABLE IF EXISTS {q(STAGE)}.{q(t)}")
-run_sql(f"IF SCHEMA_ID('{STAGE}') IS NOT NULL EXEC('DROP SCHEMA {q(STAGE)}')")
+    run_sql(engine, f"DROP TABLE IF EXISTS {q(STAGE)}.{q(t)}")
+run_sql(engine, f"IF SCHEMA_ID('{STAGE}') IS NOT NULL EXEC('DROP SCHEMA {q(STAGE)}')")
 print(f"done: {len(loaded)} tables copied into {TARGET}, row counts match")
