@@ -16,6 +16,7 @@ from pathlib import Path
 import yaml
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL, Engine
+from sqlalchemy.pool import NullPool
 
 REQUIRED = ("server", "database", "secret_scope", "username_key", "password_key")
 
@@ -49,7 +50,9 @@ def azure_sql_settings(env: str, **overrides: str) -> dict:
 
 def sql_engine(s: dict) -> Engine:
     """Engine for `azure_sql_settings`; the service principal is read from the secret scope
-    and never printed."""
+    and never printed. No connection pool: every statement gets a new session, so a session
+    setting left behind by a failed batch (SET IDENTITY_INSERT ... ON) cannot break the next
+    table."""
     return create_engine(
         URL.create(
             "mssql+pyodbc",
@@ -66,6 +69,7 @@ def sql_engine(s: dict) -> Engine:
             },
         ),
         fast_executemany=True,
+        poolclass=NullPool,
     )
 
 

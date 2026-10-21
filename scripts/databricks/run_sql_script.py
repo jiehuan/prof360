@@ -52,7 +52,9 @@ for part in re.split(r"(?im)^\s*GO\s*$", path.read_text(encoding="utf-8")):
     code = [ln for ln in part.splitlines() if ln.strip() and not ln.strip().startswith("--")]
     if code:
         batches.append(part.strip())
-schemas = sorted(set(re.findall(r"SCHEMA_ID\(N'([^']+)'\)", path.read_text(encoding="utf-8"))))
+script = path.read_text(encoding="utf-8")
+schemas = sorted(set(re.findall(r"SCHEMA_ID\(N'([^']+)'\)", script))
+                 | set(re.findall(r"OBJECT_ID\(N'([^'.]+)\.", script)))  # fmt: skip
 print(f"{path.name}: {len(batches)} batches, schemas {schemas}, on {S['server']} / "
       f"{S['database']} ({W['env']})")  # fmt: skip
 

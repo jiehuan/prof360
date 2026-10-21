@@ -6,6 +6,9 @@
   added columns, indexes, foreign keys to drop). Idempotent: every statement checks first.
 - deploy/sql/app_schema_full.sql: CREATE TABLE for every table in schema_app.py.
 - deploy/sql/pipeline_schema_full.sql: the pipeline's own tables (schema.py).
+- deploy/sql/pipeline_schema_drop.sql, app_schema_drop.sql: DROP TABLE for exactly the tables
+  above, children first, plus the copy notebook's staging schema; to start a new environment
+  over (docs/databricks-copy.md). Other tables in the schema (Users, ...) are not touched.
 Tables are qualified with the schemas in config/azure.yaml (default environment). Generated from
 the table definitions, in their definition order, so a rerun without changes gives the same
 files; rerun after changing the tables or the schema names, and commit the output.
@@ -179,6 +182,50 @@ def full(md: MetaData, schema: str, what: str,
     return "\n".join(parts)
 
 
+STAGING_SCHEMA = "stg_uw_copy"  # scripts/databricks/copy_sqlite_to_azure.py
+
+
+def drop(md: MetaData, schema: str, drop_schema: bool) -> str:
+    """DROP TABLE for every table of `md`, children before parents, one per batch."""
+    parts = [
+        HEADER,
+        f"-- DELETES the tables below and their data in [{schema}], and the copy notebook's",
+        f"-- staging schema [{STAGING_SCHEMA}]. Only to start a new environment over (e.g. after a",
+        "-- failed copy, docs/databricks-copy.md); never on an environment the pipeline or the BFF",
+        "-- uses. Other tables in the schema are not touched; a foreign key from one of them to a",
+        "-- table below stops the script at that table.",
+        "",
+    ]
+    for table in reversed(md.sorted_tables):
+        name = f"{schema}.{_q(table.name)}"
+        parts += [f"IF OBJECT_ID(N'{schema}.{table.name}', N'U') IS NOT NULL",
+                  f"    DROP TABLE {name};", "GO", ""]  # fmt: skip
+    parts += [
+        "-- The copy notebook's staging tables (all of them) and schema.",
+        "DECLARE @sql NVARCHAR(MAX) = N'';",
+        "SELECT @sql += N'DROP TABLE " + STAGING_SCHEMA + ".' + QUOTENAME(t.name) + N';'",
+        f"FROM sys.tables t WHERE t.schema_id = SCHEMA_ID(N'{STAGING_SCHEMA}');",
+        "EXEC sp_executesql @sql;",
+        f"IF SCHEMA_ID(N'{STAGING_SCHEMA}') IS NOT NULL EXEC('DROP SCHEMA {STAGING_SCHEMA}');",
+        "GO",
+        "",
+    ]
+    if drop_schema:
+        parts += [
+            "-- The schema itself, when nothing else is left in it.",
+            f"IF SCHEMA_ID(N'{schema}') IS NOT NULL AND NOT EXISTS",
+            f"    (SELECT 1 FROM sys.objects WHERE schema_id = SCHEMA_ID(N'{schema}'))",
+            f"    EXEC('DROP SCHEMA {schema}');",
+            "GO",
+            "",
+        ]
+    return "\n".join(parts)
+
+
+def _q(name: str) -> str:
+    return "[" + name.replace("]", "]]") + "]"
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     outputs = {
@@ -189,6 +236,8 @@ def main() -> None:
         "pipeline_schema_full.sql": full(pipeline_metadata, PIPELINE_SCHEMA, "The pipeline's own "
                                          "tables (raw facts, documents, LLM cache, runs, DQ). The "
                                          "BFF does not read them.", PIPELINE_ADDED_COLUMNS),
+        "pipeline_schema_drop.sql": drop(pipeline_metadata, PIPELINE_SCHEMA, drop_schema=True),
+        "app_schema_drop.sql": drop(app_metadata, APP_SCHEMA, drop_schema=False),
     }  # fmt: skip
     for name, text in outputs.items():
         (OUT / name).write_text(text, encoding="utf-8")

@@ -5,7 +5,7 @@ Three notebooks in `scripts/databricks/` (Databricks source format):
 | Notebook | Does |
 |---|---|
 | `azure_sql_connect` | Shared connection, loaded by the other two with `%run` |
-| `run_sql_script` | Runs a DDL script from `deploy/sql/` (creates schemas and tables) |
+| `run_sql_script` | Runs a script from `deploy/sql/`: creates schemas and tables, or drops them (`*_drop.sql`) |
 | `copy_sqlite_to_azure` | One-time copy of `data/uw.db` or `data/app.db` into Azure SQL, keeping row ids |
 
 ## How they connect
@@ -62,6 +62,15 @@ batch and stops; the batches before it stay applied.
 The scripts carry the schema names from `config/azure.yaml` (`dv`). If another environment uses
 other names, edit azure.yaml and run `scripts/export_app_ddl.py` first.
 
+To start over, `deploy/sql/pipeline_schema_drop.sql` and `app_schema_drop.sql` (generated
+with the DDL) drop exactly the tables of the full scripts, children first, plus the copy
+notebook's staging schema; the pipeline one also drops `uw_pipeline` once it is empty. Other
+tables in the app schema (`Users`, `User*`, owned by the BFF) are not touched, and a foreign key
+from one of them stops the script at the table it references. Run them with this notebook like
+any script (dry run first), then the full script to create the tables again. They delete data:
+never on an environment the pipeline or the BFF uses. After a failed copy, `clear_target` in the
+copy notebook is usually enough (it keeps the tables and empties them).
+
 Other ways to run the same files: SSMS or Azure Data Studio (open the file, connect, run), or
 `sqlcmd -S <server> -d <database> --authentication-method ActiveDirectoryServicePrincipal
 -U <client id> -i deploy/sql/pipeline_schema_full.sql`.
@@ -105,10 +114,13 @@ Steps:
 
 - **Before the load step** (dry run, staging): fix the cause and run again; the target is
   untouched and staging tables are re-created.
-- **During or after the load:** some target tables now have rows, so a rerun will refuse.
-  Empty the target tables (or re-create them from the DDL), then run again.
 - **Row count mismatch:** the staging tables are kept for comparison. Drop the `stg_uw_copy`
   schema by hand when done.
+- **After a failed load** some target tables have rows and a rerun refuses. Run the notebook
+  with `mode = clear_target` (empties the tables of this copy, re-enables their constraints,
+  drops the staging schema), then run the whole notebook again; never rerun the load cell on
+  its own (it now checks and refuses). The first error printed (`FAILED to load <table>`) is
+  the cause; constraint messages after it are consequences.
 
 ## Validation
 
