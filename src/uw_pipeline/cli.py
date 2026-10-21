@@ -44,6 +44,7 @@ class Stage(StrEnum):
     governance = "governance"
     legal = "legal"
     clinical = "clinical"
+    industry = "industry"
     signals = "signals"
     insights = "insights"
     metricdetail = "metricdetail"
@@ -54,7 +55,7 @@ class Stage(StrEnum):
 
 # Default order for manual runs (scheduled jobs list their stages in config/jobs.yaml).
 STAGE_ORDER = [
-    Stage.company, Stage.facts, Stage.compute, Stage.market, Stage.documents,
+    Stage.company, Stage.facts, Stage.compute, Stage.market, Stage.documents, Stage.industry,
     Stage.transcripts, Stage.news, Stage.scores, Stage.textmetrics, Stage.governance,
     Stage.legal, Stage.clinical, Stage.signals,
     Stage.insights,

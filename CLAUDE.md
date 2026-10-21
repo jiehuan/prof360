@@ -8,7 +8,7 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 
 ```bash
 .venv/bin/pip install -e ".[dev]"             # Python 3.14 venv (project supports >=3.11)
-.venv/bin/uw-pipeline run --all     # company -> facts -> compute -> market -> documents
+.venv/bin/uw-pipeline run --all     # company -> facts -> compute -> market -> documents -> industry
                                      #   -> transcripts -> news -> scores -> textmetrics
                                      #   -> governance -> legal -> clinical -> signals -> insights
                                      #   -> metricdetail -> publish (app database) -> dq
@@ -57,8 +57,8 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
 - Companies are identified by pinned CIK in `config/companies.yaml`; tickers are display-only.
 - Metric lists per industry group are curated in `config/metrics.yaml` (metric_sets) and
   `config/industry_groups.yaml`; never generate them at run time. One exception (PLAN 17g): a
-  company outside every industry group gets curated metric sets chosen by the LLM, never new
-  metrics; the choice is validated, stored and reviewable.
+  company outside every industry group gets an existing group chosen by the LLM (`industry`
+  stage, D-059), never new metrics; the choice is validated, stored and reviewable.
 - Every metric gap shown by `coverage-report` needs a note in `config/coverage_notes.yaml` for
   companies in the development sample (PLAN 17a′); beyond it, gaps are tracked as per-group
   rates.

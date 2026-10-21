@@ -563,6 +563,26 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_followup_question_sou
     CREATE INDEX ix_followup_question_source_question_id ON uw_pipeline.followup_question_source (question_id);
 GO
 
+IF OBJECT_ID(N'uw_pipeline.industry_choice', N'U') IS NULL
+CREATE TABLE uw_pipeline.industry_choice (
+	company_id INTEGER NOT NULL, 
+	group_code NVARCHAR(40) NOT NULL, 
+	status NVARCHAR(10) NOT NULL, 
+	extractor_group NVARCHAR(40) NULL, 
+	tiebreaker_group NVARCHAR(40) NULL, 
+	quote NVARCHAR(max) NOT NULL, 
+	reason NVARCHAR(1000) NOT NULL, 
+	doc_id INTEGER NOT NULL, 
+	model NVARCHAR(60) NOT NULL, 
+	prompt_version NVARCHAR(40) NOT NULL, 
+	input_hash NVARCHAR(64) NOT NULL, 
+	updated_at DATETIMEOFFSET NOT NULL, 
+	PRIMARY KEY (company_id), 
+	FOREIGN KEY(company_id) REFERENCES uw_pipeline.company (company_id), 
+	FOREIGN KEY(doc_id) REFERENCES uw_pipeline.source_document (doc_id)
+);
+GO
+
 IF OBJECT_ID(N'uw_pipeline.insider_transaction', N'U') IS NULL
 CREATE TABLE uw_pipeline.insider_transaction (
 	accession_no NVARCHAR(25) NOT NULL, 

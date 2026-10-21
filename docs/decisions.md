@@ -1401,3 +1401,32 @@ LLM runs until the end, then one comparison.
   the heading just before a quote counts (Celldex states barzolvolimab once per section), and
   indications are compared without their parenthetical detail (one CDX-622 program, not two).
   Golden values: Viking (four quarters) and Xenon (latest-quarter burn).
+
+**D-059 Companies outside every industry group: the LLM picks one (Phase 17g, 2026-10-21).**
+- Applies to a company whose SIC code maps to no group and that has no `industry` in
+  companies.yaml (no SIC, BDCs, shipping, cruise lines). Foreign issuers stay out of scope.
+- What the model chooses, options: (a) any combination of metric sets; (b) one existing
+  industry group. Chosen: (b). A group carries its sets together with its traits, excluded
+  metrics, signal settings and `is_financial`, which a set combination would not; the plan's
+  bound holds either way (only existing metrics, no new ones, no formula changes).
+- Input: the business section of the latest 10-K (Item 1; the first passages of the filing
+  when it has no Item 1) and the SIC description; the list of groups with their label and the
+  names of the metrics their module sets add. Output: the group code (an enum of the configured
+  codes, so an unknown code fails schema validation), a verbatim quote from the business
+  section that supports it (must be found), and a one-sentence reason.
+- Both models choose (`industry_choice_v1`). The same group: AGREED and used. Different:
+  the tie-breaker's group is used, DISPUTED, and the choice waits in `uw-pipeline review` (type
+  INDUSTRY); a rejected choice is not used (the company stays in the default group until someone
+  sets `industry`). Calls are cached by input hash, so later runs reuse the choice until the
+  business section changes.
+- Where: a new `industry` stage after `documents` stores the choice in `industry_choice` and
+  sets the company's group; it recomputes that company's metrics in the same run (its facts
+  are those of every company: instance-only module concepts follow on the next run). The
+  `company` stage keeps a stored, usable choice when the SIC code gives no group.
+- App: the metric methodology text of such a company says the metrics were chosen by AI from
+  the business description (no new field, plan option A).
+- Trial (run 132, 2026-10-21, Haiku $0.01) on the largest company of each kind outside the
+  groups: both models chose the same group for all six, each supported by its 10-K: Ares
+  Capital (BDC, no SIC) CREDIT, Carnival (4400) HOTELS, Dolby (6794) SOFTWARE_INTERNET, Kirby
+  (4400) TRANSPORT, SSR Mining (6795) MINING, Texas Pacific Land (6792) ENERGY; their metrics
+  were recomputed in the same run (SSR Mining: retirement obligations, capex / D&A).

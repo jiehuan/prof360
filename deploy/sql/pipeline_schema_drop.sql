@@ -62,6 +62,10 @@ IF OBJECT_ID(N'uw_pipeline.insider_transaction', N'U') IS NOT NULL
     DROP TABLE uw_pipeline.[insider_transaction];
 GO
 
+IF OBJECT_ID(N'uw_pipeline.industry_choice', N'U') IS NOT NULL
+    DROP TABLE uw_pipeline.[industry_choice];
+GO
+
 IF OBJECT_ID(N'uw_pipeline.followup_question_source', N'U') IS NOT NULL
     DROP TABLE uw_pipeline.[followup_question_source];
 GO

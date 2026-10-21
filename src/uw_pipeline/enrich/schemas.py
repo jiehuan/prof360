@@ -496,3 +496,16 @@ class ClinicalPrograms(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     programs: list[ClinicalProgramRead]
+
+
+# -- Industry group for a company outside every group (Phase 17g, D-059) ------------------------
+
+
+class IndustryChoice(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    group: str = Field(description="Code of the closest industry group from the list")
+    quote: str = Field(
+        description="Verbatim passage (<= 400 chars) of the business section supporting it"
+    )
+    reason: str = Field(description="One sentence: why this group fits the business")

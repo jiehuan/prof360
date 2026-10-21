@@ -710,6 +710,26 @@ clinical_program = Table(
     Column("updated_at", DateTime(timezone=True), nullable=False),
 )
 
+# Industry group chosen by the LLM for a company whose SIC code maps to no group (Phase 17g,
+# D-059). AGREED: both models chose `group_code`; DISPUTED: they differed, the tie-breaker's
+# choice is used and waits in `uw-pipeline review` (a rejected one is not used).
+industry_choice = Table(
+    "industry_choice",
+    metadata,
+    Column("company_id", Integer, ForeignKey("company.company_id"), primary_key=True),
+    Column("group_code", Unicode(40), nullable=False),
+    Column("status", Unicode(10), nullable=False),  # AGREED | DISPUTED
+    Column("extractor_group", Unicode(40)),
+    Column("tiebreaker_group", Unicode(40)),
+    Column("quote", UnicodeText, nullable=False),
+    Column("reason", Unicode(1000), nullable=False),
+    Column("doc_id", Integer, ForeignKey("source_document.doc_id"), nullable=False),
+    Column("model", Unicode(60), nullable=False),
+    Column("prompt_version", Unicode(40), nullable=False),
+    Column("input_hash", Unicode(64), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
+)
+
 # Human decisions on items the pipeline could not settle (`uw-pipeline review`, decisions D-045):
 # DISPUTED / OVERRULED signals and identity breaks. Only a named reviewer decides; a rejected
 # signal is left out of insights and the review queue.

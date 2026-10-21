@@ -63,6 +63,9 @@ DEPENDS: dict[str, tuple[str, ...]] = {
     # Pipeline facts of clinical-stage companies (Phase 17c, D-058); insights read them when
     # present.
     "clinical": ("documents",),
+    # Industry group for companies outside every group, chosen by the LLM from the 10-K's
+    # business section (Phase 17g, D-059); it recomputes the company's metrics itself.
+    "industry": ("documents",),
     "signals": ("compute", "documents"),
     "insights": ("signals", "textmetrics"),
     "metricdetail": ("compute", "insights"),

@@ -7,10 +7,11 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
-from sqlalchemy import Engine
+from sqlalchemy import Connection, Engine, select
 
 from uw_pipeline.clients.sec import SecClient
 from uw_pipeline.config import CompanyConfig, IndustryConfig
+from uw_pipeline.enrich.industry_choice import usable_choice
 from uw_pipeline.extract.company import fetch_submissions
 from uw_pipeline.load.upsert import upsert
 from uw_pipeline.normalize.company import parse_sic, parse_submissions
@@ -59,6 +60,12 @@ def run_company_stage(
                 refreshed_at=now(),
             )
             with engine.begin() as conn:
+                if how == "default":  # the LLM's choice, when there is one (D-059)
+                    chosen = _stored_choice(conn, record.cik)
+                    if chosen and chosen in industry.groups:
+                        record = record.model_copy(update={
+                            "industry_group": chosen,
+                            "is_financial": industry.groups[chosen].is_financial})  # fmt: skip
                 upsert(conn, company_table, [record.model_dump()], key_cols=["cik"])
             log.info(
                 "%s: CIK %s, SIC %s -> %s%s",
@@ -73,3 +80,11 @@ def run_company_stage(
             log.exception("%s: company stage failed", cfg.ticker)
             results.append(TaskResult(cfg.ticker, "company", ok=False, detail=str(exc)))
     return results
+
+
+def _stored_choice(conn: Connection, cik: str) -> str | None:
+    """The usable LLM choice of group for this company, if it has a row and a choice."""
+    company_id = conn.execute(
+        select(company_table.c.company_id).where(company_table.c.cik == cik)
+    ).scalar()
+    return usable_choice(conn, company_id) if company_id is not None else None

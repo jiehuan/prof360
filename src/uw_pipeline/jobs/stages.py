@@ -31,6 +31,7 @@ from uw_pipeline.jobs.run_company import TaskResult, run_company_stage
 from uw_pipeline.jobs.run_documents import run_documents_stage
 from uw_pipeline.jobs.run_dq import run_dq_stage
 from uw_pipeline.jobs.run_governance import run_governance_stage
+from uw_pipeline.jobs.run_industry import run_industry_stage
 from uw_pipeline.jobs.run_insights import run_insights_stage
 from uw_pipeline.jobs.run_legal import run_legal_stage
 from uw_pipeline.jobs.run_market import run_market_stage
@@ -221,6 +222,10 @@ class StageRunner:
             return lambda c: run_legal_stage(c, self.llm, self.storage, e)
         if stage == "clinical":
             return lambda c: run_clinical_stage(c, self.llm, self.storage, e)
+        if stage == "industry":
+            return lambda c: run_industry_stage(
+                c, self.llm, reg, ind, e, lambda cs: run_compute_stage(cs, reg, ind, e)
+            )
         if stage == "signals":
             return lambda c: run_signals_stage(
                 c, self.sec, self.signal_rules, e, llm=self.llm, industry=ind,

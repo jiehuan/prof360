@@ -86,6 +86,7 @@ flowchart LR
   documents --> governance
   documents --> legal
   documents --> clinical
+  documents --> industry
   signals --> insights
   textmetrics --> insights
   insights --> metricdetail
@@ -107,6 +108,7 @@ flowchart LR
 | textmetrics | `run_text_metrics` | Figures from MD&A and releases (NIM, LCR, …); table metrics read by cell (RevPAR, occupancy, ADR, AUM, VaR, international revenue, average interest-earning assets, capacity utilization) and the loan book; values XBRL covers (capital ratios, release figures) only cross-checked; identity gate (D-022, D-032, D-042, D-044) | `metric_value` (LLM_EXTRACTED, PRELIMINARY), `loan_portfolio_*`, `release_check` | LLM |
 | governance | `run_governance` | Board composition, auditor fees, dual-class shares and CEO start year from the latest proxy, both models, facts kept only when quoted and agreed (D-045, D-050) | `board_composition` | LLM |
 | legal | `run_legal` | Litigation and regulatory matters from the latest 10-K and later 10-Qs, both models, matched across filings; new matters to review (D-050) | `legal_matter` | LLM |
+| industry | `run_industry` | For a company whose SIC code maps to no group: both models choose an existing group from the 10-K business section; agreed or reviewed (type INDUSTRY); the company's metrics are recomputed (D-059) | `industry_choice` | LLM |
 | clinical | `run_clinical` | Pipeline of companies with the `clinical_stage` trait: candidates, phase, next milestone and its timing from the latest 10-K and later 10-Qs, both models agreeing; an insight input, not published (D-058) | `clinical_program` | LLM |
 | signals | `run_signals` | 8-K, keyword, auditor, metric, threshold, board, 13D, market, insider and legal signals; LLM vote on judgment topics (D-027, D-028, D-045, D-049, D-050) | `signal`, `signal_vote` | LLM |
 | insights | `run_insights` | Activity summaries, behavioral, strategic & risk, key insights, follow-up questions (D-033), key takeaways (D-053) | `insight*`, `followup_question*`, `activity` | LLM |
@@ -137,7 +139,7 @@ America/New_York, `concurrencyPolicy: Forbid`):
 
 | Job | Schedule (ET) | Stages |
 |---|---|---|
-| `nightly` | 23:30 | company, facts, compute, market, documents, transcripts, scores, textmetrics, governance, legal, clinical, signals, insights, metricdetail, publish, dq |
+| `nightly` | 23:30 | company, facts, compute, market, documents, industry, transcripts, scores, textmetrics, governance, legal, clinical, signals, insights, metricdetail, publish, dq |
 | `morning` | 05:30 | same as nightly (catch-up) |
 | `news` | 03:00, 09:00, 15:00, 21:00 | news, scores, publish |
 
@@ -173,6 +175,7 @@ SUCCEEDED run can have Errors; the summary then points to `uw-pipeline dq-report
 | Governance | `board_composition` |
 | Market and insiders | `market_daily`, `earnings_report` (by symbol), `insider_transaction` (Form 4 lines) |
 | Litigation | `legal_matter` |
+| Industry choice | `industry_choice` (LLM-chosen group for companies outside every group, D-059) |
 | Clinical pipeline | `clinical_program` (current programs of clinical-stage companies, D-058) |
 
 Conventions:

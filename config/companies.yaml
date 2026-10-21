@@ -1158,3 +1158,30 @@ companies:
     display_name: "Annexon"
     news_aliases: ["Annexon"]
     traits: [clinical_stage]
+
+  # Industry choice trial (Phase 17g, D-059): companies whose SIC code maps to no group (the
+  # largest by revenue of each kind in the universe); the `industry` stage picks their group.
+  - ticker: CCL
+    cik: 815097
+    display_name: "Carnival"
+    news_aliases: ["Carnival"]
+  - ticker: KEX
+    cik: 56047
+    display_name: "Kirby"
+    news_aliases: ["Kirby Corp", "Kirby Corporation"]
+  - ticker: SSRM
+    cik: 921638
+    display_name: "SSR Mining"
+    news_aliases: ["SSR Mining"]
+  - ticker: DLB
+    cik: 1308547
+    display_name: "Dolby Laboratories"
+    news_aliases: ["Dolby"]
+  - ticker: TPL
+    cik: 1811074
+    display_name: "Texas Pacific Land"
+    news_aliases: ["Texas Pacific Land"]
+  - ticker: ARCC
+    cik: 1287750
+    display_name: "Ares Capital"
+    news_aliases: ["Ares Capital"]
