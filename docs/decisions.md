@@ -1320,6 +1320,17 @@ LLM runs until the end, then one comparison.
   | attendance | LYV | none: no other sample company reports it |
   | restaurants, franchised share | MCD, SBUX, CMG | DRI, YUMC |
 
+- Holdout result (2026-10-21, definitions final; runs 125–126, Haiku $1.21): every holdout
+  value kept matches its filing, about 30 values across FCX gold, SCCO copper, MLM aggregates,
+  CLF and AA shipments and prices, TOL and NVR closings, backlog and cancellations, UHS
+  same-facility revenue, DVA treatments, YUMC restaurants and franchised share (quotes 100%
+  found, values 100% right; PLAN 17e asks 100% / 95%). No value where the filing gives no
+  company total: CRH (volume and price per product line), SW (none), UHS admissions and volume
+  (acute care and behavioral health apart; the second read refused the extractor's segment
+  figure), CLF utilization (not reported), NEM copper (tonnes). Misses, left as found
+  (holdouts are not tuned on): Labcorp's "organic volume increased by 1.8%" was not read;
+  Darden gives its restaurants in parts (2,218 owned plus franchised), not a system total.
+
 - Core change found on the sample: `RevenueFromContractWithCustomerIncludingAssessedTax` is the
   last revenue candidate; it is Valero's only total and Wynn Resorts' since 2019 (both had no
   current revenue). It fills only periods where no earlier candidate is tagged.
