@@ -16,7 +16,7 @@ from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.clients.sec import SecClient
 from uw_pipeline.config import CompanyConfig, IndustryConfig
 from uw_pipeline.enrich.legal import legal_matters
-from uw_pipeline.enrich.llm import LLMConfig, LLMUnavailableError
+from uw_pipeline.enrich.llm import LLMConfig, LLMUnavailableError, short_transactions
 from uw_pipeline.extract.filings import instance_name, ownership_parties
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import company_row
@@ -287,7 +287,7 @@ def run_signals_stage(
     results: list[TaskResult] = []
     for cfg in companies:
         try:
-            with engine.begin() as conn:
+            with short_transactions(engine) as conn:
                 voter = Voter(llm[0], llm[1], rules, conn, now) if llm else None
                 try:
                     company_id, detected, votes = detect_company(

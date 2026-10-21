@@ -1470,3 +1470,26 @@ LLM runs until the end, then one comparison.
   Stanley (legal proceedings are in the notes, which the legal stage reads from the whole
   document); BNY's annual report has no auditor tenure sentence, so no auditor's report section.
   Morgan Stanley is a broker-dealer: its text metrics are those of BROKER_DEALERS.
+
+**D-061 Short transactions for the other LLM stages (Phase 17d, 2026-10-21).**
+- Stages: textmetrics, governance, legal, clinical, industry, signals, scores and news join
+  insights and metricdetail (D-052): no transaction is open while a model answers, so on a
+  SQLite file their companies run in parallel too, and on Azure SQL no lock is held for minutes.
+- Checked per stage that no group of writes spans a model call: governance, legal, clinical,
+  industry and signals write only after all their calls; scores writes each news batch, and
+  each transcript's tone with its flags, after that item's calls; news commits pruned
+  articles, then the new articles (unjudged articles are judged on a later run if the
+  relevance call fails); textmetrics writes its metric values (upsert and stale deletes) as one
+  group after all extraction calls, then the loan book after its own calls.
+- How, options: (a) a `commit` argument through every helper that calls the model (as
+  insights' `TaskRunner`); (b) the stage opens its connection with `short_transactions(engine)`,
+  which marks it, and `cached_call` commits around the call on a marked connection. Chosen:
+  (b): one change per stage instead of a dozen signatures, and a helper called inside an
+  ordinary transaction (tests, other callers) keeps that transaction whole.
+- A company that fails partway keeps its committed groups and its cached answers; the next run
+  completes it without new calls for what was answered.
+- Tests (`tests/test_short_transactions.py`): for each stage but news, two companies in
+  parallel on a SQLite file store the same rows as one after the other, and during every model
+  call another connection gets the write lock at once (a stage switched back to one long
+  transaction fails this). Live (run 136, 2026-10-21): signals for eight companies, four
+  workers on `data/uw.db`, 23 s, no lock errors.

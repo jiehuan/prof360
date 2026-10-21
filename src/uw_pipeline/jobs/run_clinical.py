@@ -21,7 +21,7 @@ from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.clients.storage import Storage
 from uw_pipeline.config import CompanyConfig
 from uw_pipeline.enrich.clinical import Program, agreed, checked, program_key, same_program
-from uw_pipeline.enrich.llm import PROMPTS_DIR, LLMConfig, cached_call
+from uw_pipeline.enrich.llm import PROMPTS_DIR, LLMConfig, cached_call, short_transactions
 from uw_pipeline.enrich.schemas import ClinicalPrograms, strict_json_schema
 from uw_pipeline.enrich.text_metrics import select_chunks
 from uw_pipeline.enrich.untrusted import data_block
@@ -140,7 +140,7 @@ def run_clinical_stage(
                                       detail="LLM not configured"))  # fmt: skip
             continue
         try:
-            with engine.begin() as conn:
+            with short_transactions(engine) as conn:
                 stats = process_company(cfg, llm[0], llm[1], storage, conn, now())
             detail = (f"{stats.current} current programs from {stats.documents} filings "
                       f"({stats.unpaired} readings unpaired)")  # fmt: skip

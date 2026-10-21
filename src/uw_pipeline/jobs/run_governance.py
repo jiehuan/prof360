@@ -23,7 +23,7 @@ from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.clients.storage import Storage
 from uw_pipeline.config import CompanyConfig
 from uw_pipeline.enrich.grounding import amount_in, is_grounded, normalize
-from uw_pipeline.enrich.llm import PROMPTS_DIR, LLMConfig, cached_call
+from uw_pipeline.enrich.llm import PROMPTS_DIR, LLMConfig, cached_call, short_transactions
 from uw_pipeline.enrich.schemas import BoardFacts, strict_json_schema
 from uw_pipeline.enrich.text_metrics import select_chunks
 from uw_pipeline.enrich.untrusted import data_block
@@ -252,7 +252,7 @@ def run_governance_stage(
     results = []
     for cfg in companies:
         try:
-            with engine.begin() as conn:
+            with short_transactions(engine) as conn:
                 detail = process_company(cfg, llm[0], llm[1], storage, conn, now())
             log.info("%s: governance %s", cfg.ticker, detail)
             results.append(TaskResult(cfg.ticker, "governance", ok=True, detail=detail))

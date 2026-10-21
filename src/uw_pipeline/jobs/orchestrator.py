@@ -83,9 +83,13 @@ class JobSpec(BaseModel):
     refresh_sec: bool = False
 
 
-# Stages that keep no transaction open while waiting for the model (short transactions, D-052):
-# on a SQLite file they too run companies in parallel, each write holding the lock briefly.
-SHORT_TRANSACTION_STAGES = frozenset({"insights", "metricdetail"})
+# Stages that keep no transaction open while waiting for the model (short transactions, D-052,
+# D-061): on a SQLite file they too run companies in parallel, each write holding the lock
+# briefly.
+SHORT_TRANSACTION_STAGES = frozenset({
+    "textmetrics", "governance", "legal", "clinical", "industry", "signals", "scores", "news",
+    "insights", "metricdetail",
+})  # fmt: skip
 
 
 class JobsConfig(BaseModel):

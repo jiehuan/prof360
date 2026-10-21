@@ -28,7 +28,7 @@ from uw_pipeline.enrich.industry_choice import (
     schema,
     usable_choice,
 )
-from uw_pipeline.enrich.llm import PROMPTS_DIR, LLMConfig, cached_call
+from uw_pipeline.enrich.llm import PROMPTS_DIR, LLMConfig, cached_call, short_transactions
 from uw_pipeline.enrich.schemas import IndustryChoice
 from uw_pipeline.enrich.untrusted import data_block
 from uw_pipeline.jobs.run_company import TaskResult
@@ -113,7 +113,7 @@ def run_industry_stage(
     results, changed = [], []
     for cfg in companies:
         try:
-            with engine.begin() as conn:
+            with short_transactions(engine) as conn:
                 row = company_row(conn, cfg)
                 sic = int(row["sic_code"]) if row["sic_code"] else None
                 _, how = industry.classify(sic, cfg)

@@ -8,7 +8,8 @@ import json
 import logging
 import os
 import threading
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -16,7 +17,7 @@ from typing import Any
 import anthropic
 import yaml
 from pydantic import BaseModel
-from sqlalchemy import Connection, select
+from sqlalchemy import Connection, Engine, select
 
 from uw_pipeline.clients.llm import LLMClient, LLMError, LLMSetupError
 from uw_pipeline.clients.llm_limits import ModelLimits
@@ -168,6 +169,24 @@ class DailyBudget:
                 self.spent += self.cost(model, input_tokens, output_tokens)
 
 
+SHORT_TRANSACTIONS = "uw_short_transactions"  # Connection.info key
+
+
+@contextmanager
+def short_transactions(engine: Engine) -> Iterator[Connection]:
+    """A connection for one company of a stage in short transactions (D-052, D-061):
+    `cached_call` commits the pending writes before each model call and the answer right after,
+    and the last group is committed on leaving. An exception rolls back only the unfinished
+    group; a rerun picks up from the LLM cache."""
+    with engine.connect() as conn:
+        conn.info[SHORT_TRANSACTIONS] = True
+        try:
+            yield conn
+            conn.commit()
+        finally:
+            conn.info.pop(SHORT_TRANSACTIONS, None)  # the DBAPI connection goes back to the pool
+
+
 def cached_call(
     conn: Connection,
     client: LLMClient,
@@ -190,7 +209,9 @@ def cached_call(
 
     `commit` (stages in short transactions, D-052): the caller's pending writes are committed
     before the model is called and the answer right after, so no transaction stays open while
-    waiting for the model and other companies can write meanwhile (parallel workers on SQLite)."""
+    waiting for the model and other companies can write meanwhile (parallel workers on SQLite).
+    A connection opened with `short_transactions` always does so."""
+    commit = commit or bool(conn.info.get(SHORT_TRANSACTIONS))
     # Source text is data (D-044): invisible characters made visible, and the data rule
     # appended to the system prompt; its version is part of the stored prompt version.
     user = neutralize(user)

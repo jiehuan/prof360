@@ -737,6 +737,7 @@ uw-pipeline dq-report --run-id <id>
 - [x] 17c 临床阶段特性：公司级 `traits`、现金可支撑月数和研发 / 运营支出、信号、`clinical` 阶段（在研项目和下一个节点）、20 家开发集（D-058）
 - [ ] 17d 其余 LLM 阶段改短事务、公司内并行、银行 MD&A
   - [x] 银行 MD&A：Exhibit 13 年报作为 10-K 的 PRIMARY 文档（WFC、USB、BNY），BAC、BNY、C、MS、USB、WFC 的章节规则（D-060）
+  - [x] 其余 LLM 阶段改短事务：textmetrics、governance、legal、clinical、industry、signals、scores、news（D-061）；每个阶段一个并行与串行一致、等待模型时无写锁的测试（news 除外，它不并行）
 - [x] 17g 行业组以外的公司由 LLM 选行业组：`industry` 阶段、`industry_choice` 表、review 类型 INDUSTRY、应用里的说明（D-059；6 家试运行，两个模型全部一致）
 - [ ] 17e 样本上的质量关口，然后冻结
 

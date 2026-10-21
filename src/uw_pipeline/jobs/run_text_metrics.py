@@ -32,7 +32,13 @@ from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.clients.storage import Storage
 from uw_pipeline.compute.registry import MetricDef, Registry
 from uw_pipeline.config import CompanyConfig, IndustryConfig
-from uw_pipeline.enrich.llm import PROMPTS_DIR, LLMConfig, ModelSpec, cached_call
+from uw_pipeline.enrich.llm import (
+    PROMPTS_DIR,
+    LLMConfig,
+    ModelSpec,
+    cached_call,
+    short_transactions,
+)
 from uw_pipeline.enrich.package import fmt_value
 from uw_pipeline.enrich.schemas import (
     ExtractedValue,
@@ -790,7 +796,7 @@ def run_text_metrics_stage(
     results: list[TaskResult] = []
     for cfg in companies:
         try:
-            with engine.begin() as conn:
+            with short_transactions(engine) as conn:
                 stats = process_company(
                     cfg,
                     registry,

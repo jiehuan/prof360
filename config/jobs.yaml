@@ -32,10 +32,11 @@ max_attempts: 2
 
 # Phase 15i: companies run in parallel threads within these stages (stage: workers). LLM calls
 # stay under the provider's quota through `rate_limits` in config/llm.yaml. On SQLite (local
-# development) only insights and metricdetail run in parallel (short transactions, D-052); the
-# other stages run one company at a time there.
+# development) only the LLM stages run in parallel (short transactions, D-052, D-061); the
+# other stages run one company at a time there. News stays serial: Alpha Vantage's quota.
 parallel:
   textmetrics: 4
+  industry: 4
   governance: 4
   legal: 4
   clinical: 4

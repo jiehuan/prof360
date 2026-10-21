@@ -27,7 +27,7 @@ from sqlalchemy import Connection, Engine, delete, insert, select
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.config import CompanyConfig
 from uw_pipeline.enrich.grounding import is_grounded, ungrounded_numbers
-from uw_pipeline.enrich.llm import PROMPTS_DIR, LLMConfig, cached_call
+from uw_pipeline.enrich.llm import PROMPTS_DIR, LLMConfig, cached_call, short_transactions
 from uw_pipeline.enrich.schemas import ChunkScores, NewsScores, strict_json_schema
 from uw_pipeline.enrich.untrusted import data_block, one_line
 from uw_pipeline.jobs.run_company import TaskResult
@@ -271,7 +271,7 @@ def run_scores_stage(
     for c in companies:
         try:
             stats = Stats()
-            with engine.begin() as conn:
+            with short_transactions(engine) as conn:
                 row = company_row(conn, c)
                 stamp = now()
                 score_news(conn, client, llm_cfg, cfg.news, row["company_id"],
