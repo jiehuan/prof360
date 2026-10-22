@@ -1,0 +1,243 @@
+{
+ "cik": "0001045609",
+ "entityType": "operating",
+ "sic": "6798",
+ "sicDescription": "Real Estate Investment Trusts",
+ "ownerOrg": "05 Real Estate & Construction",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Prologis, Inc.",
+ "tickers": [
+  "PLD",
+  "PLDGP"
+ ],
+ "exchanges": [
+  "NYSE",
+  "OTC"
+ ],
+ "ein": "943281941",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "MD",
+ "stateOfIncorporationDescription": "MD",
+ "addresses": {
+  "mailing": {
+   "street1": "PIER 1 BAY 1",
+   "street2": null,
+   "city": "SAN FRANCISCO",
+   "stateOrCountry": "CA",
+   "zipCode": "94111",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "PIER 1 BAY 1",
+   "street2": null,
+   "city": "SAN FRANCISCO",
+   "stateOrCountry": "CA",
+   "zipCode": "94111",
+   "stateOrCountryDescription": "CA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "4153949000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "AMB PROPERTY CORP",
+   "from": "1997-10-28T05:00:00.000Z",
+   "to": "2011-06-03T04:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001193125-26-422375",
+    "0001193125-26-412441",
+    "0001193125-26-412438",
+    "0001193125-26-412437",
+    "0001193125-26-412435",
+    "0001193125-26-323746",
+    "0001193125-26-197850",
+    "0001193125-26-051453",
+    "0001193125-25-253512"
+   ],
+   "filingDate": [
+    "2026-10-15",
+    "2026-10-02",
+    "2026-10-02",
+    "2026-10-02",
+    "2026-10-02",
+    "2026-07-29",
+    "2026-04-30",
+    "2026-02-13",
+    "2025-10-28"
+   ],
+   "reportDate": [
+    "2026-10-15",
+    "2026-09-30",
+    "2026-09-30",
+    "2026-09-30",
+    "2026-09-30",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-15T17:18:18.000Z",
+    "2026-10-03T00:30:52.000Z",
+    "2026-10-03T00:30:47.000Z",
+    "2026-10-03T00:30:45.000Z",
+    "2026-10-03T00:30:42.000Z",
+    "2026-07-30T00:13:52.000Z",
+    "2026-05-01T01:18:09.000Z",
+    "2026-02-14T02:21:28.000Z",
+    "2025-10-29T00:14:25.000Z"
+   ],
+   "act": [
+    "34",
+    "",
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "8-K",
+    "4",
+    "4",
+    "4",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "001-13545",
+    "",
+    "",
+    "",
+    "",
+    "001-13545",
+    "001-13545",
+    "001-13545",
+    "001-13545"
+   ],
+   "filmNumber": [
+    "261461562",
+    "",
+    "",
+    "",
+    "",
+    "261217676",
+    "26927253",
+    "26633226",
+    "251424975"
+   ],
+   "items": [
+    "2.02,7.01,9.01",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "XBRL",
+    "4",
+    "4",
+    "4",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    39552377,
+    11836,
+    11816,
+    6206,
+    14544,
+    38882455,
+    32778179,
+    59058670,
+    36474155
+   ],
+   "isXBRL": [
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "pld-20261015.htm",
+    "xslF345X06/ownership.xml",
+    "xslF345X06/ownership.xml",
+    "xslF345X06/ownership.xml",
+    "xslF345X06/ownership.xml",
+    "pld-20260630.htm",
+    "pld-20260331.htm",
+    "pld-20251231.htm",
+    "pld-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "8-K",
+    "4",
+    "4",
+    "4",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

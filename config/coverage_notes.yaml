@@ -130,8 +130,6 @@ groups:
     inventory_days: Payment networks hold no inventory.
   MEDIA:
     inventory_days: No merchandise inventory; content and programming assets are not inventory.
-  REIT:
-    inventory_days: REITs hold no inventory.
   TRANSPORT:
     inventory_days: >-
       Railroads, parcel and freight carriers hold only supplies, with costs reported by type
@@ -152,6 +150,54 @@ groups:
     operating_income: >-
       The oil majors present revenues and costs by type and income before taxes, with no
       operating income line; EBITDA uses pre-tax income + interest expense + D&A.
+  # Phase 17e groups (gaps checked against the companies' companyfacts on 2026-10-22).
+  HOMEBUILDERS:
+    current_assets: &unclassified >-
+      Unclassified balance sheet: no current assets or current liabilities are presented, so
+      the current ratio and working capital cannot be computed.
+    current_liabilities: *unclassified
+    current_ratio: *unclassified
+    working_capital: *unclassified
+    operating_income: &hb_no_opinc >-
+      No operating income line: homebuilders report homebuilding and financial-services
+      pre-tax income by segment.
+    ebitda_computed: *hb_no_opinc
+    interest_expense: &hb_interest >-
+      Interest is capitalized into home and land inventory and expensed through cost of sales;
+      little or none is tagged as interest expense, so interest coverage has no value.
+    interest_coverage: *hb_interest
+  REIT:
+    inventory_days: REITs hold no inventory.
+    current_assets: *unclassified
+    current_liabilities: *unclassified
+    current_ratio: *unclassified
+    working_capital: *unclassified
+    capex: &reit_capex >-
+      REITs report acquisitions and development of real estate, not capital expenditures; no
+      capex line, so no free cash flow.
+    free_cash_flow: *reit_capex
+
+# Phase 17e: notes by company trait (D-058 clinical_stage), between group and company notes.
+traits:
+  clinical_stage:
+    revenue: &pre_revenue >-
+      Pre-revenue: no product revenue; collaboration or grant revenue is tagged only in the
+      periods it was earned.
+    revenue_growth_yoy: *pre_revenue
+    revenue_growth_qoq: *pre_revenue
+    total_debt: &no_borrowings >-
+      Funded by equity: no borrowings in most periods (term loans or convertible notes only
+      where drawn), so no debt, debt-to-equity or interest expense to report.
+    long_term_debt: *no_borrowings
+    debt_to_equity: *no_borrowings
+    interest_expense: *no_borrowings
+    interest_coverage: *no_borrowings
+    capex: &little_ppe >-
+      Research is largely outsourced: equipment purchases and depreciation are small and
+      tagged only in some periods (Viking tags neither), so capex, free cash flow and EBITDA
+      can be missing.
+    free_cash_flow: *little_ppe
+    ebitda_computed: *little_ppe
 
 # Phase 16 companies (gaps checked against their companyfacts on 2026-10-18).
 AAPL:
@@ -365,6 +411,9 @@ ISRG:
 LIN:
   inventory_days: No cost of goods sold line under the standard tags (costs are reported by type).
   warranty_reserve: No product warranty reserve (industrial gases).
+  environmental_reserve: >-
+    No environmental remediation liability tagged with the standard tags (Phase 17e,
+    checked 2026-10-22).
 LLY:
   capex: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
   free_cash_flow: Needs capital expenditures; see its note.
@@ -381,6 +430,9 @@ LOW:
 MCD:
   gross_margin: No cost of goods sold line under the standard tags (costs are reported by type).
   inventory_days: No cost of goods sold line under the standard tags (costs are reported by type).
+  labor_to_revenue: >-
+    Payroll of company-operated restaurants is tagged with McDonald's own tags; most
+    restaurants are franchised (Phase 17e).
 MMM:
   warranty_reserve: Warranty reserve tagged through FY2024 only.
 MO:
@@ -446,6 +498,9 @@ RTX:
 SBUX:
   gross_margin: No cost of goods sold line under the standard tags (costs are reported by type).
   inventory_days: No cost of goods sold line under the standard tags (costs are reported by type).
+  franchise_revenue_share: >-
+    Licensed-store revenue is tagged by dimension in some 10-Qs only (the 10-K does not tag
+    it; Phase 17e).
 SNDK:
   "*": >-
     Spun off from Western Digital in February 2025; its own filings (with carve-out
@@ -556,3 +611,374 @@ JNJ:
 AMGN:
   top_product_share: >-
     Largest product revenue not read in the last 4 quarters (follow-up: holdout review).
+
+# Phase 17e: development sample (gaps checked against each company's companyfacts on
+# 2026-10-22; the company's own extension tags are not in companyfacts).
+AA:
+  operating_income: &no_opinc_line >-
+    No operating income line: costs by type, then income before taxes (single-step income
+    statement). EBITDA uses pre-tax income + interest expense + D&A.
+ADM:
+  operating_income: *no_opinc_line
+AFRM:
+  total_debt: &afrm_debt >-
+    Funding debt (warehouse lines, securitization notes) is tagged with Affirm's own tags in
+    some periods; the standard debt tags cover only part of the window.
+  debt_to_equity: *afrm_debt
+ALK:
+  capex: &alk_capex >-
+    Capital expenditures are split into aircraft deposits, flight equipment and other
+    property; only "other property and equipment" uses a standard tag, so the total is not
+    available after Q1 2024.
+  free_cash_flow: *alk_capex
+APO:
+  roa: Average assets need two year-end balances; quarterly ROA is not computed for Apollo.
+ARCC:
+  revenue: &bdc_revenue >-
+    A business development company: total investment income, tagged with its own and
+    investment-company tags, not revenue (BDC module not in Phase 17).
+  revenue_growth_yoy: *bdc_revenue
+  roa: Average assets need two year-end balances; only annual ROA is computed.
+BFH:
+  total_debt: &bfh_debt >-
+    Deposits fund most lending; long-term debt and securitized debt are tagged only in some
+    quarters.
+  debt_to_equity: *bfh_debt
+BG:
+  operating_income: *no_opinc_line
+BKR:
+  operating_income: &bkr_opinc >-
+    Operating income is not tagged with the standard tag after FY2024 (own tag from 2025).
+  warranty_reserve: No product warranty liability tagged (oilfield services and equipment).
+CALM:
+  total_debt: &no_debt >-
+    No borrowings outstanding in the periods shown (no debt tagged).
+  long_term_debt: *no_debt
+  debt_to_equity: *no_debt
+  interest_expense: &q_net_interest >-
+    Interest expense is tagged in the 10-K only; the 10-Qs show net interest (interest income
+    less expense) or no interest line, so quarters have no value.
+  interest_coverage: *q_net_interest
+CEG:
+  regulatory_assets: &merchant >-
+    A competitive (merchant) generator and retailer: no rate-regulated operations, so no
+    regulatory assets.
+CHH:
+  capex: &chh_capex >-
+    Capital expenditures are split between capital improvements and other property and
+    equipment, each tagged on its own; no total line.
+  free_cash_flow: *chh_capex
+CHRW:
+  interest_expense: *q_net_interest
+  interest_coverage: *q_net_interest
+  pension_liability: &no_db_plan No defined benefit pension plan (no pension liability tagged).
+CI:
+  capex: &ci_capex >-
+    Property and equipment purchases are not tagged with the standard capex tags (an insurer;
+    investing activity is dominated by investment purchases).
+  free_cash_flow: *ci_capex
+CMG:
+  total_debt: &cmg_debt >-
+    No borrowings: long-term debt is tagged as zero in the 10-K only, nothing in the 10-Qs.
+  long_term_debt: *cmg_debt
+  debt_to_equity: *cmg_debt
+  interest_expense: *cmg_debt
+  interest_coverage: *cmg_debt
+  franchise_revenue_share: &no_franchise All restaurants are company-operated; no franchise revenue.
+COHR:
+  operating_income: >-
+    Operating income is not tagged with the standard tag after FY2024 (FY ending June).
+COMP:
+  total_debt: &comp_debt >-
+    Debt is tagged with the standard tags only since 2025 (term loan and revolver earlier
+    under Compass's own tags).
+  long_term_debt: *comp_debt
+  debt_to_equity: *comp_debt
+COR:
+  interest_expense: *q_net_interest
+  interest_coverage: *q_net_interest
+CRH:
+  ebitda_computed: &crh_q >-
+    Two quarters lack D&A: CRH's first 10-Q year (2024-25) did not tag quarterly D&A in
+    every quarter.
+  capex_to_depreciation: *crh_q
+  environmental_reserve: &not_tagged_env >-
+    No environmental remediation liability tagged with the standard tags (none disclosed,
+    or included in other accrued liabilities).
+CSTM:
+  operating_income: *no_opinc_line
+CSX:
+  pension_liability: The funded status is tagged with the standard tags only from FY2023.
+CTVA:
+  operating_income: *no_opinc_line
+DAL:
+  interest_expense: *q_net_interest
+  interest_coverage: *q_net_interest
+  capex: &dal_capex >-
+    Capital expenditures are split into flight equipment and ground property; the total line
+    is not tagged in the latest quarters.
+  free_cash_flow: *dal_capex
+DHI:
+  operating_income: *no_opinc_line
+DLB:
+  total_debt: *no_debt
+  long_term_debt: *no_debt
+  debt_to_equity: *no_debt
+  interest_expense: *no_debt
+  interest_coverage: *no_debt
+DOLE:
+  revenue_growth_qoq: &first_quarters >-
+    First 10-Qs filed in 2026: a quarter-on-quarter rate needs the prior quarter, which the
+    company did not report.
+DOW:
+  operating_income: *no_opinc_line
+  capex: &q2_pending >-
+    The latest quarter's facts were not yet in SEC companyfacts on 2026-10-22.
+  free_cash_flow: *q2_pending
+  capex_to_depreciation: *q2_pending
+DRI:
+  long_term_debt: &dri_ltd >-
+    Non-current long-term debt is tagged in one fiscal year only; Darden tags total
+    long-term debt including current maturities (us-gaap:LongTermDebt), which this metric does
+    not use for a classified balance sheet.
+  franchise_revenue_share: &franchise_minor >-
+    Nearly all restaurants are company-operated; franchise revenue is not tagged.
+DVA:
+  labor_to_revenue: &labor_by_function >-
+    Costs are presented by function (patient care costs), with no salaries-and-benefits line
+    tagged.
+ECHO:
+  long_term_debt: &echo_ltd >-
+    One quarter lacks non-current long-term debt (the 2024 debt exchange quarter).
+  interest_expense: *q_net_interest
+  interest_coverage: *q_net_interest
+EME:
+  total_debt: &eme_debt >-
+    EMCOR has had no term debt since 2024; only revolver borrowings in some periods.
+  long_term_debt: *eme_debt
+  debt_to_equity: *eme_debt
+EQIX:
+  total_debt: &eqix_ltd >-
+    Long-term debt (us-gaap:LongTermDebt) is not tagged at the FY2025 year end and one
+    quarter; Equinix tags its senior notes with its own tags there.
+  long_term_debt: *eqix_ltd
+  debt_to_equity: *eqix_ltd
+  capex: &own_capex_tag >-
+    Capital expenditures are tagged with the company's own tag in the latest periods; the
+    standard tag stops there.
+  free_cash_flow: *own_capex_tag
+FCX:
+  interest_expense: *q_net_interest
+  interest_coverage: *q_net_interest
+  capex: *own_capex_tag
+  free_cash_flow: *own_capex_tag
+  capex_to_depreciation: *own_capex_tag
+  environmental_reserve: &annual_only >-
+    Tagged in the 10-K only (year-end balance); the 10-Qs do not tag it.
+  asset_retirement_obligation: *annual_only
+FISV:
+  ebitda_computed: D&A is tagged only in the annual cash flow statement, so quarters have no value.
+H:
+  operating_income: *no_opinc_line
+HCA:
+  operating_income: *no_opinc_line
+HGV:
+  operating_income: *no_opinc_line
+  current_assets: *unclassified
+  current_liabilities: *unclassified
+  current_ratio: *unclassified
+  working_capital: *unclassified
+HPE:
+  interest_expense: *q_net_interest
+  interest_coverage: *q_net_interest
+  gross_margin: >-
+    Costs of products, services and financing are tagged with HPE's own tags; no standard
+    cost of revenue or gross profit.
+HRB:
+  revenue_growth_yoy: Needs the year before the earliest revenue in the window (FY ends April).
+  operating_income: *no_opinc_line
+JLL:
+  long_term_debt: >-
+    Long-term debt is tagged only at its fair value, not its carrying amount.
+KEX:
+  pension_liability: *no_db_plan
+KR:
+  gross_margin: >-
+    Kroger tags cost of sales excluding depreciation and amortization; a gross margin on it
+    would not compare with other retailers.
+LEA:
+  pension_liability: >-
+    The funded status is not tagged with the standard tags (pension liabilities sit in other
+    long-term liabilities).
+LEN:
+  operating_income: Not tagged after Q1 2022 (homebuilding and financial-services segments).
+  total_debt: &len_debt >-
+    Lennar tags its debt with its own tags since 2022; only the FY2024 and FY2025 10-Ks carry
+    the standard long-term debt tag.
+  long_term_debt: *len_debt
+  debt_to_equity: *len_debt
+  homebuilding_inventory: &len_inv >-
+    Inventory is tagged with Lennar's own tags since 2022 (land and homes under construction
+    by segment).
+  land_inventory: *len_inv
+  land_to_equity: *len_inv
+  inventory_impairments: Tagged only in periods with impairments.
+LH:
+  labor_to_revenue: *labor_by_function
+LRN:
+  long_term_debt: >-
+    The latest 10-Q (Q1 FY2027) tags long-term debt only as the total (us-gaap:LongTermDebt),
+    the same amount with no current portion.
+LULU:
+  total_debt: *no_debt
+  long_term_debt: *no_debt
+  debt_to_equity: *no_debt
+  interest_expense: *q_net_interest
+  interest_coverage: *q_net_interest
+LYV:
+  casino_revenue_share: Live entertainment; no casino operations.
+MDLN:
+  revenue_growth_qoq: *first_quarters
+  equity: First 10-K (FY2025) after the 2025 IPO; one earlier year-end balance only.
+  debt_to_equity: First 10-K (FY2025) after the 2025 IPO; one earlier year-end balance only.
+  rnd_to_revenue: R&D is disclosed in the 10-K only.
+MLM:
+  environmental_reserve: *not_tagged_env
+  asset_retirement_obligation: *annual_only
+MTZ:
+  operating_income: Tagged only from the 2026 10-Qs (MasTec presented no operating income line before).
+NEM:
+  operating_income: *no_opinc_line
+  ebitda_computed: &needs_q_interest Needs quarterly interest expense; see the interest_expense note.
+  interest_expense: *q_net_interest
+  interest_coverage: *q_net_interest
+NKE:
+  operating_income: >-
+    No operating income line: Nike presents earnings before interest and taxes only in its
+    segment note.
+  ebitda_computed: *needs_q_interest
+  interest_expense: *q_net_interest
+  interest_coverage: *q_net_interest
+NRG:
+  regulatory_assets: *merchant
+NUE:
+  operating_income: *no_opinc_line
+  environmental_reserve: Tagged once (FY2021); later included in other accrued liabilities.
+NVR:
+  operating_income: *no_opinc_line
+  total_debt: &nvr_own >-
+    NVR tags debt and inventory with its own tags (senior notes; lots and homes under
+    construction); not in companyfacts.
+  long_term_debt: *nvr_own
+  debt_to_equity: *nvr_own
+  homebuilding_inventory: *nvr_own
+  land_inventory: *nvr_own
+  land_to_equity: *nvr_own
+  inventory_impairments: Tagged only in periods with impairments.
+OMC:
+  total_debt: &omc_q >-
+    Two quarters lack a total-debt pair (the 2025 Interpublic acquisition quarters tag only
+    part of the debt with standard tags).
+  debt_to_equity: *omc_q
+PCAR:
+  "*": >-
+    PACCAR presents its truck business and its financial services business in separate
+    balance sheet and income statement sections, tagged with its own tags: no current
+    assets / liabilities, operating income or consolidated debt in the standard tags.
+  warranty_reserve: Tagged in the 10-K only.
+PHM:
+  inventory_impairments: Tagged only in periods with impairments.
+PK:
+  current_assets: *unclassified
+  current_liabilities: *unclassified
+  current_ratio: *unclassified
+  working_capital: *unclassified
+PSX:
+  ebitda_computed: &psx >-
+    Phillips 66 tags pre-tax income only by domestic and foreign split, and capital
+    expenditures with its own tag; EBITDA, interest coverage, capex and free cash flow have
+    no value.
+  interest_coverage: *psx
+  capex: *psx
+  free_cash_flow: *psx
+ROK:
+  operating_income: Not tagged for FY2021 and FY2022 (presented from FY2023).
+ROP:
+  capex: &rop_capex >-
+    Capital expenditures and capitalized software are tagged separately (other productive
+    assets, software); no total line.
+  free_cash_flow: *rop_capex
+SCCO:
+  interest_expense: *q_net_interest
+  interest_coverage: *q_net_interest
+  environmental_reserve: *not_tagged_env
+SCI:
+  revenue_growth_yoy: Two quarters lack the prior-year quarter's revenue.
+SNX:
+  interest_expense: *q_net_interest
+  interest_coverage: *q_net_interest
+SSRM:
+  total_debt: &ssrm_debt >-
+    The convertible notes are tagged with the standard tags in some quarters only.
+  long_term_debt: *ssrm_debt
+  debt_to_equity: *ssrm_debt
+  interest_coverage: *ssrm_debt
+  environmental_reserve: *not_tagged_env
+STLD:
+  environmental_reserve: *not_tagged_env
+SW:
+  environmental_reserve: *not_tagged_env
+TOL:
+  current_assets: *unclassified
+  current_liabilities: *unclassified
+  current_ratio: *unclassified
+  working_capital: *unclassified
+  total_debt: &tol_debt >-
+    Loans payable are tagged with Toll Brothers' own tag; senior notes and mortgage
+    warehouse borrowings alone would understate debt.
+  long_term_debt: *tol_debt
+  debt_to_equity: *tol_debt
+  land_inventory: Land and homes under construction are split this way only from FY2024.
+  land_to_equity: Land and homes under construction are split this way only from FY2024.
+TPL:
+  total_debt: *no_debt
+  long_term_debt: *no_debt
+  debt_to_equity: *no_debt
+  interest_expense: Interest expense is tagged only in some periods (no debt).
+  interest_coverage: Interest expense is tagged only in some periods (no debt).
+  capex: >-
+    Purchases of property and land are tagged as real estate acquisitions in most periods,
+    not capital expenditures.
+  free_cash_flow: Follows capex.
+URI:
+  capex: *own_capex_tag
+  free_cash_flow: *own_capex_tag
+VLO:
+  capex: *own_capex_tag
+  free_cash_flow: *own_capex_tag
+VLTO:
+  interest_coverage: Interest expense is not tagged for FY2022 (before the 2023 spin-off).
+WELL:
+  operating_income: *no_opinc_line
+  ebitda_computed: One year and one quarter lack pre-tax income with the standard tags.
+  interest_coverage: Needs operating income; see its note.
+  current_assets: *unclassified
+  current_liabilities: *unclassified
+  current_ratio: *unclassified
+  working_capital: *unclassified
+WY:
+  capex: >-
+    Weyerhaeuser's capital expenditures are tagged with its own tag; the standard capital
+    improvements tag holds only a small part of them.
+  free_cash_flow: Follows capex.
+YUMC:
+  total_debt: *no_debt
+  long_term_debt: *no_debt
+  debt_to_equity: *no_debt
+  interest_expense: *q_net_interest
+  interest_coverage: *q_net_interest
+  labor_to_revenue: Payroll is tagged for four of the five fiscal years.
+MLTX:
+  rnd_to_opex: >-
+    Listed through a SPAC merger in April 2022 under the SPAC's CIK; FY2021 is the SPAC's own
+    year, with no research and development.

@@ -840,7 +840,7 @@ uw-pipeline dq-report --run-id <id>
 - 样本：`coverage-report` 每个缺口有说明（行业组级优先）；DQ 无 Error；`audit-insights` 每个新组抽 2 家。
 - 全量上线后：覆盖率和 DQ 按行业组出比例，作为监控指标，不逐家处理。
 - 临床阶段特性：抽 20 家核对收入判断和管线事实。
-- 样本 XBRL 先跑后的发现（2026-10-21，留到本关口处理，按通用规则优先）：
+- 样本 XBRL 先跑后的发现（2026-10-21，留到本关口处理，按通用规则优先）。**已处理（2026-10-22，D-063）**：通用规则（目标从第一份 10-K / 10-Q 算起）、BG 的前身 CIK、债务和 capex 的映射、行业组 / 特性 / 公司说明；XBRL 缺口全部有说明，剩下 80 个文本指标缺口等全量 LLM 运行：
   - 历史短的公司（新上市、分拆、从 20-F 改报 10-K：MDLN、INGM、SW、DOLE、CSTM、CRH、VLTO、BG）达不到 5 年 / 8 季目标：覆盖率目标改从公司第一份 10-K / 10-Q 算起（通用规则），BG 可用 `predecessor_ciks` 补历史。
   - 季度利息费用：约 15 家的 10-Q 只标净利息（InterestIncomeExpenseNonoperatingNet）或不标，年度来自 10-K 或付现利息；用 `"*"` 说明或通用规则。
   - capex、债务、营业利润的 tag 变体（ALK、URI、VLO、PHM、CMG、OMC、EME、MTZ、BKR、ROK、COHR）逐个查；BFH 的收入（CREDIT 组）缺。

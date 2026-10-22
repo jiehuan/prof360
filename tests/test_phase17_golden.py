@@ -82,6 +82,11 @@ def test_homebuilders_dr_horton_fy2025(make_sec_client) -> None:
         "land_inventory": land * 1e6,
         "land_to_equity": land / 24_190.4,
         "inventory_impairments": 33e6,
+        # Phase 17e: notes payable 5,965.5 (NotesPayable; no current / non-current split) is
+        # both total and long-term debt.
+        "total_debt": 5_965.5e6,
+        "long_term_debt": 5_965.5e6,
+        "debt_to_equity": 5_965.5 / 24_190.4,
     })  # fmt: skip
 
 
@@ -169,4 +174,28 @@ def test_clinical_stage_xenon_q2_2026_latest_quarter_burn(make_sec_client) -> No
         "monthly_cash_burn": -quarter / 3 * 1e6,
         "cash_runway_months": (119.527 + 811.159) / (-quarter / 3),
         "rnd_to_opex": 99.224 / 123.155,
+    })  # fmt: skip
+
+
+@pytest.mark.usefixtures("sec_routes")
+def test_unclassified_debt_park_hotels_fy2025(make_sec_client) -> None:
+    """PK 10-K FY2025 (Phase 17e): debt is one line on an unclassified balance sheet,
+    LongTermDebt 3,856 (company_overrides/PK.yaml)."""
+    _check(make_sec_client, "PK", FY25, {"long_term_debt": 3_856e6})
+
+
+@pytest.mark.usefixtures("sec_routes")
+def test_unclassified_debt_prologis_fy2025(make_sec_client) -> None:
+    """PLD 10-K FY2025 (Phase 17e, REIT group): LongTermDebt 35,037.073."""
+    _check(make_sec_client, "PLD", FY25, {"long_term_debt": 35_037.073e6})
+
+
+@pytest.mark.usefixtures("sec_routes")
+def test_notes_payable_omnicom_fy2025(make_sec_client) -> None:
+    """OMC 10-K FY2025 (Phase 17e): long-term notes payable 7,655 (company_overrides/OMC.yaml);
+    total debt: long-term debt including current maturities 9,272.9, short-term borrowings
+    62.0 and finance lease liabilities 104.5 (which LongTermDebt excludes, D-046)."""
+    _check(make_sec_client, "OMC", FY25, {
+        "long_term_debt": 7_655e6,
+        "total_debt": (9_272.9 + 62.0 + 104.5) * 1e6,
     })  # fmt: skip

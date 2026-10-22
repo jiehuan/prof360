@@ -1,0 +1,5 @@
+# Bread Financial (a card issuer) reports total net revenue (net interest income plus
+# non-interest income), like the banks; us-gaap:Revenues stops in 2020 (Phase 17e).
+concepts:
+  revenue:
+    tags: [us-gaap:RevenuesNetOfInterestExpense]

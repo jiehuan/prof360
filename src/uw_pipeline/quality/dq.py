@@ -12,7 +12,7 @@ from typing import Any
 from pydantic import BaseModel
 from sqlalchemy import Connection, desc, false, func, or_, select, true
 
-from uw_pipeline.compute.coverage import company_coverage
+from uw_pipeline.compute.coverage import HistoryStart, company_coverage, history_start
 from uw_pipeline.compute.registry import MetricDef
 from uw_pipeline.quality.identities import IDENTITY_TASK, Identities
 from uw_pipeline.schema import (
@@ -132,15 +132,15 @@ def _values(conn: Connection, company_id: int) -> list[dict[str, Any]]:
 
 def missing_metric(
     ticker: str, metrics: Sequence[MetricDef], values: list[dict[str, Any]],
-    notes: dict[str, str], cfg: _Rule,
+    notes: dict[str, str], cfg: _Rule, since: HistoryStart | None = None,
 ) -> list[Finding]:  # fmt: skip
-    cov = company_coverage(ticker, metrics, values, notes)
+    cov = company_coverage(ticker, metrics, values, notes, since)
     return [
         Finding(
             "missing_metric",
             cfg.severity,
-            f"{m.code}: {c.fy_count} of 5 fiscal years and {c.q_count} of 8 quarters, "
-            "with no explanation in coverage_notes.yaml",
+            f"{m.code}: {c.fy_count} of {c.target(m)[0]} fiscal years and {c.q_count} of "
+            f"{c.target(m)[1]} quarters, with no explanation in coverage_notes.yaml",
             m.code,
         )
         for m, c in cov.problems()
@@ -513,7 +513,9 @@ def run_rules(
     with_data = {v["metric_code"] for v in values}
     shown = [m.code for m in metrics if m.display and m.code in with_data]
     return [
-        *missing_metric(ticker, metrics, values, notes, cfg.missing_metric),
+        *missing_metric(
+            ticker, metrics, values, notes, cfg.missing_metric, history_start(conn, company_id)
+        ),
         *quarter_jump(values, by_code, cfg.quarter_jump),
         *negative_value(values, cfg.negative_value),
         *quarters_vs_year(values, cfg.quarters_vs_year),

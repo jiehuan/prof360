@@ -1,0 +1,241 @@
+{
+ "cik": "0000029989",
+ "entityType": "operating",
+ "sic": "7311",
+ "sicDescription": "Services-Advertising Agencies",
+ "ownerOrg": "07 Trade & Services",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "OMNICOM GROUP INC.",
+ "tickers": [
+  "OMC"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "131514814",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "NY",
+ "stateOfIncorporationDescription": "NY",
+ "addresses": {
+  "mailing": {
+   "street1": "280 PARK AVENUE",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10017",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "280 PARK AVENUE",
+   "street2": null,
+   "city": "NEW YORK",
+   "stateOrCountry": "NY",
+   "zipCode": "10017",
+   "stateOrCountryDescription": "NY",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "2124153600",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "OMNICOM GROUP INC",
+   "from": "1994-05-13T04:00:00.000Z",
+   "to": "2013-02-19T05:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001213900-26-108506",
+    "0001213900-26-107282",
+    "0001213900-26-106844",
+    "0001213900-26-106843",
+    "0001213900-26-106842",
+    "0000029989-26-000019",
+    "0000029989-26-000011",
+    "0000029989-26-000006",
+    "0000029989-25-000037"
+   ],
+   "filingDate": [
+    "2026-10-09",
+    "2026-10-06",
+    "2026-10-05",
+    "2026-10-05",
+    "2026-10-05",
+    "2026-07-29",
+    "2026-04-29",
+    "2026-02-20",
+    "2025-10-22"
+   ],
+   "reportDate": [
+    "2026-10-01",
+    "2026-10-01",
+    "2026-10-01",
+    "2026-10-01",
+    "2026-10-01",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-10T00:30:28.000Z",
+    "2026-10-07T01:01:28.000Z",
+    "2026-10-06T00:32:57.000Z",
+    "2026-10-06T00:32:44.000Z",
+    "2026-10-06T00:32:32.000Z",
+    "2026-07-29T04:59:25.000Z",
+    "2026-04-29T05:16:00.000Z",
+    "2026-02-21T03:30:05.000Z",
+    "2025-10-22T01:55:23.000Z"
+   ],
+   "act": [
+    "",
+    "34",
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "3",
+    "8-K",
+    "4",
+    "4",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "001-10551",
+    "",
+    "",
+    "",
+    "001-10551",
+    "001-10551",
+    "001-10551",
+    "001-10551"
+   ],
+   "filmNumber": [
+    "",
+    "261444776",
+    "",
+    "",
+    "",
+    "261213633",
+    "26910125",
+    "26661395",
+    "251408186"
+   ],
+   "items": [
+    "",
+    "5.02",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "3",
+    "XBRL",
+    "4",
+    "4",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    9764,
+    279648,
+    4910,
+    5387,
+    5380,
+    8295295,
+    8274626,
+    14561975,
+    6288207
+   ],
+   "isXBRL": [
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/ownership.xml",
+    "ea0307855-8k_omnicom.htm",
+    "xslF345X06/ownership.xml",
+    "xslF345X06/ownership.xml",
+    "xslF345X06/ownership.xml",
+    "omc-20260630.htm",
+    "omc-20260331.htm",
+    "omc-20251231.htm",
+    "omc-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "",
+    "CURRENT REPORT",
+    "",
+    "",
+    "",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

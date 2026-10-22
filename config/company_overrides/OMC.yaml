@@ -1,0 +1,4 @@
+# Omnicom tags its non-current debt as long-term notes payable (Phase 17e).
+concepts:
+  ltd_unclassified:
+    tags: [us-gaap:LongTermNotesPayable]
