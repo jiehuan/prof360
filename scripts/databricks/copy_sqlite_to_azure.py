@@ -161,6 +161,16 @@ if W["mode"] == "clear_target":
         run_sql(engine, f"DROP TABLE IF EXISTS {q(STAGE)}.{q(t)}")
     run_sql(engine, f"IF SCHEMA_ID('{STAGE}') IS NOT NULL EXEC('DROP SCHEMA {q(STAGE)}')")
     dbutils.notebook.exit(f"cleared {len(plan)} tables in {TARGET}; run mode = load again")
+if (
+    plan
+    and all(target_rows.get(t, 0) == src_rows[t] for t, _ in plan)
+    and any(target_rows.get(t, 0) for t, _ in plan)
+):
+    # Run again after a load that succeeded: the target holds this copy already.
+    dbutils.notebook.exit(
+        f"already loaded: the {len(plan)} tables in {TARGET} have the SQLite file's row counts; "
+        "nothing to do (to load again: mode = clear_target, then load)"
+    )
 for p in problems:
     print("PROBLEM", p)
 assert not problems, "fix the problems above first"

@@ -116,6 +116,9 @@ Steps:
   untouched and staging tables are re-created.
 - **Row count mismatch:** the staging tables are kept for comparison. Drop the `stg_uw_copy`
   schema by hand when done.
+- **Run again after a successful load** (e.g. Run all once more): the plan cell sees every
+  table already holding the SQLite file's row count and stops with `already loaded`; nothing
+  is written. Check that the load cell's last line reads `done: … row counts match`.
 - **After a failed load** some target tables have rows and a rerun refuses. Run the notebook
   with `mode = clear_target` (empties the tables of this copy, re-enables their constraints,
   drops the staging schema), then run the whole notebook again; never rerun the load cell on
