@@ -87,11 +87,14 @@ def query(engine: Engine, sql: str) -> list[dict]:
 
 def run_sql(engine: Engine, sql: str) -> None:
     """Run a T-SQL batch (several statements allowed) and commit. Every result is read: pyodbc
-    reports an error in a later statement of a batch only then."""
+    reports an error in a later statement of a batch only then. SET NOCOUNT ON goes first, on
+    its own: CREATE FUNCTION / PROCEDURE / VIEW / TRIGGER must be the first statement of their
+    batch, and the setting holds for the session."""
     raw = engine.raw_connection()
     try:
         cur = raw.cursor()
-        cur.execute("SET NOCOUNT ON;\n" + sql)
+        cur.execute("SET NOCOUNT ON;")
+        cur.execute(sql)
         while cur.nextset():
             pass
         raw.commit()
