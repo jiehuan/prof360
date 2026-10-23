@@ -10,8 +10,8 @@
 --     UserFavority (UserId, CompanyId, CreatedAt), UserPinnedCompanies (UserId, CompanyId,
 --     PinnedAt), UserHistory (UserHistoryId, UserId, CompanyId, ViewedAt),
 --     UserFlaggedFollowupQuestions (UserId, FollowUpQuestionId, FlaggedAt), and
---     UserMetricsSelection (UserId, CompanyId, metric_id, Selected) as in the BFF's
---     udf_GetUserMetricSelectionJson (per company; see review item C2).
+--     UserMetricsSelection (UserId, SIC_Id, metric_id): a user's metric choice per industry
+--     (SIC), shared by the companies of that industry (bff_user_tables.sql, deployed on pp).
 --   * Versioned tables (KeyInsights, KeyTakeaways, StrategicRisk, FollowUpQuestions): only
 --     isActive = 1 rows are current. Sources columns hold JSON [{title, url, date}].
 --   * Azure SQL Database or SQL Server 2017+ (FOR JSON, JSON_VALUE, JSON_QUERY, STRING_AGG).
@@ -232,24 +232,19 @@ AS BEGIN
 END;
 GO
 
--- userMetricSelections: the user's choice for this company; if the user never chose, the
--- industry default (SIC_Preferences). Rows with Selected = 0 mean the user removed a metric, so
--- a user who removed everything gets an empty list, not the default.
+-- userMetricSelections: the user's choice for this company's industry (SIC); if the user has
+-- no choice there, the industry default (SIC_Preferences).
 CREATE OR ALTER FUNCTION dbo_professional360.udf_GetUserMetricSelectionJson (@UserId INT, @CompanyId INT)
 RETURNS NVARCHAR(MAX)
 AS BEGIN
+    DECLARE @SicId INT = (SELECT SIC_Id FROM dbo_professional360.Company WHERE CompanyId = @CompanyId);
     DECLARE @Chosen TABLE (metric_id INT PRIMARY KEY);
-    IF EXISTS (SELECT 1 FROM dbo_professional360.UserMetricsSelection
-               WHERE UserId = @UserId AND CompanyId = @CompanyId)
+    INSERT INTO @Chosen (metric_id)
+    SELECT DISTINCT metric_id FROM dbo_professional360.UserMetricsSelection
+    WHERE UserId = @UserId AND SIC_Id = @SicId;
+    IF NOT EXISTS (SELECT 1 FROM @Chosen)
         INSERT INTO @Chosen (metric_id)
-        SELECT DISTINCT metric_id FROM dbo_professional360.UserMetricsSelection
-        WHERE UserId = @UserId AND CompanyId = @CompanyId AND Selected = 1;
-    ELSE
-        INSERT INTO @Chosen (metric_id)
-        SELECT DISTINCT P.metric_id
-        FROM dbo_professional360.SIC_Preferences P
-        JOIN dbo_professional360.Company C ON C.SIC_Id = P.SIC_Id
-        WHERE C.CompanyId = @CompanyId;
+        SELECT DISTINCT metric_id FROM dbo_professional360.SIC_Preferences WHERE SIC_Id = @SicId;
 
     RETURN ISNULL((
         SELECT
@@ -540,8 +535,9 @@ AS RETURN (
 );
 GO
 
--- POST api/companies/{id}/preferences/export : the user's metric choice for this company (else
--- the industry default) with each metric's latest value. Order by: categoryId, metricId.
+-- POST api/companies/{id}/preferences/export : the user's metric choice for this company's
+-- industry (else the industry default) with each metric's latest value. Order by: categoryId,
+-- metricId.
 CREATE OR ALTER FUNCTION dbo_professional360.udf_GetCompanyPerferences (@UserId INT, @CompanyId INT)
 RETURNS @Out TABLE (
     categoryId INT, categoryName NVARCHAR(60), metricId INT, metricName NVARCHAR(120),
@@ -549,18 +545,17 @@ RETURNS @Out TABLE (
     latestValue FLOAT, unit NVARCHAR(20), status NVARCHAR(10)
 )
 AS BEGIN
+    DECLARE @SicId INT = (SELECT SIC_Id FROM dbo_professional360.Company WHERE CompanyId = @CompanyId);
     DECLARE @Own BIT = CASE WHEN EXISTS (
         SELECT 1 FROM dbo_professional360.UserMetricsSelection
-        WHERE UserId = @UserId AND CompanyId = @CompanyId) THEN 1 ELSE 0 END;
+        WHERE UserId = @UserId AND SIC_Id = @SicId) THEN 1 ELSE 0 END;
     DECLARE @Chosen TABLE (metric_id INT PRIMARY KEY);
     IF @Own = 1
         INSERT INTO @Chosen SELECT DISTINCT metric_id FROM dbo_professional360.UserMetricsSelection
-        WHERE UserId = @UserId AND CompanyId = @CompanyId AND Selected = 1;
+        WHERE UserId = @UserId AND SIC_Id = @SicId;
     ELSE
-        INSERT INTO @Chosen SELECT DISTINCT P.metric_id
-        FROM dbo_professional360.SIC_Preferences P
-        JOIN dbo_professional360.Company C ON C.SIC_Id = P.SIC_Id
-        WHERE C.CompanyId = @CompanyId;
+        INSERT INTO @Chosen SELECT DISTINCT metric_id
+        FROM dbo_professional360.SIC_Preferences WHERE SIC_Id = @SicId;
 
     INSERT INTO @Out
     SELECT MC.metric_category_Id, MC.categoryName, M.metric_id, M.metric_name, M.subtitle, @Own,
