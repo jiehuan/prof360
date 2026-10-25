@@ -1239,3 +1239,21 @@ LLM runs until the end, then one comparison.
   per company); behavioral and strategic insights stay cached.
 - Result (MAR, JPM, ENPH, 2026-10-24): 10 key insights each, summaries of 94-169 characters,
   none dropped.
+
+**D-066 A company's insight sets change together or not at all (2026-10-25).**
+- Found in nightly run 144 (107 companies, Phase 16 code): the Mac slept mid-run and four
+  calls timed out. For M, LUMN and SKYD the strategic risks were stored as a new version while
+  the key insights gave no output and kept their previous version, which linked to the risks
+  just retired: 21 `link_integrity` DQ errors (Related lists pointing at retired items). A
+  timeout, a content filter or an unusable answer would do the same.
+- Options: (1) store a company's new sets only when every set that had to change has output,
+  otherwise keep all previous versions; (2) keep the previous version of the failed set and
+  re-point its links to the new versions. User decision (2026-10-25): (1); no mix of versions.
+- How: each new set is written as a staged version (`is_current = False`); at the end of the
+  company the staged sets become current together (previous versions retired) when no set gave
+  "no output", else the staged rows and what hangs on them (evidence, links, metric links,
+  question sources) are deleted. They were never current, so nothing published changes. An
+  error part way through does the same. The model answers are cached, so the next run retries
+  at no cost. The task detail says `stored=none, previous versions kept (no output: ...)`.
+- Trade-off: a set that keeps failing (e.g. a request too large) holds the company's whole
+  insight update back; the task detail and the logs name the set.
