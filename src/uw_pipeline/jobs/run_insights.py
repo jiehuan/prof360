@@ -587,17 +587,28 @@ def process_company(
                              input_hash=q_hash, now=now)  # fmt: skip
 
     # 6. key takeaways: 2-3 bullets for professional lines over all of the above, shown in the
-    # app without links; grounded like the other insights, their evidence kept for audits.
+    # app without links; grounded like the other insights, their evidence kept for audits. At
+    # most `hi` are kept, each short enough for the box (text_limits, D-065): a longer one is
+    # dropped, never cut mid-sentence.
     user_t = pkg.render("METRIC", "SIGNAL", "INSIGHT")
     lo, hi = icfg.counts["key_takeaways"]
+    limit = icfg.text_limits.get("key_takeaways")
 
     def run_t() -> list[dict[str, Any]] | None:
         out = runner.run(spec, "key_takeaways", versions["key_takeaways"], user_t, KeyTakeaways)
         if out is None:
             return None
         kept, g = ground_items(out.takeaways, pkg, ["topic", "text"], "key takeaway")
+        if limit is not None:
+            for t, _ in kept:
+                if len(t.text.strip()) > limit:
+                    g.note(f"key takeaway '{t.topic}': {len(t.text.strip())} characters "
+                           f"(at most {limit})")  # fmt: skip
+            kept = [(t, c) for t, c in kept if len(t.text.strip()) <= limit]
+        kept = kept[:hi]
+        g.kept = len(kept)
         record("key_takeaways", g)
-        return [{"title": t.topic, "summary": t.text, "cited": c} for t, c in kept[:hi]]
+        return [{"title": t.topic, "summary": t.text.strip(), "cited": c} for t, c in kept]
 
     takeaways = produce("TAKEAWAY", "key_takeaways", user_t, run_t,
                         json.dumps(sorted(insight_ids.items())))  # fmt: skip

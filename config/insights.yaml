@@ -11,7 +11,7 @@ prompt_versions:
   strategic_risk: strategic_risk_v1
   key_insights: key_insights_v1
   followups: followups_v2
-  key_takeaways: key_takeaways_v1   # 2-3 bullets for professional lines, shown without links
+  key_takeaways: key_takeaways_v2   # 2-3 bullets for professional lines, shown without links
   metric_detail: metric_detail_v1   # metricdetail stage (Phase 8): per-metric UW relevance
 
 # Filing excerpts in the package: section code -> max characters taken (latest filing with that
@@ -38,3 +38,8 @@ counts:                   # asked of the model; enforced loosely (log only)
   key_insights: [6, 10]
   followups: [10, 15]
   key_takeaways: [2, 3]   # at most 3 are kept
+
+# Longest text the app shows, in characters (2026-10-24, D-065): a longer item is dropped, not
+# cut. key_takeaways: the Key Takeaway box.
+text_limits:
+  key_takeaways: 100

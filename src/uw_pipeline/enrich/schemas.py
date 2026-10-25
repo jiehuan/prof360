@@ -275,12 +275,12 @@ class KeyInsights(BaseModel):
 
 
 class KeyTakeaway(BaseModel):
-    """key_takeaways_v1: one bullet of the Key Takeaway box (shown without links)."""
+    """key_takeaways_v2: one bullet of the Key Takeaway box (shown without links)."""
 
     model_config = ConfigDict(extra="forbid")
 
     topic: str = Field(description="The exposure, at most 5 words")
-    text: str = Field(description="One sentence, at most 35 words")
+    text: str = Field(description="One short sentence, at most 100 characters")
     evidence: list[Evidence]
 
 

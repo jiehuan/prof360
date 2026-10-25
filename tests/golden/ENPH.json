@@ -5,9 +5,162 @@
    "category": "Behavioral Insights",
    "subcategory": "Tone Shift",
    "insight_type": null,
-   "title": "Europe outlook moves from challenging to bullish",
-   "summary": "The Q4 2025 call called the regional business environment still challenging, with Europe revenue down 29% quarter on quarter. The Q1 2026 call said Europe was beginning to show signs of recovery, and the Q2 2026 call reported a 35% sequential revenue increase and said management was extremely bullish.",
-   "uw_relevance": "Management's tone on Europe moved from caution to strong optimism within two quarters, while pricing pressure and competition remain cited. Underwriters should compare this tone against the reported regional revenue and sell-through figures in each filing.",
+   "title": "Tariff impact framed as contained after peak",
+   "summary": "Reciprocal tariff impact on gross margin was 5.1% in Q4 2025 and 4.3 percentage points in Q1 2026, falling to 2 percentage points in Q2 2026. The Q4 call said every country was imposing tariffs; the Q2 call described the tariff situation as under control.",
+   "uw_relevance": "Gross margin has been sensitive to trade policy across three quarters, and the change in framing depends on tariff rulings and pending customs refund claims.",
+   "prompt_version": "behavioral_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Reciprocal tariffs impacted our gross margins by 5.1% in Q4.",
+     "source_title": "Enphase Energy, Inc. earnings call 2025Q4 (quarter ended 2025-12-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "now every country is imposing tariffs, including what is termed a reciprocal tariff",
+     "source_title": "Enphase Energy, Inc. earnings call 2025Q4 (quarter ended 2025-12-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Reciprocal tariffs also impacted our gross margin by 4.3 percentage points in Q1.",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "In general, the tariff situation has come down and is under control.",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
+    }
+   ]
+  },
+  {
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Emerging Risk Language",
+   "insight_type": null,
+   "title": "Tax equity and TPO financing pressure named",
+   "summary": "The Q1 2026 call tied a sell-through shortfall of roughly 10% to 15% below prior view to weather and TPO financing challenges. The Q2 2026 call said tax equity remains tight but is likely to improve.",
+   "uw_relevance": "Demand for third-party-owned systems depends on tax equity availability, and management has named this as a current drag on sell-through.",
+   "prompt_version": "behavioral_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "our Q1 sell-through results and Q2 sell-through expectations are roughly 10% to 15% below our prior view",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Tax equity challenges and installer bankruptcies are not good for the industry",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We are hearing that tax equity is tight, but likely to improve.",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
+    }
+   ]
+  },
+  {
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Strategic Focus Shift",
+   "insight_type": null,
+   "title": "Expansion into AI data center power conversion",
+   "summary": "The Q4 2025 call said management was evaluating next-generation power conversion architectures for data centers without discussing products or timelines. The Q1 2026 call announced the IQ solid-state transformer and a company restructuring to fund it. The Q2 2026 call reported the team at about 120 people.",
+   "uw_relevance": "A new data center program with commercial shipments targeted for 2028 adds development spend and execution risk, and moves the company away from the single end-market profile described in the Q4 call.",
+   "prompt_version": "behavioral_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "we are evaluating multiple next-generation power conversion architectures as part of our long-term R&D",
+     "source_title": "Enphase Energy, Inc. earnings call 2025Q4 (quarter ended 2025-12-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "we are excited to announce today the development of our IQ solid-state transformer product for AI data centers",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "In Q1, we restructured the company to fund SST within our existing operating framework",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Our team has now grown to about 120 people.",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
+    }
+   ]
+  },
+  {
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Strategic Focus Shift",
+   "insight_type": null,
+   "title": "Propel prepaid lease pilot scaling across states",
+   "summary": "The Q4 2025 call described Propel as a pilot in four states with about 40 installers. By the Q1 2026 call installers exceeded 200 in the same four states. The Q2 2026 call reported six states, a plan for 12 states by end of Q3, and a target of 500 originations per week by year end.",
+   "uw_relevance": "A TPO-led prepaid lease program is becoming a larger part of the growth plan, and its ramp depends on partner financing capacity and tax credit monetization.",
+   "prompt_version": "behavioral_v1",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "The program, which uses Enphase equipment is currently in pilot across four states with approximately 40 installers.",
+     "source_title": "Enphase Energy, Inc. earnings call 2025Q4 (quarter ended 2025-12-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "has expanded from 40 installers at the time of our February earnings call to more than 200 installers to date, across four states",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "plans to reach a total of 12 states by the end of the third quarter",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Sole Source is targeting 500 originations per week by the end of the year",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
+    }
+   ]
+  },
+  {
+   "kind": "BEHAVIORAL",
+   "category": "Behavioral Insights",
+   "subcategory": "Tone Shift",
+   "insight_type": null,
+   "title": "Europe moves from challenging to bullish",
+   "summary": "The Q4 2025 call said the European business environment was still challenging and European revenue fell 29% in Q4 versus Q3. The Q1 2026 call cited early signs of recovery. The Q2 2026 call described management as extremely bullish on Europe after European revenue rose 35% sequentially.",
+   "uw_relevance": "European revenue has moved sharply in both directions over three quarters and now depends on battery demand tied to net metering changes and pricing actions.",
    "prompt_version": "behavioral_v1",
    "evidence": [
     {
@@ -21,7 +174,14 @@
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "Europe is beginning to show signs of recovery, with batteries becoming increasingly critical to the customer decision.",
+     "snippet": "In Europe, our revenue decreased by 29% in Q4 compared to Q3",
+     "source_title": "Enphase Energy, Inc. earnings call 2025Q4 (quarter ended 2025-12-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Europe is beginning to show signs of recovery",
      "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
     },
     {
@@ -36,77 +196,11 @@
   {
    "kind": "BEHAVIORAL",
    "category": "Behavioral Insights",
-   "subcategory": "Tone Shift",
-   "insight_type": null,
-   "title": "Demand outlook reversed twice across three calls",
-   "summary": "The Q4 2025 call said Q1 2026 marked the low point for underlying demand. The Q1 2026 call said Q1 and Q2 sell-through were roughly 10% to 15% below the prior view, citing weather and TPO financing. The Q2 2026 call guided global sell-through to increase 10% in Q3 2026.",
-   "uw_relevance": "Demand guidance was revised down within one quarter and is now assumed to recover, so near-term revenue visibility is lower than the confident tone of the earlier call suggests.",
-   "prompt_version": "behavioral_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "We continue to believe Q1 marks the low point for underlying demand with improvement expected through 2026, particularly in the second half.",
-     "source_title": "Enphase Energy, Inc. earnings call 2025Q4 (quarter ended 2025-12-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "Q1 sell-through results and Q2 sell-through expectations are roughly 10% to 15% below our prior view",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "We expect global sell-through in Q3 to increase 10% as compared to Q2.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
-    }
-   ]
-  },
-  {
-   "kind": "BEHAVIORAL",
-   "category": "Behavioral Insights",
    "subcategory": "Emerging Risk Language",
    "insight_type": null,
-   "title": "Tax equity and TPO financing strain flagged",
-   "summary": "The Q4 2025 call tied strong Q4 demand to pull-forward ahead of the Section 25D deadline. The Q1 2026 call cited TPO financing challenges as a cause of the weaker start. The Q2 2026 call said tax equity is tight but likely to improve, and presented the Propel prepaid lease program as a partial offset.",
-   "uw_relevance": "Availability of third-party owner financing is a demand dependency that management now links to missed sell-through. The risk is described qualitatively, and management gave no timing for recovery.",
-   "prompt_version": "behavioral_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "U.S. consumers pulled forward purchases ahead of the Section 25D tax credit deadline",
-     "source_title": "Enphase Energy, Inc. earnings call 2025Q4 (quarter ended 2025-12-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "primarily due to unfavorable weather conditions and TPO financing challenges",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "We are hearing that tax equity is tight, but likely to improve.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
-    }
-   ]
-  },
-  {
-   "kind": "BEHAVIORAL",
-   "category": "Behavioral Insights",
-   "subcategory": "Strategic Focus Shift",
-   "insight_type": null,
-   "title": "Safe harbor orders rise, revenue deferred to 2028",
-   "summary": "Safe harbor agreements with third-party owners grew from two TPO orders totaling $123 million in Q4 2025 to about $843.6 million year-to-date on the Q1 2026 call and about $1.1 billion on the Q2 2026 call. The Q2 2026 call stated that the $878.6 million physical work test total has not been recognized as revenue and is expected to be recognized from 2028.",
-   "uw_relevance": "A large part of the contracted volume will not convert to reported revenue until 2028 or later, so 2026 revenue depends on near-term safe harbor deliveries. The timing and terms of these agreements are central to how the reported revenue trend should be read.",
+   "title": "Safe harbor orders grow and remain lumpy",
+   "summary": "Safe harbor order commitments rose from two TPO orders totaling $123M in Q4 2025 to approximately $843.6M of agreements in the Q1 2026 call and approximately $1.1B by the Q2 2026 call. Management said physical work test orders had not yet been recognized as revenue and expects recognition from 2028.",
+   "uw_relevance": "Revenue is increasingly tied to large contracted orders whose recognition is deferred and whose timing management describes as lumpy.",
    "prompt_version": "behavioral_v1",
    "evidence": [
     {
@@ -120,73 +214,353 @@
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "executed new agreements year-to-date with third-party owners for approximately $843.6 million of product",
+     "snippet": "approximately $843.6 million of product",
      "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "The physical work test total of $878.6 million that we have signed this year has not yet been recognized as revenue",
+     "snippet": "so lumpy here",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "executed year-to-date agreements with third party owners totaling approximately $1.1 billion",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "The physical work test total of $878.6 million that we have signed this year has not yet been recognized as revenue.",
      "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
     }
    ]
   },
   {
-   "kind": "BEHAVIORAL",
-   "category": "Behavioral Insights",
-   "subcategory": "Emerging Risk Language",
-   "insight_type": null,
-   "title": "Tax credit monetization and cash position change",
-   "summary": "The Q4 2025 call said the company was evaluating ways to get paid sooner for its 2025 PTCs. The Q1 2026 call reported that 2025 PTCs totaling $235 million were sold at 93% of their value and that direct pay was revoked in March 2026. The Q2 2026 call dated the revocation to May 2026, and cash and marketable securities were $930.6 million after the $632.5 million convertible notes settled in Q1 2026.",
-   "uw_relevance": "Tax credit receivables are being monetized at a discount, and the timing of the remaining $108.3 million refund is uncertain. The conflicting revocation dates across calls should be verified against the filings.",
-   "prompt_version": "behavioral_v1",
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Multiple securities class actions, latest filed February 2026",
+   "summary": "A third putative securities class action was filed on February 17, 2026 against the company, its CEO and CFO. The 2024 Hayes and Pension Fund actions also remain pending, and the Critical class action signal is dated February 17, 2026.",
+   "uw_relevance": "Several open securities class actions tied to executive statements create ongoing shareholder litigation exposure for the company and its officers.",
+   "prompt_version": "key_insights_v1",
    "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "On February 17, 2026, a putative class action complaint was filed naming us, our chief executive officer, and our chief financial officer (together \u201cTripathi Defendants\u201d)",
+     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "On July 7, 2026, the Court appointed Heather Stith as lead plaintiff and approved her selection of lead counsel in the Tripathi Action.",
+     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "On February 17, 2026, a putative class action complaint was filed naming us, our chief executive officer, and our chief financial officer",
+     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Delaware derivative suit names directors personally",
+   "summary": "Shareholder Terrence Collins filed a derivative suit in Delaware Chancery Court on April 23, 2026. The suit names non-employee directors and certain executives and extends derivative claims beyond the federal actions filed in 2024 and 2025.",
+   "uw_relevance": "Derivative claims against directors are directly relevant to D&O exposure, and the suit is open.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "On April 23, 2026, purported shareholder Terrence Collins filed a derivative lawsuit in the Court of Chancery for the State of Delaware against our non-employee directors and certain of our executives",
+     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "On April 23, 2026, purported shareholder Terrence Collins filed a derivative lawsuit in the Court of Chancery for the State of Delaware against our non-employee directors and certain of our executives",
+     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Negative",
+   "title": "Revenue down steeply for two consecutive quarters",
+   "summary": "Total revenue was $291.9M in Q2 2026, down 19.6% year over year, after a 20.6% year-over-year decline in Q1 2026. Operating income was negative at $-30M in Q1 2026.",
+   "uw_relevance": "Two consecutive steep revenue declines and a Q1 operating loss bear on the company's financial stability and its ability to absorb litigation costs.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "Revenue Growth (YoY) | FY2026 Q2 | -19.6% | COMPUTED",
+     "source_title": "Revenue Growth (YoY) FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "Revenue Growth (YoY) | FY2026 Q1 | -20.6% | COMPUTED",
+     "source_title": "Revenue Growth (YoY) FY2026 Q1 \u2014 Enphase Energy, Inc. 10-Q filed 2026-04-28"
+    },
     {
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "We are evaluating our options to get paid sooner for our 2025 PTC.",
+     "snippet": "Our Q2 26 sell-through declined 34% as compared to 1 year ago, Q2 25, reflecting continued pressure from higher interest rates and the transition following the expiration of the 25B tax credit.",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "Revenue Growth (YoY) | FY2026 Q2 | -19.6% | COMPUTED",
+     "source_title": "Revenue Growth (YoY) FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "operating_income",
+     "snippet": "Operating Income | FY2026 Q1 | $-30M | REPORTED",
+     "source_title": "Operating Income FY2026 Q1 \u2014 Enphase Energy, Inc. 10-Q filed 2026-04-28"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Gross margin volatile across recent quarters",
+   "summary": "Gross margin was 35.5% in FY2026 Q1 and 60.0% in FY2026 Q2. Management quantified reciprocal tariff impacts on gross margin across three quarters and changed its framing of the tariff situation.",
+   "uw_relevance": "Gross margin has been sensitive to trade policy, and the tariff outlook depends on rulings and pending customs refund claims.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "gross_margin",
+     "snippet": "Gross Margin | FY2026 Q1 | 35.5% | COMPUTED",
+     "source_title": "Gross Margin FY2026 Q1 \u2014 Enphase Energy, Inc. 10-Q filed 2026-04-28"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "gross_margin",
+     "snippet": "Gross Margin | FY2026 Q2 | 60.0% | COMPUTED",
+     "source_title": "Gross Margin FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Reciprocal tariffs impacted our gross margins by 5.1% in Q4.",
      "source_title": "Enphase Energy, Inc. earnings call 2025Q4 (quarter ended 2025-12-31)"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "from the sale of our 2025 production tax credits, which totaled $235 million and were sold at 93% of their value",
+     "snippet": "now every country is imposing tariffs, including what is termed a reciprocal tariff",
+     "source_title": "Enphase Energy, Inc. earnings call 2025Q4 (quarter ended 2025-12-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Reciprocal tariffs also impacted our gross margin by 4.3 percentage points in Q1.",
      "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "In March 2026, we revoked our direct pay election.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "in May 2026, we revoked our direct pay election",
+     "snippet": "In general, the tariff situation has come down and is under control.",
      "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
     }
    ]
   },
   {
-   "kind": "BEHAVIORAL",
-   "category": "Behavioral Insights",
-   "subcategory": "Strategic Focus Shift",
-   "insight_type": null,
-   "title": "Solid-state transformer for AI data centers emerges",
-   "summary": "The Q4 2025 call said management was evaluating data-center power conversion architectures but would not discuss products or timelines. The Q1 2026 call announced the IQ solid-state transformer, with a full system demo later in 2026, customer pilots in 2027 and volume shipments in 2028. The Q2 2026 call said the team had grown to about 120 people and that RFI/RFP stages totaled multiple gigawatts.",
-   "uw_relevance": "A new pre-revenue program is being funded within existing operating expenses, which moves a portion of the company's cost base and execution risk toward a market where revenue is not expected until 2028.",
-   "prompt_version": "behavioral_v1",
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Negative",
+   "title": "Free cash flow fell sharply from FY2024 to FY2025",
+   "summary": "Free cash flow was $480M in FY2024 and $96M in FY2025. Operating cash flow fell from $514M to $137M over the same period.",
+   "uw_relevance": "A steep drop in cash generation reduces the internal funding available for debt service, litigation and investment, which is relevant to financial stability.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "free_cash_flow",
+     "snippet": "Free Cash Flow | FY2024 | $480M | COMPUTED",
+     "source_title": "Free Cash Flow FY2024 \u2014 Enphase Energy, Inc. 10-K filed 2026-02-17"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "free_cash_flow",
+     "snippet": "Free Cash Flow | FY2025 | $96M | COMPUTED",
+     "source_title": "Free Cash Flow FY2025 \u2014 Enphase Energy, Inc. 10-K filed 2026-02-17"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "operating_cash_flow",
+     "snippet": "Operating Cash Flow | FY2025 | $137M | REPORTED",
+     "source_title": "Operating Cash Flow FY2025 \u2014 Enphase Energy, Inc. 10-K filed 2026-02-17"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "Repeated 10%+ single-day share price drops",
+   "summary": "Rule-based signals flag multiple single-day share declines of 10% or more well beyond the market. The most recent is June 5, 2026, and the list includes October 29, 2025 and July 23, 2025.",
+   "uw_relevance": "Recurring sharp stock declines are linked to the securities class action allegations and reflect investor loss exposure.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Shares fell 10% or more in a day, well beyond the market",
+     "source_title": "Enphase Energy, Inc. \u2014 Shares fell 10% or more in a day, well beyond the market"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Shares fell 10% or more in a day, well beyond the market",
+     "source_title": "Enphase Energy, Inc. \u2014 Shares fell 10% or more in a day, well beyond the market"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Shares fell 10% or more in a day, well beyond the market",
+     "source_title": "Enphase Energy, Inc. \u2014 Shares fell 10% or more in a day, well beyond the market"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Positive",
+   "title": "Debt-to-equity improved to 0.48x in Q2 2026",
+   "summary": "Debt-to-equity fell from 1.11x at FY2025 Q4 to 0.48x at FY2026 Q2. Long-term debt was $573M at FY2026 Q2 against $1.20B at FY2024, and current ratio was 3.45x.",
+   "uw_relevance": "Lower leverage and a higher current ratio reduce near-term financial pressure, which mitigates some of the litigation and revenue risks.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "debt_to_equity",
+     "snippet": "Debt-to-Equity | FY2026 Q2 | 0.48x | COMPUTED",
+     "source_title": "Debt-to-Equity FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "debt_to_equity",
+     "snippet": "Debt-to-Equity | FY2025 Q4 | 1.11x | COMPUTED",
+     "source_title": "Debt-to-Equity FY2025 Q4 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "long_term_debt",
+     "snippet": "Long-term Debt | FY2026 Q2 | $573M | REPORTED",
+     "source_title": "Long-term Debt FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "current_ratio",
+     "snippet": "Current Ratio | FY2026 Q2 | 3.45x | COMPUTED",
+     "source_title": "Current Ratio FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Info",
+   "title": "Buybacks suspended with $269M authorization unused",
+   "summary": "No share repurchases were made in FY2026 Q1 or Q2. Repurchases were $130M in FY2025 and $391M in FY2024, and management cites debt maturity and strategic investments.",
+   "uw_relevance": "Capital return has dropped sharply, and management's stated reasons are relevant to capital allocation judgment.",
+   "prompt_version": "key_insights_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "Share Repurchases | FY2026 Q1 | $0.00 | REPORTED",
+     "source_title": "Share Repurchases FY2026 Q1 \u2014 Enphase Energy, Inc. 10-Q filed 2026-04-28"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We did not repurchase common stock during the quarter as we are prioritizing disciplined cash allocation and preserving flexibility for strategic investments and potential acquisition opportunities.",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "buybacks",
+     "snippet": "Share Repurchases | FY2026 Q1 | $0.00 | REPORTED",
+     "source_title": "Share Repurchases FY2026 Q1 \u2014 Enphase Energy, Inc. 10-Q filed 2026-04-28"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "We did not repurchase common stock during the quarter as we are prioritizing disciplined cash allocation and preserving flexibility for strategic investments and potential acquisition opportunities.",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "New AI data center power program adds execution risk",
+   "summary": "The Q1 2026 call announced the IQ solid-state transformer and a restructuring to fund it. R&D spend was 15.6% of revenue in FY2026 Q2, and commercial shipments are targeted for 2028.",
+   "uw_relevance": "A new data center program adds development spend and execution risk and moves the company away from its prior single end-market profile.",
+   "prompt_version": "key_insights_v1",
    "evidence": [
     {
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "But we are not in a position to discuss any specific products or timelines today.",
+     "snippet": "we are evaluating multiple next-generation power conversion architectures as part of our long-term R&D",
      "source_title": "Enphase Energy, Inc. earnings call 2025Q4 (quarter ended 2025-12-31)"
     },
     {
@@ -200,421 +574,50 @@
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "The next frontier is data center infrastructure, which we discussed with IQSST.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Warning",
-   "title": "Securities class actions and derivative suits open",
-   "summary": "Three securities class actions are open: Hayes, the Pension Fund Action and Tripathi, the last filed February 17, 2026. A Delaware Chancery derivative suit was filed April 23, 2026 against non-employee directors and certain executives.",
-   "uw_relevance": "Open securities class actions and a derivative suit are the core D&O exposure, and the 10-Q dates for the motions to dismiss mean claim exposure is still developing.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "SIGNAL",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "On February 17, 2026, a putative class action complaint was filed naming us, our chief executive officer, and our chief financial officer",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
-     "metric_code": null,
-     "snippet": "purportedly on behalf of a class of individuals who purchased or otherwise acquired our common stock between April 22, 2025 and October 28, 2025",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "(securities class action; open; began February 17, 2026",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
-     "metric_code": null,
-     "snippet": "A hearing on the motion to dismiss is currently scheduled for September 17, 2026",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "On February 17, 2026, a putative class action complaint was filed naming us, our chief executive officer, and our chief financial officer",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "On April 23, 2026, purported shareholder Terrence Collins filed a derivative lawsuit in the Court of Chancery for the State of Delaware against our non-employee directors and certain of our executives",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "On February 17, 2026, a putative class action complaint was filed naming us, our chief executive officer, and our chief financial officer",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
-     "metric_code": null,
-     "snippet": "purportedly on behalf of a class of individuals who purchased or otherwise acquired our common stock between April 22, 2025 and October 28, 2025",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "(securities class action; open; began February 17, 2026",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
-     "metric_code": null,
-     "snippet": "A hearing on the motion to dismiss is currently scheduled for September 17, 2026",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Warning",
-   "title": "Revenue down about 20% year on year",
-   "summary": "Q2 2026 revenue was $292M, down 19.6% year on year, after Q1 2026 fell 20.6%. Management ties the US decline mainly to the expiry of the Section 25D residential tax credit, and sell-through fell 34% year on year in Q2 2026.",
-   "uw_relevance": "A sharp revenue drop tied to a single policy change raises the chance that the company's forward statements and risk disclosures are questioned in the open securities litigation.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "revenue_growth_yoy",
-     "snippet": "Revenue Growth (YoY) | FY2026 Q2 | -19.6% | COMPUTED",
-     "source_title": "Revenue Growth (YoY) FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "Net revenues decreased by $71.3 million, or 20%, in the three months ended June 30, 2026, as compared to the same period in 2025",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "primarily due to the expiration of the federal residential clean energy tax credit under Section 25D of the Internal Revenue Code",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part I, Item 2. MD&A"
+     "snippet": "In Q1, we restructured the company to fund SST within our existing operating framework",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "Our Q2 26 sell-through declined 34% as compared to 1 year ago, Q2 25",
+     "snippet": "Our team has now grown to about 120 people.",
      "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
     },
     {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "revenue_growth_yoy",
-     "snippet": "Revenue Growth (YoY) | FY2026 Q2 | -19.6% | COMPUTED",
-     "source_title": "Revenue Growth (YoY) FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Negative",
-   "title": "Q1 2026 operating and net loss",
-   "summary": "Q1 2026 operating income was -$30M and net income was -$7M, with gross margin at 35.5%. Q2 2026 rebounded to operating income of $52M and net income of $36M, so earnings swing widely between quarters.",
-   "uw_relevance": "A loss quarter followed by a rebound signals earnings volatility, which affects how results and EPS surprises are read by investors and plaintiffs.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "operating_income",
-     "snippet": "Operating Income | FY2026 Q1 | $-30M | REPORTED",
-     "source_title": "Operating Income FY2026 Q1 \u2014 Enphase Energy, Inc. 10-Q filed 2026-04-28"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "net_income",
-     "snippet": "Net Income | FY2026 Q1 | $-7M | REPORTED",
-     "source_title": "Net Income FY2026 Q1 \u2014 Enphase Energy, Inc. 10-Q filed 2026-04-28"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "ebitda_computed",
-     "snippet": "EBITDA (computed) | FY2026 Q1 | $-9M | COMPUTED",
-     "source_title": "EBITDA (computed) FY2026 Q1 \u2014 Enphase Energy, Inc. 10-Q filed 2026-04-28"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "gross_margin",
-     "snippet": "Gross Margin | FY2026 Q1 | 35.5% | COMPUTED",
-     "source_title": "Gross Margin FY2026 Q1 \u2014 Enphase Energy, Inc. 10-Q filed 2026-04-28"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Warning",
-   "title": "Cash and securities fell after note repayment",
-   "summary": "The $632.5M convertible notes due 2026 were settled with cash on hand. Cash, cash equivalents and marketable securities fell to $930.6M at the end of Q1 2026 from $1.51B at the end of 2025.",
-   "uw_relevance": "Liquidity now depends more on tax credit monetization and operating cash flow than on the 2025 cash balance, so a shortfall in those inflows would weigh on financial capacity.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "we settled all the outstanding principal amount of $632.5 million with our cash on hand",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "$632.5 million aggregate principal amount of our 0.0% convertible senior notes due 2026",
-     "source_title": "Enphase Energy, Inc. 10-K filed 2026-02-17 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "debt_due_1y",
-     "snippet": "Debt Due Within 1 Year | FY2025 | $632M | REPORTED",
-     "source_title": "Debt Due Within 1 Year FY2025 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "We exited Q1 with a total cash, cash equivalents and marketable securities balance of $930.6 million compared to $1.51 billion at the end of Q4.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "We exited Q2 with a total cash equivalents and marketable securities balance of $937.7 million compared to $930.6 million at the end of Q1.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "total_debt",
-     "snippet": "Total Debt | FY2026 Q2 | $573M | COMPUTED",
-     "source_title": "Total Debt FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "cash",
-     "snippet": "Cash & Equivalents | FY2026 Q2 | $529M | REPORTED",
-     "source_title": "Cash & Equivalents FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Negative",
-   "title": "Free cash flow fell to $96M in FY2025",
-   "summary": "Free cash flow was $96M in FY2025 against $480M in FY2024. Q1 2026 free cash flow of $83M included proceeds from selling 2025 production tax credits, and the timing of the $108.3M 2024 PTC refund is uncertain.",
-   "uw_relevance": "Cash generation depends partly on tax credit sales and refund timing, which bears on the financial capacity to absorb litigation costs and any settlements.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "In Q1, we generated $102.9 million in cash flow from operations and $83 million in free cash flow, including proceeds from the sale of the 2025 production tax credits.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "The gross margin was negatively impacted by 6.7 percentage points from the sale of our 2025 production tax credits",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "we have limited visibility into the timing of receipt of the $108.3 million due to extended IRS processing timelines",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "free_cash_flow",
-     "snippet": "Free Cash Flow | FY2025 | $96M | COMPUTED",
-     "source_title": "Free Cash Flow FY2025 \u2014 Enphase Energy, Inc. 10-K filed 2026-02-17"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "In Q1, we generated $102.9 million in cash flow from operations and $83 million in free cash flow, including proceeds from the sale of the 2025 production tax credits.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "The gross margin was negatively impacted by 6.7 percentage points from the sale of our 2025 production tax credits",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "we have limited visibility into the timing of receipt of the $108.3 million due to extended IRS processing timelines",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "free_cash_flow",
-     "snippet": "Free Cash Flow | FY2025 | $96M | COMPUTED",
-     "source_title": "Free Cash Flow FY2025 \u2014 Enphase Energy, Inc. 10-K filed 2026-02-17"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Warning",
-   "title": "Shares down 39.6% over 52 weeks",
-   "summary": "The 52-week maximum drawdown was -39.6% at FY2026 Q2 and market capitalization was $6.51B, against $17.94B at FY2023. A one-day drop of 10% or more was flagged on June 5, 2026, and similar drops recur from 2023 to 2026.",
-   "uw_relevance": "The recurring sharp drops line up with the class action periods, so price declines are a direct driver of claims exposure.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "max_drawdown_52w",
-     "snippet": "Max Drawdown (52 weeks) | FY2026 Q2 | -39.6% | MARKET",
-     "source_title": "Max Drawdown (52 weeks) FY2026 Q2"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "market_cap",
-     "snippet": "Market Capitalization | FY2026 Q2 | $6.51B | MARKET",
-     "source_title": "Market Capitalization FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "market_cap",
-     "snippet": "Market Capitalization | FY2023 | $17.94B | MARKET",
-     "source_title": "Market Capitalization FY2023 \u2014 Enphase Energy, Inc. 10-K filed 2024-02-09"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "Shares fell 10% or more in a day, well beyond the market",
-     "source_title": "Enphase Energy, Inc. \u2014 Shares fell 10% or more in a day, well beyond the market"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "Shares fell 10% or more in a day, well beyond the market",
-     "source_title": "Enphase Energy, Inc. \u2014 Shares fell 10% or more in a day, well beyond the market"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "max_drawdown_52w",
-     "snippet": "Max Drawdown (52 weeks) | FY2026 Q2 | -39.6% | MARKET",
-     "source_title": "Max Drawdown (52 weeks) FY2026 Q2"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "We have been subject to securities class action litigation as a result of our stock price volatility",
-     "source_title": "Enphase Energy, Inc. 10-K filed 2026-02-17 \u00b7 Item 1A. Risk Factors"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Warning",
-   "title": "Demand outlook reversed as TPO financing tightened",
-   "summary": "The Q4 2025 call said Q1 2026 marked the low point for demand, but the Q1 2026 call cut sell-through by roughly 10% to 15% and cited weather and TPO financing. The Q2 2026 call guided global sell-through to rise 10% in Q3 2026.",
-   "uw_relevance": "Guidance changed twice within a short period and management gave no timing for TPO recovery, so forward revenue visibility is weaker than the most recent tone suggests.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "We continue to believe Q1 marks the low point for underlying demand with improvement expected through 2026, particularly in the second half.",
+     "snippet": "we are evaluating multiple next-generation power conversion architectures as part of our long-term R&D",
      "source_title": "Enphase Energy, Inc. earnings call 2025Q4 (quarter ended 2025-12-31)"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "Q1 sell-through results and Q2 sell-through expectations are roughly 10% to 15% below our prior view",
+     "snippet": "we are excited to announce today the development of our IQ solid-state transformer product for AI data centers",
      "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "We expect global sell-through in Q3 to increase 10% as compared to Q2.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "U.S. consumers pulled forward purchases ahead of the Section 25D tax credit deadline",
-     "source_title": "Enphase Energy, Inc. earnings call 2025Q4 (quarter ended 2025-12-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "primarily due to unfavorable weather conditions and TPO financing challenges",
+     "snippet": "In Q1, we restructured the company to fund SST within our existing operating framework",
      "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "We are hearing that tax equity is tight, but likely to improve.",
+     "snippet": "Our team has now grown to about 120 people.",
      "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "rnd_to_revenue",
+     "snippet": "R&D / Revenue | FY2026 Q2 | 15.6% | COMPUTED",
+     "source_title": "R&D / Revenue FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
     }
    ]
   },
@@ -623,153 +626,109 @@
    "category": null,
    "subcategory": null,
    "insight_type": "Info",
-   "title": "Safe harbor backlog recognized mostly from 2028",
-   "summary": "Year-to-date safe harbor agreements total about $1,081.1M, including $878.6M under the physical work test. Revenue on that test is not recognized until systems are installed, expected from 2028, and remaining performance obligations were $583M at FY2026 Q2.",
-   "uw_relevance": "Contracted volume that converts to revenue only from 2028 means 2026 results depend on near-term deliveries, which makes quarterly results lumpy.",
+   "title": "Board expanded to eight directors in June 2026",
+   "summary": "Effective June 11, 2026, the Board increased its size to eight directors and made appointments on the recommendation of the Nominating and Corporate Governance Committee. The annual meeting on May 13, 2026 approved an equity plan amendment.",
+   "uw_relevance": "The board composition change is a governance event to note alongside the pending derivative litigation that names directors.",
    "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "We executed agreements year-to-date through the safe harbor deadline with TPO customers for products totaling approximately $1,081.1 million",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "For the remainder of 2026, we anticipate recognizing $136.2 million of Safe Harbor revenue, with $75 million in Q3 and $61.2 million in Q4.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "rpo",
-     "snippet": "Remaining Performance Obligations (contracted revenue) | FY2026 Q2 | $583M | REPORTED",
-     "source_title": "Remaining Performance Obligations (contracted revenue) FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "In Q4, we announced two TPO orders totaling $123 million",
-     "source_title": "Enphase Energy, Inc. earnings call 2025Q4 (quarter ended 2025-12-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "executed new agreements year-to-date with third-party owners for approximately $843.6 million of product",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "The physical work test total of $878.6 million that we have signed this year has not yet been recognized as revenue",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "rpo",
-     "snippet": "Remaining Performance Obligations (contracted revenue) | FY2026 Q2 | $583M | REPORTED",
-     "source_title": "Remaining Performance Obligations (contracted revenue) FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Warning",
-   "title": "Insider sales allegations and unverified CEO pay",
-   "summary": "The Delaware derivative suit alleges fiduciary breaches tied to purported stock sales, and officer holdings sold were 8.0% in FY2025 Q4. The FY2025 CEO compensation actually paid figure is negative at -$16,391.00 and is unconfirmed.",
-   "uw_relevance": "Insider-sale allegations link the derivative case to officer trading, and the pay data gap should be checked against the proxy before any reliance.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
-     "metric_code": null,
-     "snippet": "On April 23, 2026, purported shareholder Terrence Collins filed a derivative lawsuit in the Court of Chancery for the State of Delaware",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
-     "metric_code": null,
-     "snippet": "purportedly breached their fiduciary duties in connection with allowing the issuance of the statements challenged in the Securities Class Action",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "officer_sell_pct",
-     "snippet": "Holdings Sold by Officers | FY2025 Q4 | 8.0% | FORM4",
-     "source_title": "Holdings Sold by Officers FY2025 Q4"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "officer_sell_pct",
-     "snippet": "Holdings Sold by Officers | FY2025 Q4 | 8.0% | FORM4",
-     "source_title": "Holdings Sold by Officers FY2025 Q4"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "ceo_comp_actually_paid",
-     "snippet": "CEO Compensation Actually Paid | FY2025 | $-16,391.00 | REPORTED",
-     "source_title": "CEO Compensation Actually Paid FY2025 \u2014 Enphase Energy, Inc. DEF 14A filed 2026-04-01"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "ceo_comp_actually_paid",
-     "snippet": "CEO Compensation Actually Paid | FY2025 | $-16,391.00 | REPORTED",
-     "source_title": "CEO Compensation Actually Paid FY2025 \u2014 Enphase Energy, Inc. DEF 14A filed 2026-04-01"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "ceo_total_comp",
-     "snippet": "CEO Total Compensation (Summary Compensation Table) | FY2025 | $10M | REPORTED",
-     "source_title": "CEO Total Compensation (Summary Compensation Table) FY2025 \u2014 Enphase Energy, Inc. DEF 14A filed 2026-04-01"
-    }
-   ]
-  },
-  {
-   "kind": "STRATEGIC_RISK",
-   "category": "Governance & Leadership",
-   "subcategory": "Board composition",
-   "insight_type": null,
-   "title": "Board expanded to eight directors; independent chair",
-   "summary": "Board size was increased to eight directors effective June 11, 2026, after the April 2026 proxy listed three director nominees. The proxy states the Chair and CEO roles are separated, with Steven J. Gomo serving as independent Chair and Lead Independent Director.",
-   "uw_relevance": "Board changes came while securities class actions and derivative suits are open, so board oversight and committee composition are relevant to the litigation record.",
-   "prompt_version": "strategic_risk_v1",
    "evidence": [
     {
      "source_kind": "SIGNAL",
      "section_code": "8K-5.02",
      "metric_code": null,
-     "snippet": "has increased the size of the Board to eight directors",
+     "snippet": "Effective June 11, 2026, the Board of Directors (the \u201cBoard\u201d) of Enphase Energy, Inc. (the \u201cCompany\u201d) has increased the size of the Board to eight directors",
      "source_title": "Enphase Energy, Inc. 8-K filed 2026-06-15 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
     },
     {
-     "source_kind": "DOCUMENT",
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "On May 13, 2026, Enphase Energy, Inc. (the \u201cCompany\u201d) held its 2026 Annual Meeting of Stockholders",
+     "source_title": "Enphase Energy, Inc. 8-K filed 2026-05-15 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
+     "metric_code": null,
+     "snippet": "On May 13, 2026, Enphase Energy, Inc. (the \u201cCompany\u201d) held its 2026 Annual Meeting of Stockholders (the \u201cAnnual Meeting\u201d).",
+     "source_title": "Enphase Energy, Inc. 8-K filed 2026-05-15 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Securities class action",
+   "insight_type": null,
+   "title": "Third securities class action filed February 2026",
+   "summary": "A putative securities class action (Tripathi) was filed February 17, 2026 against the company, its CEO and CFO, adding to the 2024 Hayes and Pension Fund actions still pending. Lead plaintiff was appointed July 7, 2026 and the motion to dismiss is due November 9, 2026.",
+   "uw_relevance": "Multiple open securities class actions with a new filing in 2026 indicate a continuing shareholder litigation exposure tied to executive statements.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
      "section_code": null,
      "metric_code": null,
-     "snippet": "The Board has separated the roles of Chairman and CEO, and Mr. Gomo has been appointed to serve as the independent Chair of the Board",
-     "source_title": "Enphase Energy, Inc. DEF 14A filed 2026-04-01"
+     "snippet": "On February 17, 2026, a putative class action complaint was filed naming us, our chief executive officer, and our chief financial officer (together \u201cTripathi Defendants\u201d)",
+     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
     },
     {
      "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "On July 7, 2026, the Court appointed Heather Stith as lead plaintiff and approved her selection of lead counsel in the Tripathi Action.",
+     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Shareholder derivative litigation",
+   "insight_type": null,
+   "title": "Delaware derivative suit filed April 2026",
+   "summary": "Shareholder Terrence Collins filed a derivative suit in Delaware Chancery Court on April 23, 2026 against non-employee directors and certain executives, alleging fiduciary breaches tied to the securities class action statements and to stock sales. This extends derivative claims beyond the federal actions already pending since 2024 and 2025.",
+   "uw_relevance": "Derivative claims name directors personally, which is directly relevant to D&O exposure, and the suit is open.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
      "section_code": null,
      "metric_code": null,
-     "snippet": "To elect our three nominees for director named in the accompanying proxy statement",
-     "source_title": "Enphase Energy, Inc. DEF 14A filed 2026-04-01"
+     "snippet": "On April 23, 2026, purported shareholder Terrence Collins filed a derivative lawsuit in the Court of Chancery for the State of Delaware against our non-employee directors and certain of our executives",
+     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Risk & Legal",
+   "subcategory": "Revenue decline and margin pressure",
+   "insight_type": null,
+   "title": "Revenue down 19.6% year over year in Q2 2026",
+   "summary": "Total revenue was $291.9M in Q2 2026, down 19.6% year over year, after a 20.6% year-over-year decline in Q1 2026. The company cites the expiration of the Section 25D residential credit and weaker tax equity financing for TPO customers.",
+   "uw_relevance": "Two consecutive quarters of steep year-over-year revenue declines and a Q1 GAAP operating loss are operating metrics that bear on the company's financial stability.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "Revenue Growth (YoY) | FY2026 Q2 | -19.6% | COMPUTED",
+     "source_title": "Revenue Growth (YoY) FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "Revenue Growth (YoY) | FY2026 Q1 | -20.6% | COMPUTED",
+     "source_title": "Revenue Growth (YoY) FY2026 Q1 \u2014 Enphase Energy, Inc. 10-Q filed 2026-04-28"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Our Q2 26 sell-through declined 34% as compared to 1 year ago, Q2 25, reflecting continued pressure from higher interest rates and the transition following the expiration of the 25B tax credit.",
+     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
     }
    ]
   },
@@ -778,9 +737,9 @@
    "category": "Governance & Leadership",
    "subcategory": "Capital allocation",
    "insight_type": null,
-   "title": "Buybacks paused in 2026; $269M authorization left",
-   "summary": "No share repurchases were recorded in FY2026 Q1 or Q2, after $130M of repurchases in FY2025. Buybacks were 3.81x net income in FY2024. Management says it is prioritizing disciplined cash allocation and preserving flexibility for strategic investments and acquisitions.",
-   "uw_relevance": "Capital is being held back for strategic investments and acquisitions rather than returned to shareholders, a shift from the FY2024 pattern.",
+   "title": "Buybacks suspended; $269M authorization unused",
+   "summary": "The company made no share repurchases in FY2026 Q1 or Q2 and said it is prioritizing disciplined cash use for debt maturity and strategic investments. Repurchases were $130M in FY2025 and $391M in FY2024, and approximately $269M remains under the authorization.",
+   "uw_relevance": "Capital return activity has dropped sharply, and management cites debt repayment and acquisition flexibility as reasons, which is relevant to capital allocation judgment.",
    "prompt_version": "strategic_risk_v1",
    "evidence": [
     {
@@ -791,31 +750,10 @@
      "source_title": "Share Repurchases FY2026 Q1 \u2014 Enphase Energy, Inc. 10-Q filed 2026-04-28"
     },
     {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "buybacks",
-     "snippet": "Share Repurchases | FY2025 | $130M | REPORTED",
-     "source_title": "Share Repurchases FY2025 \u2014 Enphase Energy, Inc. 10-K filed 2026-02-17"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "buyback_intensity",
-     "snippet": "Buybacks / Net Income | FY2024 | 3.81x | COMPUTED",
-     "source_title": "Buybacks / Net Income FY2024 \u2014 Enphase Energy, Inc. 10-K filed 2026-02-17"
-    },
-    {
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "We did not repurchase common stock during the quarter as we are prioritizing disciplined cash allocation",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "We had approximately $269 million remaining under our share repurchase authorization",
+     "snippet": "We did not repurchase common stock during the quarter as we are prioritizing disciplined cash allocation and preserving flexibility for strategic investments and potential acquisition opportunities.",
      "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
     }
    ]
@@ -823,289 +761,37 @@
   {
    "kind": "STRATEGIC_RISK",
    "category": "Governance & Leadership",
-   "subcategory": "Executive compensation",
+   "subcategory": "Board and officer changes",
    "insight_type": null,
-   "title": "CEO pay actually paid reported negative for FY2025",
-   "summary": "The metric row shows CEO compensation actually paid of $-16,391.00 for FY2025, against a summary compensation table total of $10M. CEO total compensation was $13M in FY2024 and $20M in FY2023. The negative value is unusual and may reflect a unit or data error, so it is unconfirmed.",
-   "uw_relevance": "Pay metrics that diverge sharply from the summary compensation table are a compensation-governance question that should be checked against the proxy before any reliance.",
-   "prompt_version": "strategic_risk_v1",
-   "evidence": [
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "ceo_comp_actually_paid",
-     "snippet": "CEO Compensation Actually Paid | FY2025 | $-16,391.00 | REPORTED",
-     "source_title": "CEO Compensation Actually Paid FY2025 \u2014 Enphase Energy, Inc. DEF 14A filed 2026-04-01"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "ceo_total_comp",
-     "snippet": "CEO Total Compensation (Summary Compensation Table) | FY2025 | $10M | REPORTED",
-     "source_title": "CEO Total Compensation (Summary Compensation Table) FY2025 \u2014 Enphase Energy, Inc. DEF 14A filed 2026-04-01"
-    }
-   ]
-  },
-  {
-   "kind": "STRATEGIC_RISK",
-   "category": "Risk & Legal",
-   "subcategory": "Securities litigation",
-   "insight_type": null,
-   "title": "New securities class action filed February 2026",
-   "summary": "Three securities class actions are open: Hayes (began July 15, 2024), the Pension Fund Action (began December 13, 2024) and Tripathi (began February 17, 2026). Tripathi covers purchases between April 22, 2025 and October 28, 2025, a period that ends near the October 2025 one-day share drop.",
-   "uw_relevance": "The 10-Q says a hearing on the Hayes motion to dismiss is scheduled for September 17, 2026, and the Tripathi motion to dismiss is due November 9, 2026, so claim exposure is still developing.",
+   "title": "Board expanded to eight directors in June 2026",
+   "summary": "Effective June 11, 2026, the Board increased its size to eight directors and made appointments on the recommendation of the Nominating and Corporate Governance Committee. The company also held its annual meeting May 13, 2026 with an equity plan amendment approved.",
+   "uw_relevance": "Board composition change is a governance event to note alongside the pending derivative litigation naming directors.",
    "prompt_version": "strategic_risk_v1",
    "evidence": [
     {
      "source_kind": "SIGNAL",
-     "section_code": null,
+     "section_code": "8K-5.02",
      "metric_code": null,
-     "snippet": "On February 17, 2026, a putative class action complaint was filed naming us, our chief executive officer, and our chief financial officer",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
+     "snippet": "Effective June 11, 2026, the Board of Directors (the \u201cBoard\u201d) of Enphase Energy, Inc. (the \u201cCompany\u201d) has increased the size of the Board to eight directors",
+     "source_title": "Enphase Energy, Inc. 8-K filed 2026-06-15 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
     },
     {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
+     "source_kind": "SIGNAL",
+     "section_code": "8K-5.02",
      "metric_code": null,
-     "snippet": "purportedly on behalf of a class of individuals who purchased or otherwise acquired our common stock between April 22, 2025 and October 28, 2025",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "(securities class action; open; began February 17, 2026",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
-     "metric_code": null,
-     "snippet": "A hearing on the motion to dismiss is currently scheduled for September 17, 2026",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
-    }
-   ]
-  },
-  {
-   "kind": "STRATEGIC_RISK",
-   "category": "Risk & Legal",
-   "subcategory": "Derivative litigation",
-   "insight_type": null,
-   "title": "Delaware derivative suit names directors and executives",
-   "summary": "A Delaware Chancery derivative suit was filed April 23, 2026 against non-employee directors and certain executives. It alleges fiduciary breaches tied to the statements challenged in the securities class actions and to purported stock sales. Other derivative actions remain open.",
-   "uw_relevance": "Allegations of insider stock sales link governance and litigation exposure. Holdings sold by officers were 8.0% in FY2025 Q4, so the sales allegation has a factual base in the Form 4 data.",
-   "prompt_version": "strategic_risk_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
-     "metric_code": null,
-     "snippet": "On April 23, 2026, purported shareholder Terrence Collins filed a derivative lawsuit in the Court of Chancery for the State of Delaware",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
-     "metric_code": null,
-     "snippet": "purportedly breached their fiduciary duties in connection with allowing the issuance of the statements challenged in the Securities Class Action",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "officer_sell_pct",
-     "snippet": "Holdings Sold by Officers | FY2025 Q4 | 8.0% | FORM4",
-     "source_title": "Holdings Sold by Officers FY2025 Q4"
-    }
-   ]
-  },
-  {
-   "kind": "STRATEGIC_RISK",
-   "category": "Risk & Legal",
-   "subcategory": "Liquidity",
-   "insight_type": null,
-   "title": "Cash and securities fell after note settlement",
-   "summary": "Cash, cash equivalents and marketable securities were $930.6M at the end of Q1 2026, down from $1.51B at the end of 2025, and $937.7M at the end of Q2 2026. Total debt was $573M at FY2026 Q2, against $1.20B at FY2025 year end.",
-   "uw_relevance": "Liquidity now depends more on tax credit monetization and operating cash flow than on the cash balance built in 2025, and the trend should be monitored.",
-   "prompt_version": "strategic_risk_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "We exited Q1 with a total cash, cash equivalents and marketable securities balance of $930.6 million compared to $1.51 billion at the end of Q4.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "We exited Q2 with a total cash equivalents and marketable securities balance of $937.7 million compared to $930.6 million at the end of Q1.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "total_debt",
-     "snippet": "Total Debt | FY2026 Q2 | $573M | COMPUTED",
-     "source_title": "Total Debt FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    }
-   ]
-  },
-  {
-   "kind": "STRATEGIC_RISK",
-   "category": "Risk & Legal",
-   "subcategory": "Regulatory and trade",
-   "insight_type": null,
-   "title": "Tariff regime shifting; import duties remain uncertain",
-   "summary": "The Supreme Court invalidated IEEPA tariffs on February 20, 2026, and a Section 122 surcharge was later ruled invalid by the Court of International Trade. New Section 301 tariffs of 10% to 12.5% were announced for 60 trading partners. The company's LFP battery cells come solely from two vendors in China.",
-   "uw_relevance": "Replacement tariffs under other authorities could match or exceed the Section 122 rate for longer, and the company's China-sourced battery cells make this exposure specific to Enphase.",
-   "prompt_version": "strategic_risk_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1A",
-     "metric_code": null,
-     "snippet": "On February 20, 2026, the U.S. Supreme Court ruled that tariffs imposed by the U.S. under IEEPA were invalid.",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "the Administration announced new tariffs ranging from 10% to 12.5% on imports from 60 trading partners",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1A",
-     "metric_code": null,
-     "snippet": "could result in tariff rates that are equal to or higher than the current Section 122 surcharge and could remain in effect for significantly longer periods",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1A. Risk Factors"
-    }
-   ]
-  },
-  {
-   "kind": "STRATEGIC_RISK",
-   "category": "Risk & Legal",
-   "subcategory": "Demand",
-   "insight_type": null,
-   "title": "Revenue down 20% as residential credit expired",
-   "summary": "Q2 2026 net revenue fell 20% year on year to $291.9M, and Q1 2026 revenue fell 20.6% year on year. Management attributes the US decline mainly to the expiration of the Section 25D residential tax credit. Sell-through declined 34% year on year in Q2 2026.",
-   "uw_relevance": "The 10-K risk factors cover the 25D expiration, and the company's revenue sensitivity to policy changes is now visible in the reported quarters.",
-   "prompt_version": "strategic_risk_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "Net revenues decreased by $71.3 million, or 20%, in the three months ended June 30, 2026, as compared to the same period in 2025",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "primarily due to the expiration of the federal residential clean energy tax credit under Section 25D of the Internal Revenue Code",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "Our Q2 26 sell-through declined 34% as compared to 1 year ago, Q2 25",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "revenue_growth_yoy",
-     "snippet": "Revenue Growth (YoY) | FY2026 Q2 | -19.6% | COMPUTED",
-     "source_title": "Revenue Growth (YoY) FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    }
-   ]
-  },
-  {
-   "kind": "STRATEGIC_RISK",
-   "category": "Risk & Legal",
-   "subcategory": "Cash flow and tax credits",
-   "insight_type": null,
-   "title": "Cash flow reliant on tax credit sales",
-   "summary": "Free cash flow was $96M in FY2025 against $480M in FY2024. Q1 2026 free cash flow of $83M included proceeds from selling 2025 production tax credits, which reduced gross margin by 6.7 percentage points. The timing of receipt of the $108.3M 2024 PTC refund is uncertain.",
-   "uw_relevance": "Cash generation and gross margin now depend partly on the timing and discount of PTC sales and on refunds, which the company says it cannot forecast precisely.",
-   "prompt_version": "strategic_risk_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "In Q1, we generated $102.9 million in cash flow from operations and $83 million in free cash flow, including proceeds from the sale of the 2025 production tax credits.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "The gross margin was negatively impacted by 6.7 percentage points from the sale of our 2025 production tax credits",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "we have limited visibility into the timing of receipt of the $108.3 million due to extended IRS processing timelines",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "free_cash_flow",
-     "snippet": "Free Cash Flow | FY2025 | $96M | COMPUTED",
-     "source_title": "Free Cash Flow FY2025 \u2014 Enphase Energy, Inc. 10-K filed 2026-02-17"
+     "snippet": "On May 13, 2026, Enphase Energy, Inc. (the \u201cCompany\u201d) held its 2026 Annual Meeting of Stockholders",
+     "source_title": "Enphase Energy, Inc. 8-K filed 2026-05-15 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
     }
    ]
   },
   {
    "kind": "STRATEGIC_RISK",
    "category": "Event Signals",
-   "subcategory": "Debt",
+   "subcategory": "Share price declines",
    "insight_type": null,
-   "title": "$632.5M convertible notes repaid from cash",
-   "summary": "The 0.0% convertible notes due 2026 matured on March 1, 2026, and the full $632.5M principal was settled with cash on hand. The 2028 convertible notes had $575.0M principal at issuance and remain outstanding under the 10-K.",
-   "uw_relevance": "The scheduled maturity was cleared from cash rather than refinancing, which lowers near-term debt risk but cut the cash balance sharply.",
-   "prompt_version": "strategic_risk_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "we settled all the outstanding principal amount of $632.5 million with our cash on hand",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "$632.5 million aggregate principal amount of our 0.0% convertible senior notes due 2026",
-     "source_title": "Enphase Energy, Inc. 10-K filed 2026-02-17 \u00b7 Item 1A. Risk Factors"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "debt_due_1y",
-     "snippet": "Debt Due Within 1 Year | FY2025 | $632M | REPORTED",
-     "source_title": "Debt Due Within 1 Year FY2025 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    }
-   ]
-  },
-  {
-   "kind": "STRATEGIC_RISK",
-   "category": "Event Signals",
-   "subcategory": "Share price",
-   "insight_type": null,
-   "title": "Shares fell 10%+ in a day, June 2026",
-   "summary": "The rule-based signal flags a one-day share drop of 10% or more on June 5, 2026. The 52-week maximum drawdown was -39.6% at FY2026 Q2, and market capitalization was $6.51B. Similar one-day drops recur throughout 2023 to 2026.",
-   "uw_relevance": "The 10-K says the company has already faced securities class actions tied to stock price volatility, and the recurring drops match the litigation timeline.",
+   "title": "Repeated 10%+ single-day share price drops",
+   "summary": "Rule-based signals flag multiple single-day share declines of 10% or more well beyond the market, most recently on June 5, 2026, with others on October 29, 2025, July 23, 2025 and June 17, 2025. The June 5, 2026 event is flagged as a warning.",
+   "uw_relevance": "Recurring sharp stock declines are linked to the securities class action allegations and reflect investor loss exposure.",
    "prompt_version": "strategic_risk_v1",
    "evidence": [
     {
@@ -1116,51 +802,56 @@
      "source_title": "Enphase Energy, Inc. \u2014 Shares fell 10% or more in a day, well beyond the market"
     },
     {
-     "source_kind": "METRIC",
+     "source_kind": "SIGNAL",
      "section_code": null,
-     "metric_code": "max_drawdown_52w",
-     "snippet": "Max Drawdown (52 weeks) | FY2026 Q2 | -39.6% | MARKET",
-     "source_title": "Max Drawdown (52 weeks) FY2026 Q2"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
      "metric_code": null,
-     "snippet": "We have been subject to securities class action litigation as a result of our stock price volatility",
-     "source_title": "Enphase Energy, Inc. 10-K filed 2026-02-17 \u00b7 Item 1A. Risk Factors"
+     "snippet": "Shares fell 10% or more in a day, well beyond the market",
+     "source_title": "Enphase Energy, Inc. \u2014 Shares fell 10% or more in a day, well beyond the market"
     }
    ]
   },
   {
    "kind": "STRATEGIC_RISK",
    "category": "Event Signals",
-   "subcategory": "Contracts",
+   "subcategory": "Auditor",
    "insight_type": null,
-   "title": "Safe harbor agreements of $1,081.1M executed",
-   "summary": "Year-to-date safe harbor agreements with TPO customers total about $1,081.1M, including $878.6M under the physical work test. Management expects $136.2M of safe harbor revenue for the rest of 2026, but none of the physical work test revenue is recognized until systems are installed, likely from 2028.",
-   "uw_relevance": "Revenue timing is concentrated in large, lumpy safe harbor deliveries, so quarterly results may diverge from underlying sell-through; remaining performance obligations were $583M at FY2026 Q2.",
+   "title": "Deloitte auditor tenure since 2010 disclosed",
+   "summary": "Deloitte & Touche LLP has served as the company's auditor since 2010, as disclosed in the February 2026 filing. No auditor change is indicated in the input.",
+   "uw_relevance": "Auditor tenure is a standing governance fact; no change event is shown.",
+   "prompt_version": "strategic_risk_v1",
+   "evidence": [
+    {
+     "source_kind": "SIGNAL",
+     "section_code": "10K-AUDIT",
+     "metric_code": null,
+     "snippet": "We have served as the Company\u2019s auditor since 2010.",
+     "source_title": "Enphase Energy, Inc. 10-K filed 2026-02-17 \u00b7 Report of Independent Registered Public Accounting Firm"
+    }
+   ]
+  },
+  {
+   "kind": "STRATEGIC_RISK",
+   "category": "Event Signals",
+   "subcategory": "Investment impairments",
+   "insight_type": null,
+   "title": "Investment write-downs and goodwill risk disclosed",
+   "summary": "The 10-K discloses a $9.8M fair value write-down and $23.0M impairment charges on investments, plus a $3.5M intangible impairment in 2024. Goodwill and intangibles were about $214.8M and $22.3M at year-end 2025.",
+   "uw_relevance": "Impairment history on investments and acquired assets is a company-specific risk that could recur given the goodwill balance.",
    "prompt_version": "strategic_risk_v1",
    "evidence": [
     {
      "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
+     "section_code": "10K-1A",
      "metric_code": null,
-     "snippet": "We executed agreements year-to-date through the safe harbor deadline with TPO customers for products totaling approximately $1,081.1 million",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part I, Item 2. MD&A"
+     "snippet": "we recorded a fair value write-down of $9.8 million and impairment charges of $23.0 million within other income, net",
+     "source_title": "Enphase Energy, Inc. 10-K filed 2026-02-17 \u00b7 Item 1A. Risk Factors"
     },
     {
      "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
+     "section_code": "10K-1A",
      "metric_code": null,
-     "snippet": "For the remainder of 2026, we anticipate recognizing $136.2 million of Safe Harbor revenue, with $75 million in Q3 and $61.2 million in Q4.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "rpo",
-     "snippet": "Remaining Performance Obligations (contracted revenue) | FY2026 Q2 | $583M | REPORTED",
-     "source_title": "Remaining Performance Obligations (contracted revenue) FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
+     "snippet": "As of December 31, 2025, goodwill and intangible assets, net, were approximately $214.8 million and $22.3 million, respectively.",
+     "source_title": "Enphase Energy, Inc. 10-K filed 2026-02-17 \u00b7 Item 1A. Risk Factors"
     }
    ]
   },
@@ -1170,16 +861,23 @@
    "subcategory": null,
    "insight_type": null,
    "title": "Securities class action exposure",
-   "summary": "Three open securities class actions, the newest filed February 17, 2026 over purchases between April 22, 2025 and October 28, 2025, leave claim exposure still developing.",
+   "summary": "Third securities class action filed Feb 2026 names the CEO and CFO; 2024 suits still pending.",
    "uw_relevance": null,
-   "prompt_version": "key_takeaways_v1",
+   "prompt_version": "key_takeaways_v2",
    "evidence": [
     {
      "source_kind": "SIGNAL",
      "section_code": null,
      "metric_code": null,
-     "snippet": "On February 17, 2026, a putative class action complaint was filed naming us, our chief executive officer, and our chief financial officer",
+     "snippet": "On February 17, 2026, a putative class action complaint was filed naming us, our chief executive officer, and our chief financial officer (together \u201cTripathi Defendants\u201d)",
      "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-II-1",
+     "metric_code": null,
+     "snippet": "On July 7, 2026, the Court appointed Heather Stith as lead plaintiff and approved her selection of lead counsel in the Tripathi Action.",
+     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
     },
     {
      "source_kind": "SIGNAL",
@@ -1189,25 +887,25 @@
      "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
     },
     {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
-     "metric_code": null,
-     "snippet": "purportedly on behalf of a class of individuals who purchased or otherwise acquired our common stock between April 22, 2025 and October 28, 2025",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
-    },
-    {
-     "source_kind": "DOCUMENT",
+     "source_kind": "SIGNAL",
      "section_code": null,
      "metric_code": null,
-     "snippet": "(securities class action; open; began February 17, 2026",
+     "snippet": "On February 17, 2026, a putative class action complaint was filed naming us, our chief executive officer, and our chief financial officer (together \u201cTripathi Defendants\u201d)",
      "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "10Q-II-1",
      "metric_code": null,
-     "snippet": "A hearing on the motion to dismiss is currently scheduled for September 17, 2026",
+     "snippet": "On July 7, 2026, the Court appointed Heather Stith as lead plaintiff and approved her selection of lead counsel in the Tripathi Action.",
      "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "On February 17, 2026, a putative class action complaint was filed naming us, our chief executive officer, and our chief financial officer",
+     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
     }
    ]
   },
@@ -1216,10 +914,10 @@
    "category": null,
    "subcategory": null,
    "insight_type": null,
-   "title": "Derivative suit and insider sales",
-   "summary": "A Delaware derivative suit filed April 23, 2026 against non-employee directors and executives alleges fiduciary breaches tied to purported stock sales, with officer holdings sold at 8.0% in FY2025 Q4.",
+   "title": "Delaware derivative suit against directors",
+   "summary": "Delaware derivative suit, filed Apr 2026, names non-employee directors personally and is open.",
    "uw_relevance": null,
-   "prompt_version": "key_takeaways_v1",
+   "prompt_version": "key_takeaways_v2",
    "evidence": [
     {
      "source_kind": "SIGNAL",
@@ -1229,53 +927,18 @@
      "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
     },
     {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
+     "source_kind": "SIGNAL",
+     "section_code": null,
      "metric_code": null,
-     "snippet": "On April 23, 2026, purported shareholder Terrence Collins filed a derivative lawsuit in the Court of Chancery for the State of Delaware",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
+     "snippet": "On April 23, 2026, purported shareholder Terrence Collins filed a derivative lawsuit in the Court of Chancery for the State of Delaware against our non-employee directors and certain of our executives",
+     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
     },
     {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-II-1",
+     "source_kind": "SIGNAL",
+     "section_code": null,
      "metric_code": null,
-     "snippet": "purportedly breached their fiduciary duties in connection with allowing the issuance of the statements challenged in the Securities Class Action",
-     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28 \u00b7 Part II, Item 1. Legal Proceedings"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "officer_sell_pct",
-     "snippet": "Holdings Sold by Officers | FY2025 Q4 | 8.0% | FORM4",
-     "source_title": "Holdings Sold by Officers FY2025 Q4"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "officer_sell_pct",
-     "snippet": "Holdings Sold by Officers | FY2025 Q4 | 8.0% | FORM4",
-     "source_title": "Holdings Sold by Officers FY2025 Q4"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "ceo_comp_actually_paid",
-     "snippet": "CEO Compensation Actually Paid | FY2025 | $-16,391.00 | REPORTED",
-     "source_title": "CEO Compensation Actually Paid FY2025 \u2014 Enphase Energy, Inc. DEF 14A filed 2026-04-01"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "ceo_comp_actually_paid",
-     "snippet": "CEO Compensation Actually Paid | FY2025 | $-16,391.00 | REPORTED",
-     "source_title": "CEO Compensation Actually Paid FY2025 \u2014 Enphase Energy, Inc. DEF 14A filed 2026-04-01"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "ceo_total_comp",
-     "snippet": "CEO Total Compensation (Summary Compensation Table) | FY2025 | $10M | REPORTED",
-     "source_title": "CEO Total Compensation (Summary Compensation Table) FY2025 \u2014 Enphase Energy, Inc. DEF 14A filed 2026-04-01"
+     "snippet": "On April 23, 2026, purported shareholder Terrence Collins filed a derivative lawsuit in the Court of Chancery for the State of Delaware against our non-employee directors and certain of our executives",
+     "source_title": "Enphase Energy, Inc. 10-Q filed 2026-07-28"
     }
    ]
   },
@@ -1284,108 +947,66 @@
    "category": null,
    "subcategory": null,
    "insight_type": null,
-   "title": "Liquidity after note repayment",
-   "summary": "Cash and marketable securities fell to $930.6M at Q1 2026 after $632.5M of convertible notes were repaid, and free cash flow dropped to $96M in FY2025 from $480M.",
+   "title": "Share price drops, revenue decline",
+   "summary": "Repeated 10%+ one-day share drops, latest June 5, 2026, as Q2 2026 revenue fell 19.6% YoY.",
    "uw_relevance": null,
-   "prompt_version": "key_takeaways_v1",
+   "prompt_version": "key_takeaways_v2",
    "evidence": [
     {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
+     "source_kind": "SIGNAL",
+     "section_code": null,
      "metric_code": null,
-     "snippet": "We exited Q1 with a total cash, cash equivalents and marketable securities balance of $930.6 million compared to $1.51 billion at the end of Q4.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
+     "snippet": "Shares fell 10% or more in a day, well beyond the market",
+     "source_title": "Enphase Energy, Inc. \u2014 Shares fell 10% or more in a day, well beyond the market"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Shares fell 10% or more in a day, well beyond the market",
+     "source_title": "Enphase Energy, Inc. \u2014 Shares fell 10% or more in a day, well beyond the market"
+    },
+    {
+     "source_kind": "SIGNAL",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "Shares fell 10% or more in a day, well beyond the market",
+     "source_title": "Enphase Energy, Inc. \u2014 Shares fell 10% or more in a day, well beyond the market"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "Revenue Growth (YoY) | FY2026 Q2 | -19.6% | COMPUTED",
+     "source_title": "Revenue Growth (YoY) FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "Revenue Growth (YoY) | FY2026 Q1 | -20.6% | COMPUTED",
+     "source_title": "Revenue Growth (YoY) FY2026 Q1 \u2014 Enphase Energy, Inc. 10-Q filed 2026-04-28"
     },
     {
      "source_kind": "DOCUMENT",
      "section_code": "TRANSCRIPT",
      "metric_code": null,
-     "snippet": "We exited Q2 with a total cash equivalents and marketable securities balance of $937.7 million compared to $930.6 million at the end of Q1.",
+     "snippet": "Our Q2 26 sell-through declined 34% as compared to 1 year ago, Q2 25, reflecting continued pressure from higher interest rates and the transition following the expiration of the 25B tax credit.",
      "source_title": "Enphase Energy, Inc. earnings call 2026Q2 (quarter ended 2026-06-30)"
     },
     {
      "source_kind": "METRIC",
      "section_code": null,
-     "metric_code": "total_debt",
-     "snippet": "Total Debt | FY2026 Q2 | $573M | COMPUTED",
-     "source_title": "Total Debt FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "we settled all the outstanding principal amount of $632.5 million with our cash on hand",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-1A",
-     "metric_code": null,
-     "snippet": "$632.5 million aggregate principal amount of our 0.0% convertible senior notes due 2026",
-     "source_title": "Enphase Energy, Inc. 10-K filed 2026-02-17 \u00b7 Item 1A. Risk Factors"
+     "metric_code": "revenue_growth_yoy",
+     "snippet": "Revenue Growth (YoY) | FY2026 Q2 | -19.6% | COMPUTED",
+     "source_title": "Revenue Growth (YoY) FY2026 Q2 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
     },
     {
      "source_kind": "METRIC",
      "section_code": null,
-     "metric_code": "debt_due_1y",
-     "snippet": "Debt Due Within 1 Year | FY2025 | $632M | REPORTED",
-     "source_title": "Debt Due Within 1 Year FY2025 \u2014 Enphase Energy, Inc. 10-Q filed 2026-07-28"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "In Q1, we generated $102.9 million in cash flow from operations and $83 million in free cash flow, including proceeds from the sale of the 2025 production tax credits.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "The gross margin was negatively impacted by 6.7 percentage points from the sale of our 2025 production tax credits",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "we have limited visibility into the timing of receipt of the $108.3 million due to extended IRS processing timelines",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "free_cash_flow",
-     "snippet": "Free Cash Flow | FY2025 | $96M | COMPUTED",
-     "source_title": "Free Cash Flow FY2025 \u2014 Enphase Energy, Inc. 10-K filed 2026-02-17"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "In Q1, we generated $102.9 million in cash flow from operations and $83 million in free cash flow, including proceeds from the sale of the 2025 production tax credits.",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "The gross margin was negatively impacted by 6.7 percentage points from the sale of our 2025 production tax credits",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "we have limited visibility into the timing of receipt of the $108.3 million due to extended IRS processing timelines",
-     "source_title": "Enphase Energy, Inc. earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "free_cash_flow",
-     "snippet": "Free Cash Flow | FY2025 | $96M | COMPUTED",
-     "source_title": "Free Cash Flow FY2025 \u2014 Enphase Energy, Inc. 10-K filed 2026-02-17"
+     "metric_code": "operating_income",
+     "snippet": "Operating Income | FY2026 Q1 | $-30M | REPORTED",
+     "source_title": "Operating Income FY2026 Q1 \u2014 Enphase Energy, Inc. 10-Q filed 2026-04-28"
     }
    ]
   }
@@ -1393,180 +1014,155 @@
  "followups": [
   {
    "category": "Governance",
-   "question": "What is the status of the Hayes motion to dismiss hearing on September 17, 2026 and the Tripathi motion to dismiss due November 9, 2026, and how does the Tripathi class period from April 22, 2025 to October 28, 2025 compare with the statements challenged in the Hayes and Pension Fund actions?",
-   "summary": "Three securities class actions are open: Hayes (began July 15, 2024), the Pension Fund Action (began December 13, 2024) and Tripathi (began February 17, 2026). Tripathi covers purchases between April 22, 2025 and October 28, 2025, a period that ends near the October 2025 one-day share drop.",
+   "question": "How is the defense of the three open securities class actions, including the Tripathi suit filed February 17, 2026, being handled, and what has been accrued or disclosed for them?",
+   "summary": "A putative securities class action (Tripathi) was filed February 17, 2026 against the company, its CEO and CFO, adding to the 2024 Hayes and Pension Fund actions still pending. The motion to dismiss is due November 9, 2026.",
    "following_risk": "Securities class action exposure",
-   "uw_relevance": "Open securities class actions are the core D&O exposure, and the motion dates show that claim exposure is still developing.",
-   "system_priority": "high",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Financial",
-   "question": "How much of the Q2 2026 revenue decline of 20% year on year and the Q1 2026 decline of 20.6% is attributable to the Section 25D residential tax credit expiration, and what revenue run rate does management expect for the second half of 2026?",
-   "summary": "Q2 2026 net revenue fell 20% year on year to $291.9M, and Q1 2026 revenue fell 20.6% year on year. Management attributes the US decline mainly to the expiration of the Section 25D residential tax credit, and sell-through declined 34% year on year in Q2 2026.",
-   "following_risk": "Revenue decline and policy dependence",
-   "uw_relevance": "A sharp revenue drop tied to a single policy change may lead to questions about the accuracy of forward statements in the open securities litigation.",
-   "system_priority": "high",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Financial",
-   "question": "After the $632.5M convertible notes were settled in cash on March 1, 2026, what minimum cash and marketable securities balance does management intend to hold, and how much of the $930.6M balance is available after the remaining $108.3M PTC refund is received?",
-   "summary": "The $632.5M convertible notes due 2026 were settled with cash on hand. Cash, cash equivalents and marketable securities were $930.6M at the end of Q1 2026, down from $1.51B at the end of 2025, and total debt was $573M at FY2026 Q2.",
-   "following_risk": "Liquidity after note settlement",
-   "uw_relevance": "A smaller cash base makes financial capacity to absorb litigation costs and settlements more dependent on tax credit inflows and operating cash flow.",
-   "system_priority": "medium",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Financial",
-   "question": "What discount and timing applied to the 2025 production tax credit sales of $235 million, which sold at 93% of their value, and when is the remaining $108.3M refund expected to be received given that management says it cannot forecast the timing precisely?",
-   "summary": "2025 PTCs totaling $235 million were sold at 93% of their value, and direct pay was revoked. The timing of the remaining $108.3M refund is uncertain, and Q1 2026 free cash flow of $83M included proceeds from selling 2025 PTCs.",
-   "following_risk": "Tax credit monetization risk",
-   "uw_relevance": "Cash generation and gross margin rely partly on PTC sale discounts and refund timing, which bears on the company's ability to fund any litigation outcome.",
-   "system_priority": "medium",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Financial",
-   "question": "How much of operating cash flow in FY2026 Q1 ($103M) came from tax credit sale proceeds, and what operating cash flow would the company generate in the coming quarters without those proceeds, given Q2 2026 operating cash flow of $40M?",
-   "summary": "Operating cash flow was $103M in FY2026 Q1 and $40M in FY2026 Q2, against $137M for FY2025 and $514M for FY2024. Q1 2026 free cash flow of $83M included proceeds from selling 2025 PTCs.",
-   "following_risk": "Operating cash flow quality",
-   "uw_relevance": "If operating cash flow depends on one-time tax credit sales, the reported cash generation may not represent the underlying business when assessing financial capacity.",
-   "system_priority": "medium",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Financial",
-   "question": "What portion of the move in gross margin from 35.5% in Q1 2026 to 60.0% in Q2 2026 reflects the 6.7 percentage point effect of selling 2025 PTCs, and what gross margin would the company report excluding that effect?",
-   "summary": "Q1 2026 gross margin was 35.5%, and Q2 2026 gross margin was 60.0%. Q1 2026 free cash flow included PTC sale proceeds, which reduced gross margin by 6.7 percentage points.",
-   "following_risk": "Gross margin volatility",
-   "uw_relevance": "Large quarter-to-quarter margin swings tied to tax credit sales make reported profitability harder to read and may affect how investors and plaintiffs interpret results.",
-   "system_priority": "medium",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Market",
-   "question": "What is the basis for guiding global sell-through up 10% in Q3 2026, given the Q1 2026 call cut Q1 and Q2 sell-through by roughly 10% to 15% and management said Q1 2026 marked the low point for demand?",
-   "summary": "The Q4 2025 call said Q1 2026 marked the low point for underlying demand. The Q1 2026 call cut Q1 and Q2 sell-through by roughly 10% to 15%, citing weather and TPO financing, and the Q2 2026 call guided global sell-through to increase 10% in Q3 2026.",
-   "following_risk": "Demand guidance reliability",
-   "uw_relevance": "Guidance revised twice within a short period weakens the basis for forward statements that plaintiffs in the open class actions could challenge.",
-   "system_priority": "medium",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Governance",
-   "question": "Is the FY2025 CEO compensation actually paid figure of -$16,391.00 a unit or data error, and what amount does the proxy report for that metric compared with the $10M summary compensation table total?",
-   "summary": "The metric row shows CEO compensation actually paid of -$16,391.00 for FY2025, against a summary compensation table total of $10M. CEO total compensation was $13M in FY2024 and $20M in FY2023, and the figure is unconfirmed.",
-   "following_risk": "CEO pay data integrity",
-   "uw_relevance": "Pay metrics that diverge sharply from the summary compensation table are a compensation-governance question that should be verified against the proxy before reliance.",
-   "system_priority": "medium",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Governance",
-   "question": "Which officers sold shares in FY2025 Q4 and FY2026 Q1, and what trading plan or pre-clearance process covered the sales that the Delaware derivative suit links to the securities statements?",
-   "summary": "A Delaware Chancery derivative suit was filed April 23, 2026 and alleges fiduciary breaches tied to purported stock sales. Officer holdings sold were 8.0% in FY2025 Q4, and insider net open-market sales were $4M in FY2025 Q4 and $6M in FY2026 Q1.",
-   "following_risk": "Insider sales and derivative exposure",
-   "uw_relevance": "Insider-sale allegations link the derivative case to officer trading, which can increase D&O claim severity if the sales are found to be unplanned.",
+   "uw_relevance": "Open securities claims against the company and its officers are a direct source of D&O defense and settlement cost.",
    "system_priority": "high",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Governance",
-   "question": "What reasons did the board give for expanding to eight directors effective June 11, 2026, and which new directors will serve on the audit and other committees that oversee the matters in the open securities and derivative litigation?",
-   "summary": "Board size was increased to eight directors effective June 11, 2026, after the April 2026 proxy listed three director nominees. The proxy states the Chair and CEO roles are separated, with Steven J. Gomo serving as independent Chair and Lead Independent Director.",
-   "following_risk": "Board oversight during litigation",
-   "uw_relevance": "Board changes made while securities class actions and derivative suits are open are relevant to the oversight record that will be examined in any claim.",
-   "system_priority": "medium",
+   "question": "Which non-employee directors and executives are named in the Delaware derivative suit filed April 23, 2026, and how are indemnification and advancement applied to them?",
+   "summary": "Shareholder Terrence Collins filed a derivative suit in Delaware Chancery Court on April 23, 2026 against non-employee directors and certain executives. The suit alleges fiduciary breaches tied to the securities class action statements and to stock sales.",
+   "following_risk": "Derivative litigation against directors",
+   "uw_relevance": "Claims that name directors personally fall within the core of D&O exposure analysis.",
+   "system_priority": "high",
    "prompt_version": "followups_v2"
   },
   {
-   "category": "Strategy",
-   "question": "Which strategic investments or acquisitions is management holding back capital for, and when does the company expect to resume share repurchases from the remaining $269M authorization after no repurchases in FY2026 Q1 or Q2?",
-   "summary": "No share repurchases were recorded in FY2026 Q1 or Q2, after $130M of repurchases in FY2025. Buybacks were 3.81x net income in FY2024, and management says it is prioritizing disciplined cash allocation and preserving flexibility for strategic investments and acquisitions.",
-   "following_risk": "Capital return and buyback pause",
-   "uw_relevance": "A shift from returning capital to holding it for acquisitions changes the use of financial resources that stakeholders may weigh when assessing management decisions.",
-   "system_priority": "medium",
+   "category": "Financial",
+   "question": "What drove Q2 2026 revenue of $291.9M down 19.6% year over year, and what is the outlook for revenue after the Section 25D residential credit expired?",
+   "summary": "Total revenue was $291.9M in Q2 2026, down 19.6% year over year, after a 20.6% year-over-year decline in Q1 2026. Operating income was negative at $-30M in Q1 2026.",
+   "following_risk": "Revenue decline and outlook risk",
+   "uw_relevance": "Two consecutive steep year-over-year declines bear on the company's financial stability and its capacity to absorb litigation costs.",
+   "system_priority": "high",
    "prompt_version": "followups_v2"
   },
   {
-   "category": "Strategy",
-   "question": "How much of operating expense is being spent on the IQ solid-state transformer program, given that R&D was 15.6% of revenue in Q2 2026 and the team has grown to about 120 people before volume shipments in 2028?",
-   "summary": "The Q1 2026 call announced the IQ solid-state transformer, with a full system demo later in 2026, customer pilots in 2027 and volume shipments in 2028. The Q2 2026 call said the team had grown to about 120 people, and R&D was 15.6% of revenue in FY2026 Q2.",
-   "following_risk": "Pre-revenue program execution risk",
-   "uw_relevance": "A pre-revenue program funded within existing operating expenses adds cost and execution risk ahead of any revenue, which affects the company's financial profile.",
+   "category": "Financial",
+   "question": "What did management disclose after the June 5, 2026 single-day share price decline of 10% or more, and is that decline linked to the pending class action allegations?",
+   "summary": "Rule-based signals flag multiple single-day share declines of 10% or more well beyond the market, most recently on June 5, 2026. The June 5, 2026 event is flagged as a warning.",
+   "following_risk": "Investor loss and disclosure risk",
+   "uw_relevance": "Recurring sharp share price drops tied to litigation allegations indicate investor loss exposure and disclosure scrutiny.",
+   "system_priority": "high",
+   "prompt_version": "followups_v2"
+  },
+  {
+   "category": "Financial",
+   "question": "What free cash flow and operating cash flow are expected in the coming periods after free cash flow fell to $96M in FY2025 from $480M in FY2024?",
+   "summary": "Free cash flow was $480M in FY2024 and $96M in FY2025. Operating cash flow fell from $514M to $137M over the same period.",
+   "following_risk": "Cash generation and debt service",
+   "uw_relevance": "Lower internal cash generation limits the funding available for debt service, litigation costs and investment.",
    "system_priority": "medium",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Financial",
-   "question": "What share of the $1,081.1M year-to-date safe harbor agreements is expected to produce reported revenue in 2026, given management expects $136.2M of safe harbor revenue for the rest of 2026 and the $878.6M physical work test total is not recognized until systems are installed?",
-   "summary": "Year-to-date safe harbor agreements total about $1,081.1M, including $878.6M under the physical work test, which is expected to be recognized from 2028. Remaining performance obligations were $583M at FY2026 Q2.",
-   "following_risk": "Safe harbor revenue timing",
-   "uw_relevance": "Revenue concentrated in large, deferred deliveries makes quarterly results lumpy and may diverge from underlying sell-through, which affects how reported results are read.",
+   "question": "What is the repayment schedule for the $573M of long-term debt, and how does the debt maturity cited for suspending buybacks affect cash available for litigation costs?",
+   "summary": "Long-term debt was $573M at FY2026 Q2 against $1.20B at FY2024. Management cites debt maturity and strategic investments as reasons for not repurchasing shares.",
+   "following_risk": "Refinancing and debt maturity risk",
+   "uw_relevance": "Debt maturity timing and cash priorities determine the liquidity available to the company while claims are open.",
+   "system_priority": "medium",
+   "prompt_version": "followups_v2"
+  },
+  {
+   "category": "Governance",
+   "question": "Under what conditions would the company resume share repurchases from the approximately $269M remaining under its authorization?",
+   "summary": "The company made no share repurchases in FY2026 Q1 or Q2 and said it is prioritizing disciplined cash use for debt maturity and strategic investments. Repurchases were $130M in FY2025 and $391M in FY2024.",
+   "following_risk": "Capital allocation judgment risk",
+   "uw_relevance": "Management's stated reasons for halting repurchases are capital allocation judgments that directors and officers are accountable for.",
    "system_priority": "medium",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Operational",
-   "question": "What share of LFP battery cells is sourced from the two China vendors, and what tariff cost does management expect under the new Section 301 tariffs of 10% to 12.5% that apply to 60 trading partners?",
-   "summary": "The Supreme Court invalidated IEEPA tariffs on February 20, 2026, and a Section 122 surcharge was later ruled invalid by the Court of International Trade. New Section 301 tariffs of 10% to 12.5% were announced for 60 trading partners, and the LFP battery cells come solely from two vendors in China.",
-   "following_risk": "Tariff and import duty exposure",
-   "uw_relevance": "Concentrated China sourcing combined with shifting tariff authorities creates a specific cost exposure that may affect margins and the reliability of forward results.",
+   "question": "What were the reciprocal tariff impacts on gross margin in each quarter, and what is the status of the pending customs refund claims?",
+   "summary": "Reciprocal tariff impact on gross margin was 5.1% in Q4 2025 and 4.3 percentage points in Q1 2026, falling to 2 percentage points in Q2 2026. Gross margin was 35.5% in FY2026 Q1 and 60.0% in FY2026 Q2.",
+   "following_risk": "Trade policy and tariff exposure",
+   "uw_relevance": "Gross margin swings tied to tariff rulings bear on the accuracy of public earnings disclosures.",
+   "system_priority": "medium",
+   "prompt_version": "followups_v2"
+  },
+  {
+   "category": "Strategy",
+   "question": "What is the funded budget and development timeline for the IQ solid-state transformer, given R&D at 15.6% of revenue in FY2026 Q2 and commercial shipments targeted for 2028?",
+   "summary": "The Q1 2026 call announced the IQ solid-state transformer and a company restructuring to fund it. R&D spend was 15.6% of revenue in FY2026 Q2, and commercial shipments are targeted for 2028.",
+   "following_risk": "New program execution risk",
+   "uw_relevance": "A new end-market program adds development spend and execution risk that must be described accurately in public statements.",
+   "system_priority": "medium",
+   "prompt_version": "followups_v2"
+  },
+  {
+   "category": "Strategy",
+   "question": "How many states and installers does the Propel prepaid lease program now cover, and what partner financing supports the target of 500 originations per week by year end?",
+   "summary": "The Q2 2026 call reported six states, a plan for 12 states by end of Q3, and a target of 500 originations per week by year end. By the Q1 2026 call installers exceeded 200 in the same four states.",
+   "following_risk": "TPO financing dependency risk",
+   "uw_relevance": "Growth tied to partner financing and tax credit monetization creates forecasting risk for the company's public projections.",
    "system_priority": "medium",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Market",
-   "question": "What caused the one-day share price drop of 10% or more on June 5, 2026, and how do the recurring one-day drops from 2023 to 2026 line up with the class action periods and the 52-week drawdown of -39.6%?",
-   "summary": "The rule-based signal flags a one-day share drop of 10% or more on June 5, 2026. The 52-week maximum drawdown was -39.6% at FY2026 Q2, market capitalization was $6.51B, against $17.94B at FY2023, and similar one-day drops recur from 2023 to 2026.",
-   "following_risk": "Share price decline and litigation",
-   "uw_relevance": "Recurring sharp share price declines that align with the class action periods are a direct driver of claims exposure for D&O purposes.",
-   "system_priority": "high",
+   "question": "How large is the sell-through shortfall from tax equity tightness and TPO financing challenges expected to be in the coming quarters?",
+   "summary": "The Q1 2026 call tied a sell-through shortfall of roughly 10% to 15% below prior view to weather and TPO financing challenges. The Q2 2026 call said tax equity remains tight but is likely to improve.",
+   "following_risk": "Tax equity financing availability",
+   "uw_relevance": "Management has named tax equity as a current drag, so forecasts built on expected improvement carry accuracy risk.",
+   "system_priority": "medium",
+   "prompt_version": "followups_v2"
+  },
+  {
+   "category": "Market",
+   "question": "What drove the sequential European revenue rise of 35% after a 29% decline, and how durable is the battery demand tied to net metering changes?",
+   "summary": "The Q4 2025 call said European revenue fell 29% in Q4 versus Q3. The Q2 2026 call described management as extremely bullish on Europe after European revenue rose 35% sequentially.",
+   "following_risk": "Regional demand volatility",
+   "uw_relevance": "Sharp swings in a major region make the basis for management's recovery statements a point of disclosure scrutiny.",
+   "system_priority": "medium",
+   "prompt_version": "followups_v2"
+  },
+  {
+   "category": "Governance",
+   "question": "What were the reasons for expanding the board to eight directors effective June 11, 2026, and who was appointed on the recommendation of the Nominating and Corporate Governance Committee?",
+   "summary": "Effective June 11, 2026, the Board increased its size to eight directors and made appointments on the recommendation of the Nominating and Corporate Governance Committee. The annual meeting on May 13, 2026 approved an equity plan amendment.",
+   "following_risk": "Board composition and oversight",
+   "uw_relevance": "Board changes made while derivative claims name directors should be documented for oversight review.",
+   "system_priority": "medium",
+   "prompt_version": "followups_v2"
+  },
+  {
+   "category": "Financial",
+   "question": "What is the current carrying value of the investments that took a $9.8M fair value write-down and $23.0M impairment charges, and is the $214.8M goodwill balance exposed to further impairment?",
+   "summary": "The 10-K discloses a $9.8M fair value write-down and $23.0M impairment charges on investments, plus a $3.5M intangible impairment in 2024. Goodwill and intangibles were about $214.8M and $22.3M at year-end 2025.",
+   "following_risk": "Impairment and goodwill risk",
+   "uw_relevance": "Impairment charges and a large goodwill balance can produce further earnings charges that affect investor litigation exposure.",
+   "system_priority": "medium",
    "prompt_version": "followups_v2"
   }
  ],
  "metric_relevance": {
-  "accruals_ratio": "Accruals to total assets were -0.1% at FY2026 Q2, 1.0% at FY2025 and -12.6% at FY2024, so the earnings-to-cash relationship has moved between quarters. The swing is linked to cash flow timing from tax credit sales and the PTC refund.",
-  "altman_z": "The Altman Z-score fell to 1.99 in FY2025 from 3.26 in FY2024 and 11.48 in FY2022, a steep decline across three years. The lower score reflects the pressure on earnings and cash flow discussed in the financial metrics.",
-  "buyback_intensity": "Buybacks were 0.00x net income in FY2026 Q2 and 0.75x in FY2025, against 3.81x in FY2024, so the pace of repurchases relative to earnings has fallen. The Q1 2026 figure is N/M because net income was negative.",
-  "buybacks": "Share repurchases were zero in FY2026 Q1 and Q2, after $130M in FY2025 and $391M in FY2024. Management says it is prioritizing disciplined cash allocation and flexibility for strategic investments and acquisitions, with a $269M authorization still available.",
-  "capex": "Capital expenditures were $20M in FY2026 Q1 and $14M in Q2 2026, against $41M for FY2025 and $110M for FY2023. Spending has been reduced from the FY2023 level, which is relevant when judging how much cash is retained for investment and acquisitions.",
-  "cash": "Cash and equivalents rose to $529M at FY2026 Q2 from $474M at FY2025 year end, but cash, equivalents and marketable securities fell to $930.6M at Q1 2026 from $1.51B at end-2025 after the $632.5M convertible notes were settled in cash. Liquidity claims need to be read against the full securities balance.",
-  "current_assets": "Current assets fell to $1.95B at FY2026 Q2 from $2.61B at FY2025 year end, a decline that coincides with the cash used to settle the 2026 convertible notes. The drop is a visible balance sheet change in the period when management reported the note repayment.",
-  "current_liabilities": "Current liabilities rose to $1.26B at FY2025 year end from $660M at FY2024, because the $632M of debt due within one year was classified as current. They fell to $565M at FY2026 Q2 after the notes matured and were paid in cash.",
-  "current_ratio": "The current ratio fell to 2.07x at FY2025 year end from 3.53x at FY2024 and 4.59x at FY2023, then recovered to 3.45x at FY2026 Q2 after the notes were repaid. The FY2025 low reflects the maturing convertible notes rather than operating weakness alone.",
-  "debt_due_1y": "Debt due within one year was $632M at FY2025 year end, up from $101M at FY2024. The notes matured on March 1, 2026 and were settled in cash, which removed the near-term maturity from the balance sheet.",
-  "debt_to_equity": "Debt-to-equity fell to 0.48x at FY2026 Q2 from 1.11x at FY2025 year end and 1.56x at FY2024, mainly because debt was retired. Leverage now rests on the remaining 2028 convertible notes and the securities balance, so the ratio can change sharply if cash is redeployed.",
-  "diluted_shares_growth_yoy": "Diluted share count fell 3.7% in FY2025 and 2.3% in FY2024, after rising 1.1% in FY2022. The decline matches the period of heavy repurchases, and buybacks have now paused in 2026, so future dilution trends may reverse.",
-  "ebitda_computed": "EBITDA was -$9M in FY2026 Q1 and $72M in Q2 2026, against $238M for FY2025 and $159M for FY2024. The thin Q1 figure matters for lender and investor scrutiny because the same quarter included a large convertible note settlement.",
-  "eps_surprise_pct": "EPS surprise was -12.5% at FY2026 Q2, after +4.4% at Q1 2026 and +36.4% at FY2025 Q3. The sharp reversal arrives as revenue fell about 20% year on year, a combination that bears on the accuracy of earlier guidance.",
-  "equity": "Stockholders' equity rose to $1.18B at FY2026 Q2 from $833M at FY2024 year end, partly as buybacks paused in 2026. Equity growth alongside a large debt repayment changes how leverage metrics read.",
-  "free_cash_flow": "Free cash flow fell to $96M in FY2025 from $480M in FY2024, and Q2 2026 was $26M. The Q1 2026 figure of $83M included proceeds from selling 2025 PTCs, and the timing of the $108.3M 2024 PTC refund is uncertain, so cash generation depends partly on tax credit monetization.",
-  "goodwill_impairment": "No goodwill impairment was recorded in any year from FY2021 to FY2025, even as market capitalization fell to $6.51B at FY2026 Q2. Any future impairment would be a new event that the market would scrutinize, given the share price decline.",
-  "goodwill_to_equity": "Goodwill was 0.20x equity at FY2025, down from 0.25x at FY2024 and 0.42x at FY2021. The ratio has declined as equity rebuilt, so the exposure to a goodwill write-down is lower than in earlier years.",
-  "gross_margin": "Gross margin was 35.5% in FY2026 Q1 and 60.0% in Q2 2026, against 46.6% for FY2025. The Q2 figure is affected by the 6.7 percentage point effect of selling 2025 PTCs, so the underlying margin is not yet clear.",
-  "insider_net_sales": "Insider net open-market sales are recorded as $6M in FY2026 Q1 and $-313,978.58 in FY2026 Q2, and the sign convention is not explained in the input. The Delaware derivative suit alleges fiduciary breaches tied to purported stock sales, so the sales record is central to that claim.",
-  "interest_coverage": "Interest coverage was 157.55x at FY2026 Q2 and N/M at Q1 2026, the latter reflecting the operating loss. The high Q2 figure comes from very small interest costs, so it does not show that operating earnings are steady.",
-  "interest_expense": "Interest expense fell to $327,000 in FY2026 Q2 from $633,000 in Q1 2026, after the $632.5M notes matured on March 1, 2026. The 2028 notes remain the main interest-bearing debt going forward.",
-  "inventory_days": "Days inventory outstanding rose to 134 days in FY2025 from 86 days in FY2024 and 40 days in FY2022. The build-up occurred as revenue declined, which raises questions about demand forecasting and possible write-down exposure.",
-  "long_term_debt": "Long-term debt was $573M at FY2026 Q2, against $1.20B at FY2024 year end, when most of the debt was still long-dated. The remaining balance is the 2028 convertible notes, which had $575.0M principal at issuance.",
-  "market_cap": "Market capitalization was $6.51B at FY2026 Q2, down from $9.10B at FY2024 year end and $17.94B at FY2023. The decline follows the securities class actions and the June 2026 one-day share drop of 10% or more, which increases the value of the pending claims.",
-  "max_drawdown_52w": "The 52-week maximum drawdown was -39.6% at FY2026 Q2, after -58.2% at Q1 2026 and -72.9% at FY2025 Q3. The Tripathi class period ends near the October 2025 one-day share drop, so the price declines overlap the litigation timeline.",
-  "near_term_debt_coverage": "Debt due within one year divided by cash plus operating cash flow was 0.38x at FY2025 year end, against 0.05x at FY2024 and 0.00x at FY2023. The FY2025 level was the highest in the series, and the repayment of the notes followed year end.",
-  "net_income": "Net income moved from -$7M in FY2026 Q1 to $36M in Q2 2026, and FY2025 net income was $172M against $103M in FY2024. The quarterly swing is large enough that a single quarter can change the earnings picture reported to investors.",
-  "officer_sell_pct": "Officers sold 8.0% of their holdings in FY2025 Q4 and 1.7% in FY2025 Q1, with 0.0% in FY2026 Q1 and Q2. The Delaware derivative suit links purported stock sales to its fiduciary claims, so the FY2025 Q4 figure is the one most open to scrutiny.",
-  "operating_cash_flow": "Operating cash flow was $103M in FY2026 Q1 and $40M in Q2 2026, with FY2025 at $137M against $514M in FY2024. Q1 2026 included proceeds from selling 2025 PTCs, so underlying operating cash flow without those proceeds is lower and not disclosed.",
-  "operating_income": "Operating income was -$30M in FY2026 Q1 and $52M in Q2 2026, with FY2025 at $158M against $77M in FY2024. The Q1 loss followed a period in which the company reported large one-off tax credit proceeds, so quarterly profit is sensitive to timing items.",
-  "receivables_days": "Days sales outstanding improved to 57 days in FY2025 from 61 days in FY2024 and 88 days in FY2021. Collection speed matters because revenue fell about 20% year on year in the latest quarters, so receivables are a point to monitor.",
-  "revenue": "Revenue fell to $292M in FY2026 Q2 and $283M in Q1 2026, against $410M in FY2025 Q3 and $1.47B for FY2025. Management ties the US decline mainly to expiry of the Section 25D residential tax credit, so the revenue base is weakening during active securities litigation.",
-  "revenue_growth_qoq": "QoQ growth was -17.6% in FY2026 Q1 and -16.4% in FY2025 Q4, then +3.2% in Q2 2026. The Q2 rebound is small against a 19.6% YoY decline, and the Q2 call guided sell-through up 10% in Q3 2026, a forecast that conflicts with the earlier view that Q1 2026 was the demand low point.",
-  "revenue_growth_yoy": "YoY revenue growth was -20.6% in FY2026 Q1 and -19.6% in Q2 2026, after +7.8% in FY2025 Q3. Management attributes the US decline mainly to Section 25D expiry and reports sell-through down 34% YoY in Q2 2026, which bears on the accuracy of prior demand statements.",
-  "rnd_to_revenue": "R&D was 15.6% of revenue in FY2026 Q2 and 15.9% in Q1 2026, against 9.9% in FY2023, while revenue has fallen. The rise comes as the company announced the IQ solid-state transformer program, with volume shipments not expected until 2028.",
-  "sbc_to_revenue": "Stock compensation was 14.5% of revenue in FY2025 and 15.9% in FY2024, up from 9.3% in FY2023. Compensation is high relative to revenue while the CEO compensation actually paid figure of -$16,391.00 for FY2025 is unconfirmed and may be a data error.",
-  "total_debt": "Total debt fell to $573M at FY2026 Q2 from $1.20B at FY2025 year end after the $632.5M notes matured on March 1, 2026. The 2028 convertible notes remain outstanding and are the main remaining debt claim.",
-  "volatility_90d": "90-day share price volatility was 100.2% at FY2026 Q2 and 93.1% at Q1 2026, against 59.6% at FY2025 year end. Elevated volatility sits alongside recurring one-day drops of 10% or more, which the company's securities litigation periods may be tested against.",
-  "working_capital": "Working capital was $1.39B at FY2026 Q2, against $1.34B at FY2025 year end and $1.67B at FY2024. The level has been reduced by the cash used for debt repayment, so the remaining cushion depends on the securities balance and the pending PTC refund."
+  "buyback_intensity": "Buybacks were 3.81x net income in FY2024 and 0.75x in FY2025, then zero in the last two quarters. The falling ratio reflects the suspension and the lower earnings base.",
+  "buybacks": "Repurchases were $391M in FY2024 and $130M in FY2025, then zero in FY2026 Q1 and Q2, leaving about $269M of authorization unused. The stop in buybacks during open litigation is a capital-allocation point that governance reviewers will track.",
+  "capex": "Capital expenditures were $41M in FY2025 and $14M in FY2026 Q2. The input does not show capex driving the free cash flow decline; the drop comes mainly from lower operating cash flow.",
+  "cash": "Cash rose from $369M at FY2024 to $529M at FY2026 Q2 as repurchases were suspended in FY2026 Q1 and Q2. That liquidity is the resource management could draw on for litigation costs and the AI power program, and the question of how much is available is still open.",
+  "current_assets": "Current assets were $2.61B at FY2025 and $1.95B at FY2026 Q2, so the short-term asset base the company can draw on has shrunk. Declining current assets alongside legal exposure reduce near-term financial flexibility.",
+  "current_liabilities": "Current liabilities rose from $660M at FY2024 to $1.26B at FY2025 and then fell to $565M at FY2026 Q2. The balance sheet changed sharply in the same period that debt was reduced and buybacks were suspended.",
+  "current_ratio": "The current ratio was 2.07x at FY2025 and 3.45x at FY2026 Q2, down from 4.59x at FY2023. Liquidity stays above 1x, but the cushion is lower than in earlier years and the Q2 2026 figure is a rebound from the FY2025 level.",
+  "debt_to_equity": "Debt-to-equity fell from 1.56x at FY2024 to 0.48x at FY2026 Q2, the lowest value in the period shown. The improvement reflects lower debt and higher equity, which reduces leverage-related concern.",
+  "ebitda_computed": "EBITDA was $-9M in FY2026 Q1 and $72M in FY2026 Q2, against $238M for FY2025, so the earnings base supporting the debt has been thin in recent quarters. This matters because debt is being reduced while earnings are volatile.",
+  "equity": "Stockholders' equity rose from $833M at FY2024 to $1.18B at FY2026 Q2 and was $430M at FY2021. It is the denominator for debt-to-equity, and its growth is a major reason that leverage has improved.",
+  "free_cash_flow": "Free cash flow fell from $480M in FY2024 to $96M in FY2025 and was $26M in FY2026 Q2. It is the main cash-generation concern and the basis for the question on whether buybacks can resume.",
+  "gross_margin": "Gross margin fell from 51.8% in FY2024 Q4 to 35.5% in FY2026 Q1 and rebounded to 60.0% in FY2026 Q2. Management described tariff impacts differently across calls, so the swing is hard to read without the quarterly tariff breakdown.",
+  "interest_coverage": "Interest coverage was 157.55x in FY2026 Q2 but N/M in FY2026 Q1 when operating income was $-30M. The swing shows that coverage depends heavily on a single quarter's operating results.",
+  "interest_expense": "Interest expense fell from $9M in FY2024 to $327,000 in FY2026 Q2, consistent with lower debt. Debt service is not a current pressure on the company.",
+  "long_term_debt": "Long-term debt fell from $1.20B at FY2024 to $573M at FY2026 Q2. The repayment schedule for the remaining balance is not in the input and is a question for management.",
+  "net_income": "Net income fell from $172M in FY2025 to $-7M in FY2026 Q1 and recovered to $36M in FY2026 Q2, so earnings are volatile while three securities class actions remain pending. The input does not link the earnings swing to the allegations.",
+  "operating_cash_flow": "Operating cash flow fell from $514M in FY2024 to $137M in FY2025 and was $40M in FY2026 Q2. Operations are generating far less cash, which bears on how the company funds litigation costs and the new program.",
+  "operating_income": "Operating income was $-30M in FY2026 Q1 and $52M in FY2026 Q2, against $158M for FY2025. The negative quarter is part of the revenue-decline warning and shows how quickly core profitability can swing.",
+  "revenue": "Revenue fell from $410M in FY2025 Q3 to $292M in FY2026 Q2, after year-over-year declines of 20.6% in Q1 2026 and 19.6% in Q2 2026. The steep top-line drop is the core operating fact behind the open securities class actions and the new derivative suit.",
+  "revenue_growth_qoq": "Sequential growth moved from -17.6% in FY2026 Q1 to 3.2% in FY2026 Q2, so one quarter of rebound follows a sharp drop and does not yet establish a trend. Management attributed the weakness to the expiration of the Section 25D residential credit.",
+  "revenue_growth_yoy": "Year-over-year growth moved from 35.2% in FY2025 Q1 to -19.6% in FY2026 Q2, a reversal within about five quarters after 10.7% for FY2025. The company linked the decline to the Section 25D credit expiration and weaker tax equity financing for TPO customers.",
+  "rnd_to_revenue": "R&D rose to 15.6% of revenue in FY2026 Q2 and 15.9% in FY2026 Q1, up from 7.2% in FY2022. Spending is growing as revenue falls and is tied to the IQ solid-state transformer program with shipments targeted for 2028.",
+  "total_debt": "Total debt was $1.30B at FY2024 and $573M at FY2026 Q2 after a step down in FY2026 Q1. Management cites debt maturity as a reason for suspending buybacks, so the repayment schedule matters for litigation funding.",
+  "working_capital": "Working capital fell from $1.91B at FY2023 to $1.04B at FY2025 Q1 and was $1.39B at FY2026 Q2. It remains positive, but it is lower than in the earlier years shown."
  }
 }

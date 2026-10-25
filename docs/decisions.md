@@ -1537,3 +1537,17 @@ LLM runs until the end, then one comparison.
 - Conditions: the target was filled by `load` from the same pipeline (same ids) and nothing
   else writes these tables. The pipeline never deletes companies or versioned content (old
   versions get `isActive = 0`), which the BFF's user tables refer to.
+
+**D-065 Key Takeaways: at most 3 per company, at most 100 characters each (2026-10-24).**
+- Need (user, 2026-10-24): the Key Takeaway box shows at most 3 bullets of at most 100
+  characters. Before: 2-3 bullets of "at most 35 words"; all 321 stored bullets were longer
+  (average 186 characters, longest 260).
+- How: prompt `key_takeaways_v2` asks for one short sentence of at most 100 characters
+  (counting spaces) and says a longer bullet is not shown; `config/insights.yaml`
+  `text_limits.key_takeaways: 100`. The insights stage drops a grounded bullet over the limit
+  (logged as a dropped example), never cuts it, and keeps at most 3 (`counts`). The prompt
+  version is in the input hash, so every company's takeaways are generated again on the next
+  run (one synthesis call each); the other insights stay cached.
+- Result (MAR, JPM, ENPH, 2026-10-24): 3 bullets each, 86-98 characters, none dropped.
+  tests/golden re-exported: besides the takeaways, it picks up the insights regenerated since
+  the last export (2026-10-20); prompt versions other than the takeaways' are unchanged.

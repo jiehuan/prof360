@@ -107,6 +107,11 @@ def answer(model, user):
              "evidence": [_ev("B1", "Macro caution enters CEO remarks")]},
             {"topic": "Litigation", "text": "A 40% revenue drop raises securities claim risk.",
              "evidence": [_ev("R1", "Negative equity with heavy debt")]},  # invented number
+            # Grounded, but 120 characters: longer than the box shows (D-065), so dropped.
+            {"topic": "Refinancing exposure",
+             "text": "Negative equity together with $16.9B of debt leaves the company exposed if "
+                     "refinancing markets tighten in the next year.",
+             "evidence": [_ev("K1", "Negative equity amid $16.9B debt")]},
         ]}  # fmt: skip
     if "## Rule-based signals" in user:  # key insights
         return {"insights": [
@@ -164,7 +169,8 @@ def test_grounded_insights_stored_with_lineage(env) -> None:
         ("TAKEAWAY", "Leverage and refinancing"),  # the invented-number takeaway is dropped
         ("TAKEAWAY", "Emerging macro caution"),
     }
-    assert "key_takeaways=2/3" in detail
+    # Four generated: one with an invented number, one over 100 characters (D-065).
+    assert "key_takeaways=2/4" in detail
     lead = rows[("TAKEAWAY", "Leverage and refinancing")]
     assert lead.ordinal == 1 and lead.summary.startswith("Debt of $16.9B")
     # Its evidence resolves through K1 to K1's own sources (kept for audits, not shown).

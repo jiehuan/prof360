@@ -12,7 +12,7 @@
 `KeyTakeaways` 表，清单里没有对应接口。
 
 **建议**：`CompanyDetail` 加 `keyTakeaways: string[]`，按 `Ordinal` 排序，只取
-`isActive = 1`；或单开 `GET api/companies/{id}/keyTakeaways`。
+`isActive = 1`；或单开 `GET api/companies/{id}/keyTakeaways`。管线保证每家公司最多 3 条、每条最多 100 个字符（D-065），前端不需要截断。
 
 ### A2. 指标接口的 `data: object` 没定义
 指标卡片和指标弹窗都依赖这个字段。**建议**拆成两种用法：
