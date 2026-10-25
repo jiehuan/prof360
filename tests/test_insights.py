@@ -7,6 +7,7 @@ from sqlalchemy import create_engine, func, insert, select, true
 
 from tests.conftest import CONFIG_DIR
 from tests.fake_llm import FakeLLM
+from uw_pipeline.clients.llm import LLMError
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig, load_industry_config
 from uw_pipeline.enrich.llm import load_llm_config
@@ -266,6 +267,90 @@ def test_changed_input_creates_new_current_version(env) -> None:
     assert dict(current) == {"BEHAVIORAL": 1, "STRATEGIC_RISK": 2, "KEY": 1, "TAKEAWAY": 2}
     # behavioral input unchanged; strategic (2 rows), key (1) and takeaways (2) re-generated
     assert total == 6 + 5
+
+
+def _current(engine) -> tuple[set[int], set[int], int, int]:
+    """(current insight ids, current question ids, all insight rows, links from a current
+    insight to a non-current one)."""
+    other = insight.alias("other")
+    with engine.connect() as c:
+        ids = set(c.execute(select(insight.c.insight_id).where(insight.c.is_current == true()))
+                  .scalars())  # fmt: skip
+        qids = set(
+            c.execute(
+                select(followup_question.c.question_id).where(
+                    followup_question.c.is_current == true()
+                )
+            ).scalars()
+        )
+        total = c.execute(select(func.count()).select_from(insight)).scalar_one()
+        broken = c.execute(
+            select(func.count()).select_from(insight_link)
+            .join(insight, insight.c.insight_id == insight_link.c.insight_id)
+            .join(other, other.c.insight_id == insight_link.c.linked_insight_id)
+            .where(insight.c.is_current == true(), other.c.is_current == False)  # noqa: E712
+        ).scalar_one()  # fmt: skip
+    return ids, qids, total, broken
+
+
+def _new_signal(engine) -> None:
+    with engine.begin() as c:
+        c.execute(insert(signal).values(
+            signal_key="k2", company_id=1, rule_id="8k_5.02", category="Governance & Leadership",
+            subcategory="Leadership Change", severity="Info", title="Director departure",
+            description="d", event_date="2026-09-01", method="RULE", review_status="RULE_ONLY",
+            detected_at=NOW))  # fmt: skip
+
+
+def test_a_set_without_output_keeps_every_previous_version(env) -> None:
+    """D-066 (nightly run 144): new strategic risks, but the key insights gave no output (a
+    call that timed out). Nothing of this run becomes current, or the kept key insights would
+    link to retired risks; the next run completes the update."""
+    _run(env, FakeLLM(answer))
+    ids, qids, total, broken = _current(env)
+    assert broken == 0 and total == 6
+    _new_signal(env)  # strategic risks, key insights and takeaways must be generated again
+
+    def key_insights_fail(model, user):
+        key_insights = ("## Rule-based signals" in user and "\nK1 | " not in user
+                        and "## Filing excerpts" not in user)  # fmt: skip
+        if key_insights:
+            return LLMError("no answer within 600 s")
+        return answer(model, user)
+
+    detail = _run(env, FakeLLM(key_insights_fail))
+    assert "key_insights=no output" in detail
+    assert "stored=none, previous versions kept (no output: key_insights)" in detail
+    # The previous versions are all still current; the staged rows of this run are gone.
+    assert _current(env) == (ids, qids, 6, 0)
+
+    detail = _run(env, FakeLLM(answer))
+    assert "stored=" not in detail
+    new_ids, new_qids, new_total, broken = _current(env)
+    # Behavioral input unchanged (same row); strategic, key and takeaways new (5 rows).
+    assert broken == 0 and len(new_ids) == 6 and len(new_ids & ids) == 1
+    assert new_total == 6 + 5 and new_qids.isdisjoint(qids)
+
+
+def test_a_failure_part_way_removes_what_was_staged(env) -> None:
+    """D-066: an error after some sets were staged (the follow-up step here) leaves the previous
+    versions current and no staged rows behind."""
+    _run(env, FakeLLM(answer))
+    before = _current(env)
+    _new_signal(env)
+
+    def followups_crash(model, user):
+        if "## Insights from earlier steps" in user:
+            return RuntimeError("database went away")
+        return answer(model, user)
+
+    res = run_insights_stage(
+        [CompanyConfig(ticker="MAR", cik=1048286)], load_registry(CONFIG_DIR),
+        load_industry_config(CONFIG_DIR), (FakeLLM(followups_crash), load_llm_config(CONFIG_DIR)),
+        load_insights_config(CONFIG_DIR), load_source_labels(CONFIG_DIR), env, now=lambda: NOW,
+    )  # fmt: skip
+    assert not res[0].ok and "database went away" in res[0].detail
+    assert _current(env) == before
 
 
 def test_fmt_value() -> None:

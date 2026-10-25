@@ -6,8 +6,11 @@ Per company, in order:
   3. strategic & risk insights                              (synthesis model)
   4. key insights, using 2-3                                (synthesis model)
   5. follow-up questions, using 2-4                         (synthesis model)
-Each set is grounded (enrich/insights.py), then stored as a new current version unless its
-input is unchanged, in which case nothing is written (and the LLM call came from the cache).
+Each set is grounded (enrich/insights.py), then staged as a new version unless its input is
+unchanged, in which case nothing is written (and the LLM call came from the cache). A company's
+staged sets become current together at the end, only when no set gave "no output"; otherwise
+they are discarded and the previous versions stay, so a kept set never links to a retired one
+(D-066). The model answers are cached, so the next run retries at no cost.
 Sources, links between objects and the Supporting Evidence text are built by rules
 (Phase 8, decisions D-036).
 """
@@ -22,7 +25,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import Connection, Engine, and_, case, desc, insert, select, true, update
+from sqlalchemy import Connection, Engine, and_, case, delete, desc, insert, select, true, update
 
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.compute.registry import Registry
@@ -69,6 +72,7 @@ class CompanyStats:
     activities_summarised: int = 0
     tasks: dict[str, str] = field(default_factory=dict)  # task -> "kept/generated" or "unchanged"
     dropped_examples: list[str] = field(default_factory=list)
+    kept_previous: list[str] = field(default_factory=list)  # tasks without output (D-066)
 
 
 def _hash(*parts: str) -> str:
@@ -220,7 +224,7 @@ def _store_insights(
     resolved: dict[str, list[Cited]],
     resolver: SourceResolver,
 ) -> list[int]:
-    _retire(conn, company_id, kind)
+    """Stage a new version of a set (is_current = False until `_Versions.activate`)."""
     ids = []
     for ordinal, item in enumerate(items, start=1):
         cited: list[Cited] = item.get("cited", [])
@@ -236,7 +240,7 @@ def _store_insights(
                 supporting_evidence_text=evidence_text(rows) or None,
                 event_date=item.get("event_date"),
                 updated_at=item.get("event_date") or (max(dates) if dates else None),
-                is_current=True, model=model, prompt_version=prompt_version,
+                is_current=False, model=model, prompt_version=prompt_version,
                 input_hash=input_hash, created_at=now,
             )
         )  # fmt: skip
@@ -269,6 +273,15 @@ def _stored_set(conn: Connection, company_id: int, kind: str) -> list[dict[str, 
             .order_by(insight.c.ordinal)
         ).mappings()
     ]  # fmt: skip
+
+
+def _rows(conn: Connection, ids: Sequence[int]) -> list[dict[str, Any]]:
+    """A staged set's rows, in order (later steps cite it before it becomes current)."""
+    if not ids:
+        return []
+    return [dict(r) for r in conn.execute(
+        select(insight).where(insight.c.insight_id.in_(list(ids))).order_by(insight.c.ordinal)
+    ).mappings()]  # fmt: skip
 
 
 def _stored_evidence(conn: Connection, insight_id: int) -> list[Cited]:
@@ -339,10 +352,11 @@ def _store_followups(
     prompt_version: str,
     input_hash: str,
     now: datetime,
-) -> None:
+) -> list[int]:
     """Questions plus, by rules, their insight and metric links and their Sources: the evidence
-    of the insights they follow from, then the filings behind their metrics."""
-    _retire(conn, company_id, "FOLLOWUP")
+    of the insights they follow from, then the filings behind their metrics. Staged
+    (is_current = False) until `_Versions.activate`; returns the question ids."""
+    qids: list[int] = []
     metric_ids = {s.id: s.metric_code for s in pkg.of("METRIC") if s.metric_code}
     display = {s.metric_code: s.label.rsplit(" FY", 1)[0] for s in pkg.of("METRIC")
                if s.metric_code}  # fmt: skip
@@ -352,13 +366,14 @@ def _store_followups(
                 company_id=company_id, ordinal=ordinal, category=q.category,
                 question=q.question, rationale=q.uw_relevance, summary=q.summary,
                 following_risk=q.following_risk[:200], uw_relevance=q.uw_relevance,
-                system_priority=q.system_priority, is_current=True, model=model,
+                system_priority=q.system_priority, is_current=False, model=model,
                 prompt_version=prompt_version, input_hash=input_hash, created_at=now,
             )
         )  # fmt: skip
         pk = res.inserted_primary_key
         assert pk is not None
         qid = int(pk[0])
+        qids.append(qid)
         refs = sorted({r.strip() for r in q.related_insight_ids} & insight_ids.keys())
         for ref in refs:
             conn.execute(
@@ -396,6 +411,71 @@ def _store_followups(
             conn.execute(insert(followup_question_source),
                          [s | {"question_id": qid, "ordinal": i}
                           for i, s in enumerate(sources, start=1)])  # fmt: skip
+    return qids
+
+
+@dataclass
+class _Versions:
+    """The sets staged for one company in this run (kind -> new row ids) and the tasks that
+    gave no output. All staged sets become current together, or none do (D-066)."""
+
+    company_id: int
+    staged: dict[str, list[int]] = field(default_factory=dict)
+    failed: list[str] = field(default_factory=list)
+
+    def activate(self, conn: Connection) -> None:
+        for kind, ids in self.staged.items():
+            _retire(conn, self.company_id, kind)
+            table = followup_question if kind == "FOLLOWUP" else insight
+            key = table.c.question_id if kind == "FOLLOWUP" else table.c.insight_id
+            for i in range(0, len(ids), 500):
+                conn.execute(update(table).where(key.in_(ids[i:i + 500]))
+                             .values(is_current=True))  # fmt: skip
+
+    def discard(self, conn: Connection) -> None:
+        """Delete the staged rows and what hangs on them; they were never current."""
+        qids = self.staged.get("FOLLOWUP", [])
+        iids = [i for k, ids in self.staged.items() if k != "FOLLOWUP" for i in ids]
+        for i in range(0, len(qids), 500):
+            chunk = qids[i : i + 500]
+            if chunk:
+                conn.execute(
+                    delete(followup_question_insight).where(
+                        followup_question_insight.c.question_id.in_(chunk)
+                    )
+                )
+                conn.execute(
+                    delete(followup_question_metric).where(
+                        followup_question_metric.c.question_id.in_(chunk)
+                    )
+                )
+                conn.execute(
+                    delete(followup_question_source).where(
+                        followup_question_source.c.question_id.in_(chunk)
+                    )
+                )
+                conn.execute(delete(followup_question)
+                             .where(followup_question.c.question_id.in_(chunk)))  # fmt: skip
+        for i in range(0, len(iids), 500):
+            chunk = iids[i : i + 500]
+            if chunk:
+                conn.execute(
+                    delete(followup_question_insight).where(
+                        followup_question_insight.c.insight_id.in_(chunk)
+                    )
+                )
+                conn.execute(
+                    delete(insight_link).where(
+                        insight_link.c.insight_id.in_(chunk)
+                        | insight_link.c.linked_insight_id.in_(chunk)
+                    )
+                )
+                conn.execute(delete(insight_metric).where(insight_metric.c.insight_id.in_(chunk)))
+                conn.execute(
+                    delete(insight_evidence).where(insight_evidence.c.insight_id.in_(chunk))
+                )
+                conn.execute(delete(insight).where(insight.c.insight_id.in_(chunk)))  # fmt: skip
+        self.staged.clear()
 
 
 # -- company pipeline --------------------------------------------------------------------------
@@ -439,6 +519,7 @@ def process_company(
     labels: SourceLabels,
     conn: Connection,
     now: datetime,
+    versions_out: _Versions | None = None,
 ) -> CompanyStats:
     client, llm = llm_pair
     row = company_row(conn, cfg)
@@ -457,6 +538,8 @@ def process_company(
     spec = icfg.synthesis
     versions = icfg.prompt_versions
     resolved: dict[str, list[Cited]] = {}
+    ver = versions_out if versions_out is not None else _Versions(company_id)
+    ver.company_id = company_id
 
     def record(task: str, gstats: GroundingStats) -> None:
         stats.tasks[task] = f"{gstats.kept}/{gstats.generated}"
@@ -480,11 +563,13 @@ def process_company(
         items = run()
         if items is None:
             stats.tasks[task] = "no output"
+            ver.failed.append(task)
             return _stored_set(conn, company_id, kind)
-        _store_insights(conn, company_id, kind, items, model=spec.model,
-                        prompt_version=versions[task], input_hash=input_hash, now=now,
-                        resolved=resolved, resolver=resolver)  # fmt: skip
-        return _stored_set(conn, company_id, kind)
+        ids = _store_insights(conn, company_id, kind, items, model=spec.model,
+                              prompt_version=versions[task], input_hash=input_hash, now=now,
+                              resolved=resolved, resolver=resolver)  # fmt: skip
+        ver.staged[kind] = ids
+        return _rows(conn, ids)
 
     # 2. behavioral and 3. strategic & risk are independent: their model calls run together
     # (D-062); each step below then finds its answer in the cache.
@@ -588,6 +673,7 @@ def process_company(
         out = runner.run(spec, "followups", versions["followups"], user_q, FollowUpQuestions)
         if out is None:
             stats.tasks["followups"] = "no output"
+            ver.failed.append("followups")
         else:
             values = [v for s in pkg.of("METRIC") for v in s.values]
             insight_text = [s.text for s in pkg.of("INSIGHT")]
@@ -604,9 +690,9 @@ def process_company(
                                              generated=len(out.questions), kept=len(good),
                                              created_at=now)
             )  # fmt: skip
-            _store_followups(conn, company_id, good, pkg, insight_ids, resolver,
-                             model=spec.model, prompt_version=versions["followups"],
-                             input_hash=q_hash, now=now)  # fmt: skip
+            ver.staged["FOLLOWUP"] = _store_followups(
+                conn, company_id, good, pkg, insight_ids, resolver, model=spec.model,
+                prompt_version=versions["followups"], input_hash=q_hash, now=now)  # fmt: skip
 
     # 6. key takeaways: 2-3 bullets for professional lines over all of the above, shown in the
     # app without links; grounded like the other insights, their evidence kept for audits. At
@@ -629,6 +715,15 @@ def process_company(
                         json.dumps(sorted(insight_ids.items())))  # fmt: skip
     if not lo <= len(takeaways) <= hi:
         log.warning("%s: %d key takeaways (expected %d-%d)", cfg.ticker, len(takeaways), lo, hi)
+
+    # All or nothing (D-066): a set without output keeps its previous version, and so do the
+    # sets staged this run, which could otherwise link to items the kept set does not know.
+    if ver.failed and ver.staged:
+        ver.discard(conn)
+        stats.kept_previous = list(ver.failed)
+        stats.tasks["stored"] = f"none, previous versions kept (no output: {', '.join(ver.failed)})"
+    else:
+        ver.activate(conn)
     return stats
 
 
@@ -653,7 +748,17 @@ def run_insights_stage(
             # call, so companies can run in parallel even on SQLite; a failure rolls back only
             # the unfinished group, and a rerun picks up from the LLM cache.
             with engine.connect() as conn:
-                stats = process_company(cfg, registry, industry, llm, icfg, labels, conn, now())
+                ver = _Versions(0)
+                try:
+                    stats = process_company(cfg, registry, industry, llm, icfg, labels, conn,
+                                            now(), ver)  # fmt: skip
+                except Exception:
+                    # Sets staged before the failure were never current: remove them (D-066).
+                    conn.rollback()
+                    if ver.staged:
+                        ver.discard(conn)
+                        conn.commit()
+                    raise
                 conn.commit()
             for ex in stats.dropped_examples:
                 log.info("%s: dropped %s", cfg.ticker, ex)
