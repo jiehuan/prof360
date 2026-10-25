@@ -401,6 +401,26 @@ def _store_followups(
 # -- company pipeline --------------------------------------------------------------------------
 
 
+def _within_limit(
+    kept: list[tuple[Any, list[Cited]]], field: str, limit: int | None, g: GroundingStats,
+    what: str,
+) -> list[tuple[Any, list[Cited]]]:  # fmt: skip
+    """Items whose `field` fits the app's limit (config text_limits, D-065); a longer one is
+    dropped and noted, never cut mid-sentence. No limit: all."""
+    if limit is None:
+        return kept
+    out = []
+    for item, cited in kept:
+        n = len(str(getattr(item, field) or "").strip())
+        if n > limit:
+            g.note(f"{what} '{getattr(item, 'title', '') or getattr(item, 'topic', '')}': "
+                   f"{field} has {n} characters (at most {limit})")  # fmt: skip
+        else:
+            out.append((item, cited))
+    g.kept = len(out)
+    return out
+
+
 def _insight_source(prefix: str, n: int, row: dict[str, Any]) -> Source:
     head = " / ".join(x for x in (row.get("category"), row.get("subcategory")) if x)
     text = f"{head} | {row['title']} | {row['summary']}"
@@ -525,6 +545,8 @@ def process_company(
             out.insights, pkg,
             ["title", "summary", "uw_relevance", "supporting_evidence"], "key insight",
         )  # fmt: skip
+        kept = _within_limit(kept, "summary", icfg.text_limits.get("key_insights"), g,
+                             "key insight")  # fmt: skip
         record("key_insights", g)
         known = {m.code for m in metrics}
         return [{"insight_type": i.type, "title": i.title, "summary": i.summary,
@@ -576,7 +598,8 @@ def process_company(
                              input_hash=q_hash, now=now)  # fmt: skip
 
     # 6. key takeaways: 2-3 bullets for professional lines over all of the above, shown in the
-    # app without links; grounded like the other insights, their evidence kept for audits.
+    # app without links; grounded like the other insights, their evidence kept for audits. At
+    # most `hi` are kept.
     user_t = pkg.render("METRIC", "SIGNAL", "INSIGHT")
     lo, hi = icfg.counts["key_takeaways"]
 
@@ -585,8 +608,11 @@ def process_company(
         if out is None:
             return None
         kept, g = ground_items(out.takeaways, pkg, ["topic", "text"], "key takeaway")
+        kept = _within_limit(kept, "text", icfg.text_limits.get("key_takeaways"), g,
+                             "key takeaway")[:hi]  # fmt: skip
+        g.kept = len(kept)
         record("key_takeaways", g)
-        return [{"title": t.topic, "summary": t.text, "cited": c} for t, c in kept[:hi]]
+        return [{"title": t.topic, "summary": t.text.strip(), "cited": c} for t, c in kept]
 
     takeaways = produce("TAKEAWAY", "key_takeaways", user_t, run_t,
                         json.dumps(sorted(insight_ids.items())))  # fmt: skip

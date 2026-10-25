@@ -261,7 +261,7 @@ class KeyInsight(BaseModel):
 
     type: Literal["Warning", "Negative", "Positive", "Info"]
     title: str = Field(description="At most 8 words")
-    summary: str
+    summary: str = Field(description="One or two sentences, at most 180 characters")
     uw_relevance: str
     supporting_evidence: str = Field(description="The facts behind the insight, briefly")
     related_metric_codes: list[str]
