@@ -1519,3 +1519,21 @@ LLM runs until the end, then one comparison.
   calls at a time. The insights parallel test now sees four calls at once (two companies, two
   syntheses each). Live (run 137, 2026-10-21): textmetrics for the six banks and JPMorgan from
   the cache: no model calls, the stored values unchanged.
+
+**D-064 Daily copy from SQLite to Azure SQL: sync by primary key (2026-10-24).**
+- Need: the pipeline runs on SQLite; Azure SQL, read by the BFF, must get each run's results
+  without a full reload. A full reload (`clear_target`, `load`) breaks once the BFF's user
+  tables (favorites, flags, metric choices) point at application rows.
+- Options: (a) the pipeline writes Azure SQL directly (its publish stage is already
+  incremental, `pipeline_publish_map`); (b) keep SQLite and sync the file into Azure SQL after
+  each run. User decision (2026-10-24): (b).
+- How: `copy_sqlite_to_azure` gets `mode = sync`: each table staged as text, then one `MERGE`
+  by primary key (insert new rows with their ids, update rows whose columns differ by
+  `EXCEPT`, delete rows gone from the file), constraints off meanwhile and re-checked after,
+  row counts compared. Values are converted as `load` converts them (decimals through FLOAT,
+  times through DATETIMEOFFSET, then the target type) so unchanged rows compare equal and are
+  not rewritten. `keep_columns` (default `Company.logo`) are columns the application writes:
+  inserted for new rows, never updated.
+- Conditions: the target was filled by `load` from the same pipeline (same ids) and nothing
+  else writes these tables. The pipeline never deletes companies or versioned content (old
+  versions get `isActive = 0`), which the BFF's user tables refer to.
