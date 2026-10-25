@@ -2,14 +2,17 @@
 # MAGIC %md
 # MAGIC # Copy a uw-pipeline SQLite database to Azure SQL
 # MAGIC
-# MAGIC One-time copy of `data/uw.db` (pipeline tables) or `data/app.db` (application tables) into
-# MAGIC Azure SQL, keeping every row id. Guide: `docs/databricks-copy.md`.
+# MAGIC Copies `data/uw.db` (pipeline tables) or `data/app.db` (application tables) into Azure SQL,
+# MAGIC keeping every row id. Guide: `docs/databricks-copy.md`.
 # MAGIC
 # MAGIC 1. Create the target tables first with the repo's DDL (`deploy/sql/pipeline_schema_full.sql`
 # MAGIC    or `deploy/sql/app_schema_full.sql`).
 # MAGIC 2. Upload the `.db` file to a Unity Catalog volume.
 # MAGIC 3. Pick the environment, run with `mode = dry_run`, read the plan, then run with
-# MAGIC    `mode = load`.
+# MAGIC    `mode = load` the first time (empty tables) and `mode = sync` after each pipeline run:
+# MAGIC    rows are inserted, updated or deleted by primary key so the target matches the file
+# MAGIC    (D-064). Columns the application owns (`keep_columns`, e.g. `Company.logo`) are never
+# MAGIC    overwritten.
 # MAGIC
 # MAGIC Connects with `azure_sql_connect` (D-057): the service principal from the secret scope,
 # MAGIC server, database, schemas and secret key names from `config/azure.yaml` of the checked-out
@@ -31,13 +34,15 @@ dbutils.widgets.text("sqlite_path", "/Volumes/<catalog>/<schema>/<volume>/uw.db"
 dbutils.widgets.dropdown("env", "dv", ["dv", "pp", "pr"], "3. Environment (config/azure.yaml)")
 dbutils.widgets.text("target_schema", "", "4. Target schema (blank: from azure.yaml)")
 dbutils.widgets.text("staging_schema", "stg_uw_copy", "5. Staging schema (dropped at the end)")
-dbutils.widgets.dropdown("mode", "dry_run", ["dry_run", "load", "clear_target"], "6. Mode")
+dbutils.widgets.dropdown("mode", "dry_run", ["dry_run", "load", "sync", "clear_target"], "6. Mode")
 # Blank: from config/azure.yaml for the environment.
 dbutils.widgets.text("server", "", "7. Server (blank: azure.yaml)")
 dbutils.widgets.text("sql_database", "", "8. Database (blank: azure.yaml)")
 dbutils.widgets.text("secret_scope", "", "9. Secret scope (blank: azure.yaml)")
 dbutils.widgets.text("username_key", "", "10. Secret: client id key (blank: azure.yaml)")
 dbutils.widgets.text("password_key", "", "11. Secret: client secret key (blank: azure.yaml)")
+# sync: target columns the application writes, left as they are (Table.column, comma-separated).
+dbutils.widgets.text("keep_columns", "Company.logo", "12. Sync: columns the target keeps")
 
 # COMMAND ----------
 
@@ -48,7 +53,7 @@ import time
 
 W = {k: dbutils.widgets.get(k).strip() for k in (
     "database", "sqlite_path", "env", "target_schema", "staging_schema", "mode", "server",
-    "sql_database", "secret_scope", "username_key", "password_key")}  # fmt: skip
+    "sql_database", "secret_scope", "username_key", "password_key", "keep_columns")}  # fmt: skip
 S = azure_sql_settings(W["env"], server=W["server"], database=W["sql_database"],
                        secret_scope=W["secret_scope"], username_key=W["username_key"],
                        password_key=W["password_key"])  # fmt: skip
@@ -88,7 +93,8 @@ target: dict[str, dict[str, dict]] = {}
 for r in query(
     engine,
     f"""
-    SELECT c.TABLE_NAME, c.COLUMN_NAME, c.DATA_TYPE, c.IS_NULLABLE,
+    SELECT c.TABLE_NAME, c.COLUMN_NAME, c.DATA_TYPE, c.IS_NULLABLE, c.CHARACTER_MAXIMUM_LENGTH,
+           c.NUMERIC_PRECISION, c.NUMERIC_SCALE, c.DATETIME_PRECISION,
            COLUMNPROPERTY(OBJECT_ID(QUOTENAME(c.TABLE_SCHEMA) + '.' + QUOTENAME(c.TABLE_NAME)),
                           c.COLUMN_NAME, 'IsIdentity') AS IS_IDENTITY,
            CASE WHEN c.COLUMN_DEFAULT IS NULL THEN 0 ELSE 1 END AS HAS_DEFAULT
@@ -98,6 +104,21 @@ for r in query(
     WHERE c.TABLE_SCHEMA = '{TARGET}' AND t.TABLE_TYPE = 'BASE TABLE'""",
 ):
     target.setdefault(r["TABLE_NAME"], {})[r["COLUMN_NAME"]] = r
+
+# Primary key columns of each target table, in key order (sync matches rows by them).
+pkeys: dict[str, list[str]] = {}
+for r in query(
+    engine,
+    f"""
+    SELECT k.TABLE_NAME, k.COLUMN_NAME
+    FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+    JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE k
+      ON k.CONSTRAINT_NAME = tc.CONSTRAINT_NAME AND k.TABLE_SCHEMA = tc.TABLE_SCHEMA
+    WHERE tc.TABLE_SCHEMA = '{TARGET}' AND tc.CONSTRAINT_TYPE = 'PRIMARY KEY'
+    ORDER BY k.TABLE_NAME, k.ORDINAL_POSITION""",
+):
+    pkeys.setdefault(r["TABLE_NAME"], []).append(r["COLUMN_NAME"])
+keep = {tuple(x.strip().split(".", 1)) for x in W["keep_columns"].split(",") if "." in x}
 
 
 def row_counts() -> dict[str, int]:
@@ -139,8 +160,15 @@ for t in sorted(src_tables):
     ]
     if missing:
         problems.append(f"{t}: required target columns not in SQLite: {missing}")
-    if target_rows.get(t, 0):
-        problems.append(f"{t}: target already has {target_rows[t]} rows (load into empty tables)")
+    if W["mode"] == "load" and target_rows.get(t, 0):
+        problems.append(
+            f"{t}: target already has {target_rows[t]} rows (load into empty tables; "
+            "mode = sync updates a loaded target)"
+        )
+    if W["mode"] == "sync" and not set(pkeys.get(t, [])) <= set(shared):
+        problems.append(f"{t}: primary key {pkeys.get(t)} not all in SQLite (sync matches by it)")
+    if W["mode"] == "sync" and not pkeys.get(t):
+        problems.append(f"{t}: no primary key in the target (sync matches rows by it)")
     note = f" (SQLite-only columns left out: {extra})" if extra else ""
     print(f"copy   {t}: {src_rows[t]} rows, {len(shared)} columns{note}")
     plan.append((t, shared))
@@ -162,24 +190,28 @@ if W["mode"] == "clear_target":
     run_sql(engine, f"IF SCHEMA_ID('{STAGE}') IS NOT NULL EXEC('DROP SCHEMA {q(STAGE)}')")
     dbutils.notebook.exit(f"cleared {len(plan)} tables in {TARGET}; run mode = load again")
 if (
-    plan
+    W["mode"] != "sync"
+    and plan
     and all(target_rows.get(t, 0) == src_rows[t] for t, _ in plan)
     and any(target_rows.get(t, 0) for t, _ in plan)
 ):
     # Run again after a load that succeeded: the target holds this copy already.
     dbutils.notebook.exit(
         f"already loaded: the {len(plan)} tables in {TARGET} have the SQLite file's row counts; "
-        "nothing to do (to load again: mode = clear_target, then load)"
+        "nothing to do (updates after a pipeline run: mode = sync)"
     )
 for p in problems:
     print("PROBLEM", p)
 assert not problems, "fix the problems above first"
-if W["mode"] != "load":
-    dbutils.notebook.exit(f"dry run: {len(plan)} tables to copy into {TARGET}; set mode = load")
+if W["mode"] not in ("load", "sync"):
+    dbutils.notebook.exit(
+        f"dry run: {len(plan)} tables for {TARGET}; set mode = load (empty "
+        "target) or sync (update a loaded target)"
+    )
 
 # COMMAND ----------
 
-# MAGIC %md ## 3. Load: staging tables, then the real tables with their ids
+# MAGIC %md ## 3. Load or sync: staging tables, then the real tables with their ids
 
 # COMMAND ----------
 
@@ -222,17 +254,97 @@ def select_list(t: str, shared: list[str]) -> str:
     return ", ".join(out)
 
 
-# Checked again here, not only in the plan: a rerun of this cell alone (after a failed load)
-# would otherwise stage for minutes and then insert duplicates.
-now = row_counts()
-filled = [t for t, _ in plan if now.get(t)]
-assert not filled, (f"target tables already have rows: {filled}; run mode = clear_target, then "
-                    "run the whole notebook again (not this cell alone)")  # fmt: skip
+def target_type(t: str, c: str) -> str:
+    """The SQL Server type of a target column, for CONVERT."""
+    m = target[t][c]
+    kind = m["DATA_TYPE"]
+    if kind in ("nvarchar", "varchar", "nchar", "char", "varbinary", "binary"):
+        n = m["CHARACTER_MAXIMUM_LENGTH"]
+        return f"{kind}({'MAX' if n in (-1, None) else n})"
+    if kind in ("decimal", "numeric"):
+        return f"{kind}({m['NUMERIC_PRECISION']}, {m['NUMERIC_SCALE']})"
+    if kind in ("datetime2", "datetimeoffset", "time"):
+        return f"{kind}({m['DATETIME_PRECISION']})"
+    return kind
+
+
+def typed(t: str, c: str, alias: str = "") -> str:
+    """A staged text column converted to its target type the way a load converts it (decimals
+    through FLOAT, dates and times through DATETIMEOFFSET), so an unchanged value compares
+    equal to the one already loaded."""
+    col = f"{alias}{q(c)}"
+    kind = target[t][c]["DATA_TYPE"]
+    if kind in ("decimal", "numeric"):
+        col = f"CONVERT(FLOAT, {col})"
+    elif kind in TIME_TYPES:
+        col = f"CONVERT(DATETIMEOFFSET, {col})"
+    return f"CONVERT({target_type(t, c)}, {col})"
+
+
+def merge_sql(t: str, shared: list[str]) -> str:
+    """One MERGE making the target table equal to its staged copy, by primary key: new rows
+    inserted (with their ids), changed rows updated, rows gone from the file deleted. The
+    keep_columns are inserted for new rows and never updated. Returns the counts."""
+    pk = pkeys[t]
+    upd = [c for c in shared if c not in pk and (t, c) not in keep]
+    tgt, stg = f"{q(TARGET)}.{q(t)}", f"{q(STAGE)}.{q(t)}"
+    identity = any(target[t][c]["IS_IDENTITY"] for c in shared)
+    matched = (
+        f"WHEN MATCHED AND EXISTS (SELECT {', '.join(f'S.{q(c)}' for c in upd)} "
+        f"EXCEPT SELECT {', '.join(f'T.{q(c)}' for c in upd)}) THEN UPDATE SET "
+        + ", ".join(f"T.{q(c)} = S.{q(c)}" for c in upd)
+        if upd
+        else ""
+    )
+    return f"""
+        {f"SET IDENTITY_INSERT {tgt} ON;" if identity else ""}
+        DECLARE @changes TABLE (act NVARCHAR(10));
+        MERGE {tgt} WITH (HOLDLOCK) AS T
+        USING (SELECT {", ".join(f"{typed(t, c)} AS {q(c)}" for c in shared)} FROM {stg}) AS S
+        ON {" AND ".join(f"T.{q(c)} = S.{q(c)}" for c in pk)}
+        {matched}
+        WHEN NOT MATCHED BY TARGET THEN
+            INSERT ({", ".join(q(c) for c in shared)})
+            VALUES ({", ".join(f"S.{q(c)}" for c in shared)})
+        WHEN NOT MATCHED BY SOURCE THEN DELETE
+        OUTPUT $action INTO @changes;
+        {f"SET IDENTITY_INSERT {tgt} OFF;" if identity else ""}
+        SELECT SUM(CASE act WHEN 'INSERT' THEN 1 ELSE 0 END) AS inserted,
+               SUM(CASE act WHEN 'UPDATE' THEN 1 ELSE 0 END) AS updated,
+               SUM(CASE act WHEN 'DELETE' THEN 1 ELSE 0 END) AS deleted
+        FROM @changes;"""
+
+
+def merge_counts(sql: str) -> dict:
+    """Run a MERGE batch, commit, return its counts row."""
+    raw = engine.raw_connection()
+    try:
+        cur = raw.cursor()
+        cur.execute("SET NOCOUNT ON;")
+        cur.execute(sql)
+        while cur.description is None and cur.nextset():
+            pass
+        row = cur.fetchone()
+        cols = [d[0] for d in cur.description]
+        while cur.nextset():
+            pass
+        raw.commit()
+        return {k: int(v or 0) for k, v in zip(cols, row, strict=True)}
+    finally:
+        raw.close()
+
+
+if W["mode"] == "load":
+    # Checked again here, not only in the plan: a rerun of this cell alone (after a failed
+    # load) would otherwise stage for minutes and then insert duplicates.
+    now = row_counts()
+    filled = [t for t, _ in plan if now.get(t)]
+    assert not filled, (f"target tables already have rows: {filled}; run mode = clear_target, "
+                        "then run the whole notebook again (not this cell alone)")  # fmt: skip
 run_sql(engine, f"IF SCHEMA_ID('{STAGE}') IS NULL EXEC('CREATE SCHEMA {q(STAGE)}')")
 started = time.time()
 for t, shared in plan:
-    if not src_rows[t]:
-        continue
+    # An empty file table is staged too: sync then empties the target table.
     ws = widths(t, shared)
     cols = ", ".join(f"{q(c)} NVARCHAR({w}) NULL" for c, w in zip(shared, ws, strict=True))
     staged_table = f"{q(STAGE)}.{q(t)}"
@@ -257,10 +369,26 @@ for t, shared in plan:
     print(f"staged {t}: {staged} rows ({time.time() - started:.0f} s)")
 
 loaded = []
+totals = {"inserted": 0, "updated": 0, "deleted": 0}
 try:
     for t, _ in plan:
         run_sql(engine, f"ALTER TABLE {q(TARGET)}.{q(t)} NOCHECK CONSTRAINT ALL")
     for t, shared in plan:
+        if W["mode"] == "sync":
+            try:
+                n = merge_counts(merge_sql(t, shared))
+            except Exception as exc:
+                print(f"FAILED to sync {t}: {exc}")
+                raise
+            loaded.append(t)
+            for k in totals:
+                totals[k] += n[k]
+            if any(n.values()):
+                print(
+                    f"synced {t}: +{n['inserted']} inserted, {n['updated']} updated, "
+                    f"-{n['deleted']} deleted"
+                )
+            continue
         if not src_rows[t]:
             continue
         identity = any(target[t][c]["IS_IDENTITY"] for c in shared)
@@ -305,4 +433,10 @@ assert not diff, "row counts differ; the staging tables are kept for checking"
 for t, _ in plan:
     run_sql(engine, f"DROP TABLE IF EXISTS {q(STAGE)}.{q(t)}")
 run_sql(engine, f"IF SCHEMA_ID('{STAGE}') IS NOT NULL EXEC('DROP SCHEMA {q(STAGE)}')")
-print(f"done: {len(loaded)} tables copied into {TARGET}, row counts match")
+if W["mode"] == "sync":
+    print(
+        f"done: {len(loaded)} tables synced into {TARGET}: {totals['inserted']} inserted, "
+        f"{totals['updated']} updated, {totals['deleted']} deleted; row counts match"
+    )
+else:
+    print(f"done: {len(loaded)} tables copied into {TARGET}, row counts match")

@@ -6,7 +6,7 @@ Three notebooks in `scripts/databricks/` (Databricks source format):
 |---|---|
 | `azure_sql_connect` | Shared connection, loaded by the other two with `%run` |
 | `run_sql_script` | Runs a script from `deploy/sql/`: creates schemas and tables, or drops them (`*_drop.sql`) |
-| `copy_sqlite_to_azure` | One-time copy of `data/uw.db` or `data/app.db` into Azure SQL, keeping row ids |
+| `copy_sqlite_to_azure` | Copies `data/uw.db` or `data/app.db` into Azure SQL, keeping row ids: `load` once, then `sync` after each pipeline run (inserts, updates and deletes by primary key) |
 
 ## How they connect
 
@@ -77,15 +77,17 @@ Other ways to run the same files: SSMS or Azure Data Studio (open the file, conn
 
 ## 2. Copy data: `copy_sqlite_to_azure`
 
-Use it to move results produced locally (SQLite) into Azure SQL once, for example to seed a new
-environment without rerunning the pipeline. The normal path is still the pipeline writing to
-Azure SQL itself (`DATABASE_BACKEND=azure_sql`, OPERATIONS §10).
+Use it to move results produced in SQLite into Azure SQL: `load` once into empty tables, then
+`sync` after each pipeline run (D-064). Writing to Azure SQL directly from the pipeline
+(`DATABASE_BACKEND=azure_sql`, OPERATIONS §10) needs no copy at all.
 
 - Copy both files, and take them at the same moment (after a run has finished). `app.db` holds
   `pipeline_publish_map`, so later `publish` runs against Azure SQL update the copied rows
   instead of adding duplicates.
 - Identity columns continue after the highest copied id, so later pipeline runs insert normally.
-- The target tables must be empty: the notebook refuses to load into a table that has rows.
+- `load` needs empty target tables: it refuses to load into a table that has rows.
+- `sync` needs a target filled by `load` (the same ids) and written by nothing else in these
+  tables: the application's own tables (`User*`) are not in the file and are left alone.
 
 Steps:
 
@@ -109,6 +111,30 @@ Steps:
    4. Turns every constraint back on `WITH CHECK`, even if a table failed, so broken keys show
       up as errors.
    5. Compares row counts with SQLite and drops the staging schema.
+
+### Daily updates: `mode = sync`
+
+After each pipeline run, upload the new `.db` file and run with `mode = sync`. The target then
+equals the file, table by table:
+
+1. Stages each table as text, as `load` does (empty tables too: their target is emptied).
+2. Turns off foreign keys and checks on the target tables.
+3. Runs one `MERGE` per table by primary key: rows new in the file are inserted with their ids,
+   rows whose columns differ are updated (`EXCEPT`, so NULLs compare right), rows gone from
+   the file are deleted. Values are converted exactly as `load` converts them, so an unchanged
+   row is never rewritten. The pipeline deletes rows only from tables it rebuilds (metric
+   values, links, activities, news, trends, loan classes); versioned content (key insights,
+   risks, follow-up questions, takeaways) keeps its rows with `isActive = 0`, so users'
+   favorites and flags keep pointing at existing rows.
+4. Turns every constraint back on `WITH CHECK`, compares row counts and drops the staging
+   schema. Each table prints `synced <table>: +inserted, updated, -deleted`; the last line
+   gives the totals.
+
+`keep_columns` (default `Company.logo`) lists target columns the application writes: `sync`
+fills them for new rows and never overwrites them.
+
+A sync running while the BFF reads sees each table switch as its `MERGE` commits; run it after
+the pipeline run, outside working hours.
 
 ### If it fails
 
@@ -143,3 +169,9 @@ service principal; everything else ran unchanged.
 
 Not testable outside Databricks: the secret scope, the volume path, and Azure AD service
 principal login. Run the dry runs first.
+- **`copy_sqlite_to_azure`, sync (2026-10-24):** `load` of `app.db` (24 tables, 47 s), then
+  `sync` of the same file: 0 changes (unchanged rows are not rewritten). A second-day file
+  with 5 metric values changed and 10 removed, a key insight retired and one added, an
+  activity added, a link removed and a company refreshed: `sync` reported exactly those
+  (2 inserted, 7 updated, 11 deleted, about 50 s); a `Company.logo` set in the target was
+  kept; a further `sync` changed nothing.

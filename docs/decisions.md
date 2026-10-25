@@ -1244,6 +1244,188 @@ LLM runs until the end, then one comparison.
 - The Databricks copy notebook connects the same way (pyodbc, secret-scope keys from
   config/azure.yaml) instead of Spark JDBC with an Azure AD token: no tenant id or
   azure-identity, and no single-user cluster requirement.
+- Tuned on development companies after the first run (2026-10-21): the same-facility metrics
+  name Tenet's terms (same-hospital, adjusted admissions, net patient service revenues); capacity
+  utilization (Phase 16, manufacturing trait) also reads steel mill utilization and operating
+  rates (Nucor 83%, Steel Dynamics 90%), which re-reads it once for the other manufacturers.
+
+**D-058 Clinical-stage companies (Phase 17c, 2026-10-21).**
+- Which companies: life-sciences SIC codes (2833–2836, 8731–8734, 3826, 3841–3851) with latest
+  fiscal-year revenue under USD 10M or none (D-055 threshold); about 390 of the universe.
+  `scripts/build_universe.py` lists them; a person confirms each, and the result is pinned in
+  companies.yaml as a company trait, reviewed with the quarterly universe rebuild. Never decided
+  at run time.
+- How: `traits: [clinical_stage]` on a company (new; traits were per industry group). Options
+  for the metrics that do not fit (R&D / revenue, gross margin, largest product share): (a) a
+  separate CLINICAL group, which would lose the SIC group's other settings; (b) the trait adds
+  its sets and drops the metrics listed under `trait_exclude_metrics`. Chosen: (b); the company
+  keeps its PHARMA or MEDTECH group.
+- Metrics (XBRL, set CLINICAL_STAGE): cash runway in months = (cash + short-term investments) /
+  (operating cash outflow of the last four quarters / 12), N/M when operating cash flow is not
+  negative; R&D / total operating expenses. When the four quarters are not all available, or
+  one is N/M (a restated year, Xenon's Q4 2025), the latest quarter's burn is used. The four-quarter sum is a new formula suffix,
+  `x_ttm` (the four quarters ending at the period; the year itself for a fiscal year), like
+  `x_py`. Unit: months (D-055).
+- Signal: cash runway under 12 months (4 quarters), a threshold rule. Going concern and
+  dilution signals exist already.
+- Pipeline facts (LLM stage `clinical`, after `legal`): the lead programs from the latest 10-K
+  (Item 1) and 10-Q (MD&A): name, indication, phase, next milestone and its timing as written.
+  Both models read; a program is kept when its quote is in the filing, names the program and the
+  phase, and both models give it the same phase; a milestone only when both give the same
+  timing. Stored in `clinical_program` (one row per program, `is_current`); an insight input
+  like the board facts, not published to MatrixData.
+- Development set: the 20 clinical-stage candidates with the largest R&D expense (XBRL frames,
+  latest year), reviewed and added to companies.yaml; PLAN 17e checks revenue judgment and
+  pipeline facts on them.
+- Found while building it: a second `short_term_investments` concept in concept_map.yaml
+  silently replaced the Phase 15c one (plain YAML keeps the later key), which a golden test
+  caught. Config files are now read with a loader that refuses a key given twice
+  (`uw_pipeline/yaml_load.py`); the two biotech tags were added to the original concept.
+- Result on the 20 (runs 127–130, 2026-10-21; `clinical` on Haiku $0.29): all 20 are
+  pre-revenue (latest year at most $8.3M, nine tag none); cash runway at Q2 2026 from 6.3
+  months (Biohaven) to 77 (CRISPR), two under 12 (Biohaven, Replimune: `short_cash_runway`).
+  85 current programs, 52 with a dated milestone (Cogent's PDUFA date December 30, 2026;
+  Vaxcyte's VAX-31 adult Phase 3 topline data in Q4 2026; Xenon's azetukalner NDA in Q3
+  2026); seven companies checked against their filings. Tuned on them: a candidate named in
+  the heading just before a quote counts (Celldex states barzolvolimab once per section), and
+  indications are compared without their parenthetical detail (one CDX-622 program, not two).
+  Golden values: Viking (four quarters) and Xenon (latest-quarter burn).
+
+**D-059 Companies outside every industry group: the LLM picks one (Phase 17g, 2026-10-21).**
+- Applies to a company whose SIC code maps to no group and that has no `industry` in
+  companies.yaml (no SIC, BDCs, shipping, cruise lines). Foreign issuers stay out of scope.
+- What the model chooses, options: (a) any combination of metric sets; (b) one existing
+  industry group. Chosen: (b). A group carries its sets together with its traits, excluded
+  metrics, signal settings and `is_financial`, which a set combination would not; the plan's
+  bound holds either way (only existing metrics, no new ones, no formula changes).
+- Input: the business section of the latest 10-K (Item 1; the first passages of the filing
+  when it has no Item 1) and the SIC description; the list of groups with their label and the
+  names of the metrics their module sets add. Output: the group code (an enum of the configured
+  codes, so an unknown code fails schema validation), a verbatim quote from the business
+  section that supports it (must be found), and a one-sentence reason.
+- Both models choose (`industry_choice_v1`). The same group: AGREED and used. Different:
+  the tie-breaker's group is used, DISPUTED, and the choice waits in `uw-pipeline review` (type
+  INDUSTRY); a rejected choice is not used (the company stays in the default group until someone
+  sets `industry`). Calls are cached by input hash, so later runs reuse the choice until the
+  business section changes.
+- Where: a new `industry` stage after `documents` stores the choice in `industry_choice` and
+  sets the company's group; it recomputes that company's metrics in the same run (its facts
+  are those of every company: instance-only module concepts follow on the next run). The
+  `company` stage keeps a stored, usable choice when the SIC code gives no group.
+- App: the metric methodology text of such a company says the metrics were chosen by AI from
+  the business description (no new field, plan option A).
+- Trial (run 132, 2026-10-21, Haiku $0.01) on the largest company of each kind outside the
+  groups: both models chose the same group for all six, each supported by its 10-K: Ares
+  Capital (BDC, no SIC) CREDIT, Carnival (4400) HOTELS, Dolby (6794) SOFTWARE_INTERNET, Kirby
+  (4400) TRANSPORT, SSR Mining (6795) MINING, Texas Pacific Land (6792) ENERGY; their metrics
+  were recomputed in the same run (SSR Mining: retirement obligations, capex / D&A).
+
+**D-060 Bank MD&A: the annual report in Exhibit 13, and heading rules (Phase 17d, 2026-10-21).**
+- Found: Wells Fargo, U.S. Bancorp and BNY file the 10-K as a short wrapper (cover, Item 1,
+  a cross-reference index); MD&A, risk factors, controls and the financial statements are in
+  the annual report, filed as an `EX-13` / `EX-13.1` document (file names like
+  `wfc-20251231.htm` or `usb-20251231_d2.htm`, so the type comes from the filing index, not
+  the name). In the wrapper, Item 7 is a 300-character cross-reference. Bank of America's,
+  BNY's, Citi's, Morgan Stanley's, U.S. Bancorp's and Wells Fargo's 10-Qs and Citi's and Morgan
+  Stanley's 10-Ks use their own headings; their 10-Q MD&A was missing or a stub.
+- Which document is the 10-K's primary text, options: (a) keep the wrapper primary and add the
+  annual report as a second role every reader must learn; (b) the annual report becomes the
+  filing's PRIMARY document and the wrapper is kept as role `10-K-WRAPPER`. Chosen: (b). Every
+  reader (signals, text metrics with their table reads, legal, citations) already uses the
+  PRIMARY document of a filing, and the annual report is where the cited text is.
+- When: a 10-K whose MD&A (10K-7) is missing or shorter than 3,000 characters, and whose
+  filing index lists an EX-13 document. Its sections come from the item split plus the
+  company's `sections:` rules; the wrapper's sections the annual report does not have (Item 1,
+  Part III) are kept with it, after its text. Same for the older 10-Ks read for MD&A history.
+- Heading rules for BAC, BNY, C, MS, USB, WFC in `company_overrides/` (as JPM's). Two rule
+  changes: a rule's section is the longest block between a start and an end line (a table of
+  contents lists the same headings; of several starts reaching the same end the first counts,
+  since page headers repeat the start heading, as JPMorgan's do); a section the item split found at the same place under another code is
+  dropped (Bank of America's 10-Q puts MD&A before the "Part I" heading, so the split filed it
+  as Part II Item 2). Rules apply only to their own form (10K- / 10Q- codes).
+- Citi's and Morgan Stanley's risk management discussion (credit, liquidity, market risk:
+  nonperforming loans) follows the MD&A under its own heading; their MD&A rule runs through it,
+  so the MD&A text holds what the other banks' MD&A holds.
+- Result (runs 133–135, 2026-10-21; `textmetrics` on Haiku, 1.67M input / 0.29M output
+  tokens): every 10-K and 10-Q of the six banks now has its MD&A (108k–462k characters, was
+  0–776). Text metrics gained: Citi NIM, CET1, Tier 1, total capital, LCR (none before); U.S.
+  Bancorp and BNY the capital ratios and LCR; Wells Fargo the capital ratios, CRE loans and
+  uninsured deposits. Checked against their quotes: Wells Fargo CET1 10.61% at 2025-12-31,
+  10.29% at Q1 2026, 10.26% at Q2 2026; U.S. Bancorp CET1 10.8% at 2025-12-31; Citi NIM 2.47%
+  for 2025, 2.49% for Q4 2025, 2.46% / 2.54% for Q1 / Q2 2026.
+- Left for 17e: no NPL ratio for Citi, U.S. Bancorp and BNY (their filings do not state
+  nonaccrual loans to total loans directly, which the definition requires; U.S. Bancorp states
+  nonperforming assets to loans plus other real estate); no Item 3 section for Citi and Morgan
+  Stanley (legal proceedings are in the notes, which the legal stage reads from the whole
+  document); BNY's annual report has no auditor tenure sentence, so no auditor's report section.
+  Morgan Stanley is a broker-dealer: its text metrics are those of BROKER_DEALERS.
+
+**D-061 Short transactions for the other LLM stages (Phase 17d, 2026-10-21).**
+- Stages: textmetrics, governance, legal, clinical, industry, signals, scores and news join
+  insights and metricdetail (D-052): no transaction is open while a model answers, so on a
+  SQLite file their companies run in parallel too, and on Azure SQL no lock is held for minutes.
+- Checked per stage that no group of writes spans a model call: governance, legal, clinical,
+  industry and signals write only after all their calls; scores writes each news batch, and
+  each transcript's tone with its flags, after that item's calls; news commits pruned
+  articles, then the new articles (unjudged articles are judged on a later run if the
+  relevance call fails); textmetrics writes its metric values (upsert and stale deletes) as one
+  group after all extraction calls, then the loan book after its own calls.
+- How, options: (a) a `commit` argument through every helper that calls the model (as
+  insights' `TaskRunner`); (b) the stage opens its connection with `short_transactions(engine)`,
+  which marks it, and `cached_call` commits around the call on a marked connection. Chosen:
+  (b): one change per stage instead of a dozen signatures, and a helper called inside an
+  ordinary transaction (tests, other callers) keeps that transaction whole.
+- A company that fails partway keeps its committed groups and its cached answers; the next run
+  completes it without new calls for what was answered.
+- Tests (`tests/test_short_transactions.py`): for each stage but news, two companies in
+  parallel on a SQLite file store the same rows as one after the other, and during every model
+  call another connection gets the write lock at once (a stage switched back to one long
+  transaction fails this). Live (run 136, 2026-10-21): signals for eight companies, four
+  workers on `data/uw.db`, 23 s, no lock errors.
+
+**D-062 Model calls within one company in parallel (Phase 17d, 2026-10-21).**
+- Where: insights' behavioral and strategic-risk syntheses (independent: both prompts are
+  built from the package before either runs); textmetrics' reads of all documents, each with
+  its dual-check read and table reads, and the loan book (no request depends on another
+  answer: the second read is made whatever the first returns).
+- How, options: (a) run the stage's steps in threads, each with its own connection; (b) a
+  pre-fetch: build the company's requests first, ask the model for those not in `llm_call` a few
+  at a time in threads that do not touch the database, store the answers on the caller's
+  connection, then run the stage's code unchanged: every call finds its answer in the cache.
+  Chosen: (b). A connection cannot be shared between threads, and (a) would split one company's
+  writes across connections; with (b) validation, grounding, dual checks and writes stay
+  sequential and as tested.
+- textmetrics builds its requests by running its document loop once in a planning mode in
+  which the extractor records each request instead of calling (parsed tables are kept for the
+  real pass). A pre-fetched call that fails is not stored; the call that follows asks again and
+  records the error, as before. An answer that fails validation is stored as such (its tokens
+  count) and asked again by that call.
+- How many at a time: `company_calls` in config/llm.yaml (3); the per-model rate limits
+  (`rate_limits`) still apply across all threads, and the daily budget is checked first.
+- Tests (`tests/test_prefetch.py`): requests asked three at a time, duplicates and cached ones
+  not asked, a failed call not stored and asked again, an invalid answer kept for its tokens
+  and asked again; textmetrics on three releases stores the same values with one or three
+  calls at a time. The insights parallel test now sees four calls at once (two companies, two
+  syntheses each). Live (run 137, 2026-10-21): textmetrics for the six banks and JPMorgan from
+  the cache: no model calls, the stored values unchanged.
+
+**D-064 Daily copy from SQLite to Azure SQL: sync by primary key (2026-10-24).**
+- Need: the pipeline runs on SQLite; Azure SQL, read by the BFF, must get each run's results
+  without a full reload. A full reload (`clear_target`, `load`) breaks once the BFF's user
+  tables (favorites, flags, metric choices) point at application rows.
+- Options: (a) the pipeline writes Azure SQL directly (its publish stage is already
+  incremental, `pipeline_publish_map`); (b) keep SQLite and sync the file into Azure SQL after
+  each run. User decision (2026-10-24): (b).
+- How: `copy_sqlite_to_azure` gets `mode = sync`: each table staged as text, then one `MERGE`
+  by primary key (insert new rows with their ids, update rows whose columns differ by
+  `EXCEPT`, delete rows gone from the file), constraints off meanwhile and re-checked after,
+  row counts compared. Values are converted as `load` converts them (decimals through FLOAT,
+  times through DATETIMEOFFSET, then the target type) so unchanged rows compare equal and are
+  not rewritten. `keep_columns` (default `Company.logo`) are columns the application writes:
+  inserted for new rows, never updated.
+- Conditions: the target was filled by `load` from the same pipeline (same ids) and nothing
+  else writes these tables. The pipeline never deletes companies or versioned content (old
+  versions get `isActive = 0`), which the BFF's user tables refer to.
 
 **D-065 Key Insights: summary at most 180 characters (2026-10-24).**
 - Need (user, 2026-10-24): the summary of a Key Insight card fits in 180 characters. Before:
