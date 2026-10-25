@@ -261,7 +261,7 @@ class KeyInsight(BaseModel):
 
     type: Literal["Warning", "Negative", "Positive", "Info"]
     title: str = Field(description="At most 8 words")
-    summary: str
+    summary: str = Field(description="One or two sentences, at most 180 characters")
     uw_relevance: str
     supporting_evidence: str = Field(description="The facts behind the insight, briefly")
     related_metric_codes: list[str]
@@ -275,12 +275,12 @@ class KeyInsights(BaseModel):
 
 
 class KeyTakeaway(BaseModel):
-    """key_takeaways_v2: one bullet of the Key Takeaway box (shown without links)."""
+    """key_takeaways_v1: one bullet of the Key Takeaway box (shown without links)."""
 
     model_config = ConfigDict(extra="forbid")
 
     topic: str = Field(description="The exposure, at most 5 words")
-    text: str = Field(description="One short sentence, at most 100 characters")
+    text: str = Field(description="One sentence, at most 35 words")
     evidence: list[Evidence]
 
 

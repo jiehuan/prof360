@@ -123,58 +123,11 @@
    "category": null,
    "subcategory": null,
    "insight_type": "Warning",
-   "title": "Stockholders' equity remains deeply negative",
-   "summary": "Stockholders' equity was $-4.53B at FY2026 Q2, compared with $-3.77B at FY2025 Q4. The rule-based signal flags the negative equity and notes that debt-to-equity is not meaningful.",
-   "uw_relevance": "Negative equity is the balance sheet condition the rule signals flag most directly, and it frames the rest of the financial review for underwriters.",
-   "prompt_version": "key_insights_v1",
+   "title": "Negative equity with current liabilities above current assets",
+   "summary": "Stockholders' equity was $-4.53B at Q2 2026 and the current ratio was 0.53x, with current liabilities of $7.90B against current assets of $4.23B.",
+   "uw_relevance": "Negative equity and a current ratio below 1 are balance sheet facts in the filings, and liquidity is described as depending on the Credit Facility and capital market access.",
+   "prompt_version": "key_insights_v2",
    "evidence": [
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "equity",
-     "snippet": "Stockholders' Equity | FY2026 Q2 | $-4.53B | REPORTED",
-     "source_title": "Stockholders' Equity FY2026 Q2 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "equity",
-     "snippet": "Stockholders' Equity | FY2025 Q4 | $-3.77B | REPORTED",
-     "source_title": "Stockholders' Equity FY2025 Q4 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "Stockholders' equity is negative; debt-to-equity is not meaningful",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Warning",
-   "title": "Current liabilities exceed current assets at Q2 2026",
-   "summary": "The current ratio was 0.53x at FY2026 Q2 and working capital was $-3.68B. Cash and equivalents were $462M in the same quarter, and the filing says the company has significant borrowing capacity under its Credit Facility.",
-   "uw_relevance": "Short-term liquidity depends on the Credit Facility and capital market access, as the filing describes, so underwriters may track how that capacity is used.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "current_ratio",
-     "snippet": "Current Ratio | FY2026 Q2 | 0.53x | COMPUTED",
-     "source_title": "Current Ratio FY2026 Q2 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "working_capital",
-     "snippet": "Working Capital | FY2026 Q2 | $-3.68B | COMPUTED",
-     "source_title": "Working Capital FY2026 Q2 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
-    },
     {
      "source_kind": "SIGNAL",
      "section_code": null,
@@ -202,6 +155,13 @@
      "metric_code": null,
      "snippet": "Our ratio of current assets to current liabilities was 0.5 to 1.0 at the end of the 2026 second quarter.",
      "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03 \u00b7 Part I, Item 2. MD&A"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "current_liabilities",
+     "snippet": "Current Liabilities | FY2026 Q2 | $7.90B | REPORTED",
+     "source_title": "Current Liabilities FY2026 Q2 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
     }
    ]
   },
@@ -210,64 +170,10 @@
    "category": null,
    "subcategory": null,
    "insight_type": "Warning",
-   "title": "Total debt rises to $16.91B with higher interest",
-   "summary": "Total debt reached $16.91B at FY2026 Q2, up from $11.87B in FY2023. Interest expense was $221M in the quarter and interest coverage was 5.56x, compared with 3.74x in FY2025 Q4.",
-   "uw_relevance": "The MD&A links the higher interest expense to Senior Notes issuances, and debt growth is occurring alongside negative stockholders' equity.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "total_debt",
-     "snippet": "Total Debt | FY2026 Q2 | $16.91B | REPORTED",
-     "source_title": "Total Debt FY2026 Q2 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "total_debt",
-     "snippet": "Total Debt | FY2023 | $11.87B | REPORTED",
-     "source_title": "Total Debt FY2023 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-K filed 2025-02-11"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "total_debt",
-     "snippet": "Total Debt | FY2026 Q2 | $16.91B | REPORTED",
-     "source_title": "Total Debt FY2026 Q2 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "primarily due to higher debt balances driven by Senior Notes issuances, net of maturities ($28 million and $55 million, respectively)",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "interest_coverage",
-     "snippet": "Interest Coverage | FY2026 Q2 | 5.56x | COMPUTED",
-     "source_title": "Interest Coverage FY2026 Q2 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "interest_coverage",
-     "snippet": "Interest Coverage | FY2025 Q4 | 3.74x | COMPUTED",
-     "source_title": "Interest Coverage FY2025 Q4 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-K filed 2026-02-10"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
-   "insight_type": "Warning",
-   "title": "Buybacks exceed net income while equity is negative",
-   "summary": "Share repurchases were $1.12B in FY2026 Q2, equal to 1.46x net income for the quarter. Management expects to return over $4.5 billion to shareholders in 2026, and several insiders sold shares on the open market.",
-   "uw_relevance": "Large shareholder returns and recurring insider sales while equity is negative are capital allocation and insider activity points that underwriters can monitor.",
-   "prompt_version": "key_insights_v1",
+   "title": "Shareholder returns exceed net income while equity is negative",
+   "summary": "Q2 2026 share repurchases of $1.12B equaled 1.46x net income, and management expects over $4.5B returned to shareholders in 2026.",
+   "uw_relevance": "Large buybacks against negative equity are a capital allocation choice the rule-based signal S3 flags, and the filings show repeated insider open-market sales.",
+   "prompt_version": "key_insights_v2",
    "evidence": [
     {
      "source_kind": "METRIC",
@@ -310,13 +216,6 @@
      "metric_code": null,
      "snippet": "We now expect to return over $4.5 billion to shareholders in 2026.",
      "source_title": "MARRIOTT INTERNATIONAL INC /MD/ earnings call 2026Q2 (quarter ended 2026-06-30)"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "Several insiders sold shares on the open market within 30 days",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ \u2014 Several insiders sold shares on the open market within 30 days"
     }
    ]
   },
@@ -325,10 +224,43 @@
    "category": null,
    "subcategory": null,
    "insight_type": "Warning",
-   "title": "Middle East conflict cuts regional RevPAR and unit growth",
-   "summary": "Middle East RevPAR declined 43% in Q2 2026, and management now expects the conflict to reduce full-year global RevPAR growth by about 100 basis points. Net room growth is more likely toward the low end of the 4.5% to 5% range because of Middle East construction delays.",
-   "uw_relevance": "The exposure is region-specific and affects both operating results and development timing, which the filings describe as ongoing.",
-   "prompt_version": "key_insights_v1",
+   "title": "Total debt rising while interest expense climbs",
+   "summary": "Total debt reached $16.91B at Q2 2026, up from $16.20B at FY2025 year-end, with quarterly interest expense of $221M tied to Senior Notes issuances.",
+   "uw_relevance": "Debt growth continues alongside negative equity, and the MD&A attributes higher interest expense to higher debt balances from Senior Notes issuances, net of maturities.",
+   "prompt_version": "key_insights_v2",
+   "evidence": [
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "total_debt",
+     "snippet": "Total Debt | FY2026 Q2 | $16.91B | REPORTED",
+     "source_title": "Total Debt FY2026 Q2 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "primarily due to higher debt balances driven by Senior Notes issuances, net of maturities ($28 million and $55 million, respectively)",
+     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03 \u00b7 Part I, Item 2. MD&A"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "total_debt",
+     "snippet": "Total Debt | FY2025 | $16.20B | REPORTED",
+     "source_title": "Total Debt FY2025 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Negative",
+   "title": "Middle East conflict cuts regional RevPAR sharply",
+   "summary": "Middle East RevPAR fell 43% in Q2 2026, and management now expects the conflict to reduce full-year global RevPAR growth by about 100 basis points.",
+   "uw_relevance": "The conflict is a region-specific exposure that affects operating metrics and development timing, and the filings describe it as ongoing.",
+   "prompt_version": "key_insights_v2",
    "evidence": [
     {
      "source_kind": "DOCUMENT",
@@ -371,37 +303,11 @@
    "kind": "KEY",
    "category": null,
    "subcategory": null,
-   "insight_type": "Negative",
-   "title": "$68M impairment and $27M accrual hit Q2",
-   "summary": "Q2 2026 results include a $68 million impairment charge on a U.S. and Canada hotel and a $27 million property-related litigation accrual. Both reduced U.S. and Canada segment profit for the quarter and first half.",
-   "uw_relevance": "A non-cash impairment and a litigation accrual both reduced reported earnings in Q2 2026, and the filings disclose them as separate items.",
-   "prompt_version": "key_insights_v1",
-   "evidence": [
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "primarily due to the $68 million impairment charge discussed in Note 7",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "a property-related litigation accrual ($27 million for both the 2026 second quarter and 2026 first half)",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03 \u00b7 Part I, Item 2. MD&A"
-    }
-   ]
-  },
-  {
-   "kind": "KEY",
-   "category": null,
-   "subcategory": null,
    "insight_type": "Warning",
-   "title": "EPA Clean Air Act settlement talks remain open",
-   "summary": "The EPA offered settlement discussions over alleged Clean Air Act violations at a hotel the company manages. Management does not expect a material adverse effect from the matter.",
+   "title": "EPA Clean Air Act settlement talks on managed hotel",
+   "summary": "The EPA offered settlement talks over alleged Clean Air Act violations at a managed hotel, received in Q2 2025; management does not expect a material adverse effect.",
    "uw_relevance": "This government investigation is disclosed in Item 3, and its status is open as of the latest filing that discusses it.",
-   "prompt_version": "key_insights_v1",
+   "prompt_version": "key_insights_v2",
    "evidence": [
     {
      "source_kind": "SIGNAL",
@@ -432,10 +338,24 @@
    "subcategory": null,
    "insight_type": "Warning",
    "title": "Starwood data incident lawsuits remain open",
-   "summary": "Approximately 100 consumer lawsuits were filed after the 2018 Starwood data security incident. The company says it cannot reasonably estimate the financial impact beyond expenses already recorded.",
-   "uw_relevance": "This is a company-specific legal exposure with open lawsuits, and the filings describe a 2024 FTC and state AG resolution with compliance obligations.",
-   "prompt_version": "key_insights_v1",
+   "summary": "About 100 consumer lawsuits over the 2018 Starwood data incident remain open; the company cannot estimate impact beyond expenses already recorded.",
+   "uw_relevance": "The incident is a company-specific legal exposure, and the filings note a 2024 FTC and state AG resolution with compliance obligations.",
+   "prompt_version": "key_insights_v2",
    "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": null,
+     "metric_code": null,
+     "snippet": "approximately 100 lawsuits were filed by consumers and others against us in U.S. federal, U.S. state and Canadian courts related to the incident.",
+     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "We are currently unable to reasonably estimate the range of total possible financial impact to the Company from the Data Security Incident in excess of the expenses already recorded",
+     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03 \u00b7 Part I, Item 2. MD&A"
+    },
     {
      "source_kind": "DOCUMENT",
      "section_code": null,
@@ -457,10 +377,57 @@
    "category": null,
    "subcategory": null,
    "insight_type": "Warning",
-   "title": "CFO transition and senior officer departures in 2026",
-   "summary": "The CFO intends to step down after the FY2025 Form 10-K is filed, and the Q1 2026 call introduces Jennifer Mason as the new CFO. A Group President for United States and Canada gave notice of his intent to step down effective March 28, 2026.",
-   "uw_relevance": "Finance leadership changed during a period of negative equity and high buybacks, and the new CFO's tenure is not yet established from the inputs.",
-   "prompt_version": "key_insights_v1",
+   "title": "Owner economics strain and guarded owner-letter response",
+   "summary": "Loyalty charge-out rates were cut roughly 5% at the start of 2026 for owner returns; on the Q2 2026 call the CEO declined an official response to an owner letter.",
+   "uw_relevance": "Owner dissatisfaction and fee changes are tied in the filings to possible disputes and reduced fee income, and later answers give outsiders less detail.",
+   "prompt_version": "key_insights_v2",
+   "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "At the beginning of the year, we lowered loyalty charge-out rates across our global system by roughly 5%",
+     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ earnings call 2026Q2 (quarter ended 2026-06-30)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "The letter that we received, I think, is reflective of the passion and commitment that that group of owners has to the relationship",
+     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ earnings call 2026Q2 (quarter ended 2026-06-30)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10K-1A",
+     "metric_code": null,
+     "snippet": "Failure to resolve such disagreements has resulted in arbitration or litigation.",
+     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-K filed 2026-02-10 \u00b7 Item 1A. Risk Factors"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "we recognize and focus every day on the fact that the owner and franchise community is at a different stage in their recovery from the damage done by the pandemic.",
+     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ earnings call 2025Q4 (quarter ended 2025-12-31)"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "TRANSCRIPT",
+     "metric_code": null,
+     "snippet": "Well, yes, I'm not going to give an official response. That's a matter between us and our owners.",
+     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ earnings call 2026Q2 (quarter ended 2026-06-30)"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Warning",
+   "title": "CFO departure and senior officer exits in 2026",
+   "summary": "The CFO intends to step down after the FY2025 10-K is filed, and a Group President and a board member also announced departures in early 2026.",
+   "uw_relevance": "Finance leadership changed during a period of negative equity and high buybacks, and Item 5.02 departures are rule-flagged events for this company.",
+   "prompt_version": "key_insights_v2",
    "evidence": [
     {
      "source_kind": "SIGNAL",
@@ -468,20 +435,6 @@
      "metric_code": null,
      "snippet": "She intends to step down from her role as Chief Financial Officer and Executive Vice President, Development immediately following the date on which Marriott files its Annual Report on Form 10-K for fiscal year 2025",
      "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 8-K filed 2025-07-14 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": "8K-5.02",
-     "metric_code": null,
-     "snippet": "She intends to step down from her role as Chief Financial Officer and Executive Vice President, Development immediately following the date on which Marriott files its Annual Report on Form 10-K for fiscal year 2025",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 8-K filed 2025-07-14 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "Jennifer Mason, our new Executive Vice President and Chief Financial Officer",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ earnings call 2026Q1 (quarter ended 2026-03-31)"
     },
     {
      "source_kind": "SIGNAL",
@@ -503,25 +456,58 @@
    "kind": "KEY",
    "category": null,
    "subcategory": null,
-   "insight_type": "Positive",
-   "title": "Strong operating cash flow offsets balance sheet strain",
-   "summary": "Free cash flow was $2.61B and operating cash flow was $3.21B in FY2025. Total revenue growth year over year was 4.8% in FY2026 Q2.",
-   "uw_relevance": "Operating cash flow is a mitigating point to weigh against negative equity and rising debt, though the inputs do not show how it is allocated beyond buybacks.",
-   "prompt_version": "key_insights_v1",
+   "insight_type": "Negative",
+   "title": "Q2 2026 impairment and litigation accrual hit earnings",
+   "summary": "Q2 2026 results include a $68M impairment on a U.S. and Canada hotel and a $27M property-related litigation accrual, both reducing segment profit.",
+   "uw_relevance": "A non-cash impairment and a litigation accrual both reduced reported earnings in Q2 2026, and the filings disclose them as separate items.",
+   "prompt_version": "key_insights_v2",
    "evidence": [
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "primarily due to the $68 million impairment charge discussed in Note 7",
+     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03 \u00b7 Part I, Item 2. MD&A"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "a property-related litigation accrual ($27 million for both the 2026 second quarter and 2026 first half)",
+     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03 \u00b7 Part I, Item 2. MD&A"
+    },
     {
      "source_kind": "METRIC",
      "section_code": null,
-     "metric_code": "free_cash_flow",
-     "snippet": "Free Cash Flow | FY2025 | $2.61B | COMPUTED",
-     "source_title": "Free Cash Flow FY2025 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-K filed 2026-02-10"
-    },
+     "metric_code": "operating_income",
+     "snippet": "Operating Income | FY2026 Q2 | $1.23B | REPORTED",
+     "source_title": "Operating Income FY2026 Q2 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
+    }
+   ]
+  },
+  {
+   "kind": "KEY",
+   "category": null,
+   "subcategory": null,
+   "insight_type": "Positive",
+   "title": "Strong operating cash flow and free cash flow in FY2025",
+   "summary": "FY2025 operating cash flow was $3.21B and free cash flow $2.61B; Q2 2026 total revenue grew 4.8% year over year to $7.07B.",
+   "uw_relevance": "Cash generation is a mitigating strength against the negative equity and debt growth, though it is largely committed to shareholder returns in the filings.",
+   "prompt_version": "key_insights_v2",
+   "evidence": [
     {
      "source_kind": "METRIC",
      "section_code": null,
      "metric_code": "operating_cash_flow",
      "snippet": "Operating Cash Flow | FY2025 | $3.21B | REPORTED",
      "source_title": "Operating Cash Flow FY2025 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-K filed 2026-02-10"
+    },
+    {
+     "source_kind": "METRIC",
+     "section_code": null,
+     "metric_code": "free_cash_flow",
+     "snippet": "Free Cash Flow | FY2025 | $2.61B | COMPUTED",
+     "source_title": "Free Cash Flow FY2025 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-K filed 2026-02-10"
     },
     {
      "source_kind": "METRIC",
@@ -891,10 +877,10 @@
    "category": null,
    "subcategory": null,
    "insight_type": null,
-   "title": "Negative equity and shareholder returns",
-   "summary": "Equity was -$4.53B at Q2 2026 yet buybacks reached $1.12B, with recurring insider sales.",
+   "title": "Negative equity amid buybacks",
+   "summary": "Stockholders' equity was -$4.53B at Q2 2026 while buybacks of $1.12B equaled 1.46x net income, and total debt rose to $16.91B, leaving a balance sheet that invites capital-allocation scrutiny.",
    "uw_relevance": null,
-   "prompt_version": "key_takeaways_v2",
+   "prompt_version": "key_takeaways_v1",
    "evidence": [
     {
      "source_kind": "METRIC",
@@ -902,20 +888,6 @@
      "metric_code": "equity",
      "snippet": "Stockholders' Equity | FY2026 Q2 | $-4.53B | REPORTED",
      "source_title": "Stockholders' Equity FY2026 Q2 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
-    },
-    {
-     "source_kind": "METRIC",
-     "section_code": null,
-     "metric_code": "equity",
-     "snippet": "Stockholders' Equity | FY2025 Q4 | $-3.77B | REPORTED",
-     "source_title": "Stockholders' Equity FY2025 Q4 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "Stockholders' equity is negative; debt-to-equity is not meaningful",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
     },
     {
      "source_kind": "METRIC",
@@ -932,39 +904,11 @@
      "source_title": "Buybacks / Net Income FY2026 Q2 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
     },
     {
-     "source_kind": "SIGNAL",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "Share repurchases continue while equity is negative",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10Q-I-2",
-     "metric_code": null,
-     "snippet": "We repurchased 3.0 million shares of our common stock for $1.1 billion in the 2026 second quarter.",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03 \u00b7 Part I, Item 2. MD&A"
-    },
-    {
      "source_kind": "METRIC",
      "section_code": null,
-     "metric_code": "buyback_intensity",
-     "snippet": "Buybacks / Net Income | FY2026 Q2 | 1.46x | COMPUTED",
-     "source_title": "Buybacks / Net Income FY2026 Q2 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "We now expect to return over $4.5 billion to shareholders in 2026.",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ earnings call 2026Q2 (quarter ended 2026-06-30)"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "Several insiders sold shares on the open market within 30 days",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ \u2014 Several insiders sold shares on the open market within 30 days"
+     "metric_code": "total_debt",
+     "snippet": "Total Debt | FY2026 Q2 | $16.91B | REPORTED",
+     "source_title": "Total Debt FY2026 Q2 \u2014 MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03"
     }
    ]
   },
@@ -973,10 +917,10 @@
    "category": null,
    "subcategory": null,
    "insight_type": null,
-   "title": "CFO and senior officer departures",
-   "summary": "CFO to step down after FY2025 10-K; Group President leaving March 28, 2026, amid negative equity.",
+   "title": "Finance and senior leadership changes",
+   "summary": "The CFO plans to step down after the FY2025 10-K, and a Group President and a board member announced departures in early 2026, during negative equity and high buybacks.",
    "uw_relevance": null,
-   "prompt_version": "key_takeaways_v2",
+   "prompt_version": "key_takeaways_v1",
    "evidence": [
     {
      "source_kind": "SIGNAL",
@@ -989,64 +933,15 @@
      "source_kind": "SIGNAL",
      "section_code": "8K-5.02",
      "metric_code": null,
-     "snippet": "She intends to step down from her role as Chief Financial Officer and Executive Vice President, Development immediately following the date on which Marriott files its Annual Report on Form 10-K for fiscal year 2025",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 8-K filed 2025-07-14 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "Jennifer Mason, our new Executive Vice President and Chief Financial Officer",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": "8K-5.02",
-     "metric_code": null,
-     "snippet": "Debra L. Lee, who currently serves as a member of the Board",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 8-K filed 2026-02-06 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": "8K-5.02",
-     "metric_code": null,
-     "snippet": "notified Marriott of his intent to step down from his role effective March 28, 2026",
+     "snippet": "notified Marriott of his intent to step down from his role effective March 28, 2026 and retire fro",
      "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 8-K filed 2026-01-09 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
     },
     {
      "source_kind": "SIGNAL",
      "section_code": "8K-5.02",
      "metric_code": null,
-     "snippet": "She intends to step down from her role as Chief Financial Officer and Executive Vice President, Development immediately following the date on which Marriott files its Annual Report on Form 10-K for fiscal year 2025",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 8-K filed 2025-07-14 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": "8K-5.02",
-     "metric_code": null,
-     "snippet": "She intends to step down from her role as Chief Financial Officer and Executive Vice President, Development immediately following the date on which Marriott files its Annual Report on Form 10-K for fiscal year 2025",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 8-K filed 2025-07-14 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "TRANSCRIPT",
-     "metric_code": null,
-     "snippet": "Jennifer Mason, our new Executive Vice President and Chief Financial Officer",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ earnings call 2026Q1 (quarter ended 2026-03-31)"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": "8K-5.02",
-     "metric_code": null,
-     "snippet": "Debra L. Lee, who currently serves as a member of the Board",
+     "snippet": "On February 3, 2026, Debra L. Lee, who currently serves as a member of the Board of Directors",
      "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 8-K filed 2026-02-06 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": "8K-5.02",
-     "metric_code": null,
-     "snippet": "notified Marriott of his intent to step down from his role effective March 28, 2026",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 8-K filed 2026-01-09 \u00b7 Item 5.02 Departure or Appointment of Directors or Officers"
     }
    ]
   },
@@ -1055,10 +950,10 @@
    "category": null,
    "subcategory": null,
    "insight_type": null,
-   "title": "Regulatory and data-breach litigation",
-   "summary": "Open EPA Clean Air Act settlement talks and about 100 Starwood data security lawsuits.",
+   "title": "Open regulatory and litigation matters",
+   "summary": "Open EPA Clean Air Act settlement talks and about 100 Starwood data-incident consumer lawsuits remain pending, creating ongoing legal exposure, and Q2 2026 included a $27M property litigation accrual.",
    "uw_relevance": null,
-   "prompt_version": "key_takeaways_v2",
+   "prompt_version": "key_takeaways_v1",
    "evidence": [
     {
      "source_kind": "SIGNAL",
@@ -1066,20 +961,6 @@
      "metric_code": null,
      "snippet": "offering to engage in settlement discussions in relation to violations of the Clean Air Act that the EPA alleges occurred at a hotel we manage.",
      "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-K filed 2026-02-10"
-    },
-    {
-     "source_kind": "SIGNAL",
-     "section_code": null,
-     "metric_code": null,
-     "snippet": "offering to engage in settlement discussions in relation to violations of the Clean Air Act",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-K filed 2026-02-10"
-    },
-    {
-     "source_kind": "DOCUMENT",
-     "section_code": "10K-3",
-     "metric_code": null,
-     "snippet": "We do not believe this matter will have a material adverse effect on our business, financial condition, results of operations, or cash flows.",
-     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-K filed 2026-02-10 \u00b7 Item 3. Legal Proceedings"
     },
     {
      "source_kind": "DOCUMENT",
@@ -1094,6 +975,20 @@
      "metric_code": null,
      "snippet": "We are currently unable to reasonably estimate the range of total possible financial impact to the Company from the Data Security Incident in excess of the expenses already recorded",
      "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03 \u00b7 Part I, Item 2. MD&A"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "primarily due to the $68 million impairment charge discussed in Note 7",
+     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03 \u00b7 Part I, Item 2. MD&A"
+    },
+    {
+     "source_kind": "DOCUMENT",
+     "section_code": "10Q-I-2",
+     "metric_code": null,
+     "snippet": "a property-related litigation accrual ($27 million for both the 2026 second quarter and 2026 first half)",
+     "source_title": "MARRIOTT INTERNATIONAL INC /MD/ 10-Q filed 2026-08-03 \u00b7 Part I, Item 2. MD&A"
     }
    ]
   }
@@ -1101,137 +996,128 @@
  "followups": [
   {
    "category": "Financial",
-   "question": "How does the company plan to fund the over $4.5 billion of shareholder returns it expects in 2026 while stockholders' equity remains negative at $-4.53B?",
-   "summary": "Stockholders' equity was $-4.53B at FY2026 Q2, compared with $-3.77B at FY2025 Q4. Share repurchases were $1.12B in FY2026 Q2, equal to 1.46x net income, and management expects to return over $4.5 billion to shareholders in 2026.",
-   "following_risk": "Negative equity and capital returns",
-   "uw_relevance": "Large shareholder returns funded while equity is negative bear directly on the company's financial condition and on how shareholders and creditors may later challenge capital allocation decisions.",
+   "question": "How does management plan to cover current liabilities of $7.90B against current assets of $4.23B over the next twelve months, and how much of that plan depends on the Credit Facility and capital market access?",
+   "summary": "Stockholders' equity was $-4.53B at Q2 2026 and the current ratio was 0.53x. The company states it has significant borrowing capacity under its Credit Facility.",
+   "following_risk": "Liquidity and negative equity risk",
+   "uw_relevance": "Liquidity that depends on the Credit Facility and capital markets, alongside negative equity, bears directly on the company's ability to meet obligations and on the reliability of its disclosures about them.",
    "system_priority": "high",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Financial",
-   "question": "How much of the Credit Facility is currently available, and how much of the $16.91B of total debt falls due in the next twelve months?",
-   "summary": "The current ratio was 0.53x at FY2026 Q2, with cash and equivalents of $462M and total debt of $16.91B. The company states it has significant borrowing capacity under its Credit Facility.",
-   "following_risk": "Liquidity and borrowing capacity",
-   "uw_relevance": "Short-term liquidity depends on undrawn credit and market access, so the amount of available capacity and near-term maturities determines how much pressure the balance sheet faces.",
+   "question": "With management expecting over $4.5B returned to shareholders in 2026, how are buybacks being funded when Q2 2026 free cash flow was $796M and cash and equivalents were $462M?",
+   "summary": "Q2 2026 share repurchases of $1.12B equaled 1.46x net income. Free cash flow was $796M and cash and equivalents were $462M in the same quarter.",
+   "following_risk": "Capital allocation and funding risk",
+   "uw_relevance": "Shareholder returns that exceed cash generation while equity is negative raise questions about funding sources and the accuracy of capital-allocation disclosures, which the rule-based signal S3 flags.",
    "system_priority": "high",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Financial",
-   "question": "How much of the rise in total debt from $11.87B in FY2023 to $16.91B reflects Senior Notes issuances net of maturities, and what further issuance is planned?",
-   "summary": "Total debt reached $16.91B at FY2026 Q2, up from $11.87B in FY2023. Interest expense was $221M in the quarter, and interest coverage was 5.56x compared with 3.74x in FY2025 Q4.",
-   "following_risk": "Debt growth and interest cost",
-   "uw_relevance": "Rising debt alongside negative equity increases the company's obligations and sensitivity to refinancing costs, which affects its financial position and disclosure accuracy.",
+   "question": "What is the maturity schedule and refinancing plan for the Senior Notes behind the rise in total debt, and how much of the interest expense increase is tied to net new issuances rather than existing balances?",
+   "summary": "Total debt reached $16.91B at Q2 2026, up from $16.20B at FY2025 year-end. Quarterly interest expense was $221M, and the MD&A attributes the increase to higher debt balances from Senior Notes issuances, net of maturities.",
+   "following_risk": "Debt growth and refinancing risk",
+   "uw_relevance": "Rising debt alongside negative equity increases refinancing exposure, and the answer shows whether debt growth is planned or driven by shareholder returns.",
    "system_priority": "medium",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Financial",
-   "question": "What is the nature of the $68 million impairment on a U.S. and Canada hotel and the $27 million property-related litigation accrual, and are further impairments or accruals expected?",
-   "summary": "Q2 2026 results include a $68 million impairment charge on a U.S. and Canada hotel and a $27 million property-related litigation accrual. Both reduced U.S. and Canada segment profit for the quarter and first half.",
-   "following_risk": "Impairment and litigation accrual",
-   "uw_relevance": "Two separately disclosed charges in one quarter reduced reported earnings, and underwriters need to know whether they are isolated or signal further asset or legal exposure.",
+   "question": "What drove the $68M impairment on the U.S. and Canada hotel in Q2 2026, and what is the current status and expected timing of the $27M property-related litigation accrual?",
+   "summary": "Q2 2026 results include a $68 million impairment charge on a U.S. and Canada hotel and a $27 million property-related litigation accrual. Both reduced segment profit in the U.S. and Canada segment for the quarter and first half.",
+   "following_risk": "Impairment and litigation accrual risk",
+   "uw_relevance": "Two separate charges reduced reported earnings in Q2 2026, and their nature and any further exposure determine how much weight underwriters can place on reported results.",
    "system_priority": "medium",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Operational",
-   "question": "What share of the Middle East RevPAR decline is driven by the conflict, and how does that drive the expected 100 basis point reduction to full-year global RevPAR growth?",
-   "summary": "Middle East RevPAR declined 43% in Q2 2026, and management now expects the conflict to reduce full-year global RevPAR growth by about 100 basis points. Global RevPAR was $138.74 in FY2026 Q2 and occupancy was 71.6%.",
-   "following_risk": "Middle East regional exposure",
-   "uw_relevance": "A sharp decline concentrated in one region is an ongoing operating risk, and the size of the impact on group-wide results determines how material it becomes.",
+   "question": "What share of Q2 2026 RevPAR and fee revenue comes from the Middle East, and how much of the expected 100 basis point reduction in full-year global RevPAR growth is already reflected in current guidance?",
+   "summary": "Middle East RevPAR fell 43% in Q2 2026, and management now expects the conflict to reduce full-year global RevPAR growth by about 100 basis points. Global RevPAR was $138.74 in Q2 2026.",
+   "following_risk": "Regional geopolitical exposure risk",
+   "uw_relevance": "A new, region-specific shock that management says is ongoing creates material uncertainty about operating results and guidance, which bears on the accuracy of future disclosures.",
    "system_priority": "high",
    "prompt_version": "followups_v2"
   },
   {
-   "category": "Strategy",
-   "question": "Which Middle East projects are delayed, what is their expected timing, and what is the basis for net room growth now trending toward the low end of 4.5% to 5%?",
-   "summary": "In the Q4 2025 call, full-year 2026 net room growth was expected to accelerate to 4.5% to 5%. In the Q2 2026 call, management said growth is now more likely toward the low end, primarily due to Middle East construction delays.",
-   "following_risk": "Unit growth timing",
-   "uw_relevance": "A shift in the unit growth outlook tied to a specific region changes the expected fee growth pipeline and is a forward-looking statement that underwriters can test against results.",
+   "category": "Operational",
+   "question": "Which Middle East construction projects are delayed, how many rooms are affected, and what does the net room growth outlook look like if the delays persist beyond the second half?",
+   "summary": "In the Q2 2026 call, management said net room growth is now more likely toward the low end of the 4.5% to 5% range, primarily due to Middle East construction delays. Management expects the conflict's impact to persist through the second half.",
+   "following_risk": "Development pipeline and guidance risk",
+   "uw_relevance": "A softened unit growth outlook tied to one region affects future fee streams, and the answer shows whether the record pipeline figures management cites are realistic.",
    "system_priority": "medium",
    "prompt_version": "followups_v2"
   },
   {
-   "category": "Governance",
-   "question": "What is the status of the CFO transition, and how will Jennifer Mason's role address capital allocation decisions made while stockholders' equity is negative?",
-   "summary": "The CFO intends to step down after the FY2025 Form 10-K is filed, and the Q1 2026 call introduces Jennifer Mason as the new Executive Vice President and Chief Financial Officer. Stockholders' equity was $-3.77B at FY2025 Q4.",
-   "following_risk": "CFO transition and leadership",
-   "uw_relevance": "Finance leadership changed during a period of negative equity and high buybacks, so the new CFO's experience and the continuity of financial controls matter for reliable reporting.",
+   "category": "Operational",
+   "question": "How much of the Q2 2026 RevPAR of $138.74 came from average daily rate of $193.66 versus occupancy of 71.6%, and how much of the international RevPAR decline reflects the Middle East?",
+   "summary": "Q2 2026 RevPAR was $138.74, average daily rate was $193.66 and occupancy was 71.6%. The Q2 2026 call says the Middle East conflict weighed on international RevPAR, which declined slightly.",
+   "following_risk": "Operating metric performance risk",
+   "uw_relevance": "Separating rate from occupancy effects shows whether revenue per room is holding up, which underwriters need to judge the quality of the fee-generating operating base.",
    "system_priority": "medium",
    "prompt_version": "followups_v2"
   },
   {
-   "category": "Governance",
-   "question": "What were the reasons for the Group President for United States and Canada stepping down effective March 28, 2026, and who now holds those responsibilities?",
-   "summary": "A Group President for United States and Canada gave notice on January 6, 2026 of his intent to step down effective March 28, 2026. A board member and chair of the Inclusion and Social Impact Committee also informed the company of a departure on February 3, 2026.",
-   "following_risk": "Senior officer departure risk",
-   "uw_relevance": "Two senior departures in early 2026 are rule-flagged Item 5.02 events, and key-person gaps in a region with impairment charges matter for oversight of operations.",
-   "system_priority": "medium",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Governance",
-   "question": "Were the insider open-market sales on November 25, 2025 and February 19, 2026 made under pre-arranged trading plans, and how many insiders sold shares?",
-   "summary": "Rule signals flag several insiders selling shares on the open market within 30 days on multiple dates, including November 25, 2025 and February 19, 2026. Management also repurchased shares for $1.12B in FY2026 Q2.",
-   "following_risk": "Insider trading disclosure",
-   "uw_relevance": "Recurring insider sales during a period of large buybacks and negative equity are an insider-activity pattern that underwriters can monitor against the company's disclosures.",
-   "system_priority": "medium",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Governance",
-   "question": "What did the owner letter raise, what discussions are ongoing with owners, and how did the roughly 5% loyalty charge-out rate reduction affect owner returns?",
-   "summary": "The company lowered loyalty charge-out rates by roughly 5% at the start of 2026 to help owner returns. On the Q2 call, management declined to give an official response to a letter from owners and described it as a matter between the company and its owners.",
-   "following_risk": "Owner relations and disputes",
-   "uw_relevance": "Owner dissatisfaction can lead to arbitration or litigation, and the filings link it to reduced fee income, which affects the franchise and fee streams.",
+   "category": "Operational",
+   "question": "How many owners are party to the letter, what do its concerns cover, and have any owner disputes from the loyalty charge-out rate cut moved to arbitration or litigation?",
+   "summary": "Loyalty charge-out rates were cut roughly 5% at the start of 2026 to help owner returns. On the Q2 2026 call, the CEO declined to give an official response to an owner letter and described it as a matter between the company and its owners.",
+   "following_risk": "Owner and franchise dispute risk",
+   "uw_relevance": "Owner dissatisfaction and fee changes can lead to disputes that affect franchise and fee income, and the risk factors say past owner disagreements have led to arbitration or litigation.",
    "system_priority": "high",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Governance",
-   "question": "How does the board reconcile CEO compensation actually paid of $40M in FY2025, down from $46M in FY2024, with the $23M Summary Compensation Table total?",
+   "question": "What reasons were given for the CFO's planned step-down after the FY2025 Form 10-K, and what controls are in place to keep finance continuity through the transition to Jennifer Mason?",
+   "summary": "A rule signal reports that the CFO intends to step down after the FY2025 Form 10-K is filed. The Q1 2026 call introduced Jennifer Mason as the new Executive Vice President and Chief Financial Officer.",
+   "following_risk": "Key-person and finance leadership risk",
+   "uw_relevance": "Finance leadership changed during a period of negative equity and high buybacks, and the new CFO's tenure is not yet established, which bears on the reliability of financial reporting.",
+   "system_priority": "medium",
+   "prompt_version": "followups_v2"
+  },
+  {
+   "category": "Governance",
+   "question": "Which insiders sold shares on the open market on November 25, 2025 and February 19, 2026, and were these sales made under pre-arranged trading plans?",
+   "summary": "Rule signals flag several insiders selling shares on the open market within 30 days on multiple dates, including November 25, 2025 and February 19, 2026. The buyback program ran over the same period.",
+   "following_risk": "Insider trading and disclosure risk",
+   "uw_relevance": "Recurring insider sales across several periods, alongside large buybacks, are relevant to insider-activity monitoring and to the company's trading-policy controls.",
+   "system_priority": "medium",
+   "prompt_version": "followups_v2"
+  },
+  {
+   "category": "Governance",
+   "question": "What drove the drop in CEO compensation actually paid from $46M in FY2024 to $40M in FY2025, and how does that compare with the Summary Compensation Table total of $23M?",
    "summary": "CEO compensation actually paid was $40M for FY2025, against $46M in FY2024. The Summary Compensation Table total for FY2025 was $23M.",
-   "following_risk": "Executive pay alignment",
-   "uw_relevance": "The gap between pay actually paid and the summary table total is a disclosed pay-for-performance measure, and underwriters can review how it relates to company results.",
+   "following_risk": "Pay-for-performance alignment risk",
+   "uw_relevance": "The gap between compensation actually paid and the summary table total depends on stock price movement, so underwriters need the drivers to judge the pay-for-performance disclosure.",
    "system_priority": "low",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Governance",
-   "question": "What amount has been recorded in expenses for the Starwood data incident lawsuits, and what is the expected timing for resolving the remaining consumer cases?",
-   "summary": "Approximately 100 consumer lawsuits were filed after the 2018 Starwood data security incident. The company says it cannot reasonably estimate the financial impact beyond expenses already recorded.",
-   "following_risk": "Data incident litigation exposure",
-   "uw_relevance": "Open lawsuits with no reasonable estimate of further financial impact are an uncertain legal exposure, and a 2024 FTC and state AG resolution adds compliance obligations.",
+   "question": "What is the current accrual or reserve for the approximately 100 Starwood data incident lawsuits, and what compliance obligations remain under the 2024 FTC and state AG resolution?",
+   "summary": "Approximately 100 consumer lawsuits were filed after the 2018 Starwood data security incident. The company says it cannot reasonably estimate the financial impact beyond expenses already recorded, and the filings note a 2024 FTC and state AG resolution with compliance obligations.",
+   "following_risk": "Data security and legal exposure risk",
+   "uw_relevance": "Open lawsuits with no reasonable estimate of further impact, plus ongoing regulatory obligations, leave an exposure that underwriters cannot size from the filings alone.",
    "system_priority": "medium",
    "prompt_version": "followups_v2"
   },
   {
-   "category": "Operational",
-   "question": "What penalty range has the EPA proposed in the Clean Air Act settlement discussions over the managed hotel, and what is the next procedural step?",
+   "category": "Governance",
+   "question": "Has the EPA offered a settlement amount or penalty range for the alleged Clean Air Act violations at the managed hotel, and what is the expected timing of resolution?",
    "summary": "The EPA offered settlement discussions over alleged Clean Air Act violations at a hotel the company manages. The matter was received in the 2025 second quarter and disclosed in the FY2025 10-K, and management does not expect a material adverse effect.",
-   "following_risk": "Environmental regulatory investigation",
-   "uw_relevance": "A government investigation disclosed in Item 3 remains open, and its outcome could create penalties or compliance obligations for the company as manager of the property.",
-   "system_priority": "medium",
-   "prompt_version": "followups_v2"
-  },
-  {
-   "category": "Financial",
-   "question": "How is the $796M of free cash flow in FY2026 Q2 split among share repurchases, capital expenditures of $152M, and debt service, given operating cash flow of $948M?",
-   "summary": "Operating cash flow was $948M in FY2026 Q2 and free cash flow was $796M, while share repurchases were $1.12B that quarter. Free cash flow was $2.61B in FY2025, and the inputs do not show how operating cash flow is allocated beyond buybacks.",
-   "following_risk": "Cash deployment and capital allocation",
-   "uw_relevance": "Cash generation is a mitigating factor against negative equity and rising debt, so the uses of that cash determine whether the balance sheet strain is reduced or increased.",
-   "system_priority": "medium",
+   "following_risk": "Environmental regulatory investigation risk",
+   "uw_relevance": "An open government investigation with no disclosed amount leaves the outcome uncertain, and the answer shows whether the no-material-effect view rests on a stated penalty range.",
+   "system_priority": "low",
    "prompt_version": "followups_v2"
   },
   {
    "category": "Strategy",
-   "question": "What share of 2026 fee growth is expected from the new Chase and American Express card agreements, and how large is the full-year benefit beyond the partial-year $30 million?",
-   "summary": "New long-term U.S. card agreements with Chase and American Express were executed, with about $30 million of partial-year 2026 benefit. The Q4 2025 call had expected co-branded credit card fees to rise around 35%.",
-   "following_risk": "Card agreement concentration",
-   "uw_relevance": "Card economics are a growing share of fee growth and rest on recently executed contracts whose benefits build over time, so the outlook depends on those agreements being realized.",
-   "system_priority": "low",
+   "question": "How much of the approximately $30 million partial-year 2026 benefit from the new Chase and American Express card agreements depends on contract terms still building over time, and when does the co-branded fee increase of about 35% take effect?",
+   "summary": "New long-term U.S. card agreements with Chase and American Express were executed, with about $30 million of partial-year 2026 benefit. The Q4 2025 call expected co-branded credit card fees to rise around 35%.",
+   "following_risk": "Fee revenue concentration risk",
+   "uw_relevance": "Card economics are a growing share of fee growth and rest on recently executed contracts, so the durability of that income bears on the company's future fee revenue.",
+   "system_priority": "medium",
    "prompt_version": "followups_v2"
   }
  ],

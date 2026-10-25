@@ -107,11 +107,6 @@ def answer(model, user):
              "evidence": [_ev("B1", "Macro caution enters CEO remarks")]},
             {"topic": "Litigation", "text": "A 40% revenue drop raises securities claim risk.",
              "evidence": [_ev("R1", "Negative equity with heavy debt")]},  # invented number
-            # Grounded, but 120 characters: longer than the box shows (D-065), so dropped.
-            {"topic": "Refinancing exposure",
-             "text": "Negative equity together with $16.9B of debt leaves the company exposed if "
-                     "refinancing markets tighten in the next year.",
-             "evidence": [_ev("K1", "Negative equity amid $16.9B debt")]},
         ]}  # fmt: skip
     if "## Rule-based signals" in user:  # key insights
         return {"insights": [
@@ -120,6 +115,14 @@ def answer(model, user):
              "supporting_evidence": "Total debt $16.9B.", "related_metric_codes": ["total_debt", "bogus"],
              # M3 = total_debt (metric rows are sorted by code)
              "evidence": [_ev("M3", "$16.91B"), _ev("R1", "Negative equity with heavy debt")]},
+            # Grounded, but its summary has 187 characters: longer than the card shows (D-065).
+            {"type": "Warning", "title": "Refinancing exposure",
+             "summary": "Debt of $16.9B sits against negative equity, which leaves little room if "
+                        "earnings weaken, lenders tighten covenants or refinancing markets close, "
+                        "and raises the risk of disclosure claims.",
+             "uw_relevance": "Leverage.", "supporting_evidence": "Total debt $16.9B.",
+             "related_metric_codes": ["total_debt"],
+             "evidence": [_ev("M3", "$16.91B")]},
         ]}  # fmt: skip
     if "## Insights from earlier steps" in user:  # follow-up questions
         return {"questions": [
@@ -169,8 +172,9 @@ def test_grounded_insights_stored_with_lineage(env) -> None:
         ("TAKEAWAY", "Leverage and refinancing"),  # the invented-number takeaway is dropped
         ("TAKEAWAY", "Emerging macro caution"),
     }
-    # Four generated: one with an invented number, one over 100 characters (D-065).
-    assert "key_takeaways=2/4" in detail
+    assert "key_takeaways=2/3" in detail
+    # Two key insights generated: the one whose summary is over 180 characters is dropped.
+    assert "key_insights=1/2" in detail
     lead = rows[("TAKEAWAY", "Leverage and refinancing")]
     assert lead.ordinal == 1 and lead.summary.startswith("Debt of $16.9B")
     # Its evidence resolves through K1 to K1's own sources (kept for audits, not shown).
