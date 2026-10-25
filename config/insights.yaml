@@ -9,7 +9,7 @@ prompt_versions:
   activity_summary: activity_summary_v1
   behavioral: behavioral_v1
   strategic_risk: strategic_risk_v1
-  key_insights: key_insights_v1
+  key_insights: key_insights_v2
   followups: followups_v2
   key_takeaways: key_takeaways_v1   # 2-3 bullets for professional lines, shown without links
   metric_detail: metric_detail_v1   # metricdetail stage (Phase 8): per-metric UW relevance
@@ -38,3 +38,8 @@ counts:                   # asked of the model; enforced loosely (log only)
   key_insights: [6, 10]
   followups: [10, 15]
   key_takeaways: [2, 3]   # at most 3 are kept
+
+# Longest text the app shows, in characters (2026-10-24, D-065): an item over the limit is
+# dropped, not cut. key_insights: the summary of each Key Insight card.
+text_limits:
+  key_insights: 180

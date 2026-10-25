@@ -49,6 +49,8 @@ class InsightsConfig(BaseModel):
     metric_quarters: int
     metric_years: int
     counts: dict[str, tuple[int, int]]
+    # Longest text the app shows per task, in characters; longer items are dropped (D-065).
+    text_limits: dict[str, int] = {}
 
 
 def load_insights_config(config_dir: Path, provider: str | None = None) -> InsightsConfig:

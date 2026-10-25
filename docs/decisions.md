@@ -1224,3 +1224,18 @@ LLM runs until the end, then one comparison.
 - BFF: no change if it builds a company's metric list from SIC_Preferences or MatrixData and hides
   categories without metrics; "Market & Trading" and "Reporting Quality" are now empty.
 
+
+**D-065 Key Insights: summary at most 180 characters (2026-10-24).**
+- Need (user, 2026-10-24): the summary of a Key Insight card fits in 180 characters. Before:
+  "two or three sentences"; of 1,052 current summaries 854 were longer (average 228
+  characters, longest 420). Key Takeaways keep their length and at most 3 per company (a
+  100-character limit on them was tried the same day and withdrawn at the user's request).
+- How: prompt `key_insights_v2` asks for one or two sentences of at most 180 characters
+  (counting spaces) and says a longer summary is not shown; `config/insights.yaml`
+  `text_limits.key_insights: 180`. The insights stage drops a grounded key insight whose
+  summary is over the limit (logged as a dropped example), never cuts it. The prompt version
+  is in the input hash, so every company's key insights are generated again on the next run,
+  and with them the follow-up questions and takeaways that use them (about 3 synthesis calls
+  per company); behavioral and strategic insights stay cached.
+- Result (MAR, JPM, ENPH, 2026-10-24): 10 key insights each, summaries of 94-169 characters,
+  none dropped.

@@ -24,8 +24,8 @@
 | SIC_Code / Company | `company` | Company.logo 由应用维护，管线不写；Location = "城市, 州"；NameAbbreviation = ticker |
 | metric_category / metrics / SIC_Preferences | `config/metrics.yaml` + 行业组 | metrics.Formula 是通用定义；分类名在 `config/app_publish.yaml`。Phase 14 新增显示指标：银行 ROA、ROE、贷款损失准备率；AUM、VaR、国际收入、RPO 等只作为洞察输入，不进 metrics（D-043） |
 | MatrixData | `metric_value` | source_class = derivation；confidence 按取值方式（配置） |
-| KeyInsights / KeyInsightsTypes | `insight`（KEY） | evidence = Supporting Evidence（规则生成）；confidence 按来源数（配置） |
-| KeyTakeaways | `insight`（TAKEAWAY） | Takeaway = 一句话要点；Ordinal 1 最重要；没有来源和链接（依据只存在管线库，供审计）；不进 ItemLink |
+| KeyInsights / KeyInsightsTypes | `insight`（KEY） | **summary 最多 180 个字符**（超长的条目不保存，不截断，D-065）；evidence = Supporting Evidence（规则生成）；confidence 按来源数（配置） |
+| KeyTakeaways | `insight`（TAKEAWAY） | Takeaway = 一句话要点，每家公司最多 3 条；Ordinal 1 最重要；没有来源和链接（依据只存在管线库，供审计）；不进 ItemLink |
 | StrategicRisk / RiskTypes | `insight`（STRATEGIC_RISK、BEHAVIORAL） | Category：governance / risk / event / behavior；RiskType 由 subcategory 按 `config/app_publish.yaml` 的规则映射 |
 | FollowUpQuestions | `followup_question` | title = 问题；Priority = system_priority |
 | ItemLink | `insight_link`、`insight_metric`、`followup_question_insight`、`followup_question_metric` | 只连接当前版本（isActive = 1）的对象；从任一端都可查 |
