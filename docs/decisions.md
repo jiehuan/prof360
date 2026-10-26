@@ -1537,6 +1537,10 @@ LLM runs until the end, then one comparison.
 - Conditions: the target was filled by `load` from the same pipeline (same ids) and nothing
   else writes these tables. The pipeline never deletes companies or versioned content (old
   versions get `isActive = 0`), which the BFF's user tables refer to.
+- Application tables (2026-10-26): every mode copies only the tables the repo's DDL for the
+  database creates; `User*` and any other table are never copied, synced or cleared, even when
+  the SQLite file has one of that name (a local `app.db` from the BFF prototype does), so the
+  users' data in Azure SQL cannot be overwritten.
 
 **D-065 Key Insights: summary at most 180 characters (2026-10-24).**
 - Need (user, 2026-10-24): the summary of a Key Insight card fits in 180 characters. Before:
