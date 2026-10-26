@@ -21,7 +21,7 @@
 
 | 应用表 | 来源（管线） | 说明 |
 |---|---|---|
-| SIC_Code / Company | `company` | Company.logo 由应用维护，管线不写；Location = "城市, 州"；NameAbbreviation = ticker |
+| SIC_Code / Company | `company` | Company.logo = logo 的 data URI（`data:image/png;base64,...`，NVARCHAR(MAX)，可直接做 `<img src>`；没有 logo 为 NULL），来自 `config/logos/`（D-067）；Location = "城市, 州"；NameAbbreviation = ticker |
 | metric_category / metrics / SIC_Preferences | `config/metrics.yaml` + 行业组 | metrics.Formula 是通用定义；分类名在 `config/app_publish.yaml`。Phase 14 新增显示指标：银行 ROA、ROE、贷款损失准备率；AUM、VaR、国际收入、RPO 等只作为洞察输入，不进 metrics（D-043） |
 | MatrixData | `metric_value` | source_class = derivation；confidence 按取值方式（配置） |
 | KeyInsights / KeyInsightsTypes | `insight`（KEY） | **summary 最多 180 个字符**（超长的条目不保存，不截断，D-065）；evidence = Supporting Evidence（规则生成）；confidence 按来源数（配置） |

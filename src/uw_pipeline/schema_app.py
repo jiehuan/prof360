@@ -48,7 +48,7 @@ Company = Table(
     Column("CompanyName", Unicode(200), nullable=False),
     Column("NameAbbreviation", Unicode(16)),
     Column("Location", Unicode(200)),
-    Column("logo", Unicode(500)),  # owned by the application; never written by the pipeline
+    Column("logo", UnicodeText),  # data URI (data:image/png;base64,...); pipeline, D-067
     Column("UpdatedAt", Date),
     Column("CIK", Unicode(10), nullable=False),
 )  # fmt: skip

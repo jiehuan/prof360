@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import Connection, Engine, desc, select, true
 
 from uw_pipeline.compute.registry import MetricDef, Registry
@@ -33,6 +33,7 @@ from uw_pipeline.jobs.run_metric_detail import value_source
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.load.app_writer import AppWriter
 from uw_pipeline.load.upsert import delete_keys, upsert
+from uw_pipeline.logos import load_logos
 from uw_pipeline.schema import (
     activity,
     followup_question,
@@ -122,6 +123,7 @@ class PublishConfig(BaseModel):
     confidence: Confidence
     trend_metrics: list[str]
     loan_portfolio_metric: LoanMetric
+    logos: dict[str, str] = Field(default_factory=dict)  # ticker -> data URI (config/logos/)
 
     def risk_type(self, subcategory: str | None, category: str) -> str:
         for rule in self.risk_types:
@@ -134,7 +136,8 @@ class PublishConfig(BaseModel):
 
 def load_publish_config(config_dir: Path) -> PublishConfig:
     with (config_dir / "app_publish.yaml").open(encoding="utf-8") as f:
-        return PublishConfig.model_validate(yaml.safe_load(f))
+        cfg = PublishConfig.model_validate(yaml.safe_load(f))
+    return cfg.model_copy(update={"logos": load_logos(config_dir)})
 
 
 @dataclass
@@ -201,6 +204,7 @@ class Publisher:
         self.app_company = self.w.put(Company, self.cik, {
             "SIC_Id": sic_id, "CompanyName": r["name"], "NameAbbreviation": r["ticker"],
             "Location": location, "UpdatedAt": _date(r["last_refreshed_at"]), "CIK": self.cik,
+            "logo": self.cfg.logos.get(r["ticker"]),  # config/logos/ (D-067)
         })  # fmt: skip
         self.sic_id = sic_id
 

@@ -79,7 +79,8 @@ def test_publish_maps_objects_and_links() -> None:
         detail = (
             c.execute(select(CompanyMetricDetail).where(cmd.metric_id == debt_id)).mappings().one()
         )
-    assert (comp["CIK"], comp["NameAbbreviation"], comp["logo"]) == ("0001048286", "MAR", None)
+    assert (comp["CIK"], comp["NameAbbreviation"]) == ("0001048286", "MAR")
+    assert comp["logo"] == PCFG.logos["MAR"] and comp["logo"].startswith("data:image/")  # D-067
     assert key["isActive"] and key["iconType"] == "warning"
     sources = json.loads(key["source"])
     assert sources[0]["title"] and key["link"] == next(s["url"] for s in sources if s["url"])

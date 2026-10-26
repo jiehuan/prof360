@@ -90,12 +90,15 @@ CREATE TABLE dbo_professional360.[Company] (
 	[CompanyName] NVARCHAR(200) NOT NULL, 
 	[NameAbbreviation] NVARCHAR(16) NULL, 
 	[Location] NVARCHAR(200) NULL, 
-	logo NVARCHAR(500) NULL, 
+	logo NVARCHAR(max) NULL, 
 	[UpdatedAt] DATE NULL, 
 	[CIK] NVARCHAR(10) NOT NULL, 
 	PRIMARY KEY ([CompanyId]), 
 	FOREIGN KEY([SIC_Id]) REFERENCES dbo_professional360.[SIC_Code] ([SIC_Id])
 );
+GO
+IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'dbo_professional360.Company') AND name = N'logo' AND max_length <> -1)
+    ALTER TABLE dbo_professional360.[Company] ALTER COLUMN logo NVARCHAR(max) NULL;
 GO
 
 IF OBJECT_ID(N'dbo_professional360.metrics', N'U') IS NULL

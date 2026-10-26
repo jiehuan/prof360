@@ -41,6 +41,8 @@ ADDED_COLUMNS = {
     "TranscriptRiskFlag": ["Category"],
     "TranscriptToneAnalysis": ["CompanyId", "Quarter"],
 }
+# Columns made longer after they were first deployed: Company.logo holds a data URI (D-067).
+WIDENED_COLUMNS = {"Company": ["logo"]}
 # Columns added to pipeline tables after they were first deployed; the full pipeline script
 # adds them to an existing table (CREATE TABLE ... IF missing does not).
 PIPELINE_ADDED_COLUMNS = {
@@ -118,6 +120,15 @@ def _add_column(table: Table, name: str, schema: str) -> str:
             f"    ALTER TABLE {target} ADD {Q(name)} {spec};\nGO")  # fmt: skip
 
 
+def _widen_column(table: Table, name: str, schema: str) -> str:
+    """ALTER COLUMN to the current type when the deployed column is shorter (NVARCHAR(n) to
+    NVARCHAR(max): max_length -1). Keeps the data."""
+    target, kind = f"{Q(schema)}.{Q(table.name)}", _type(table.c[name])
+    return (f"IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'{schema}."
+            f"{table.name}') AND name = N'{name}' AND max_length <> -1)\n"
+            f"    ALTER TABLE {target} ALTER COLUMN {Q(name)} {kind} NULL;\nGO")  # fmt: skip
+
+
 def _create(table: Table, schema: str) -> str:
     ddl = _compile(CreateTable(table), schema)
     return f"IF OBJECT_ID(N'{schema}.{table.name}', N'U') IS NULL\n{ddl};\nGO"
@@ -143,6 +154,9 @@ def changes() -> str:
     parts += ["-- 2. Added columns ----------------------------------------------------------", ""]
     for name, cols in ADDED_COLUMNS.items():
         parts += [f"-- {name}"] + [_add_column(_app(name), c, APP_SCHEMA) for c in cols] + [""]
+    for name, cols in WIDENED_COLUMNS.items():
+        parts += [f"-- {name} (widened)"] + [_widen_column(_app(name), c, APP_SCHEMA)
+                                             for c in cols] + [""]  # fmt: skip
     parts += ["-- 3. Indexes for the BFF's reads ---------------------------------------------", ""]
     for name in sorted(ADDED_COLUMNS):
         parts += _indexes(_app(name), APP_SCHEMA)
@@ -173,11 +187,12 @@ def changes() -> str:
     return "\n".join(parts)
 
 
-def full(md: MetaData, schema: str, what: str,
-         added: dict[str, list[str]] | None = None) -> str:  # fmt: skip
+def full(md: MetaData, schema: str, what: str, added: dict[str, list[str]] | None = None,
+         widened: dict[str, list[str]] | None = None) -> str:  # fmt: skip
     parts = [HEADER, f"-- {what}", "", _schema(schema), ""]
     for table in md.sorted_tables:
         new_cols = [_add_column(table, c, schema) for c in (added or {}).get(table.name, [])]
+        new_cols += [_widen_column(table, c, schema) for c in (widened or {}).get(table.name, [])]
         parts += [_create(table, schema), *new_cols, *_indexes(table, schema), ""]
     return "\n".join(parts)
 
@@ -232,7 +247,8 @@ def main() -> None:
         "app_schema_changes.sql": changes(),
         "app_schema_full.sql": full(app_metadata, APP_SCHEMA, "Every application table the "
                                     "pipeline writes, in dependency order. Tables owned by the "
-                                    "application (Users, UserHistory, ...) are not included."),
+                                    "application (Users, UserHistory, ...) are not included.",
+                                    widened=WIDENED_COLUMNS),
         "pipeline_schema_full.sql": full(pipeline_metadata, PIPELINE_SCHEMA, "The pipeline's own "
                                          "tables (raw facts, documents, LLM cache, runs, DQ). The "
                                          "BFF does not read them.", PIPELINE_ADDED_COLUMNS),

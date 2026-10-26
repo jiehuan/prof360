@@ -31,6 +31,7 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 .venv/bin/python scripts/azure_smoke.py             # Azure SQL + ADLS check (work network)
 scripts/test_mssql.sh --all                          # whole test suite on a local SQL Server (Docker)
 .venv/bin/python scripts/export_app_ddl.py           # regenerate deploy/sql/*.sql after schema changes
+.venv/bin/python scripts/fetch_logos.py              # config/logos/ for new companies (open network, D-067)
 .venv/bin/python scripts/compare_models.py --model claude-sonnet-5-5 MAR JPM ENPH  # model A/B
 ```
 

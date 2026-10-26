@@ -1463,3 +1463,34 @@ LLM runs until the end, then one comparison.
   at no cost. The task detail says `stored=none, previous versions kept (no output: ...)`.
 - Trade-off: a set that keeps failing (e.g. a request too large) holds the company's whole
   insight update back; the task detail and the logs name the set.
+
+**D-067 Company logos: files kept in the repo, published by the pipeline (2026-10-26).**
+- `Company.logo` was NULL for every company: the application was meant to fill it and never
+  did. The front end needs something it can use as an `<img src>` without another request.
+- Options: format (1) base64 data URI, (2) an image URL (hotlinking a third party or hosting
+  the files); maintenance (a) the pipeline finds logos at run time, (b) logo files kept by hand
+  in the repo, (c) the application team. User decisions (2026-10-26): (1); first (a), then (b)
+  the same day, because the corporate network that runs the pipeline does not reach Wikimedia.
+- How: `config/logos/<TICKER>.png|jpg|gif|webp` (at most 200 KB, about 250 px wide; SVG is
+  not accepted: it can carry scripts). `publish` writes each company's file as
+  `data:<type>;base64,...` to `Company.logo` (NULL without a file); `config check` rejects
+  files without a configured ticker, of the wrong type or too large. `Company.logo` becomes
+  `NVARCHAR(MAX)` (`app_schema_changes.sql` widens a deployed column; run it before the next
+  sync, or the longer values do not fit). The copy notebook's `keep_columns` default is now
+  empty: the pipeline owns the column.
+- Filling the folder: `scripts/fetch_logos.py`, on a network that reaches Wikimedia, fetches
+  logos for companies without a file and writes `config/logos/SOURCES.yaml` (where each came
+  from) and a review sheet `data/reports/logos.html`. Order: the `logo` of the infobox of the
+  English Wikipedia article linked from the Wikidata item with the company's CIK (or a
+  predecessor's); the item's Wikidata logo on Commons; the website's icon (Google's favicon
+  service, at least 32 px). Matching is by CIK only: searching by ticker or name found wrong
+  companies (ARCC -> Ares Management, DYN -> Dynegy). `config/logos.yaml` holds the
+  corrections checked by hand: the item, article, file or website for 53 companies. The
+  infobox comes first because Wikidata's logo was sometimes outdated or another unit's
+  (Kroger 1961-2019, Prudential's Brazilian unit, Discovery for WBD); non-free logos are only
+  on Wikipedia. A logo added by hand gets `source: manual` and is not replaced by `--all`.
+- Result (2026-10-26): 252 of 256 active companies (223 from Wikipedia, 5 Wikidata, 23
+  favicons, 1 by hand: SSRM, whose infobox still shows the Silver Standard logo); none for LRN,
+  UWMC, DNLI, ANNX (to add by hand). 2.1 MB of files; the data URIs add about 2.8 MB to the
+  app database. Logos were reviewed on the sheet, not one by one: corrections go into
+  `config/logos.yaml` or a replaced file.

@@ -108,7 +108,9 @@ SupportingEvidence。
 **确认**：显示哪一个。若要行业组名称，管线需在 `Company` 加一列（改表，要同步 DDL）。
 
 ### B7. `logo`
-管线不提供。**确认**：由谁维护（应用自己存 URL 或 base64）。
+已定（D-067）：管线写入 `Company.logo`，是 data URI（`data:image/png;base64,...`），可直接做
+`<img src>`；没有 logo 时为 NULL，前端显示占位。图片宽约 250 px，横版居多，按高度缩放显示。
+每个约 10 KB，列表接口如果一次返回很多公司，可以考虑只在详情接口返回 logo。
 
 ### B8. `riskFlags`、`followUpQuestions` 计数和 `updatedAt` 的定义
 **建议**：

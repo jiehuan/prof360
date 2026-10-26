@@ -11,8 +11,9 @@
 # MAGIC 3. Pick the environment, run with `mode = dry_run`, read the plan, then run with
 # MAGIC    `mode = load` the first time (empty tables) and `mode = sync` after each pipeline run:
 # MAGIC    rows are inserted, updated or deleted by primary key so the target matches the file
-# MAGIC    (D-064). Columns the application owns (`keep_columns`, e.g. `Company.logo`) are never
-# MAGIC    overwritten.
+# MAGIC    (D-064). Columns the application writes itself can be listed in `keep_columns`
+# MAGIC    (`Table.column`, comma-separated): they are never overwritten. None by default; the
+# MAGIC    pipeline writes `Company.logo` since D-067.
 # MAGIC
 # MAGIC Only the pipeline's own tables are touched in any mode: those created by the repo's DDL
 # MAGIC for this database. The application's tables (users, favorites, pins, history, flags,
@@ -47,7 +48,7 @@ dbutils.widgets.text("secret_scope", "", "9. Secret scope (blank: azure.yaml)")
 dbutils.widgets.text("username_key", "", "10. Secret: client id key (blank: azure.yaml)")
 dbutils.widgets.text("password_key", "", "11. Secret: client secret key (blank: azure.yaml)")
 # sync: target columns the application writes, left as they are (Table.column, comma-separated).
-dbutils.widgets.text("keep_columns", "Company.logo", "12. Sync: columns the target keeps")
+dbutils.widgets.text("keep_columns", "", "12. Sync: columns the target keeps")
 
 # COMMAND ----------
 
