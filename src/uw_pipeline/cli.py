@@ -16,11 +16,17 @@ from sqlalchemy import Connection, Engine, func, select
 from uw_pipeline.clients.db import app_engine, ensure_schema, pipeline_engine
 from uw_pipeline.compute.coverage import company_coverage, load_notes, render_markdown
 from uw_pipeline.compute.registry import load_registry
-from uw_pipeline.config import CompanyConfig, load_companies, load_industry_config
+from uw_pipeline.config import (
+    CompanyConfig,
+    load_companies,
+    load_industry_config,
+    load_logo_config,
+)
 from uw_pipeline.enrich.audit import audit
 from uw_pipeline.jobs.orchestrator import Orchestrator, RunInProgressError, load_jobs_config
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.jobs.stages import StageRunner
+from uw_pipeline.logos import check_logo, logo_files
 from uw_pipeline.logs import log_context, setup_logging
 from uw_pipeline.schema import company, dq_finding, metric_value, pipeline_run, pipeline_task
 from uw_pipeline.schema_app import app_metadata
@@ -451,6 +457,18 @@ def _load_all(config_dir: Path) -> tuple[Any, Any, Any, Any]:
     return companies, industry, registry, rules
 
 
+def _check_logos(companies: list[CompanyConfig]) -> None:
+    """Logo files (D-067): named by a configured ticker, and publishable."""
+    tickers = {c.ticker for c in companies}
+    problems = []
+    for ticker, path in logo_files(_config_dir()).items():
+        err = check_logo(path) if ticker in tickers else "no company with that ticker"
+        if err:
+            problems.append(f"{path.name}: {err}")
+    if problems:
+        raise ValueError("config/logos/: " + "; ".join(problems))
+
+
 @config_app.command("check")
 def config_check() -> None:
     """Validate config/ the way a run does, and list the company and industry settings."""
@@ -458,6 +476,8 @@ def config_check() -> None:
         companies, industry, _, rules = _load_all(_config_dir())
         # Read only by scripts/build_universe.py, but checked here too (D-055).
         load_universe_config(_config_dir()).check(industry)
+        load_logo_config(_config_dir()).check_companies(companies)
+        _check_logos(companies)
     except ValueError as exc:  # pydantic ValidationError is a ValueError
         typer.echo(f"INVALID: {exc}", err=True)
         raise typer.Exit(code=1) from exc

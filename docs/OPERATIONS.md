@@ -36,6 +36,7 @@
 3. 确认它的 SIC 在 `config/industry_groups.yaml` 里有对应的行业组。没有的话，见下文"新增行业组"。
 4. 运行 `uw-pipeline run --ticker XXX`，然后运行 `coverage-report`。对每一个缺口，要么修正 tag 映射，要么在 `config/coverage_notes.yaml` 里写明原因。整个行业都有的缺口写在 `groups:` 下（行业组代码，或 `"*"` 表示所有公司），公司级说明只写真正的例外（D-052）。
 5. 首次运行的 LLM 费用约为每家公司 $1.5–3。
+5a. Logo：见第 8 节（`scripts/fetch_logos.py` 或手工放文件）。
 6. MVP 阶段每个 SIC 只放一家公司（D-007）；Phase 16 起加入 S&P 100（2026-09-21 的名单，D-052），名单每季度对照指数核对一次。
 7. Phase 17 起：`python scripts/build_universe.py --sample 5` 生成公司范围（口径 A 去掉 SPAC，`data/reports/universe-<日期>.md` / `.csv`，列出每家的排除原因、行业组和覆盖率）和开发样本（每组收入最大的 5 家，`sample-<日期>.md` / `.yaml`）。读约 6,000 家的 submissions，约 45 分钟；同一天重跑会接着读。样本人工审阅：SIC 分错组的写 `industry` 和原因，再跑一次（该组会补到 5 家），然后把 `.yaml` 里的新公司加进 `companies.yaml`（D-055）。每季度重跑一次，对照 `companies.yaml outside the universe` 一节处理退市、改报 20-F 的公司。
 
@@ -88,7 +89,8 @@
 
 ## 8. 应用库、新闻和评分（Phase 9，D-037）
 
-- `publish` 阶段把管线结果写进应用库（`APP_DATABASE_URL`，dev 是 `data/app.db`）。管线不写 `Company.logo` 和用户相关的表。重跑只写有变化的行。
+- `publish` 阶段把管线结果写进应用库（`APP_DATABASE_URL`，dev 是 `data/app.db`）。管线不写用户相关的表。重跑只写有变化的行。
+- 公司 logo（D-067）：`config/logos/<TICKER>.png`（或 .jpg/.gif/.webp，不超过 200 KB，宽约 250 px），`publish` 转成 data URI 写进 `Company.logo`。管线运行时不联网取 logo。新增公司时：在能访问 Wikipedia 的网络上运行 `python scripts/fetch_logos.py`（只取没有文件的公司），打开 `data/reports/logos.html` 看一遍再提交；取不到或取错的，手工放一个文件，并在 `config/logos/SOURCES.yaml` 记 `source: manual` 和来源。取错的也可以在 `config/logos.yaml` 指定 Wikidata 条目、Wikipedia 文章或网站，再 `--ticker XXX` 重取。
 - 应用库的映射规则（指标分类、风险类型、confidence）在 `config/app_publish.yaml`。如果 `RiskTypes` 里出现 "Other"，在 `risk_types` 里加一条规则即可，重新 publish 不需要 LLM。
 - 新闻相关性：公司别名在 `config/companies.yaml` 的 `news_aliases`；排除规则和 LLM 判断在 `config/news.yaml`。新闻阶段的 `pruned` 是按当前规则删掉的旧文章数。
 - 风险评分在 `scores` 阶段（`config/scores.yaml`）。只有重要新闻进入洞察输入，阈值在 `config/insights.yaml` 的 `news_materiality`；阈值调低会让洞察更常重新生成（每家公司每次约 $0.9）。

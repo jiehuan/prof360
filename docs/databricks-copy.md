@@ -136,8 +136,10 @@ equals the file, table by table:
    schema. Each table prints `synced <table>: +inserted, updated, -deleted`; the last line
    gives the totals.
 
-`keep_columns` (default `Company.logo`) lists target columns the application writes: `sync`
-fills them for new rows and never overwrites them.
+`keep_columns` (default empty) lists target columns the application writes: `sync` fills them
+for new rows and never overwrites them. `Company.logo` is written by the pipeline since D-067;
+before the first sync with logos, run `deploy/sql/app_schema_changes.sql` (it widens the column
+to `NVARCHAR(MAX)`).
 
 A sync running while the BFF reads sees each table switch as its `MERGE` commits; run it after
 the pipeline run, outside working hours.

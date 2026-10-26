@@ -32,7 +32,7 @@
 【之后的约定】
 - 表结构由你们执行，管线不会在共享环境里建表或改表。表结构有变化时，我会重新生成 deploy/sql/，把改动脚本发给你。
 - 请不要手动修改或删除管线写入的行。被删的行下次发布时会以新的 id 重新插入，用户对旧 id 做的标记（比如追问问题的 flag）会对不上。
-- 管线不碰用户相关的表（收藏、浏览记录、偏好），也不写 Company.logo。
+- 管线不碰用户相关的表（收藏、浏览记录、偏好）。Company.logo 由管线写入（2026-10-26 起，D-067），是 data URI；部署前要先执行 app_schema_changes.sql，把这一列改成 NVARCHAR(MAX)。
 - 请转告 BFF：KeyInsights、StrategicRisk、FollowUpQuestions 只读 isActive = 1 的行；来源类字段存 JSON 列表 [{"title","url","date"}]；字段对照见 docs/schema-contract.md。
 
 【更新 2026-10-14（Phase 14）】

@@ -54,8 +54,9 @@ swap them for fakes.
 | `settings.py` | Settings from environment / `.env` (pydantic-settings), §13 |
 | `config.py` | Loads companies and industry groups (traits merged into each group's metric sets; SIC ranges must not overlap, D-055) |
 | `universe.py` | Company universe and development sample for `scripts/build_universe.py` (Phase 17, D-055): scope rule, revenue for ranking, the largest companies per group |
-| `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing; exchange ticker list and XBRL frames for the universe), `alphavantage.py` (quota, key masking), `llm.py` (Claude), `securegpt.py` (Azure OpenAI gateway), `runware.py` (Runware gateway), `openai_chat.py` (shared OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py` |
-| `extract/` | Company metadata, filing lists from submissions |
+| `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing; exchange ticker list and XBRL frames for the universe), `alphavantage.py` (quota, key masking), `llm.py` (Claude), `securegpt.py` (Azure OpenAI gateway), `runware.py` (Runware gateway), `openai_chat.py` (shared OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py`, `logos.py` (Wikidata, Commons, Wikipedia, favicons; used only by `scripts/fetch_logos.py`, D-067) |
+| `extract/` | Company metadata, filing lists from submissions; `logos.py`: where `scripts/fetch_logos.py` finds a logo (D-067) |
+| `logos.py` | Logo files under `config/logos/`: type and size checks, data URIs that `publish` writes to `Company.logo` (D-067) |
 | `normalize/` | XBRL facts, fiscal periods (restatement basis), HTML to text, table grids (`table_grid.py`), section splitting, news normalisation |
 | `compute/` | Metric registry (from `config/metrics.yaml`), formulas, coverage |
 | `signals/` | Rule detection, rule loading, rules + LLM vote |
@@ -221,6 +222,7 @@ versioned with the code.
 | `metrics.yaml` | Metric definitions, formulas (`x_py` = a year earlier, `x_ttm` = the last four quarters, D-058), text and table extraction specs (`table:` column, scope, excluded rows, `dual_check`), `kind: external` (market and Form 4 metrics, D-050), `insight_input`, `metric_sets`, `hidden_metric_sets` (computed, not shown, D-054) |
 | `concept_map.yaml` | Concept → candidate XBRL tags (with dimensions) |
 | `universe.yaml` | Sample review for `scripts/build_universe.py` only: `industry` for registrants whose SIC misleads, `sample_skip` (D-055) |
+| `logos.yaml`, `logos/` | Company logo files (`<TICKER>.png`, published as data URIs) and where `scripts/fetch_logos.py` looks for them: Wikidata item, article, file or website corrections (D-067) |
 | `coverage_notes.yaml` | Reason for every metric gap `coverage-report` shows: per company, or per industry group under `groups:` (`"*"` = every company, D-052) |
 | `signal_rules.yaml` | 8-K item mapping, keyword and role rules, board rules, metric `thresholds`, `industries` per rule (D-049), `fetch_body_items`; `ownership_forms` (13D), `market`, `insiders`, `legal` (D-050) |
 | `text_extraction.yaml` | Text-metric chunk budget, effort, loan portfolio settings |

@@ -1,0 +1,83 @@
+# Company logos for the app's Company.logo (D-067). The `company` stage looks a logo up once per
+# company and keeps it: a PNG/JPEG data URI the front end can use as an <img> src.
+#
+# Wikidata item: the one whose SEC CIK (P5531) is the company's pinned CIK or a predecessor's.
+# Where a logo comes from, in order:
+#   1. The `logo` of the infobox of the item's English Wikipedia article, as a thumbnail
+#      `width` pixels wide (SVG logos come as PNG). Kept current, and non-free logos are only
+#      there; Wikidata's is sometimes a former name's (SSRM) or another unit's (PRU).
+#   2. The item's logo image on Wikidata (P154, else the small logo or icon P8972), from
+#      Wikimedia Commons, same size.
+#   3. The icon of the item's official website (P856), from Google's favicon service, when it
+#      is at least `min_favicon_px` (many sites give only 16 px).
+#   4. None: Company.logo stays NULL; looked up again after `retry_days`.
+# A company is looked up again when its entry below or the sizes change, after
+# `refresh_days`, or with --force.
+
+enabled: true
+width: 250            # a Wikimedia standard thumbnail width
+favicon_size: 128
+min_favicon_px: 32    # smaller favicons are not used
+max_bytes: 200000     # larger images are not used (the data URI is about 4/3 of this)
+retry_days: 30
+refresh_days: 180
+
+# By ticker; checked by hand (2026-10-26). `wikidata`: the item, when Wikidata has no item with
+# the company's CIK (searching by ticker or name finds wrong companies, e.g. ARCC -> Ares
+# Management, so it is never automatic). `logo_file`: the Commons file, when the item has several
+# logos. `wikipedia`: the article, when the item has none. `website`: the favicon source, when
+# the item has no (or an outdated) website.
+overrides:
+  AAPL: {logo_file: "Apple logo black.svg"}   # also a white version
+  ANNX: {wikidata: Q61934465}
+  ARCC: {website: "https://www.arescapitalcorp.com"}  # Wikidata: Ares Management only
+  AVO: {website: "https://missionproduce.com"}
+  BFH: {website: "https://www.breadfinancial.com"}   # item's site: alliancedata.com (old name)
+  BG: {wikipedia: "Bunge Global", website: "https://www.bunge.com"}
+  BHVN: {wikidata: Q92546757}
+  CEG: {wikidata: Q259195}
+  CGEM: {website: "https://cullinantherapeutics.com"}
+  CHH: {wikidata: Q1075788}
+  CLDX: {wikidata: Q30281437}
+  COGT: {wikidata: Q119857276}
+  COMP: {website: "https://www.compass.com"}
+  CSTM: {wikidata: Q2995071}
+  CWK: {wikidata: Q1146061}
+  DNLI: {wikidata: Q50037774}
+  DRVN: {wikidata: Q64187080}
+  DYN: {website: "https://www.dyne-tx.com"}
+  ECHO: {wikidata: Q1280748}
+  EME: {wikidata: Q5370289}
+  ENVA: {wikidata: Q51137086}
+  GEV: {wikidata: Q118957699}
+  GPCR: {website: "https://structuretx.com"}
+  HGV: {wikidata: Q13636126}
+  HPQ: {wikipedia: "HP Inc."}   # item's article: Hewlett-Packard (1979 logo)
+  INGM: {wikidata: Q324616}
+  LRN: {website: "https://www.stride.com"}   # item's site: k12.com (old name)
+  LULU: {wikidata: Q6702957}
+  MAN: {wikidata: Q1472539}
+  MDLN: {wikidata: Q6807236}
+  MLTX: {website: "https://moonlaketx.com"}
+  OMF: {wikidata: Q28444592}
+  PCVX: {website: "https://vaxcyte.com"}
+  PK: {wikidata: Q55075186}
+  PRAX: {wikidata: Q140045988}
+  PYPL: {website: "https://www.paypal.com"}  # item has neither logo nor website
+  REPL: {wikidata: Q140046459}
+  ROIV: {wikidata: Q53308720}
+  SCCO: {wikidata: Q7569806}
+  SKYD: {wikipedia: "Paramount Skydance"}  # item's article: Paramount Global
+  SNDK: {wikidata: Q260833}
+  SNX: {wikipedia: "TD Synnex"}  # item's article: Synnex (before the merger)
+  SRRK: {wikidata: Q107518672}
+  SW: {wikipedia: "Smurfit Westrock", website: "https://www.smurfitwestrock.com"}  # Wikidata: Smurfit Kappa only
+  THC: {wikidata: Q3518066}
+  TPL: {wikidata: Q7707900}
+  UWMC: {wikidata: Q106024170}
+  VERA: {website: "https://www.veratx.com"}
+  VKTX: {wikidata: Q30269384}
+  VLTO: {wikidata: Q124721239}
+  VOR: {website: "https://www.vorbio.com"}
+  WBD: {wikipedia: "Warner Bros. Discovery"}  # item's article: Discovery, Inc.
+  YUMC: {wikidata: Q30645592}
