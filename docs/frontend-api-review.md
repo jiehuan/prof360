@@ -46,6 +46,11 @@
   methodology: string[], dataSources: SourceLink[] }
 ```
 
+每个类别还可以带 `quality`（按不良率分档：< 0.50% Strong，0.50%–1.50% Satisfactory，
+1.50%–3.00% Watch，≥ 3.00% Weak，没有数字为 Not reported）和 `qualityTrend`（与上一年末比，
+升降 0.25 个百分点以上为 Deteriorating / Improving，否则 Stable）；整个贷款组合的不良率、质量和
+覆盖比例见 `udf_GetCompanyLoanQualitySummary`。分档是提议，需要承保团队确认。
+
 ### A4. 趋势图拿不到趋势列表
 接口是 `trends/{trend_name_id}`，但前端不知道有哪些趋势 id。
 

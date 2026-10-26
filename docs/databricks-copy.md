@@ -87,7 +87,13 @@ Use it to move results produced in SQLite into Azure SQL: `load` once into empty
 - Identity columns continue after the highest copied id, so later pipeline runs insert normally.
 - `load` needs empty target tables: it refuses to load into a table that has rows.
 - `sync` needs a target filled by `load` (the same ids) and written by nothing else in these
-  tables: the application's own tables (`User*`) are not in the file and are left alone.
+  tables.
+- Every mode (`load`, `sync`, `clear_target`) touches only the pipeline's own tables: those the
+  repo's DDL for the database creates (`deploy/sql/app_schema_full.sql` or
+  `pipeline_schema_full.sql`). The application's tables (`Users`, `UserFavority`,
+  `UserPinnedCompanies`, `UserHistory`, `UserFlaggedFollowupQuestions`, `UserMetricsSelection`,
+  `UserSIC`, any other `User*`) are listed as `skip` and never copied, synced or cleared, even
+  when the SQLite file has tables of that name (a local `app.db` from the BFF prototype does).
 
 Steps:
 
@@ -175,3 +181,7 @@ principal login. Run the dry runs first.
   activity added, a link removed and a company refreshed: `sync` reported exactly those
   (2 inserted, 7 updated, 11 deleted, about 50 s); a `Company.logo` set in the target was
   kept; a further `sync` changed nothing.
+- **User tables (2026-10-26):** a `sync` into a target holding a user's favorites, pin,
+  history, metric choice and followed industry, from a file with other rows in its own
+  `User*` tables: the 7 `User*` tables were skipped, the target's user rows were unchanged,
+  the 24 pipeline tables synced as before.

@@ -14,6 +14,11 @@
 # MAGIC    (D-064). Columns the application owns (`keep_columns`, e.g. `Company.logo`) are never
 # MAGIC    overwritten.
 # MAGIC
+# MAGIC Only the pipeline's own tables are touched in any mode: those created by the repo's DDL
+# MAGIC for this database. The application's tables (users, favorites, pins, history, flags,
+# MAGIC metric choices: `User*`) are never copied, synced or cleared, even when the SQLite file
+# MAGIC has tables of that name.
+# MAGIC
 # MAGIC Connects with `azure_sql_connect` (D-057): the service principal from the secret scope,
 # MAGIC server, database, schemas and secret key names from `config/azure.yaml` of the checked-out
 # MAGIC repo (the widgets override them). The cluster needs the ODBC Driver 17 for SQL Server, as
@@ -47,6 +52,7 @@ dbutils.widgets.text("keep_columns", "Company.logo", "12. Sync: columns the targ
 # COMMAND ----------
 
 import os
+import re
 import shutil
 import sqlite3
 import time
@@ -68,6 +74,25 @@ print(f"target {S['server']} / {S['database']} / schema {TARGET} ({W['env']})")
 
 def q(name: str) -> str:
     return "[" + name.replace("]", "]]") + "]"
+
+
+# The pipeline's own tables: those the repo's DDL for this database creates. Every other table
+# (the application's User* tables above all) is left alone in every mode.
+DDL = {"pipeline": "deploy/sql/pipeline_schema_full.sql", "app": "deploy/sql/app_schema_full.sql"}
+_root = repo_root()
+assert _root, "repo not found: the pipeline's table list comes from its DDL"
+PIPELINE_TABLES = set(
+    re.findall(
+        r"(?im)^CREATE TABLE [^.\s]+\.\[?(\w+)\]? \(",
+        (_root / DDL[W["database"]]).read_text(encoding="utf-8"),
+    )
+)
+assert PIPELINE_TABLES, f"no tables found in {DDL[W['database']]}"
+
+
+def app_owned(t: str) -> bool:
+    """Never copied, synced or cleared: not created by the pipeline's DDL, or a User* table."""
+    return t not in PIPELINE_TABLES or t.lower().startswith("user")
 
 
 # COMMAND ----------
@@ -145,6 +170,9 @@ target_rows = row_counts()
 
 plan, problems = [], []
 for t in sorted(src_tables):
+    if app_owned(t):
+        print(f"skip   {t}: not a pipeline table (application-owned tables are never touched)")
+        continue
     if t not in target:
         print(f"skip   {t}: not in the target schema (not part of the DDL)")
         continue
@@ -173,7 +201,8 @@ for t in sorted(src_tables):
     print(f"copy   {t}: {src_rows[t]} rows, {len(shared)} columns{note}")
     plan.append((t, shared))
 for t in sorted(set(target) - set(src_tables)):
-    print(f"empty  {t}: in the target schema, not in the SQLite file")
+    if not app_owned(t):
+        print(f"empty  {t}: in the target schema, not in the SQLite file")
 if W["mode"] == "clear_target":
     # After a failed load: empty the tables of this copy so it can run again. DELETE, not
     # TRUNCATE (refused on tables that others reference); constraints are off meanwhile.
