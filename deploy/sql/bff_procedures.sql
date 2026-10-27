@@ -16,7 +16,10 @@
 --     without an error or a duplicate row.
 --   * Errors the BFF should answer with 404 / 400 are raised with THROW 5xxxx:
 --       50001 company not found, 50002 question not current (replaced or removed: reload the
---       list), 50003 category not found, 50004 metric not in the category.
+--       list), 50003 category not found, 50004 metric not in the category, 50005 not a
+--       notification key.
+--   * The notification procedures write UserNotificationRead (UserId, NotificationKey, ReadAt),
+--     created by bff_notifications.sql.
 --
 -- Tested 2026-10-23 on SQL Server 2022 together with bff_functions.sql.
 
@@ -180,5 +183,43 @@ BEGIN
     INSERT INTO dbo_professional360.UserMetricsSelection (UserId, SIC_Id, metric_id)
     SELECT @UserId, @SicId, metric_id FROM @New;
     COMMIT TRANSACTION;
+END;
+GO
+
+-- PUT api/notifications/{key}/read : one notification read (clicked). Safe to repeat.
+CREATE OR ALTER PROCEDURE dbo_professional360.sp_MarkNotificationRead
+    @UserId INT,
+    @NotificationKey NVARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF @NotificationKey NOT LIKE N'NEWS:%' AND @NotificationKey NOT LIKE N'INSIGHT:%'
+       AND @NotificationKey NOT LIKE N'SIGNAL:%' AND @NotificationKey NOT LIKE N'FILING:%'
+        THROW 50005, N'not a notification key', 1;
+    INSERT INTO dbo_professional360.UserNotificationRead (UserId, NotificationKey, ReadAt)
+    SELECT @UserId, @NotificationKey, GETUTCDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM dbo_professional360.UserNotificationRead WITH (UPDLOCK, HOLDLOCK)
+                      WHERE UserId = @UserId AND NotificationKey = @NotificationKey);
+END;
+GO
+
+-- PUT api/notifications/read : "mark all as read". Same arguments as udf_GetUserNotifications:
+-- every notification of that list becomes read. Read rows over a year old are removed (their
+-- events are long out of any window).
+CREATE OR ALTER PROCEDURE dbo_professional360.sp_MarkAllNotificationsRead
+    @UserId INT,
+    @Days INT,
+    @MinNewsRisk FLOAT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO dbo_professional360.UserNotificationRead (UserId, NotificationKey, ReadAt)
+    SELECT @UserId, n.notificationKey, GETUTCDATE()
+    FROM dbo_professional360.udf_GetUserNotifications(@UserId, @Days, @MinNewsRisk) n
+    WHERE n.isRead = 0
+      AND NOT EXISTS (SELECT 1 FROM dbo_professional360.UserNotificationRead R WITH (UPDLOCK, HOLDLOCK)
+                      WHERE R.UserId = @UserId AND R.NotificationKey = n.notificationKey);
+    DELETE FROM dbo_professional360.UserNotificationRead
+    WHERE UserId = @UserId AND ReadAt < DATEADD(DAY, -365, GETUTCDATE());
 END;
 GO
