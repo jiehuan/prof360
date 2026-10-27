@@ -257,7 +257,7 @@ CompanyMetricDetail = Table(
     Column("metric_id", Integer, ForeignKey("metrics.metric_id"), nullable=False),
     Column("Methodology", UnicodeText),
     Column("DataSources", UnicodeText),  # JSON [{title, url, date}]
-    Column("DataPoints", UnicodeText),  # JSON [{label, text}]
+    Column("DataPoints", UnicodeText),  # JSON [{label, text, value, unit, ...}] (run_publish)
     Column("UnderwritingRelevance", UnicodeText),
     Column("UpdatedAt", DateTime),
 )  # fmt: skip
