@@ -1,15 +1,5 @@
 # Where each logo in this folder came from (scripts/fetch_logos.py, D-067).
 # Add an entry when adding a logo by hand: source: manual, url: where from.
-AA:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Alcoa_logo_(2016).svg
-  wikidata: Q135325
-  fetched: '2026-10-26'
-AAL:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:American_Airlines_Group_logo.svg
-  wikidata: Q4742937
-  fetched: '2026-10-26'
 AAPL:
   source: wikidata
   url: https://commons.wikimedia.org/wiki/File:Apple_logo_black.svg
@@ -35,26 +25,6 @@ ADBE:
   url: https://commons.wikimedia.org/wiki/File:Adobe_Corporate_wordmark.svg
   wikidata: Q11463
   fetched: '2026-10-26'
-ADM:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Archer_Daniels_Midland_logo.svg
-  wikidata: Q632694
-  fetched: '2026-10-26'
-AFRM:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Affirm_Logo.svg
-  wikidata: Q65085822
-  fetched: '2026-10-26'
-ALK:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Alaska_Air_Group_logo.svg
-  wikidata: Q4033665
-  fetched: '2026-10-26'
-ALL:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Allstate_logo.svg
-  wikidata: Q2645636
-  fetched: '2026-10-26'
 AMAT:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Applied_Materials_Inc._Logo.svg
@@ -64,11 +34,6 @@ AMD:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:AMD_Logo.svg
   wikidata: Q128896
-  fetched: '2026-10-26'
-AME:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Ametek_Logo.svg
-  wikidata: Q470317
   fetched: '2026-10-26'
 AMGN:
   source: wikipedia
@@ -90,30 +55,10 @@ ANET:
   url: https://commons.wikimedia.org/wiki/File:Arista-networks-logo.svg
   wikidata: Q2861324
   fetched: '2026-10-26'
-APO:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Apollo_Global_Management_logo.svg
-  wikidata: Q619121
-  fetched: '2026-10-26'
-ARCC:
-  source: favicon
-  url: https://www.arescapitalcorp.com
-  wikidata: null
-  fetched: '2026-10-26'
-ARMK:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Aramark_logo.svg
-  wikidata: Q625708
-  fetched: '2026-10-26'
 AVGO:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Broadcom_logo_(2016-present).svg
   wikidata: Q790060
-  fetched: '2026-10-26'
-AVO:
-  source: favicon
-  url: https://missionproduce.com
-  wikidata: null
   fetched: '2026-10-26'
 AXP:
   source: wikipedia
@@ -130,30 +75,10 @@ BAC:
   url: https://commons.wikimedia.org/wiki/File:Bank_of_America_logo.svg
   wikidata: Q487907
   fetched: '2026-10-26'
-BFH:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Bread_Financial.jpg
-  wikidata: Q2837996
-  fetched: '2026-10-26'
-BG:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Bunge_Limited_Logo.svg
-  wikidata: null
-  fetched: '2026-10-26'
-BHVN:
-  source: favicon
-  url: https://www.biohavenpharma.com/
-  wikidata: Q92546757
-  fetched: '2026-10-26'
 BKNG:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Booking_Holdings_Inc._Logo.svg
   wikidata: Q18674747
-  fetched: '2026-10-26'
-BKR:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Baker_Hughes_logo.svg
-  wikidata: Q804353
   fetched: '2026-10-26'
 BLK:
   source: wikipedia
@@ -180,160 +105,40 @@ C:
   url: https://commons.wikimedia.org/wiki/File:Citi_logo_March_2023.svg
   wikidata: Q219508
   fetched: '2026-10-26'
-CAH:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Cardinal_Health_Logo.svg
-  wikidata: Q902397
-  fetched: '2026-10-26'
-CALM:
-  source: wikidata
-  url: https://commons.wikimedia.org/wiki/File:Cal-Maine_logo.svg
-  wikidata: Q5018092
-  fetched: '2026-10-26'
 CAT:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Caterpillar_logo.svg
   wikidata: Q459965
-  fetched: '2026-10-26'
-CBRE:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:CBRE_Group.svg
-  wikidata: Q1023013
-  fetched: '2026-10-26'
-CCL:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Carnival_Corporation_logo_2026.png
-  wikidata: Q1044059
-  fetched: '2026-10-26'
-CEG:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Constellation_Energy.png
-  wikidata: Q259195
-  fetched: '2026-10-26'
-CGEM:
-  source: favicon
-  url: https://cullinantherapeutics.com
-  wikidata: null
-  fetched: '2026-10-26'
-CHH:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Choice_Hotels_logo.svg
-  wikidata: Q1075788
-  fetched: '2026-10-26'
-CHRW:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:C._H._Robinson_logo.svg
-  wikidata: Q931200
-  fetched: '2026-10-26'
-CHTR:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Charter_Communications_Logo.svg
-  wikidata: Q2961234
-  fetched: '2026-10-26'
-CI:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Cigna_logo.svg
-  wikidata: Q642271
-  fetched: '2026-10-26'
-CLDX:
-  source: favicon
-  url: http://www.celldex.com/
-  wikidata: Q30281437
-  fetched: '2026-10-26'
-CLF:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Cliffs_Natural_Resources_logo.svg
-  wikidata: Q5133094
   fetched: '2026-10-26'
 CMCSA:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Comcast.svg
   wikidata: Q1113804
   fetched: '2026-10-26'
-CMG:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Chipotle_Mexican_Grill_logo.svg
-  wikidata: Q465751
-  fetched: '2026-10-26'
-CMI:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Cummins_logo.svg
-  wikidata: Q173476
-  fetched: '2026-10-26'
-CNC:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Centene_Corporation_Logo.svg
-  wikidata: Q5059102
-  fetched: '2026-10-26'
 COF:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Capital_One_logo.svg
   wikidata: Q1034654
-  fetched: '2026-10-26'
-COGT:
-  source: favicon
-  url: https://www.cogentbio.com
-  wikidata: Q119857276
-  fetched: '2026-10-26'
-COHR:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Coherent_logo.svg
-  wikidata: Q15109887
-  fetched: '2026-10-26'
-COMP:
-  source: favicon
-  url: https://www.compass.com
-  wikidata: null
   fetched: '2026-10-26'
 COP:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:ConocoPhillips_Company_logo.svg
   wikidata: Q214763
   fetched: '2026-10-26'
-COR:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Cencora_logo.png
-  wikidata: Q470156
-  fetched: '2026-10-26'
 COST:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Costco_Wholesale_logo_2010-10-26.svg
   wikidata: Q715583
-  fetched: '2026-10-26'
-CRH:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:CRH_logo.svg
-  wikidata: Q1053299
   fetched: '2026-10-26'
 CRM:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Salesforce.com_logo.svg
   wikidata: Q941127
   fetched: '2026-10-26'
-CRSP:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:CRISPR_Therapeutics_logo.svg
-  wikidata: Q104480207
-  fetched: '2026-10-26'
 CSCO:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Cisco_logo_blue_2016.svg
   wikidata: Q173395
-  fetched: '2026-10-26'
-CSTM:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Constellium_logo.png
-  wikidata: Q2995071
-  fetched: '2026-10-26'
-CSX:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:CSX_transp_logo.svg
-  wikidata: Q1024454
-  fetched: '2026-10-26'
-CTVA:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Corteva_logo.svg
-  wikidata: Q63197674
   fetched: '2026-10-26'
 CVS:
   source: wikipedia
@@ -345,21 +150,6 @@ CVX:
   url: https://commons.wikimedia.org/wiki/File:Chevron_Logo.svg
   wikidata: Q319642
   fetched: '2026-10-26'
-CWK:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Cushman_%26_Wakefield_logo.svg
-  wikidata: Q1146061
-  fetched: '2026-10-26'
-CZR:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Caesars_Entertainment_logo_2020.svg
-  wikidata: Q18636524
-  fetched: '2026-10-26'
-DAL:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Delta_logo.svg
-  wikidata: Q188920
-  fetched: '2026-10-26'
 DE:
   source: wikipedia
   url: https://en.wikipedia.org/wiki/File:John_Deere_Logo_%E2%80%93_Flat_2_Color.svg
@@ -369,11 +159,6 @@ DELL:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Dell_logo_2016.svg
   wikidata: Q30873
-  fetched: '2026-10-26'
-DHI:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:D._R._Horton_logo.svg
-  wikidata: Q5203782
   fetched: '2026-10-26'
 DHR:
   source: wikipedia
@@ -385,65 +170,10 @@ DIS:
   url: https://commons.wikimedia.org/wiki/File:The_Walt_Disney_company_logo.svg
   wikidata: Q7414
   fetched: '2026-10-26'
-DLB:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Dolby_logo_2019.svg
-  wikidata: Q261288
-  fetched: '2026-10-26'
-DMC:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Fresh_Del_Monte_logo.svg
-  wikidata: Q3211367
-  fetched: '2026-10-26'
-DOLE:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Dole_Foods_Logo_Green_Leaf.svg
-  wikidata: Q492747
-  fetched: '2026-10-26'
-DOW:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Dow_Chemical_Company_logo.svg
-  wikidata: Q62739842
-  fetched: '2026-10-26'
-DRI:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Darden_logo.svg
-  wikidata: Q742196
-  fetched: '2026-10-26'
-DRVN:
-  source: favicon
-  url: http://www.drivenbrands.com/
-  wikidata: Q64187080
-  fetched: '2026-10-26'
 DUK:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Duke_Energy_logo.svg
   wikidata: Q1264404
-  fetched: '2026-10-26'
-DVA:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:DaVita_Inc_logo.png
-  wikidata: Q5207184
-  fetched: '2026-10-26'
-DYN:
-  source: favicon
-  url: https://www.dyne-tx.com
-  wikidata: null
-  fetched: '2026-10-26'
-ECHO:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:EchoStar_logo.svg
-  wikidata: Q1280748
-  fetched: '2026-10-26'
-ELV:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Elevance_Health_logo.svg
-  wikidata: Q677488
-  fetched: '2026-10-26'
-EME:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Emcor_logo.svg
-  wikidata: Q5370289
   fetched: '2026-10-26'
 EMR:
   source: wikipedia
@@ -455,45 +185,15 @@ ENPH:
   url: https://commons.wikimedia.org/wiki/File:Enphase_logo.svg
   wikidata: Q17012234
   fetched: '2026-10-26'
-ENVA:
-  source: favicon
-  url: https://www.enova.com/
-  wikidata: Q51137086
-  fetched: '2026-10-26'
-EQIX:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Equinix_logo.svg
-  wikidata: Q851641
-  fetched: '2026-10-26'
 F:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Ford_logo_flat.svg
   wikidata: Q44294
   fetched: '2026-10-26'
-FCX:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Freeport_McMoRan.svg
-  wikidata: Q1453620
-  fetched: '2026-10-26'
 FDX:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:FedEx_Corporation_-_2016_Logo.svg
   wikidata: Q459477
-  fetched: '2026-10-26'
-FIS:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:FIS_logo.svg
-  wikidata: Q1411295
-  fetched: '2026-10-26'
-FISV:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Fiserv_logo.svg
-  wikidata: Q1420513
-  fetched: '2026-10-26'
-FLR:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Logo_FLUOR.svg
-  wikidata: Q653581
   fetched: '2026-10-26'
 GD:
   source: wikipedia
@@ -510,11 +210,6 @@ GEV:
   url: https://commons.wikimedia.org/wiki/File:GE_Vernova_logo.svg
   wikidata: Q118957699
   fetched: '2026-10-26'
-GHC:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Graham_Holdings_logo.svg
-  wikidata: Q3121014
-  fetched: '2026-10-26'
 GILD:
   source: wikipedia
   url: https://en.wikipedia.org/wiki/File:Gilead_Sciences_Logo.svg
@@ -530,65 +225,20 @@ GOOGL:
   url: https://commons.wikimedia.org/wiki/File:Alphabet_Inc_Logo_2015.svg
   wikidata: Q20800404
   fetched: '2026-10-26'
-GPCR:
-  source: favicon
-  url: https://structuretx.com
-  wikidata: null
-  fetched: '2026-10-26'
 GS:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Goldman_Sachs_logo.svg
   wikidata: Q193326
-  fetched: '2026-10-26'
-H:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Hyatt_Logo.svg
-  wikidata: Q1425063
-  fetched: '2026-10-26'
-HCA:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:2019_HCA_logo.svg
-  wikidata: Q1630431
   fetched: '2026-10-26'
 HD:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:The_Home_Depot_logo.svg
   wikidata: Q864407
   fetched: '2026-10-26'
-HGV:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Hilton_Grand_Vacations_logo.png
-  wikidata: Q13636126
-  fetched: '2026-10-26'
-HLT:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Hilton_Worldwide_logo.svg
-  wikidata: Q1057464
-  fetched: '2026-10-26'
-HPE:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Hewlett_Packard_Enterprise_logo_2025.svg
-  wikidata: Q19923099
-  fetched: '2026-10-26'
-HPQ:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:HP_logo_2025.svg
-  wikidata: Q80978
-  fetched: '2026-10-26'
-HRB:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Hrb_horizontal_green_gray_rgb_150ppi.png
-  wikidata: Q5627799
-  fetched: '2026-10-26'
 IBM:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:IBM_logo.svg
   wikidata: Q37156
-  fetched: '2026-10-26'
-INGM:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Ingram_Micro_logo_new.svg
-  wikidata: Q324616
   fetched: '2026-10-26'
 INTC:
   source: wikipedia
@@ -605,16 +255,6 @@ ISRG:
   url: https://commons.wikimedia.org/wiki/File:Intuitive_Surgical_logo.svg
   wikidata: Q2743863
   fetched: '2026-10-26'
-J:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Jacobs_Engineering_Group_2019_logo.svg
-  wikidata: Q3157622
-  fetched: '2026-10-26'
-JLL:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:JLL_logo.svg
-  wikidata: Q1703389
-  fetched: '2026-10-26'
 JNJ:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:JNJ_Logo_New.svg
@@ -625,35 +265,10 @@ JPM:
   url: https://commons.wikimedia.org/wiki/File:Logo_of_JPMorganChase_2024.svg
   wikidata: Q192314
   fetched: '2026-10-26'
-KEX:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Kirby_Corporation_logo.svg
-  wikidata: Q18151094
-  fetched: '2026-10-26'
 KO:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:The_Coca-Cola_Company_(2020).svg
   wikidata: Q3295867
-  fetched: '2026-10-26'
-KR:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Kroger_(2021)_logo.svg
-  wikidata: Q153417
-  fetched: '2026-10-26'
-LEA:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Lear_Corporation_logo.svg
-  wikidata: Q502344
-  fetched: '2026-10-26'
-LEN:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Lennar_Logo.svg
-  wikidata: Q16981175
-  fetched: '2026-10-26'
-LH:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Labcorp_Logo_updated_12-2020.svg
-  wikidata: Q6466630
   fetched: '2026-10-26'
 LIN:
   source: wikipedia
@@ -680,11 +295,6 @@ LRCX:
   url: https://commons.wikimedia.org/wiki/File:Lam_Research_logo.svg
   wikidata: Q1342041
   fetched: '2026-10-26'
-LULU:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Lululemon_Athletica_logo.svg
-  wikidata: Q6702957
-  fetched: '2026-10-26'
 LUMN:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Lumen_Technologies_logo.svg
@@ -694,21 +304,6 @@ LUV:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Southwest_Airlines_logo_2014.svg
   wikidata: Q503308
-  fetched: '2026-10-26'
-LVS:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Las_Vegas_Sands_logo.png
-  wikidata: Q1506045
-  fetched: '2026-10-26'
-LYB:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Logo_of_LyondellBasell_(2023).svg
-  wikidata: Q899255
-  fetched: '2026-10-26'
-LYV:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Live_Nation_Entertainment_logo.svg
-  wikidata: Q1061903
   fetched: '2026-10-26'
 M:
   source: wikipedia
@@ -720,11 +315,6 @@ MA:
   url: https://commons.wikimedia.org/wiki/File:Mastercard_2019_logo.svg
   wikidata: Q489921
   fetched: '2026-10-26'
-MAN:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:ManpowerGroup_logo.svg
-  wikidata: Q1472539
-  fetched: '2026-10-26'
 MAR:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Marriott_International.svg
@@ -734,16 +324,6 @@ MCD:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:McDonald%27s_Golden_Arches.svg
   wikidata: Q38076
-  fetched: '2026-10-26'
-MCK:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:McKesson_logo.svg
-  wikidata: Q570473
-  fetched: '2026-10-26'
-MDLN:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Medline-logo.svg
-  wikidata: Q6807236
   fetched: '2026-10-26'
 MDLZ:
   source: wikipedia
@@ -755,35 +335,10 @@ MDT:
   url: https://commons.wikimedia.org/wiki/File:Medtronic_logo.svg
   wikidata: Q642189
   fetched: '2026-10-26'
-MET:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:MetLife_logo.svg
-  wikidata: Q607131
-  fetched: '2026-10-26'
 META:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Meta_Platforms_Inc._logo.svg
   wikidata: Q380
-  fetched: '2026-10-26'
-MGM:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:MGM_Resorts_International_logo.svg
-  wikidata: Q568532
-  fetched: '2026-10-26'
-MHK:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Mohawk_Industries_logo.svg
-  wikidata: Q6893780
-  fetched: '2026-10-26'
-MLM:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Martin_Marietta_logo.svg
-  wikidata: Q6776123
-  fetched: '2026-10-26'
-MLTX:
-  source: favicon
-  url: https://moonlaketx.com
-  wikidata: null
   fetched: '2026-10-26'
 MMM:
   source: wikipedia
@@ -794,11 +349,6 @@ MO:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Altria_logo.svg
   wikidata: Q445007
-  fetched: '2026-10-26'
-MPC:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Marathon_Petroleum_logo_2022.svg
-  wikidata: Q458363
   fetched: '2026-10-26'
 MRK:
   source: wikipedia
@@ -815,11 +365,6 @@ MSFT:
   url: https://commons.wikimedia.org/wiki/File:Microsoft_logo_(2012).svg
   wikidata: Q2283
   fetched: '2026-10-26'
-MTZ:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:MasTec_logo.svg
-  wikidata: Q6782217
-  fetched: '2026-10-26'
 MU:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Micron_Technology_logo_2024.svg
@@ -830,55 +375,20 @@ NEE:
   url: https://commons.wikimedia.org/wiki/File:NextEra_Energy_logo_(1).svg
   wikidata: Q967868
   fetched: '2026-10-26'
-NEM:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Newmont_Corporation_-_Logo.svg
-  wikidata: Q1785405
-  fetched: '2026-10-26'
 NFLX:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Netflix_2015_logo.svg
   wikidata: Q116452644
-  fetched: '2026-10-26'
-NKE:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Logo_NIKE.svg
-  wikidata: Q483915
   fetched: '2026-10-26'
 NOW:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:ServiceNow_logo.svg
   wikidata: Q7455653
   fetched: '2026-10-26'
-NRG:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:NRG_Energy_logo.svg
-  wikidata: Q6955139
-  fetched: '2026-10-26'
-NUE:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Nucor_logo.svg
-  wikidata: Q1645081
-  fetched: '2026-10-26'
 NVDA:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:NVIDIA_logo.svg
   wikidata: Q182477
-  fetched: '2026-10-26'
-NVR:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:NVR_Logo_2018.png
-  wikidata: Q6955706
-  fetched: '2026-10-26'
-OMC:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Omnicom_Group_logo.svg
-  wikidata: Q1519267
-  fetched: '2026-10-26'
-OMF:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:OneMain_logo.png
-  wikidata: Q28444592
   fetched: '2026-10-26'
 ORCL:
   source: wikipedia
@@ -889,16 +399,6 @@ PANW:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:PaloAltoNetworks_2020_Logo.svg
   wikidata: Q7128508
-  fetched: '2026-10-26'
-PCAR:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Paccar_Inc_logo.svg
-  wikidata: Q1477661
-  fetched: '2026-10-26'
-PCVX:
-  source: favicon
-  url: https://vaxcyte.com
-  wikidata: null
   fetched: '2026-10-26'
 PEP:
   source: wikipedia
@@ -915,26 +415,6 @@ PG:
   url: https://commons.wikimedia.org/wiki/File:Procter_%26_Gamble_logo.svg
   wikidata: Q212405
   fetched: '2026-10-26'
-PGR:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Logo_of_the_Progressive_Corporation.svg
-  wikidata: Q7248721
-  fetched: '2026-10-26'
-PHM:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Pulte_Group_updated_logo.png
-  wikidata: Q7259716
-  fetched: '2026-10-26'
-PK:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Park_Hotels_%26_Resorts_logo.svg
-  wikidata: Q55075186
-  fetched: '2026-10-26'
-PLD:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Prologis_Logo_Current.svg
-  wikidata: Q16983765
-  fetched: '2026-10-26'
 PLTR:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Palantir_Technologies_logo.svg
@@ -945,85 +425,25 @@ PM:
   url: https://en.wikipedia.org/wiki/File:Philip_Morris_International.svg
   wikidata: Q1852556
   fetched: '2026-10-26'
-PRAX:
-  source: favicon
-  url: https://praxismedicines.com
-  wikidata: Q140045988
-  fetched: '2026-10-26'
-PRU:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Prudential_Financial.svg
-  wikidata: Q2114414
-  fetched: '2026-10-26'
-PSX:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Phillips_66_logo.svg
-  wikidata: Q1656230
-  fetched: '2026-10-26'
-PWR:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Quanta_Services_inc_logo.png
-  wikidata: Q7268886
-  fetched: '2026-10-26'
-PYPL:
-  source: favicon
-  url: https://www.paypal.com
-  wikidata: Q135683211
-  fetched: '2026-10-26'
 QCOM:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Qualcomm-Logo.svg
   wikidata: Q544847
-  fetched: '2026-10-26'
-REPL:
-  source: favicon
-  url: https://www.replimune.com
-  wikidata: Q140046459
-  fetched: '2026-10-26'
-ROIV:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Roivant.jpg
-  wikidata: Q53308720
-  fetched: '2026-10-26'
-ROK:
-  source: wikidata
-  url: https://commons.wikimedia.org/wiki/File:Rockwell_Automation_logo_(2019).svg
-  wikidata: Q1529234
-  fetched: '2026-10-26'
-ROP:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Roper_Technologies_logo.svg
-  wikidata: Q16932392
   fetched: '2026-10-26'
 RTX:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:RTX_Raytheon_Technologies_logo.svg
   wikidata: Q89368734
   fetched: '2026-10-26'
-RVMD:
-  source: favicon
-  url: https://www.revmed.com/
-  wikidata: Q107518109
-  fetched: '2026-10-26'
 SBUX:
   source: wikipedia
   url: https://en.wikipedia.org/wiki/File:Starbucks_Corporation_Logo_2011.svg
   wikidata: Q37158
   fetched: '2026-10-26'
-SCCO:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Southern_Copper_Corporation_logo.svg
-  wikidata: Q7569806
-  fetched: '2026-10-26'
 SCHW:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Charles_Schwab_Corporation_logo.svg
   wikidata: Q1066028
-  fetched: '2026-10-26'
-SCI:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Service_Corporation_International_logo.svg
-  wikidata: Q11306218
   fetched: '2026-10-26'
 SKYD:
   source: wikipedia
@@ -1035,66 +455,15 @@ SNDK:
   url: https://commons.wikimedia.org/wiki/File:SanDisk_2024_logo.svg
   wikidata: Q260833
   fetched: '2026-10-26'
-SNX:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Logo_TD_SYNNEX.svg
-  wikidata: Q7662493
-  fetched: '2026-10-26'
 SO:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Southern_Company_logo_new.svg
   wikidata: Q2304693
   fetched: '2026-10-26'
-SPGI:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:S%26P_Global_logo.svg
-  wikidata: Q868587
-  fetched: '2026-10-26'
-SRRK:
-  source: favicon
-  url: https://scholarrock.com/
-  wikidata: Q107518672
-  fetched: '2026-10-26'
-SSRM:
-  source: manual
-  url: https://www.ssrmining.com
-  wikidata: null
-  fetched: '2026-10-26'
-  note: the Wikipedia infobox still has the Silver Standard logo (renamed 2017)
-STLD:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Steel_Dynamics.svg
-  wikidata: Q7605667
-  fetched: '2026-10-26'
-SW:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Smurfit_WestRock_logo.png
-  wikidata: null
-  fetched: '2026-10-26'
-SYK:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Stryker_logo.svg
-  wikidata: Q2357515
-  fetched: '2026-10-26'
-SYY:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Sysco-Logo.svg
-  wikidata: Q2376711
-  fetched: '2026-10-26'
 T:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:AT%26T_logo_2016.svg
   wikidata: Q35476
-  fetched: '2026-10-26'
-TGT:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Target_Corporation_logo_(vector).svg
-  wikidata: Q1046951
-  fetched: '2026-10-26'
-THC:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Tenet_Health_logo.png
-  wikidata: Q3518066
   fetched: '2026-10-26'
 TMO:
   source: wikipedia
@@ -1106,16 +475,6 @@ TMUS:
   url: https://commons.wikimedia.org/wiki/File:T-Mobile_US_Logo_2022_RGB_Magenta_on_Transparent.svg
   wikidata: Q3511885
   fetched: '2026-10-26'
-TOL:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Toll_Brothers.svg
-  wikidata: Q7814310
-  fetched: '2026-10-26'
-TPL:
-  source: favicon
-  url: https://www.texaspacific.com/
-  wikidata: Q7707900
-  fetched: '2026-10-26'
 TSLA:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Tesla_Motors.svg
@@ -1126,20 +485,10 @@ TXN:
   url: https://commons.wikimedia.org/wiki/File:Texas_Instruments_logo_2024.svg
   wikidata: Q193412
   fetched: '2026-10-26'
-UAL:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:United_Airlines_Logo.svg
-  wikidata: Q871700
-  fetched: '2026-10-26'
 UBER:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Uber_logo_2018.svg
   wikidata: Q780442
-  fetched: '2026-10-26'
-UHS:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:UHS_logo.svg
-  wikidata: Q7893967
   fetched: '2026-10-26'
 UNH:
   source: wikipedia
@@ -1156,11 +505,6 @@ UPS:
   url: https://commons.wikimedia.org/wiki/File:United_Parcel_Service_logo_2014.svg
   wikidata: Q155026
   fetched: '2026-10-26'
-URI:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:United_Rentals_Logo.svg
-  wikidata: Q7889101
-  fetched: '2026-10-26'
 USB:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:US_Bancorp_logo_2023_color.svg
@@ -1171,93 +515,23 @@ V:
   url: https://commons.wikimedia.org/wiki/File:Visa_Inc._logo_(2021%E2%80%93present).svg
   wikidata: Q328840
   fetched: '2026-10-26'
-VERA:
-  source: favicon
-  url: https://www.veratx.com
-  wikidata: null
-  fetched: '2026-10-26'
-VFC:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:VF_Corporation_logo.svg
-  wikidata: Q457960
-  fetched: '2026-10-26'
-VKTX:
-  source: favicon
-  url: http://www.vikingtherapeutics.com/
-  wikidata: Q30269384
-  fetched: '2026-10-26'
-VLO:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Valero_Energy_logo.svg
-  wikidata: Q1283291
-  fetched: '2026-10-26'
-VLTO:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Veralto_logo.svg
-  wikidata: Q124721239
-  fetched: '2026-10-26'
-VMC:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Vulcan_Materials_logo.png
-  wikidata: Q1685287
-  fetched: '2026-10-26'
-VOR:
-  source: favicon
-  url: https://www.vorbio.com
-  wikidata: null
-  fetched: '2026-10-26'
 VZ:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Verizon_2024.svg
   wikidata: Q467752
-  fetched: '2026-10-26'
-WBD:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Warner_Bros._Discovery.svg
-  wikidata: Q621592
-  fetched: '2026-10-26'
-WELL:
-  source: wikidata
-  url: https://commons.wikimedia.org/wiki/File:Welltower_Logo_2025.svg
-  wikidata: Q20486917
   fetched: '2026-10-26'
 WFC:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Wells_Fargo_Logo_(2020).svg
   wikidata: Q744149
   fetched: '2026-10-26'
-WHR:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Whirlpool_Corporation_Logo_(as_of_2017).svg
-  wikidata: Q1471346
-  fetched: '2026-10-26'
 WMT:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Walmart_spark_(2025).svg
   wikidata: Q483551
   fetched: '2026-10-26'
-WY:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Weyerhaeuser.svg
-  wikidata: Q1780382
-  fetched: '2026-10-26'
-WYNN:
-  source: wikipedia
-  url: https://commons.wikimedia.org/wiki/File:Wynn_Resorts_logo_2025.png
-  wikidata: Q2274089
-  fetched: '2026-10-26'
-XENE:
-  source: favicon
-  url: http://www.xenon-pharma.com/
-  wikidata: Q30253570
-  fetched: '2026-10-26'
 XOM:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Exxon_Mobil_Logo.svg
   wikidata: Q156238
-  fetched: '2026-10-26'
-YUMC:
-  source: wikipedia
-  url: https://en.wikipedia.org/wiki/File:Yum_China.png
-  wikidata: Q30645592
   fetched: '2026-10-26'

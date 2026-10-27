@@ -1494,3 +1494,5 @@ LLM runs until the end, then one comparison.
   UWMC, DNLI, ANNX (to add by hand). 2.1 MB of files; the data URIs add about 2.8 MB to the
   app database. Logos were reviewed on the sheet, not one by one: corrections go into
   `config/logos.yaml` or a replaced file.
+- This release (Phase 16 code, 107 companies): only those companies' logo files and corrections
+  are kept; every one of the 107 has a logo.
