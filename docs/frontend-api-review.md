@@ -36,6 +36,16 @@
 
 路径里的 `categories/{categories_id}` 可以去掉：一个指标只属于一个类别。
 
+`dataPoints`（`CompanyMetricDetail.DataPoints`、`Trend.DataPoints`）从 2026-10-27 起除了显示用的
+`label`、`text`，还带数值，前端不用再解析文字。数值和单位与 `MatrixData` 完全一致（USD 是美元原值，
+fraction 是 0.049 这样的比例）：
+
+- 指标弹窗、Trend：`{label, text, fiscalYear, fiscalPeriod ("Q2" / "FY"), periodEnd, value, unit,
+  status ("OK" / "NM"), source}`；`status = "NM"` 时 `value` 为 null。
+- Loan Portfolio 弹窗：每个类别 `{label, text, evidence, segment, parentSegment, value, pctOfBook,
+  nonaccrual, nonaccrualRatio, priorValue, change, unit, periodEnd, priorPeriodEnd}`；第一行
+  `label = "Total"` 是整个贷款组合（`segment` 为 null，`nonaccrualRatio` 只算披露了不良的类别）。
+
 `subtitle` 是标题下的灰色解释文字（例如 Cash & Equivalents："Cash and highly liquid short-term
 investments"），在 `config/metrics.yaml` 里人工维护（2026-10-27 起；之前误存了单位）。单位用 `unit`
 （`USD` / `fraction` / `ratio` / `count` …，格式见 C3）。

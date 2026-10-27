@@ -106,6 +106,12 @@ def test_publish_maps_objects_and_links() -> None:
         1.0,
     )
     assert detail["UnderwritingRelevance"] and "Reported in XBRL" in detail["Methodology"]
+    # Data points carry the numbers as well as the text (2026-10-27): no parsing on the front end.
+    pts = json.loads(detail["DataPoints"])
+    q2 = next(p for p in pts if p["label"] == "FY2026 Q2")
+    assert q2["value"] == md["value"] and q2["unit"] == "USD" and q2["status"] == "OK"
+    assert (q2["fiscalYear"], q2["fiscalPeriod"], q2["source"]) == (2026, "Q2", "Reported in XBRL")
+    assert q2["text"].startswith("$") and q2["periodEnd"] == str(md["period_end"])
     # Key takeaways: bullets in order, no links, nothing leaked into StrategicRisk.
     with app.connect() as c:
         tk = c.execute(select(KeyTakeaways).order_by(KeyTakeaways.c.Ordinal)).mappings().all()
