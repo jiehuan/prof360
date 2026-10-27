@@ -112,3 +112,14 @@ def test_instance_concepts_only_for_companies_whose_metrics_use_them() -> None:
     assert instance_concepts("MCD", "RESTAURANTS") == {"franchise_revenue"}  # its own tag
     # Concepts read from companyfacts stay for every company (other stages read their facts).
     assert "labor_expense" in reg.for_company("MSFT", ind.groups["SOFTWARE_INTERNET"]).concepts
+
+
+def test_every_displayed_metric_has_a_subtitle(reg) -> None:
+    # The grey line under the metric's title (metrics.subtitle): an explanation, not the unit.
+    tickers = ["", *reg.overrides]
+    shown = [m for t in tickers for m in (reg.metrics if not t else reg.overrides[t].metrics)
+             if m.display]  # fmt: skip
+    missing = sorted(m.code for m in shown if not m.subtitle)
+    assert not missing, f"displayed metrics without a subtitle: {missing}"
+    units = {"USD", "%", "x", "ratio", "fraction", "days", "count"}
+    assert not [m.code for m in shown if m.subtitle in units]

@@ -73,6 +73,8 @@ def test_publish_maps_objects_and_links() -> None:
         links = {(r.FromType, r.FromId, r.ToType, r.ToId) for r in c.execute(select(ItemLink))}
         debt_id = c.execute(select(metrics.c.metric_id)
                             .where(metrics.c.metric_name == "Total Debt")).scalar_one()  # fmt: skip
+        debt_sub = c.execute(select(metrics.c.subtitle)
+                             .where(metrics.c.metric_id == debt_id)).scalar_one()  # fmt: skip
         types = dict(c.execute(select(RiskTypes.c.RiskType_Id, RiskTypes.c.RiskTypeName)).all())
         md = c.execute(select(MatrixData).where(MatrixData.c.metric_id == debt_id)).mappings().one()
         cmd = CompanyMetricDetail.c
@@ -81,6 +83,7 @@ def test_publish_maps_objects_and_links() -> None:
         )
     assert (comp["CIK"], comp["NameAbbreviation"]) == ("0001048286", "MAR")
     assert comp["logo"] == PCFG.logos["MAR"] and comp["logo"].startswith("data:image/")  # D-067
+    assert debt_sub == "Borrowings due now and in later years"  # an explanation, not the unit
     assert key["isActive"] and key["iconType"] == "warning"
     sources = json.loads(key["source"])
     assert sources[0]["title"] and key["link"] == next(s["url"] for s in sources if s["url"])
