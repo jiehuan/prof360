@@ -118,6 +118,9 @@
 | Data Sources | `loan_portfolio_detail.data_sources_json` | `[{title, url, date}]` |
 | Raw Data Points | `loan_portfolio_detail.raw_data_points_json` | `[{label, text, evidence}]`；第一条是合计 |
 
+应用库里这三项在 `CompanyMetricDetail`（指标 "Loan Portfolio Composition"），BFF 用
+`udf_GetCompanyLoanPortfolioDetail(@CompanyId)` 一次取出（`deploy/sql/bff_loan_quality.sql`）。
+
 ### Strategic & Risk / Behavioral / Key Insight 弹窗
 
 | 位置 | 表 / 条件 | 字段 |

@@ -67,6 +67,13 @@ investments"），在 `config/metrics.yaml` 里人工维护（2026-10-27 起；�
 `bookReportedShare`（同一期末各行相同），这些都在 `udf_GetCompanyLoanPortfolios` 里算好，不需要另外的
 函数或接口（`udf_GetCompanyLoanQualitySummary` 每期一行，可选）。分档是提议，需要承保团队确认。
 
+弹窗（灯泡按钮）的 Methodology、Data Sources、Raw Data Points 由
+`udf_GetCompanyLoanPortfolioDetail(@CompanyId)` 返回（2026-10-27 补上，之前前端显示的是 mock 的
+RetailCo 内容）：一行，`methodology`（文本，`\n` 分行）、`dataSources`（JSON `[{title, url, date}]`）、
+`dataPoints`（JSON，格式同 A2 的 Loan Portfolio 弹窗，每条显示 `label: text`，第一条 Total 是整个组合）、
+`updatedAt`。建议接口 `GET api/companies/{id}/loanPortfolio/detail`；非银行没有行，前端隐藏弹窗按钮。
+内容与 `udf_GetCompanyMetric` 取 "Loan Portfolio Composition" 指标相同，只是不需要指标 id。
+
 ### A4. 趋势图拿不到趋势列表
 接口是 `trends/{trend_name_id}`，但前端不知道有哪些趋势 id。
 
