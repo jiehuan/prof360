@@ -1,12 +1,13 @@
 # Azure SQL from Databricks: create the tables, copy SQLite data
 
-Three notebooks in `scripts/databricks/` (Databricks source format):
+Four notebooks in `scripts/databricks/` (Databricks source format):
 
 | Notebook | Does |
 |---|---|
-| `azure_sql_connect` | Shared connection, loaded by the other two with `%run` |
+| `azure_sql_connect` | Shared connection, loaded by the others with `%run` |
 | `run_sql_script` | Runs a script from `deploy/sql/`: creates schemas and tables, or drops them (`*_drop.sql`) |
 | `copy_sqlite_to_azure` | Copies `data/uw.db` or `data/app.db` into Azure SQL, keeping row ids: `load` once, then `sync` after each pipeline run (inserts, updates and deletes by primary key) |
+| `merge_company_logos` | Writes the logo files of `config/logos/` to `Company.logo` as data URIs, matched by CIK (D-067); only that column, only changed logos. Needs `Company.logo` as `NVARCHAR(MAX)` (`app_schema_changes.sql`). `dry_run`, then `apply` |
 
 ## How they connect
 
