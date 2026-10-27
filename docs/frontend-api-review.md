@@ -36,6 +36,10 @@
 
 路径里的 `categories/{categories_id}` 可以去掉：一个指标只属于一个类别。
 
+`subtitle` 是标题下的灰色解释文字（例如 Cash & Equivalents："Cash and highly liquid short-term
+investments"），在 `config/metrics.yaml` 里人工维护（2026-10-27 起；之前误存了单位）。单位用 `unit`
+（`USD` / `fraction` / `ratio` / `count` …，格式见 C3）。
+
 ### A3. Loan Portfolio 的返回结构未定义（"Follow API end"）
 **建议**：
 

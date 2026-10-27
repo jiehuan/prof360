@@ -94,3 +94,14 @@ def test_unknown_metric_input_rejected() -> None:
 def test_unknown_metric_in_set_rejected() -> None:
     with pytest.raises(ValidationError, match="unknown metrics"):
         Registry.model_validate({"concepts": {}, "metrics": [], "metric_sets": {"S": ["nope"]}})
+
+
+def test_every_displayed_metric_has_a_subtitle(reg) -> None:
+    # The grey line under the metric's title (metrics.subtitle): an explanation, not the unit.
+    tickers = ["", *reg.overrides]
+    shown = [m for t in tickers for m in (reg.metrics if not t else reg.overrides[t].metrics)
+             if m.display]  # fmt: skip
+    missing = sorted(m.code for m in shown if not m.subtitle)
+    assert not missing, f"displayed metrics without a subtitle: {missing}"
+    units = {"USD", "%", "x", "ratio", "fraction", "days", "count"}
+    assert not [m.code for m in shown if m.subtitle in units]

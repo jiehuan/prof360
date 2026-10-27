@@ -21,11 +21,13 @@ concepts:
 metrics:
   - code: gross_fee_revenue
     display_name: Gross Fee Revenues
+    subtitle: "Base management, franchise and incentive fees from hotels"
     section: financial
     unit: USD
     formula: gross_fee_revenue
   - code: net_fee_revenue
     display_name: Net Fee Revenues
+    subtitle: "Gross fee revenue less amortization of contract investments"
     section: financial
     unit: USD
     formula: net_fee_revenue

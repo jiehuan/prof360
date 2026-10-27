@@ -94,4 +94,5 @@ trend_metrics: [nim, cet1_ratio, tier1_ratio, lcr, npl_ratio, fee_income_growth_
 loan_portfolio_metric:
   code: loan_portfolio
   name: Loan Portfolio Composition
+  subtitle: "Loans by type, with their credit quality"
   description: Retained loans by loan class, with nonaccrual loans and the prior year-end.

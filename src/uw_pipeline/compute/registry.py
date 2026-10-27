@@ -128,6 +128,9 @@ class TextExtraction(BaseModel):
 class MetricDef(BaseModel):
     code: str
     display_name: str
+    # The grey line under the title on the card and in Select Metrics (Company.metrics.subtitle):
+    # a short plain-language explanation, required for displayed metrics.
+    subtitle: str | None = Field(default=None, max_length=90)
     description: str | None = None
     section: str
     unit: Literal["USD", "ratio", "fraction", "days", "shares", "score", "count"]

@@ -112,6 +112,7 @@ class Confidence(BaseModel):
 class LoanMetric(BaseModel):
     code: str
     name: str
+    subtitle: str | None = None
     description: str
 
 
@@ -208,16 +209,12 @@ class Publisher:
         })  # fmt: skip
         self.sic_id = sic_id
 
-    def _metric(self, code: str, name: str, section: str, description: str | None,
-                formula: str | None) -> int:  # fmt: skip
+    def _metric(self, code: str, name: str, section: str, subtitle: str | None,
+                description: str | None, formula: str | None) -> int:  # fmt: skip
         cat = self.cfg.metric_categories.get(section, section)
         cat_id = self._lookup(metric_category, section, {"categoryName": cat})
-        unit = {"USD": "USD", "fraction": "%", "ratio": "x", "days": "days", "shares": "shares",
-                "count": "count"}  # fmt: skip
-        m = self.defs.get(code)
         return self.w.put(metrics, code, {
-            "metric_name": name, "metric_category_Id": cat_id,
-            "subtitle": unit.get(m.unit) if m else None,
+            "metric_name": name, "metric_category_Id": cat_id, "subtitle": subtitle,
             "description": description, "Formula": formula,
         })  # fmt: skip
 
@@ -227,7 +224,7 @@ class Publisher:
                 continue
             formula = " ".join(definition_lines(m, self.names))[:500] or None
             self.metric_ids[m.code] = self._metric(m.code, m.display_name, m.section,
-                                                   m.description, formula)  # fmt: skip
+                                                   m.subtitle, m.description, formula)  # fmt: skip
             if self.sic_id is not None:
                 pref = {"metric_id": self.metric_ids[m.code], "SIC_Id": self.sic_id}
                 self._lookup(SIC_Preferences, f"{self.row['sic_code']}:{m.code}", pref)
@@ -239,7 +236,7 @@ class Publisher:
         if self.row["is_financial"]:
             lm = self.cfg.loan_portfolio_metric
             self.metric_ids[lm.code] = self._metric(lm.code, lm.name, "loan_portfolio",
-                                                    lm.description, None)  # fmt: skip
+                                                    lm.subtitle, lm.description, None)  # fmt: skip
 
     # -- metric values ---------------------------------------------------------------------
 
