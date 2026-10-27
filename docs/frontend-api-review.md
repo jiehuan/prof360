@@ -65,6 +65,30 @@ Loan Portfolio 和 Performance Trends 只对银行有数据。
 **建议**：`CompanyDetail` 加 `modules: { loanPortfolio: boolean, performanceTrends: boolean }`，
 为 false 时前端隐藏该模块。
 
+### A6. 主页铃铛（通知）
+已定（2026-10-27），`deploy/sql/bff_notifications.sql`：
+
+| 接口 | SQL |
+|---|---|
+| `GET api/notifications` | `udf_GetUserNotifications(@UserId, @Days, @MinNewsRisk)` |
+| `GET api/notifications/count`（红点） | `udf_GetUserNotificationCount`（参数同上）→ `unreadCount, totalCount` |
+| `PUT api/notifications/{key}/read`（点开一条） | `sp_MarkNotificationRead(@UserId, @NotificationKey)` |
+| `PUT api/notifications/read`（全部已读） | `sp_MarkAllNotificationsRead`（参数同列表） |
+
+范围是用户收藏或置顶的公司，最近 `@Days` 天（默认 30）的事件，按 `eventDate` 倒序。每行一个事件，
+`notificationType`：
+
+- `NEWS`：高风险新闻，新闻事件里有文章的整体风险分 ≥ `@MinNewsRisk`（0–1，默认 0.6）；
+- `INSIGHT`：事件日期在范围内的当前 Key Insight，`tag` 是 Warning / Negative / Positive / Info；
+- `SIGNAL`：Event Signals（`StrategicRisk` 的 event 类）；
+- `FILING`：10-K、10-Q（含修订）和 8-K 业绩公告，按申报日期，`link` 指向 SEC 原文。
+
+返回 `notificationKey, notificationType, itemId, companyId, companyName, ticker, eventDate, title,
+summary, tag, riskScore, link, isRead, readAt`。点击时用 `companyId` 打开公司页，`itemId` 定位条目
+（FILING 没有 itemId，直接打开 `link`），并用 `notificationKey` 标为已读。已读状态存在新的用户表
+`UserNotificationRead`。红点和列表必须用同样的 `@Days`、`@MinNewsRisk`。Key Insight 或信号重新生成后
+id 会变，会再次显示为未读（内容是新版本）。
+
 ## B. 字段对齐
 
 ### B1. 来源只给一个，但数据有多个
