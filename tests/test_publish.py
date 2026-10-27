@@ -73,13 +73,17 @@ def test_publish_maps_objects_and_links() -> None:
         links = {(r.FromType, r.FromId, r.ToType, r.ToId) for r in c.execute(select(ItemLink))}
         debt_id = c.execute(select(metrics.c.metric_id)
                             .where(metrics.c.metric_name == "Total Debt")).scalar_one()  # fmt: skip
+        debt_sub = c.execute(select(metrics.c.subtitle)
+                             .where(metrics.c.metric_id == debt_id)).scalar_one()  # fmt: skip
         types = dict(c.execute(select(RiskTypes.c.RiskType_Id, RiskTypes.c.RiskTypeName)).all())
         md = c.execute(select(MatrixData).where(MatrixData.c.metric_id == debt_id)).mappings().one()
         cmd = CompanyMetricDetail.c
         detail = (
             c.execute(select(CompanyMetricDetail).where(cmd.metric_id == debt_id)).mappings().one()
         )
-    assert (comp["CIK"], comp["NameAbbreviation"], comp["logo"]) == ("0001048286", "MAR", None)
+    assert (comp["CIK"], comp["NameAbbreviation"]) == ("0001048286", "MAR")
+    assert comp["logo"] == PCFG.logos["MAR"] and comp["logo"].startswith("data:image/")  # D-067
+    assert debt_sub == "Borrowings due now and in later years"  # an explanation, not the unit
     assert key["isActive"] and key["iconType"] == "warning"
     sources = json.loads(key["source"])
     assert sources[0]["title"] and key["link"] == next(s["url"] for s in sources if s["url"])
@@ -102,6 +106,12 @@ def test_publish_maps_objects_and_links() -> None:
         1.0,
     )
     assert detail["UnderwritingRelevance"] and "Reported in XBRL" in detail["Methodology"]
+    # Data points carry the numbers as well as the text (2026-10-27): no parsing on the front end.
+    pts = json.loads(detail["DataPoints"])
+    q2 = next(p for p in pts if p["label"] == "FY2026 Q2")
+    assert q2["value"] == md["value"] and q2["unit"] == "USD" and q2["status"] == "OK"
+    assert (q2["fiscalYear"], q2["fiscalPeriod"], q2["source"]) == (2026, "Q2", "Reported in XBRL")
+    assert q2["text"].startswith("$") and q2["periodEnd"] == str(md["period_end"])
     # Key takeaways: bullets in order, no links, nothing leaked into StrategicRisk.
     with app.connect() as c:
         tk = c.execute(select(KeyTakeaways).order_by(KeyTakeaways.c.Ordinal)).mappings().all()

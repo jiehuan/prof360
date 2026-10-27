@@ -1,0 +1,34 @@
+# Company logos for the app's Company.logo (D-067). The `company` stage looks a logo up once per
+# company and keeps it: a PNG/JPEG data URI the front end can use as an <img> src.
+#
+# Wikidata item: the one whose SEC CIK (P5531) is the company's pinned CIK or a predecessor's.
+# Where a logo comes from, in order:
+#   1. The `logo` of the infobox of the item's English Wikipedia article, as a thumbnail
+#      `width` pixels wide (SVG logos come as PNG). Kept current, and non-free logos are only
+#      there; Wikidata's is sometimes a former name's (SSRM) or another unit's (PRU).
+#   2. The item's logo image on Wikidata (P154, else the small logo or icon P8972), from
+#      Wikimedia Commons, same size.
+#   3. The icon of the item's official website (P856), from Google's favicon service, when it
+#      is at least `min_favicon_px` (many sites give only 16 px).
+#   4. None: Company.logo stays NULL; looked up again after `retry_days`.
+# A company is looked up again when its entry below or the sizes change, after
+# `refresh_days`, or with --force.
+
+enabled: true
+width: 250            # a Wikimedia standard thumbnail width
+favicon_size: 128
+min_favicon_px: 32    # smaller favicons are not used
+max_bytes: 200000     # larger images are not used (the data URI is about 4/3 of this)
+retry_days: 30
+refresh_days: 180
+
+# By ticker; checked by hand (2026-10-26). `wikidata`: the item, when Wikidata has no item with
+# the company's CIK (searching by ticker or name finds wrong companies, e.g. ARCC -> Ares
+# Management, so it is never automatic). `logo_file`: the Commons file, when the item has several
+# logos. `wikipedia`: the article, when the item has none. `website`: the favicon source, when
+# the item has no (or an outdated) website.
+overrides:
+  AAPL: {logo_file: "Apple logo black.svg"}   # also a white version
+  GEV: {wikidata: Q118957699}
+  SKYD: {wikipedia: "Paramount Skydance"}  # item's article: Paramount Global
+  SNDK: {wikidata: Q260833}

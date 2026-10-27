@@ -13,14 +13,14 @@ from __future__ import annotations
 import json
 import logging
 import re
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import Connection, Engine, desc, select, true
 
 from uw_pipeline.compute.registry import MetricDef, Registry
@@ -33,6 +33,7 @@ from uw_pipeline.jobs.run_metric_detail import value_source
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.load.app_writer import AppWriter
 from uw_pipeline.load.upsert import delete_keys, upsert
+from uw_pipeline.logos import load_logos
 from uw_pipeline.schema import (
     activity,
     followup_question,
@@ -111,6 +112,7 @@ class Confidence(BaseModel):
 class LoanMetric(BaseModel):
     code: str
     name: str
+    subtitle: str | None = None
     description: str
 
 
@@ -122,6 +124,7 @@ class PublishConfig(BaseModel):
     confidence: Confidence
     trend_metrics: list[str]
     loan_portfolio_metric: LoanMetric
+    logos: dict[str, str] = Field(default_factory=dict)  # ticker -> data URI (config/logos/)
 
     def risk_type(self, subcategory: str | None, category: str) -> str:
         for rule in self.risk_types:
@@ -134,7 +137,8 @@ class PublishConfig(BaseModel):
 
 def load_publish_config(config_dir: Path) -> PublishConfig:
     with (config_dir / "app_publish.yaml").open(encoding="utf-8") as f:
-        return PublishConfig.model_validate(yaml.safe_load(f))
+        cfg = PublishConfig.model_validate(yaml.safe_load(f))
+    return cfg.model_copy(update={"logos": load_logos(config_dir)})
 
 
 @dataclass
@@ -143,6 +147,22 @@ class Stats:
 
     def add(self, name: str, n: int = 1) -> None:
         self.counts[name] = self.counts.get(name, 0) + n
+
+
+def value_point(r: Mapping[str, Any], unit: str, source: str | None = None) -> dict[str, Any]:
+    """A metric value as a data point of a modal: `label` and `text` as shown, and the numbers
+    (value null when not meaningful, as in MatrixData) so the front end need not parse text."""
+    shown = fmt_value(r["value"], unit, r["value_status"])
+    ok = r["value_status"] != "NM" and r["value"] is not None
+    fy = r["period_type"] == "FY"
+    return {
+        "label": period_label(r), "text": f"{shown} ({source})" if source else shown,
+        "fiscalYear": r["fiscal_year"], "fiscalPeriod": "FY" if fy else f"Q{r['fiscal_quarter']}",
+        # value and unit exactly as MatrixData has them (USD in dollars, fractions as 0.049)
+        "periodEnd": r["period_end"], "value": r["value"] if ok else None,
+        "unit": r.get("unit") or unit,
+        "status": "OK" if ok else "NM", "source": source,
+    }  # fmt: skip
 
 
 def _json(x: Any) -> str:
@@ -201,19 +221,16 @@ class Publisher:
         self.app_company = self.w.put(Company, self.cik, {
             "SIC_Id": sic_id, "CompanyName": r["name"], "NameAbbreviation": r["ticker"],
             "Location": location, "UpdatedAt": _date(r["last_refreshed_at"]), "CIK": self.cik,
+            "logo": self.cfg.logos.get(r["ticker"]),  # config/logos/ (D-067)
         })  # fmt: skip
         self.sic_id = sic_id
 
-    def _metric(self, code: str, name: str, section: str, description: str | None,
-                formula: str | None) -> int:  # fmt: skip
+    def _metric(self, code: str, name: str, section: str, subtitle: str | None,
+                description: str | None, formula: str | None) -> int:  # fmt: skip
         cat = self.cfg.metric_categories.get(section, section)
         cat_id = self._lookup(metric_category, section, {"categoryName": cat})
-        unit = {"USD": "USD", "fraction": "%", "ratio": "x", "days": "days", "shares": "shares",
-                "count": "count"}  # fmt: skip
-        m = self.defs.get(code)
         return self.w.put(metrics, code, {
-            "metric_name": name, "metric_category_Id": cat_id,
-            "subtitle": unit.get(m.unit) if m else None,
+            "metric_name": name, "metric_category_Id": cat_id, "subtitle": subtitle,
             "description": description, "Formula": formula,
         })  # fmt: skip
 
@@ -223,7 +240,7 @@ class Publisher:
                 continue
             formula = " ".join(definition_lines(m, self.names))[:500] or None
             self.metric_ids[m.code] = self._metric(m.code, m.display_name, m.section,
-                                                   m.description, formula)  # fmt: skip
+                                                   m.subtitle, m.description, formula)  # fmt: skip
             if self.sic_id is not None:
                 pref = {"metric_id": self.metric_ids[m.code], "SIC_Id": self.sic_id}
                 self._lookup(SIC_Preferences, f"{self.row['sic_code']}:{m.code}", pref)
@@ -235,7 +252,7 @@ class Publisher:
         if self.row["is_financial"]:
             lm = self.cfg.loan_portfolio_metric
             self.metric_ids[lm.code] = self._metric(lm.code, lm.name, "loan_portfolio",
-                                                    lm.description, None)  # fmt: skip
+                                                    lm.subtitle, lm.description, None)  # fmt: skip
 
     # -- metric values ---------------------------------------------------------------------
 
@@ -475,9 +492,8 @@ class Publisher:
                 )
             ]  # fmt: skip
             points = [
-                {"label": period_label(r),
-                 "text": f"{fmt_value(r['value'], m.unit, r['value_status'])} "
-                         f"({self.labels.derivations.get(r['derivation'], r['derivation'])})"}
+                value_point(r, m.unit, self.labels.derivations.get(r["derivation"],
+                                                                  r["derivation"]))
                 for r in shown_rows(values.get(code, []))
             ]  # fmt: skip
             key = f"{self.p}{code}"
@@ -497,12 +513,57 @@ class Publisher:
             self.w.put(CompanyMetricDetail, key, {
                 "CompanyId": self.app_company, "metric_id": self.metric_ids[lm],
                 "Methodology": loan["methodology"], "DataSources": loan["data_sources_json"],
-                "DataPoints": loan["raw_data_points_json"], "UnderwritingRelevance": None,
+                "DataPoints": _json(self._loan_points(dict(loan))), "UnderwritingRelevance": None,
                 "UpdatedAt": loan["updated_at"],
             })  # fmt: skip
             keep.append(key)
         self.stats.add("CompanyMetricDetail", len(keep))
         self.w.drop_except(CompanyMetricDetail, self.p, keep)
+
+    def _loan_points(self, loan: Mapping[str, Any]) -> list[dict[str, Any]]:
+        """The Loan Portfolio modal's rows: each class's text (and the total's) with the numbers
+        it shows: balance, share of book, nonaccrual, and the change from the prior period end."""
+        latest, prior = loan["period_end"], loan["prior_period_end"]
+        rows = {
+            (r["segment"], r["period_end"]): r
+            for r in self.src.execute(
+                select(loan_portfolio_segment)
+                .where(loan_portfolio_segment.c.company_id == self.company_id)
+            ).mappings()
+        }  # fmt: skip
+        cur = [r for (_, p), r in rows.items() if p == latest]
+        old = [r for (_, p), r in rows.items() if prior and p == prior]
+        disclosed = [r for r in cur if r["nonaccrual"] is not None]
+        nonaccrual = sum(r["nonaccrual"] for r in disclosed) if disclosed else None
+        base = sum(r["outstanding"] for r in disclosed)
+        total = {
+            "segment": None, "parentSegment": None,
+            "value": sum(r["outstanding"] for r in cur), "pctOfBook": 1.0 if cur else None,
+            "nonaccrual": nonaccrual,
+            "nonaccrualRatio": nonaccrual / base if nonaccrual is not None and base else None,
+            "priorValue": sum(r["outstanding"] for r in old) if old else None,
+        }  # fmt: skip
+        out = []
+        for point in json.loads(loan["raw_data_points_json"]):
+            r = rows.get((point["label"], latest))
+            if point["label"] == "Total" and r is None:
+                nums = dict(total)
+            elif r is not None:
+                p = rows.get((point["label"], prior)) if prior else None
+                nums = {
+                    "segment": r["segment"], "parentSegment": r["parent_segment"],
+                    "value": r["outstanding"], "pctOfBook": r["pct_of_book"],
+                    "nonaccrual": r["nonaccrual"], "nonaccrualRatio": r["nonaccrual_ratio"],
+                    "priorValue": p["outstanding"] if p is not None else None,
+                }  # fmt: skip
+            else:
+                out.append(point)
+                continue
+            before = nums["priorValue"]
+            nums["change"] = nums["value"] / before - 1 if before else None
+            out.append(point | nums | {"unit": "USD", "periodEnd": latest,
+                                       "priorPeriodEnd": prior})  # fmt: skip
+        return out
 
     def trends(self) -> None:
         keep = []
@@ -522,8 +583,7 @@ class Publisher:
                 ).mappings().all()  # fmt: skip
                 for r in rows:
                     ref = value_source(self.src, self.resolver, m.display_name, dict(r))
-                    shown = fmt_value(r["value"], m.unit, r["value_status"])
-                    point = {"label": period_label(dict(r)), "text": shown}
+                    point = value_point(dict(r), m.unit)
                     if r["evidence"]:
                         point["evidence"] = r["evidence"]
                     key = f"{self.p}{code}:{r['fiscal_year']}"

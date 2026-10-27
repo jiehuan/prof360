@@ -30,6 +30,7 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 .venv/bin/python scripts/azure_smoke.py             # Azure SQL + ADLS check (work network)
 scripts/test_mssql.sh --all                          # whole test suite on a local SQL Server (Docker)
 .venv/bin/python scripts/export_app_ddl.py           # regenerate deploy/sql/*.sql after schema changes
+.venv/bin/python scripts/fetch_logos.py              # config/logos/ for new companies (open network, D-067)
 ```
 
 Architecture, stages, data model and internals: `docs/TECHNICAL.md`.
@@ -48,7 +49,8 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
 - LLM output is never written to the DB directly; it must pass schema + grounding validation.
 - DB writes must be idempotent (natural-key upsert / MERGE). Never DELETE-all-then-insert.
 - Do not modify the BFF repo; record contract issues in `docs/schema-contract.md`.
-- Secrets come only from environment variables. Never put them in code, logs or fixtures.
+- Secrets come only from environment variables, or on Databricks from the secret scope whose key
+  names are in `config/azure.yaml` (D-057). Never put them in code, logs or fixtures.
 - After finishing a checklist item, tick its box in `docs/PLAN.md`.
 - All external calls (HTTP, LLM, DB) go through `src/uw_pipeline/clients/` so tests can swap them.
 - Companies are identified by pinned CIK in `config/companies.yaml`; tickers are display-only.

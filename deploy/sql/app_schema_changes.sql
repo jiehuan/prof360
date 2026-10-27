@@ -132,6 +132,11 @@ IF COL_LENGTH(N'dbo_professional360.TranscriptToneAnalysis', N'Quarter') IS NULL
     ALTER TABLE dbo_professional360.[TranscriptToneAnalysis] ADD [Quarter] NVARCHAR(10) NULL;
 GO
 
+-- Company (widened)
+IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'dbo_professional360.Company') AND name = N'logo' AND max_length <> -1)
+    ALTER TABLE dbo_professional360.[Company] ALTER COLUMN logo NVARCHAR(max) NULL;
+GO
+
 -- 3. Indexes for the BFF's reads ---------------------------------------------
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_FollowUpQuestions_company_active' AND object_id = OBJECT_ID(N'dbo_professional360.FollowUpQuestions'))

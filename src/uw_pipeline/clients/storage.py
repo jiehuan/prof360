@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol
 
 if TYPE_CHECKING:
+    from uw_pipeline.clients.secrets import SecretGetter
     from uw_pipeline.settings import Settings
 
 
@@ -111,23 +112,27 @@ class AdlsStorage:
             client.delete_file()
 
 
-def make_storage(settings: Settings) -> Storage:
-    """Local files (data/raw) off the corporate network; ADLS on it (STORAGE_BACKEND=adls)."""
+def make_storage(settings: Settings, get_secret: SecretGetter | None = None) -> Storage:
+    """Local files (data/raw) off the corporate network; ADLS on it (STORAGE_BACKEND=adls), with
+    the service principal from the environment or the Databricks secret scope (D-057)."""
     if settings.storage_backend == "local":
         return LocalStorage(settings.raw_dir)
-    if not (settings.adls_client_id and settings.adls_client_secret):
-        raise RuntimeError("STORAGE_BACKEND=adls needs ADLS_CLIENT_ID and ADLS_CLIENT_SECRET")
-    from azure.identity import ClientSecretCredential  # optional dependency: ".[azure]"
-    from azure.storage.filedatalake import DataLakeServiceClient
-
-    from uw_pipeline.clients.db import azure_config
+    from uw_pipeline.clients.db import azure_config, scoped_credentials
 
     cfg, env = azure_config(settings)
     if env not in cfg.adls.environments:
         raise ValueError(f"AZURE_ENV={env!r} is not in config/azure.yaml")
     e = cfg.adls.environments[env]
-    credential = ClientSecretCredential(cfg.adls.tenant_id, settings.adls_client_id,
-                                        settings.adls_client_secret.get_secret_value())  # fmt: skip
+    secret = settings.adls_client_secret
+    client_id, client_secret = scoped_credentials(
+        (settings.adls_client_id, secret.get_secret_value() if secret else None),
+        e.secret_scope, (e.client_id_key, e.client_secret_key), get_secret,
+        "STORAGE_BACKEND=adls needs ADLS_CLIENT_ID and ADLS_CLIENT_SECRET",
+    )  # fmt: skip
+    from azure.identity import ClientSecretCredential  # optional dependency: ".[azure]"
+    from azure.storage.filedatalake import DataLakeServiceClient
+
+    credential = ClientSecretCredential(cfg.adls.tenant_id, client_id, client_secret)
     host = f"{e.storage_account}.dfs.core.windows.net"
     service = DataLakeServiceClient(account_url=f"https://{host}", credential=credential)
     fs = service.get_file_system_client(file_system=e.container)

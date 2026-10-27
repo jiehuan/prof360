@@ -167,3 +167,32 @@ class IndustryConfig(BaseModel):
 
 def load_industry_config(config_dir: Path) -> IndustryConfig:
     return IndustryConfig.model_validate(_load_yaml(config_dir / "industry_groups.yaml"))
+
+
+# -- logos.yaml (D-067) ------------------------------------------------------------------------
+
+
+class LogoOverride(BaseModel):
+    wikidata: str | None = Field(default=None, pattern=r"^Q\d+$")  # the item, instead of by CIK
+    logo_file: str | None = None  # Commons file name, when the item has several logos
+    wikipedia: str | None = None  # English Wikipedia article, when the item has none
+    website: str | None = Field(default=None, pattern=r"^https?://")  # favicon source
+
+
+class LogoConfig(BaseModel):
+    """Where scripts/fetch_logos.py looks for logos (the pipeline itself never fetches them)."""
+
+    width: int = 250
+    favicon_size: int = 128
+    min_favicon_px: int = 32
+    overrides: dict[str, LogoOverride] = Field(default_factory=dict)
+
+    def check_companies(self, companies: list[CompanyConfig]) -> None:
+        unknown = sorted(set(self.overrides) - {c.ticker for c in companies})
+        if unknown:
+            raise ValueError(f"logos.yaml: overrides for unknown tickers {unknown}")
+
+
+def load_logo_config(config_dir: Path) -> LogoConfig:
+    path = config_dir / "logos.yaml"
+    return LogoConfig.model_validate(_load_yaml(path)) if path.exists() else LogoConfig()

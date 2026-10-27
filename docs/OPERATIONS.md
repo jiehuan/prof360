@@ -36,6 +36,7 @@
 3. 确认它的 SIC 在 `config/industry_groups.yaml` 里有对应的行业组。没有的话，见下文"新增行业组"。
 4. 运行 `uw-pipeline run --ticker XXX`，然后运行 `coverage-report`。对每一个缺口，要么修正 tag 映射，要么在 `config/coverage_notes.yaml` 里写明原因。整个行业都有的缺口写在 `groups:` 下（行业组代码，或 `"*"` 表示所有公司），公司级说明只写真正的例外（D-052）。
 5. 首次运行的 LLM 费用约为每家公司 $1.5–3。
+5a. Logo：见第 8 节（`scripts/fetch_logos.py` 或手工放文件）。
 6. MVP 阶段每个 SIC 只放一家公司（D-007）；Phase 16 起加入 S&P 100（2026-09-21 的名单，D-052），名单每季度对照指数核对一次。
 
 ## 3. 新增指标或修改指标集合
@@ -84,7 +85,8 @@
 
 ## 8. 应用库、新闻和评分（Phase 9，D-037）
 
-- `publish` 阶段把管线结果写进应用库（`APP_DATABASE_URL`，dev 是 `data/app.db`）。管线不写 `Company.logo` 和用户相关的表。重跑只写有变化的行。
+- `publish` 阶段把管线结果写进应用库（`APP_DATABASE_URL`，dev 是 `data/app.db`）。管线不写用户相关的表。重跑只写有变化的行。
+- 公司 logo（D-067）：`config/logos/<TICKER>.png`（或 .jpg/.gif/.webp，不超过 200 KB，宽约 250 px），`publish` 转成 data URI 写进 `Company.logo`。管线运行时不联网取 logo。新增公司时：在能访问 Wikipedia 的网络上运行 `python scripts/fetch_logos.py`（只取没有文件的公司），打开 `data/reports/logos.html` 看一遍再提交；取不到或取错的，手工放一个文件，并在 `config/logos/SOURCES.yaml` 记 `source: manual` 和来源。取错的也可以在 `config/logos.yaml` 指定 Wikidata 条目、Wikipedia 文章或网站，再 `--ticker XXX` 重取。
 - 应用库的映射规则（指标分类、风险类型、confidence）在 `config/app_publish.yaml`。如果 `RiskTypes` 里出现 "Other"，在 `risk_types` 里加一条规则即可，重新 publish 不需要 LLM。
 - 新闻相关性：公司别名在 `config/companies.yaml` 的 `news_aliases`；排除规则和 LLM 判断在 `config/news.yaml`。新闻阶段的 `pruned` 是按当前规则删掉的旧文章数。
 - 风险评分在 `scores` 阶段（`config/scores.yaml`）。只有重要新闻进入洞察输入，阈值在 `config/insights.yaml` 的 `news_materiality`；阈值调低会让洞察更常重新生成，费用随之增加。
@@ -99,13 +101,13 @@
 
 ## 10. Azure SQL 和 ADLS（D-040）
 
-- 公司网络内：`DATABASE_BACKEND=azure_sql`、`STORAGE_BACKEND=adls`、`AZURE_ENV`（dv / pp / pr），凭证用 `AZURE_SQL_CLIENT_ID/SECRET` 和 `ADLS_CLIENT_ID/SECRET`。服务器、数据库、schema、存储账户、容器、路径前缀在 `config/azure.yaml`（目前是占位值，标了 TO EDIT）。
+- 公司网络内：`DATABASE_BACKEND=azure_sql`、`STORAGE_BACKEND=adls`、`AZURE_ENV`（dv / pp / pr），凭证用 `AZURE_SQL_CLIENT_ID/SECRET` 和 `ADLS_CLIENT_ID/SECRET`；在 Databricks 上不设这些变量时，从 `config/azure.yaml` 写明的 secret scope 和 key 名读取，与 loss-run 项目的连接方式相同（ODBC Driver 17、ActiveDirectoryServicePrincipal，D-057）。服务器、数据库、schema、存储账户、容器、路径前缀在 `config/azure.yaml`（目前是占位值，标了 TO EDIT）。
 - 公司网络外：不设这些变量，照常用 SQLite 和 `data/raw`。
 - 管线表和应用表在两个 schema（`pipeline_schema`、`app_schema`），**不能放在同一个 schema**：SQL Server 表名不区分大小写，应用的 `Company` 和管线的 `company` 会冲突。
 - 建表：由工程师执行 `deploy/sql/pipeline_schema_full.sql`、`app_schema_full.sql`（新环境）或 `app_schema_changes.sql`（已有数据模型）。改了表结构或 schema 名后，运行 `python scripts/export_app_ddl.py` 重新生成。
 - 首次运行前：`python scripts/azure_smoke.py`，检查连接、schema、表、权限和 ADLS 读写，不会改动任何业务表。ALTER 和 CREATE TABLE 只显示 WARN：只有自己建表才需要，日常运行只用临时表。
 - `uw-pipeline init-db` 只用于本地 SQLite；在 Azure SQL 上它会提示改用 `deploy/sql/` 的脚本。
-- 把本地 SQLite 结果一次性复制到 Azure SQL（保留 id）：Databricks notebook `scripts/databricks/copy_sqlite_to_azure.py`，说明见 `docs/databricks-copy.md`。
+- 在 Databricks 里建表：notebook `scripts/databricks/run_sql_script.py` 按 `GO` 分批执行 `deploy/sql/` 的脚本（先 `dry_run`，再 `run`；可重复执行）。把本地 SQLite 结果一次性复制到 Azure SQL（保留 id）：`scripts/databricks/copy_sqlite_to_azure.py`。说明见 `docs/databricks-copy.md`。
 - 改了涉及数据库的代码后，在本机跑 `scripts/test_mssql.sh --all`：用本地 Docker 的 SQL Server 运行全部测试（不需要公司网络）。用完 `scripts/test_mssql.sh --stop`。
 
 ## 10a. 结构化数据优先和恒等式（Phase 13，D-042）

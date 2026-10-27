@@ -1165,6 +1165,52 @@ LLM runs until the end, then one comparison.
 - BFF: no change if it builds a company's metric list from SIC_Preferences or MatrixData and hides
   categories without metrics; "Market & Trading" and "Reporting Quality" are now empty.
 
+**D-057 Azure credentials from a Databricks secret scope (2026-10-21).**
+- User request: connect to Azure SQL the way the team's loss-run project does on Databricks
+  (`loss_run_integration`, data_io/sql_connect.py and config/main_config.cfg): an
+  `mssql+pyodbc` URL with the service principal as user name and password,
+  `ActiveDirectoryServicePrincipal`, `ODBC Driver 17 for SQL Server`, and the service
+  principal's id and secret read from a Databricks secret scope whose key names are in config
+  per environment (`username_key`, `password_key`; for ADLS `client_id_key`,
+  `client_secret_key`).
+- Options for where credentials come from: (a) environment variables only (until now); (b) the
+  secret scope only; (c) environment variables when set, else the secret scope named in
+  config/azure.yaml. Chosen: (c). Local runs, containers and tests keep using environment
+  variables; a Databricks job needs no extra setup. Only key names are in config, never values;
+  secrets are not logged (the log names the scope and key).
+- Driver: `ODBC Driver 17 for SQL Server`, which the team's clusters have (was 18).
+- `TrustServerCertificate`: the loss-run project sets `yes` (the server certificate is not
+  checked). Kept `no` (checked, D-040) as `trust_server_certificate: false` in azure.yaml;
+  set it to true only if the cluster cannot verify the certificate.
+- The Databricks copy notebook connects the same way (pyodbc, secret-scope keys from
+  config/azure.yaml) instead of Spark JDBC with an Azure AD token: no tenant id or
+  azure-identity, and no single-user cluster requirement.
+- Tuned on development companies after the first run (2026-10-21): the same-facility metrics
+  name Tenet's terms (same-hospital, adjusted admissions, net patient service revenues); capacity
+  utilization (Phase 16, manufacturing trait) also reads steel mill utilization and operating
+  rates (Nucor 83%, Steel Dynamics 90%), which re-reads it once for the other manufacturers.
+
+**D-064 Daily copy from SQLite to Azure SQL: sync by primary key (2026-10-24).**
+- Need: the pipeline runs on SQLite; Azure SQL, read by the BFF, must get each run's results
+  without a full reload. A full reload (`clear_target`, `load`) breaks once the BFF's user
+  tables (favorites, flags, metric choices) point at application rows.
+- Options: (a) the pipeline writes Azure SQL directly (its publish stage is already
+  incremental, `pipeline_publish_map`); (b) keep SQLite and sync the file into Azure SQL after
+  each run. User decision (2026-10-24): (b).
+- How: `copy_sqlite_to_azure` gets `mode = sync`: each table staged as text, then one `MERGE`
+  by primary key (insert new rows with their ids, update rows whose columns differ by
+  `EXCEPT`, delete rows gone from the file), constraints off meanwhile and re-checked after,
+  row counts compared. Values are converted as `load` converts them (decimals through FLOAT,
+  times through DATETIMEOFFSET, then the target type) so unchanged rows compare equal and are
+  not rewritten. `keep_columns` (default `Company.logo`) are columns the application writes:
+  inserted for new rows, never updated.
+- Conditions: the target was filled by `load` from the same pipeline (same ids) and nothing
+  else writes these tables. The pipeline never deletes companies or versioned content (old
+  versions get `isActive = 0`), which the BFF's user tables refer to.
+- Application tables (2026-10-26): every mode copies only the tables the repo's DDL for the
+  database creates; `User*` and any other table are never copied, synced or cleared, even when
+  the SQLite file has one of that name (a local `app.db` from the BFF prototype does), so the
+  users' data in Azure SQL cannot be overwritten.
 
 **D-065 Key Insights: summary at most 180 characters (2026-10-24).**
 - Need (user, 2026-10-24): the summary of a Key Insight card fits in 180 characters. Before:
@@ -1198,3 +1244,36 @@ LLM runs until the end, then one comparison.
   at no cost. The task detail says `stored=none, previous versions kept (no output: ...)`.
 - Trade-off: a set that keeps failing (e.g. a request too large) holds the company's whole
   insight update back; the task detail and the logs name the set.
+
+**D-067 Company logos: files kept in the repo, published by the pipeline (2026-10-26).**
+- `Company.logo` was NULL for every company: the application was meant to fill it and never
+  did. The front end needs something it can use as an `<img src>` without another request.
+- Options: format (1) base64 data URI, (2) an image URL (hotlinking a third party or hosting
+  the files); maintenance (a) the pipeline finds logos at run time, (b) logo files kept by hand
+  in the repo, (c) the application team. User decisions (2026-10-26): (1); first (a), then (b)
+  the same day, because the corporate network that runs the pipeline does not reach Wikimedia.
+- How: `config/logos/<TICKER>.png|jpg|gif|webp` (at most 200 KB, about 250 px wide; SVG is
+  not accepted: it can carry scripts). `publish` writes each company's file as
+  `data:<type>;base64,...` to `Company.logo` (NULL without a file); `config check` rejects
+  files without a configured ticker, of the wrong type or too large. `Company.logo` becomes
+  `NVARCHAR(MAX)` (`app_schema_changes.sql` widens a deployed column; run it before the next
+  sync, or the longer values do not fit). The copy notebook's `keep_columns` default is now
+  empty: the pipeline owns the column.
+- Filling the folder: `scripts/fetch_logos.py`, on a network that reaches Wikimedia, fetches
+  logos for companies without a file and writes `config/logos/SOURCES.yaml` (where each came
+  from) and a review sheet `data/reports/logos.html`. Order: the `logo` of the infobox of the
+  English Wikipedia article linked from the Wikidata item with the company's CIK (or a
+  predecessor's); the item's Wikidata logo on Commons; the website's icon (Google's favicon
+  service, at least 32 px). Matching is by CIK only: searching by ticker or name found wrong
+  companies (ARCC -> Ares Management, DYN -> Dynegy). `config/logos.yaml` holds the
+  corrections checked by hand: the item, article, file or website for 53 companies. The
+  infobox comes first because Wikidata's logo was sometimes outdated or another unit's
+  (Kroger 1961-2019, Prudential's Brazilian unit, Discovery for WBD); non-free logos are only
+  on Wikipedia. A logo added by hand gets `source: manual` and is not replaced by `--all`.
+- Result (2026-10-26): 252 of 256 active companies (223 from Wikipedia, 5 Wikidata, 23
+  favicons, 1 by hand: SSRM, whose infobox still shows the Silver Standard logo); none for LRN,
+  UWMC, DNLI, ANNX (to add by hand). 2.1 MB of files; the data URIs add about 2.8 MB to the
+  app database. Logos were reviewed on the sheet, not one by one: corrections go into
+  `config/logos.yaml` or a replaced file.
+- This release (Phase 16 code, 107 companies): only those companies' logo files and corrections
+  are kept; every one of the 107 has a logo.
