@@ -138,7 +138,7 @@ AS RETURN (
 );
 GO
 
-CREATE OR ALTER FUNCTION dbo_professional360.udf_IsFavorityCompanyOfUser (@UserId INT, @CompanyId INT)
+CREATE OR ALTER FUNCTION dbo_professional360.udf_IsFavoriteCompanyOfUser (@UserId INT, @CompanyId INT)
 RETURNS BIT
 AS BEGIN
     RETURN CASE WHEN EXISTS (
@@ -301,7 +301,9 @@ END;
 GO
 
 -- GET api/companies/{id} : CompanyDetail (one row). keyTakeaways (review A1; the endpoint uses
--- udf_GetCompanyKeyInsightsSummary instead) and the bank module flags (A5) are proposed additions. The BFF records the view (UserHistory) separately.
+-- udf_GetCompanyKeyInsightsSummary instead) and the bank module flags (A5) are proposed
+-- additions; trends: the company's trend type ids, e.g. [1,2,3,4,5] (banks; [] otherwise).
+-- The BFF records the view (UserHistory) separately.
 CREATE OR ALTER FUNCTION dbo_professional360.udf_GetCompanyDetails (@UserId INT, @CompanyId INT)
 RETURNS TABLE
 AS RETURN (
@@ -313,7 +315,7 @@ AS RETURN (
         C.logo,
         C.Location AS location,
         C.UpdatedAt AS updatedAt,
-        dbo_professional360.udf_IsFavorityCompanyOfUser(@UserId, C.CompanyId) AS isFavorite,
+        dbo_professional360.udf_IsFavoriteCompanyOfUser(@UserId, C.CompanyId) AS isFavorite,
         dbo_professional360.udf_IsCompanyPinnedForUser(@UserId, C.CompanyId) AS isPinned,
         dbo_professional360.udf_GetCompanyMetricSelectionJson(C.CompanyId) AS metricSelections,
         dbo_professional360.udf_GetUserMetricSelectionJson(@UserId, C.CompanyId) AS userMetricSelections,
@@ -327,9 +329,16 @@ AS RETURN (
             AS hasLoanPortfolio,
         CAST(CASE WHEN EXISTS (SELECT 1 FROM dbo_professional360.Trend T
                                WHERE T.CompanyId = C.CompanyId) THEN 1 ELSE 0 END AS BIT)
-            AS hasPerformanceTrends
+            AS hasPerformanceTrends,
+        ISNULL(TR.trends, N'[]') AS trends
     FROM dbo_professional360.Company C
     LEFT JOIN dbo_professional360.SIC_Code S ON S.SIC_Id = C.SIC_Id
+    OUTER APPLY (
+        SELECT N'[' + STRING_AGG(CAST(x.TrendTypeId AS NVARCHAR(12)), N',')
+                          WITHIN GROUP (ORDER BY x.TrendTypeId) + N']' AS trends
+        FROM (SELECT DISTINCT T.TrendTypeId FROM dbo_professional360.Trend T
+              WHERE T.CompanyId = C.CompanyId) x
+    ) TR
     WHERE C.CompanyId = @CompanyId
 );
 GO
@@ -744,7 +753,7 @@ GO
 -- POST api/companies/{id}/preferences/export : the user's metric choice for this company's
 -- industry (else the industry default) with each metric's latest value. Order by: categoryId,
 -- metricId.
-CREATE OR ALTER FUNCTION dbo_professional360.udf_GetCompanyPerferences (@UserId INT, @CompanyId INT)
+CREATE OR ALTER FUNCTION dbo_professional360.udf_GetCompanyPreferences (@UserId INT, @CompanyId INT)
 RETURNS @Out TABLE (
     categoryId INT, categoryName NVARCHAR(60), metricId INT, metricName NVARCHAR(120),
     subtitle NVARCHAR(200), isUserChoice BIT, latestPeriod NVARCHAR(20), latestPeriodEnd DATE,

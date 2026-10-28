@@ -83,6 +83,8 @@ RetailCo 内容）：一行，`methodology`（文本，`\n` 分行）、`dataSou
 **建议**：改成 `GET api/companies/{id}/trends`，一次返回全部：
 `[{ id, title, methodology, data: [{ year, value }] }]`。非银行返回空数组。
 
+`CompanyDetail.trends`（2026-10-29，`deploy/sql/bff_company_details.sql`）：该公司有数据的趋势类型 id，例如 JPM `[1,2,3,5,6]`，就是 `trends/{trendId}` 要的 id；非银行为 `[]`。dv 上原先的版本返回的是 Trend 的行 id（每个趋势每年一行，JPM 45 个），不能用来请求趋势。
+
 ### A5. 银行专属模块的显示规则
 Loan Portfolio 和 Performance Trends 只对银行有数据。
 
@@ -112,6 +114,27 @@ summary, tag, riskScore, link, isRead, readAt`。点击时用 `companyId` 打开
 （FILING 没有 itemId，直接打开 `link`），并用 `notificationKey` 标为已读。已读状态存在新的用户表
 `UserNotificationRead`。红点和列表必须用同样的 `@Days`、`@MinNewsRisk`。Key Insight 或信号重新生成后
 id 会变，会再次显示为未读（内容是新版本）。
+
+### A7. 指标区块按位置显示，Operational Metrics 显示的是 Cash Flow（2026-10-29 发现）
+公司页有四个固定区块（Financial、Liquidity、Leverage、Operational），目前按 `userMetricSelections`
+数组的**位置**填充，而不是按每项的 `name`。数组按类别 id 排序，每家公司的类别数不同：
+
+| 位置 | Marriott 收到的 | JPM 收到的 |
+|---|---|---|
+| 1 | Financial | Financial |
+| 2 | Liquidity | Leverage |
+| 3 | Leverage | Cash Flow |
+| 4（显示为 "Operational Metrics"） | **Cash Flow** | Performance Trends |
+| 5（不显示） | **Operational Metrics**（RevPAR、Occupancy、ADR） | Loan Portfolio（CRE Loans / Total Loans） |
+
+所以每家公司的 "Operational Metrics" 区块里都是现金流指标（看起来都一样），真正的行业指标
+（RevPAR、交付量、用户流失率……）从不显示；银行从第 2 个区块起整体错位。
+
+**建议**：每个数组项显示一个区块，标题用该项的 `name`，侧边导航用同一个数组；顺序就是数组顺序
+（类别 id）。如果必须保留固定区块，按 `name` 或类别 `id` 对应（Operational Metrics 是 5，
+Cash Flow 是 4），并给 Cash Flow 一个区块。类别 7（Loan Portfolio）里的 "CRE Loans / Total Loans"
+是普通指标卡片，"Loan Portfolio Composition" 本身不在这个数组里（它有自己的模块，见 A3）。
+检查数据：`deploy/sql/checks/operational_metrics.sql`（`scripts/databricks/run_query`）。
 
 ## B. 字段对齐
 
