@@ -300,8 +300,8 @@ AS BEGIN
 END;
 GO
 
--- GET api/companies/{id} : CompanyDetail (one row). keyTakeaways (review A1) and the bank
--- module flags (A5) are proposed additions. The BFF records the view (UserHistory) separately.
+-- GET api/companies/{id} : CompanyDetail (one row). keyTakeaways (review A1; the endpoint uses
+-- udf_GetCompanyKeyInsightsSummary instead) and the bank module flags (A5) are proposed additions. The BFF records the view (UserHistory) separately.
 CREATE OR ALTER FUNCTION dbo_professional360.udf_GetCompanyDetails (@UserId INT, @CompanyId INT)
 RETURNS TABLE
 AS RETURN (
@@ -331,6 +331,38 @@ AS RETURN (
     FROM dbo_professional360.Company C
     LEFT JOIN dbo_professional360.SIC_Code S ON S.SIC_Id = C.SIC_Id
     WHERE C.CompanyId = @CompanyId
+);
+GO
+
+-- GET api/companies/{id}/keyInsights/summary : the Key Takeaway box above the Key Insights
+-- (D-053), one row; none when the company has no current takeaways (the BFF then answers 404
+-- and the box is hidden). Keeps the columns the BFF already selects from this function:
+--   KeyInsightsSummaryId: the first current takeaway's id (changes with a new version);
+--   summary: the 2-3 takeaways in order (Ordinal 1 = most important), one per line ("\n");
+--   updatedDate: when they were generated;
+--   takeaways: the same as JSON [{ordinal, text}], for a bulleted list without splitting.
+CREATE OR ALTER FUNCTION dbo_professional360.udf_GetCompanyKeyInsightsSummary (@CompanyId INT)
+RETURNS TABLE
+AS RETURN (
+    SELECT
+        x.KeyInsightsSummaryId,
+        x.summary,
+        x.updatedDate,
+        (SELECT T.Ordinal AS ordinal, T.Takeaway AS [text]
+         FROM dbo_professional360.KeyTakeaways T
+         WHERE T.CompanyId = @CompanyId AND T.isActive = 1
+         ORDER BY T.Ordinal
+         FOR JSON PATH) AS takeaways
+    FROM (
+        SELECT
+            MIN(T.KeyTakeawayId) AS KeyInsightsSummaryId,
+            STRING_AGG(CAST(T.Takeaway AS NVARCHAR(MAX)), NCHAR(10))
+                WITHIN GROUP (ORDER BY T.Ordinal) AS summary,
+            CAST(MAX(T.UpdatedDate) AS DATETIME) AS updatedDate
+        FROM dbo_professional360.KeyTakeaways T
+        WHERE T.CompanyId = @CompanyId AND T.isActive = 1
+        HAVING COUNT(*) > 0
+    ) x
 );
 GO
 
@@ -549,8 +581,8 @@ GO
 
 -- GET api/companies/{id}/loanPortfolio : one row per loan class and period (banks), with the
 -- credit quality computed here: this one function is all the endpoint needs. periodRank 1 =
--- current period end, 2 = prior year end. The modal's methodology and sources:
--- udf_GetCompanyMetric with the "Loan Portfolio Composition" metric.
+-- current period end, 2 = prior year end. The modal's methodology, sources and
+-- raw data points: udf_GetCompanyLoanPortfolioDetail.
 --   quality: the class's nonaccrual ratio (nonaccrual loans / loans): under 0.50% Strong, under
 --     1.50% Satisfactory, under 3.00% Watch, else Weak; no figure: Not reported (credit cards
 --     are charged off instead of placed on nonaccrual).
@@ -672,6 +704,32 @@ AS RETURN (
             GROUP BY L.PeriodEnd
         ) a
     ) b
+);
+GO
+
+-- GET api/companies/{id}/loanPortfolio/detail : the Loan Portfolio Composition modal (banks),
+-- one row; none when the company has no loan portfolio. The same content as udf_GetCompanyMetric
+-- with the "Loan Portfolio Composition" metric, found by name so the endpoint needs no metric id.
+--   methodology: text ("\n" separates lines).
+--   dataSources: JSON [{title, url, date}].
+--   dataPoints (Raw Data Points): JSON [{label, text, evidence, segment, parentSegment, value,
+--     pctOfBook, nonaccrual, nonaccrualRatio, priorValue, change, unit, periodEnd,
+--     priorPeriodEnd}]; show "label: text" per line; the first (label "Total") is the whole book.
+CREATE OR ALTER FUNCTION dbo_professional360.udf_GetCompanyLoanPortfolioDetail (@CompanyId INT)
+RETURNS TABLE
+AS RETURN (
+    SELECT TOP 1
+        M.metric_id AS metricId,
+        M.metric_name AS title,
+        M.subtitle,
+        CD.Methodology AS methodology,
+        CD.DataSources AS dataSources,
+        CD.DataPoints AS dataPoints,
+        CD.UpdatedAt AS updatedAt
+    FROM dbo_professional360.CompanyMetricDetail CD
+    JOIN dbo_professional360.metrics M ON M.metric_id = CD.metric_id
+    WHERE CD.CompanyId = @CompanyId AND M.metric_name = N'Loan Portfolio Composition'
+    ORDER BY CD.UpdatedAt DESC
 );
 GO
 

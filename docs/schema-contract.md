@@ -15,7 +15,7 @@
 | `FollowUpQuestions` 增加 Priority, isActive；`KeyInsights` 增加 isActive | 版本化：新版本是新行，旧行 isActive = 0，用户的 flag 不会指向换了内容的问题 |
 | 所有 sources 类列存 `[{title, url, date}]`，不是纯 URL 列表 | 弹窗要显示可读标题；`KeyInsights.link` 是第一个 URL |
 | `MatrixData.accession`、`filed_date`、`context_or_dimension` 存 JSON 列表 | 图里是 list 类型 |
-| 新表 `KeyTakeaways`（CompanyId, Ordinal, Takeaway, UpdatedDate, isActive）（2026-10-20，D-053） | 公司页 Key Insights 上方的 Key Takeaway 框：2–3 条对专业责任险最重要的要点，不显示链接；需要 BFF 新增读取 |
+| 新表 `KeyTakeaways`（CompanyId, Ordinal, Takeaway, UpdatedDate, isActive）（2026-10-20，D-053） | 公司页 Key Insights 上方的 Key Takeaway 框：2–3 条对专业责任险最重要的要点，不显示链接；BFF 经 `udf_GetCompanyKeyInsightsSummary`（`keyInsights/summary`）读取，`deploy/sql/bff_key_takeaways.sql` |
 
 ## 应用表的写入规则
 
@@ -117,6 +117,9 @@
 | Methodology | `loan_portfolio_detail` | methodology |
 | Data Sources | `loan_portfolio_detail.data_sources_json` | `[{title, url, date}]` |
 | Raw Data Points | `loan_portfolio_detail.raw_data_points_json` | `[{label, text, evidence}]`；第一条是合计 |
+
+应用库里这三项在 `CompanyMetricDetail`（指标 "Loan Portfolio Composition"），BFF 用
+`udf_GetCompanyLoanPortfolioDetail(@CompanyId)` 一次取出（`deploy/sql/bff_loan_quality.sql`）。
 
 ### Strategic & Risk / Behavioral / Key Insight 弹窗
 

@@ -11,8 +11,11 @@
 公司页 Key Insights 上方的要点框（2–3 条，对专业责任险最重要的要点，不带链接）数据在
 `KeyTakeaways` 表，清单里没有对应接口。
 
-**建议**：`CompanyDetail` 加 `keyTakeaways: string[]`，按 `Ordinal` 排序，只取
-`isActive = 1`；或单开 `GET api/companies/{id}/keyTakeaways`。
+已定（2026-10-28）：由现有的 `GET api/companies/{id}/keyInsights/summary` 返回，BFF 代码不变。
+它读的 `udf_GetCompanyKeyInsightsSummary` 改为读 `KeyTakeaways`（`deploy/sql/bff_key_takeaways.sql`），
+列名照旧：`KeyInsightsSummaryId`、`summary`（2–3 条按 `Ordinal` 排序，每条一行，`\n` 分隔）、
+`updatedDate`；另加 `takeaways`（JSON `[{ordinal, text}]`，要显示成列表时用）。没有当前要点时没有行，
+接口返回 404，前端隐藏这个框。管线保证每家公司最多 3 条。
 
 ### A2. 指标接口的 `data: object` 没定义
 指标卡片和指标弹窗都依赖这个字段。**建议**拆成两种用法：
@@ -66,6 +69,13 @@ investments"），在 `config/metrics.yaml` 里人工维护（2026-10-27 起；�
 趋势和覆盖比例在同一个函数每行的 `bookNonaccrualRatio`、`bookQuality`、`bookQualityTrend`、
 `bookReportedShare`（同一期末各行相同），这些都在 `udf_GetCompanyLoanPortfolios` 里算好，不需要另外的
 函数或接口（`udf_GetCompanyLoanQualitySummary` 每期一行，可选）。分档是提议，需要承保团队确认。
+
+弹窗（灯泡按钮）的 Methodology、Data Sources、Raw Data Points 由
+`udf_GetCompanyLoanPortfolioDetail(@CompanyId)` 返回（2026-10-27 补上，之前前端显示的是 mock 的
+RetailCo 内容）：一行，`methodology`（文本，`\n` 分行）、`dataSources`（JSON `[{title, url, date}]`）、
+`dataPoints`（JSON，格式同 A2 的 Loan Portfolio 弹窗，每条显示 `label: text`，第一条 Total 是整个组合）、
+`updatedAt`。建议接口 `GET api/companies/{id}/loanPortfolio/detail`；非银行没有行，前端隐藏弹窗按钮。
+内容与 `udf_GetCompanyMetric` 取 "Loan Portfolio Composition" 指标相同，只是不需要指标 id。
 
 ### A4. 趋势图拿不到趋势列表
 接口是 `trends/{trend_name_id}`，但前端不知道有哪些趋势 id。

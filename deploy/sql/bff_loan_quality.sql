@@ -7,6 +7,8 @@
 --   4. udf_GetCompanyLoanPortfolios(@CompanyId)     updated: adds quality and qualityTrend
 --      of each class and book* columns of the whole book, computed inside (2026-10-27): it
 --      needs none of 1-3, so it can be run on its own and the endpoint keeps one function.
+--   5. udf_GetCompanyLoanPortfolioDetail(@CompanyId) new (2026-10-27): the modal's
+--      Methodology, Data Sources and Raw Data Points (one row); runs on its own.
 --
 -- Schema [dbo_professional360]; if the tables are in [dbo], replace "dbo_professional360."
 -- with "dbo." throughout. Run 1 and 2 before 3, which calls them.
@@ -85,8 +87,8 @@ GO
 
 -- GET api/companies/{id}/loanPortfolio : one row per loan class and period (banks), with the
 -- credit quality computed here: this one function is all the endpoint needs. periodRank 1 =
--- current period end, 2 = prior year end. The modal's methodology and sources:
--- udf_GetCompanyMetric with the "Loan Portfolio Composition" metric.
+-- current period end, 2 = prior year end. The modal's methodology, sources and
+-- raw data points: udf_GetCompanyLoanPortfolioDetail.
 --   quality: the class's nonaccrual ratio (nonaccrual loans / loans): under 0.50% Strong, under
 --     1.50% Satisfactory, under 3.00% Watch, else Weak; no figure: Not reported (credit cards
 --     are charged off instead of placed on nonaccrual).
@@ -167,5 +169,31 @@ AS RETURN (
             GROUP BY L.PeriodEnd
         ) a
     ) b ON b.periodEnd = x.periodEnd
+);
+GO
+
+-- GET api/companies/{id}/loanPortfolio/detail : the Loan Portfolio Composition modal (banks),
+-- one row; none when the company has no loan portfolio. The same content as udf_GetCompanyMetric
+-- with the "Loan Portfolio Composition" metric, found by name so the endpoint needs no metric id.
+--   methodology: text ("\n" separates lines).
+--   dataSources: JSON [{title, url, date}].
+--   dataPoints (Raw Data Points): JSON [{label, text, evidence, segment, parentSegment, value,
+--     pctOfBook, nonaccrual, nonaccrualRatio, priorValue, change, unit, periodEnd,
+--     priorPeriodEnd}]; show "label: text" per line; the first (label "Total") is the whole book.
+CREATE OR ALTER FUNCTION dbo_professional360.udf_GetCompanyLoanPortfolioDetail (@CompanyId INT)
+RETURNS TABLE
+AS RETURN (
+    SELECT TOP 1
+        M.metric_id AS metricId,
+        M.metric_name AS title,
+        M.subtitle,
+        CD.Methodology AS methodology,
+        CD.DataSources AS dataSources,
+        CD.DataPoints AS dataPoints,
+        CD.UpdatedAt AS updatedAt
+    FROM dbo_professional360.CompanyMetricDetail CD
+    JOIN dbo_professional360.metrics M ON M.metric_id = CD.metric_id
+    WHERE CD.CompanyId = @CompanyId AND M.metric_name = N'Loan Portfolio Composition'
+    ORDER BY CD.UpdatedAt DESC
 );
 GO
