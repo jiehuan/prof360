@@ -7,7 +7,7 @@ Five notebooks in `scripts/databricks/` (Databricks source format):
 | `azure_sql_connect` | Shared connection, loaded by the others with `%run` |
 | `run_sql_script` | Runs a script from `deploy/sql/`: creates schemas and tables, or drops them (`*_drop.sql`) |
 | `copy_sqlite_to_azure` | Copies `data/uw.db` or `data/app.db` into Azure SQL, keeping row ids: `load` once, then `sync` after each pipeline run (inserts, updates and deletes by primary key) |
-| `sync_sql_objects` | Copies every function and procedure of a schema from one environment to another (e.g. `dbo_professional360`, `dv` → `pp`), as defined in the source; `dry_run`, then `apply` (section 3) |
+| `sync_sql_objects` | Copies every function and procedure of a schema from one environment to another (e.g. `dbo_professional360`, `dv` → `pp`) through a file: `export` in the source workspace, `import` (`dry_run`, then `apply`) in the target (section 3) |
 | `merge_company_logos` | Writes the logo files of `config/logos/` to `Company.logo` as data URIs, matched by CIK (D-067); only that column, only changed logos. Needs `Company.logo` as `NVARCHAR(MAX)` (`app_schema_changes.sql`). `dry_run`, then `apply` |
 
 ## How they connect
@@ -165,24 +165,37 @@ the pipeline run, outside working hours.
 
 The BFF reads the app tables through functions and procedures, some from `deploy/sql/bff_*.sql`,
 some written by the BFF team directly in `dv`. To give `pp` (or `pr`) the same set, copy them
-from the database rather than from the repo's files:
+from the database rather than from the repo's files. One environment cannot reach the other,
+so the notebook runs twice, once in each workspace, with a file in between:
 
-1. Widgets: `source_env` (default `dv`), `target_env` (default `pp`); the schema defaults to
-   `app_schema` in azure.yaml for each. `only` limits the copy to a comma-separated list of names.
-2. **Dry run.** Lists each function and procedure as `new`, `changed` or `kind changed`
-   (e.g. inline in the source, multi-statement in the target), in the order they will be
-   created: a function before the functions and procedures that call it. Objects only in the
-   target are listed and left as they are. `PROBLEM` lines name tables the copied objects read
-   that the target lacks: create them first (e.g. `UserNotificationRead` with
-   `deploy/sql/bff_notifications.sql` in `run_sql_script`), or those objects fail.
-3. **Apply.** Runs each definition as `CREATE OR ALTER`; an object of another kind in the target
-   is dropped first (error 2010 otherwise). A second pass retries what failed. The last line
-   must read `done: N of N objects equal to the source`; a failure is printed with its error
-   and stops the notebook. Rerunning changes nothing once the two are equal.
+1. **Export, in the `dv` workspace:** `action = export`, `env = dv`, `file` a `.json` path the
+   notebook can write, by default `/dbfs/FileStore/professional360/sql_objects.json`
+   (or a Unity Catalog volume, `/Volumes/...`). It writes that file (every function and
+   procedure in dependency order, with the tables each reads) and the same name with `.sql`.
+   `only` limits it to a comma-separated list of names. Download the JSON file (FileStore:
+   `https://<workspace>/files/professional360/sql_objects.json`; a volume: Catalog Explorer).
+2. **Upload** it in the `pp` workspace (to FileStore or a volume).
+3. **Import, dry run, in the `pp` workspace:** `action = import`, `env = pp`, `file` = the
+   uploaded path, `mode = dry_run`. Lists each object as `new`, `changed` or `kind changed`
+   (e.g. inline in the file, multi-statement here), in the order they will be created: a
+   function before the functions and procedures that call it. Objects only in `pp` are listed
+   and left as they are. `PROBLEM` lines name tables the objects read that `pp` lacks: create
+   them first (e.g. `UserNotificationRead` with `deploy/sql/bff_notifications.sql` in
+   `run_sql_script`), or those objects fail.
+4. **Import, apply:** `mode = apply`. Runs each definition as `CREATE OR ALTER`; an object of
+   another kind is dropped first (error 2010 otherwise). A second pass retries what failed. The
+   last line must read `done: N of N objects equal to the file`; a failure is printed with its
+   error and stops the notebook. Rerunning changes nothing once the two are equal.
 
-Only definitions are copied: no tables, data or permissions (`GRANT EXECUTE` for the BFF's
-identity is set per environment). The service principal needs `VIEW DEFINITION` in the source
-and `CREATE FUNCTION`, `CREATE PROCEDURE` and `ALTER` on the schema in the target.
+The `.sql` file is the same as a plain script (a drop of another kind of object, then
+`CREATE OR ALTER`, per object, in order): `run_sql_script` or SSMS can run it instead of step 3–4,
+without the comparison and the table check.
+
+The schema defaults to `app_schema` in azure.yaml for each environment (widget `schema`); if
+the two differ, the import renames it in the definitions. Only definitions are copied: no
+tables, data or permissions (`GRANT EXECUTE` for the BFF's identity is set per environment). The
+service principal needs `VIEW DEFINITION` in `dv`, and `CREATE FUNCTION`, `CREATE PROCEDURE` and
+`ALTER` on the schema in `pp`.
 
 ## Validation
 
@@ -212,9 +225,10 @@ principal login. Run the dry runs first.
   history, metric choice and followed industry, from a file with other rows in its own
   `User*` tables: the 7 `User*` tables were skipped, the target's user rows were unchanged,
   the 24 pipeline tables synced as before.
-- **`sync_sql_objects` (2026-10-28):** 34 functions and procedures from a `dv` stand-in to an
-  empty `pp` stand-in holding an outdated function, a multi-statement version of an inline
-  one, an extra function and no `UserNotificationRead` table. The dry run listed all four
-  cases in dependency order; apply created 32 and stopped on the two objects needing the
-  table; after creating it, apply finished (34 of 34 equal, the multi-statement one now
-  inline, the extra one kept); a further run changed nothing.
+- **`sync_sql_objects` (2026-10-28):** export of 34 functions and procedures from a `dv`
+  stand-in to a file, import into an empty `pp` stand-in holding an outdated function, a
+  multi-statement version of an inline one, an extra function and no `UserNotificationRead`
+  table. The dry run listed all four cases in dependency order; apply created 32 and stopped on
+  the two objects needing the table; after creating it, apply finished (34 of 34 equal, the
+  multi-statement one now inline, the extra one kept); a further run changed nothing. The
+  exported `.sql` run with sqlcmd on a fresh stand-in (twice) gave the same 34 objects.
