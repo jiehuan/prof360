@@ -2,8 +2,17 @@
 -- GET api/companies/{id}/keyInsights/summary already reads udf_GetCompanyKeyInsightsSummary
 -- (KeyInsightsSummaryId AS id, summary, updatedDate); this version reads the pipeline's
 -- KeyTakeaways table (D-053) instead, so the BFF code does not change. It replaces the earlier
--- definition of the function. Schema [dbo_professional360]; if the tables are in [dbo], replace
+-- definition of the function (dropped first when that is not an inline function; script it out
+-- beforehand to keep a copy). Schema [dbo_professional360]; if the tables are in [dbo], replace
 -- "dbo_professional360." with "dbo." throughout. Needs SQL Server 2017+ / Azure SQL (STRING_AGG).
+
+-- The BFF's earlier definition of this function is not an inline table function, and CREATE OR
+-- ALTER cannot change a function's kind (error 2010): drop it first when it is of another kind.
+IF EXISTS (SELECT 1 FROM sys.objects
+           WHERE object_id = OBJECT_ID(N'dbo_professional360.udf_GetCompanyKeyInsightsSummary')
+             AND type <> 'IF')
+    DROP FUNCTION dbo_professional360.udf_GetCompanyKeyInsightsSummary;
+GO
 
 -- GET api/companies/{id}/keyInsights/summary : the Key Takeaway box above the Key Insights
 -- (D-053), one row; none when the company has no current takeaways (the BFF then answers 404
