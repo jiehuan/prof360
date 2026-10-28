@@ -160,6 +160,16 @@ the pipeline run, outside working hours.
   drops the staging schema), then run the whole notebook again; never rerun the load cell on
   its own (it now checks and refuses). The first error printed (`FAILED to load <table>`) is
   the cause; constraint messages after it are consequences.
+- **`clear_target` is only for a target this copy filled and nothing else uses.** It refuses
+  when rows of other tables (the `User*` tables, tables the BFF team added such as
+  `CompanyKeyInsightsSummary`) reference the tables it would empty: such a target is in use,
+  update it with `sync`. It runs as one transaction, so it empties every table or, on any
+  error, none, and the constraints are back on either way.
+- **`another run is using the staging schema`:** two runs of the notebook were staging at the
+  same time (e.g. Run all twice, or a widget change that reruns the notebook: set the widget
+  panel's "On widget change" to "Do nothing"). Nothing was written to the target. Let the
+  other run finish or stop it, then run once. Before this check (2026-10-29) the same overlap
+  showed up as duplicate primary keys in the load (`Cannot insert duplicate key ... Activities`).
 
 ## 3. Functions and procedures to another environment: `sync_sql_objects`
 
@@ -232,3 +242,9 @@ principal login. Run the dry runs first.
   the two objects needing the table; after creating it, apply finished (34 of 34 equal, the
   multi-statement one now inline, the extra one kept); a further run changed nothing. The
   exported `.sql` run with sqlcmd on a fresh stand-in (twice) gave the same 34 objects.
+- **`copy_sqlite_to_azure` safety (2026-10-29):** after a load of `app.db` (24 tables, row
+  counts match): `clear_target` with a row in a BFF-style table referencing `Company` refused
+  and changed nothing; with a trigger failing the delete of a late table it rolled back
+  entirely (all rows and trusted constraints kept); with nothing in the way it emptied the 24
+  tables. Two loads started together both stopped at staging (`Activities`: 7,246 staged for
+  4,623 sent), the target untouched.
