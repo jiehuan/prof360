@@ -205,17 +205,37 @@ for t in sorted(set(target) - set(src_tables)):
     if not app_owned(t):
         print(f"empty  {t}: in the target schema, not in the SQLite file")
 if W["mode"] == "clear_target":
-    # After a failed load: empty the tables of this copy so it can run again. DELETE, not
-    # TRUNCATE (refused on tables that others reference); constraints are off meanwhile.
-    print(f"clearing {sum(target_rows.get(t, 0) for t, _ in plan):,} rows in {TARGET}")
+    # Only for a target this copy filled and nothing else uses (after a failed load). Rows of
+    # other tables (the application's User* tables, tables the BFF team added) that reference
+    # these tables mean the target is in use: refuse, a used target is updated with sync.
+    copied = {t for t, _ in plan}
+    in_use = []
+    for r in query(engine, f"""
+            SELECT OBJECT_SCHEMA_NAME(fk.parent_object_id) AS sch,
+                   OBJECT_NAME(fk.parent_object_id) AS child,
+                   OBJECT_NAME(fk.referenced_object_id) AS parent
+            FROM sys.foreign_keys fk
+            WHERE OBJECT_SCHEMA_NAME(fk.referenced_object_id) = '{TARGET}'"""):  # fmt: skip
+        if r["parent"] not in copied or (r["sch"] == TARGET and r["child"] in copied):
+            continue
+        n = query(engine, f"SELECT COUNT_BIG(*) AS n FROM {q(r['sch'])}.{q(r['child'])}")[0]["n"]
+        if n:
+            in_use.append(f"{r['sch']}.{r['child']} ({n} rows) references {r['parent']}")
+    for p in in_use:
+        print("PROBLEM", p)
+    assert not in_use, (
+        "the target is in use (rows above refer to it): clear_target would break them. "
+        "Update it with mode = sync instead"
+    )
+    # One transaction: every table is emptied, or (on any error) none is, and the constraints
+    # are back on either way. DELETE, not TRUNCATE (refused on tables that others reference).
+    total = sum(target_rows.get(t, 0) for t, _ in plan)
+    print(f"clearing {total:,} rows in {TARGET}")
+    stmts = [f"ALTER TABLE {q(TARGET)}.{q(t)} NOCHECK CONSTRAINT ALL;" for t, _ in plan]
+    stmts += [f"DELETE FROM {q(TARGET)}.{q(t)};" for t, _ in plan if target_rows.get(t, 0)]
+    stmts += [f"ALTER TABLE {q(TARGET)}.{q(t)} WITH CHECK CHECK CONSTRAINT ALL;" for t, _ in plan]
+    run_sql(engine, "SET XACT_ABORT ON;\nBEGIN TRANSACTION;\n" + "\n".join(stmts) + "\nCOMMIT;")
     for t, _ in plan:
-        run_sql(engine, f"ALTER TABLE {q(TARGET)}.{q(t)} NOCHECK CONSTRAINT ALL")
-    for t, _ in plan:
-        if target_rows.get(t, 0):
-            run_sql(engine, f"DELETE FROM {q(TARGET)}.{q(t)}")
-            print(f"cleared {t}")
-    for t, _ in plan:
-        run_sql(engine, f"ALTER TABLE {q(TARGET)}.{q(t)} WITH CHECK CHECK CONSTRAINT ALL")
         run_sql(engine, f"DROP TABLE IF EXISTS {q(STAGE)}.{q(t)}")
     run_sql(engine, f"IF SCHEMA_ID('{STAGE}') IS NOT NULL EXEC('DROP SCHEMA {q(STAGE)}')")
     dbutils.notebook.exit(f"cleared {len(plan)} tables in {TARGET}; run mode = load again")
@@ -396,6 +416,13 @@ for t, shared in plan:
             staged += len(batch)
     finally:
         raw.close()
+    # More rows than were sent: another run of this notebook is staging into the same schema
+    # at the same time (its rows would show up later as duplicate keys).
+    n = query(engine, f"SELECT COUNT_BIG(*) AS n FROM {staged_table}")[0]["n"]
+    assert n == staged, (
+        f"{staged_table} has {n} rows, {staged} were sent: another run is using the staging "
+        f"schema {STAGE}. Let it finish (or stop it), then run this notebook once"
+    )
     print(f"staged {t}: {staged} rows ({time.time() - started:.0f} s)")
 
 loaded = []
