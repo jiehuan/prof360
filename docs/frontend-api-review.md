@@ -11,8 +11,11 @@
 公司页 Key Insights 上方的要点框（2–3 条，对专业责任险最重要的要点，不带链接）数据在
 `KeyTakeaways` 表，清单里没有对应接口。
 
-**建议**：`CompanyDetail` 加 `keyTakeaways: string[]`，按 `Ordinal` 排序，只取
-`isActive = 1`；或单开 `GET api/companies/{id}/keyTakeaways`。
+已定（2026-10-28）：由现有的 `GET api/companies/{id}/keyInsights/summary` 返回，BFF 代码不变。
+它读的 `udf_GetCompanyKeyInsightsSummary` 改为读 `KeyTakeaways`（`deploy/sql/bff_key_takeaways.sql`），
+列名照旧：`KeyInsightsSummaryId`、`summary`（2–3 条按 `Ordinal` 排序，每条一行，`\n` 分隔）、
+`updatedDate`；另加 `takeaways`（JSON `[{ordinal, text}]`，要显示成列表时用）。没有当前要点时没有行，
+接口返回 404，前端隐藏这个框。管线保证每家公司最多 3 条。
 
 ### A2. 指标接口的 `data: object` 没定义
 指标卡片和指标弹窗都依赖这个字段。**建议**拆成两种用法：
