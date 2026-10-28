@@ -334,6 +334,14 @@ AS RETURN (
 );
 GO
 
+-- The BFF's earlier definition of this function is not an inline table function, and CREATE OR
+-- ALTER cannot change a function's kind (error 2010): drop it first when it is of another kind.
+IF EXISTS (SELECT 1 FROM sys.objects
+           WHERE object_id = OBJECT_ID(N'dbo_professional360.udf_GetCompanyKeyInsightsSummary')
+             AND type <> 'IF')
+    DROP FUNCTION dbo_professional360.udf_GetCompanyKeyInsightsSummary;
+GO
+
 -- GET api/companies/{id}/keyInsights/summary : the Key Takeaway box above the Key Insights
 -- (D-053), one row; none when the company has no current takeaways (the BFF then answers 404
 -- and the box is hidden). Keeps the columns the BFF already selects from this function:
