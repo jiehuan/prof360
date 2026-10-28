@@ -1,12 +1,13 @@
 # Azure SQL from Databricks: create the tables, copy SQLite data
 
-Five notebooks in `scripts/databricks/` (Databricks source format):
+Six notebooks in `scripts/databricks/` (Databricks source format):
 
 | Notebook | Does |
 |---|---|
 | `azure_sql_connect` | Shared connection, loaded by the others with `%run` |
 | `run_sql_script` | Runs a script from `deploy/sql/`: creates schemas and tables, or drops them (`*_drop.sql`) |
 | `copy_sqlite_to_azure` | Copies `data/uw.db` or `data/app.db` into Azure SQL, keeping row ids: `load` once, then `sync` after each pipeline run (inserts, updates and deletes by primary key) |
+| `run_query` | Shows the result of a read-only query (a repo file such as `deploy/sql/checks/operational_metrics.sql`, or typed in) on an environment (section 4) |
 | `sync_sql_objects` | Copies every function and procedure of a schema from one environment to another (e.g. `dbo_professional360`, `dv` → `pp`) through a file: `export` in the source workspace, `import` (`dry_run`, then `apply`) in the target (section 3) |
 | `merge_company_logos` | Writes the logo files of `config/logos/` to `Company.logo` as data URIs, matched by CIK (D-067); only that column, only changed logos. Needs `Company.logo` as `NVARCHAR(MAX)` (`app_schema_changes.sql`). `dry_run`, then `apply` |
 
@@ -206,6 +207,21 @@ the two differ, the import renames it in the definitions. Only definitions are c
 tables, data or permissions (`GRANT EXECUTE` for the BFF's identity is set per environment). The
 service principal needs `VIEW DEFINITION` in `dv`, and `CREATE FUNCTION`, `CREATE PROCEDURE` and
 `ALTER` on the schema in `pp`.
+
+## 4. Look at the data: `run_query`
+
+To check what an environment holds (e.g. why a company page looks wrong), run a query and see
+the result in the notebook: `env`, then `sql_file` (a repo path) or the query typed into `sql`.
+`user_id` declares `@UserId` for queries that check a user's page. Read-only: a query with
+INSERT, UPDATE, DELETE, MERGE, CREATE, ALTER, DROP, EXEC, SELECT INTO and the like is refused,
+and the session is rolled back at the end in any case. Every result set is shown (at most
+`max_rows` rows each).
+
+Checks kept in the repo (`deploy/sql/checks/`):
+
+- `operational_metrics.sql`: per company, the operational metrics with data, the industry
+  default for its SIC code, the user's saved choice for that SIC code, and what
+  `udf_GetCompanyDetails` returns to the page.
 
 ## Validation
 
