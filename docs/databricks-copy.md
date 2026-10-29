@@ -1,12 +1,14 @@
 # Azure SQL from Databricks: create the tables, copy SQLite data
 
-Four notebooks in `scripts/databricks/` (Databricks source format):
+Six notebooks in `scripts/databricks/` (Databricks source format):
 
 | Notebook | Does |
 |---|---|
 | `azure_sql_connect` | Shared connection, loaded by the others with `%run` |
 | `run_sql_script` | Runs a script from `deploy/sql/`: creates schemas and tables, or drops them (`*_drop.sql`) |
 | `copy_sqlite_to_azure` | Copies `data/uw.db` or `data/app.db` into Azure SQL, keeping row ids: `load` once, then `sync` after each pipeline run (inserts, updates and deletes by primary key) |
+| `run_query` | Shows the result of a read-only query (a repo file such as `deploy/sql/checks/operational_metrics.sql`, or typed in) on an environment (section 4) |
+| `sync_sql_objects` | Copies every function and procedure of a schema from one environment to another (e.g. `dbo_professional360`, `dv` → `pp`) through a file: `export` in the source workspace, `import` (`dry_run`, then `apply`) in the target (section 3) |
 | `merge_company_logos` | Writes the logo files of `config/logos/` to `Company.logo` as data URIs, matched by CIK (D-067); only that column, only changed logos. Needs `Company.logo` as `NVARCHAR(MAX)` (`app_schema_changes.sql`). `dry_run`, then `apply` |
 
 ## How they connect
@@ -159,6 +161,67 @@ the pipeline run, outside working hours.
   drops the staging schema), then run the whole notebook again; never rerun the load cell on
   its own (it now checks and refuses). The first error printed (`FAILED to load <table>`) is
   the cause; constraint messages after it are consequences.
+- **`clear_target` is only for a target this copy filled and nothing else uses.** It refuses
+  when rows of other tables (the `User*` tables, tables the BFF team added such as
+  `CompanyKeyInsightsSummary`) reference the tables it would empty: such a target is in use,
+  update it with `sync`. It runs as one transaction, so it empties every table or, on any
+  error, none, and the constraints are back on either way.
+- **`another run is using the staging schema`:** two runs of the notebook were staging at the
+  same time (e.g. Run all twice, or a widget change that reruns the notebook: set the widget
+  panel's "On widget change" to "Do nothing"). Nothing was written to the target. Let the
+  other run finish or stop it, then run once. Before this check (2026-10-29) the same overlap
+  showed up as duplicate primary keys in the load (`Cannot insert duplicate key ... Activities`).
+
+## 3. Functions and procedures to another environment: `sync_sql_objects`
+
+The BFF reads the app tables through functions and procedures, some from `deploy/sql/bff_*.sql`,
+some written by the BFF team directly in `dv`. To give `pp` (or `pr`) the same set, copy them
+from the database rather than from the repo's files. One environment cannot reach the other,
+so the notebook runs twice, once in each workspace, with a file in between:
+
+1. **Export, in the `dv` workspace:** `action = export`, `env = dv`, `file` a `.json` path the
+   notebook can write, by default `/dbfs/FileStore/professional360/sql_objects.json`
+   (or a Unity Catalog volume, `/Volumes/...`). It writes that file (every function and
+   procedure in dependency order, with the tables each reads) and the same name with `.sql`.
+   `only` limits it to a comma-separated list of names. Download the JSON file (FileStore:
+   `https://<workspace>/files/professional360/sql_objects.json`; a volume: Catalog Explorer).
+2. **Upload** it in the `pp` workspace (to FileStore or a volume).
+3. **Import, dry run, in the `pp` workspace:** `action = import`, `env = pp`, `file` = the
+   uploaded path, `mode = dry_run`. Lists each object as `new`, `changed` or `kind changed`
+   (e.g. inline in the file, multi-statement here), in the order they will be created: a
+   function before the functions and procedures that call it. Objects only in `pp` are listed
+   and left as they are. `PROBLEM` lines name tables the objects read that `pp` lacks: create
+   them first (e.g. `UserNotificationRead` with `deploy/sql/bff_notifications.sql` in
+   `run_sql_script`), or those objects fail.
+4. **Import, apply:** `mode = apply`. Runs each definition as `CREATE OR ALTER`; an object of
+   another kind is dropped first (error 2010 otherwise). A second pass retries what failed. The
+   last line must read `done: N of N objects equal to the file`; a failure is printed with its
+   error and stops the notebook. Rerunning changes nothing once the two are equal.
+
+The `.sql` file is the same as a plain script (a drop of another kind of object, then
+`CREATE OR ALTER`, per object, in order): `run_sql_script` or SSMS can run it instead of step 3–4,
+without the comparison and the table check.
+
+The schema defaults to `app_schema` in azure.yaml for each environment (widget `schema`); if
+the two differ, the import renames it in the definitions. Only definitions are copied: no
+tables, data or permissions (`GRANT EXECUTE` for the BFF's identity is set per environment). The
+service principal needs `VIEW DEFINITION` in `dv`, and `CREATE FUNCTION`, `CREATE PROCEDURE` and
+`ALTER` on the schema in `pp`.
+
+## 4. Look at the data: `run_query`
+
+To check what an environment holds (e.g. why a company page looks wrong), run a query and see
+the result in the notebook: `env`, then `sql_file` (a repo path) or the query typed into `sql`.
+`user_id` declares `@UserId` for queries that check a user's page. Read-only: a query with
+INSERT, UPDATE, DELETE, MERGE, CREATE, ALTER, DROP, EXEC, SELECT INTO and the like is refused,
+and the session is rolled back at the end in any case. Every result set is shown (at most
+`max_rows` rows each).
+
+Checks kept in the repo (`deploy/sql/checks/`):
+
+- `operational_metrics.sql`: per company, the operational metrics with data, the industry
+  default for its SIC code, the user's saved choice for that SIC code, and what
+  `udf_GetCompanyDetails` returns to the page.
 
 ## Validation
 
@@ -188,3 +251,16 @@ principal login. Run the dry runs first.
   history, metric choice and followed industry, from a file with other rows in its own
   `User*` tables: the 7 `User*` tables were skipped, the target's user rows were unchanged,
   the 24 pipeline tables synced as before.
+- **`sync_sql_objects` (2026-10-28):** export of 34 functions and procedures from a `dv`
+  stand-in to a file, import into an empty `pp` stand-in holding an outdated function, a
+  multi-statement version of an inline one, an extra function and no `UserNotificationRead`
+  table. The dry run listed all four cases in dependency order; apply created 32 and stopped on
+  the two objects needing the table; after creating it, apply finished (34 of 34 equal, the
+  multi-statement one now inline, the extra one kept); a further run changed nothing. The
+  exported `.sql` run with sqlcmd on a fresh stand-in (twice) gave the same 34 objects.
+- **`copy_sqlite_to_azure` safety (2026-10-29):** after a load of `app.db` (24 tables, row
+  counts match): `clear_target` with a row in a BFF-style table referencing `Company` refused
+  and changed nothing; with a trigger failing the delete of a late table it rolled back
+  entirely (all rows and trusted constraints kept); with nothing in the way it emptied the 24
+  tables. Two loads started together both stopped at staging (`Activities`: 7,246 staged for
+  4,623 sent), the target untouched.
