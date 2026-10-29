@@ -302,7 +302,8 @@ GO
 
 -- GET api/companies/{id} : CompanyDetail (one row). keyTakeaways (review A1; the endpoint uses
 -- udf_GetCompanyKeyInsightsSummary instead) and the bank module flags (A5) are proposed
--- additions; trends: the company's trend type ids, e.g. [1,2,3,4,5] (banks; [] otherwise).
+-- additions; trends: the company's trend type ids, e.g. [1,2,3,4,5] (banks; [] otherwise);
+-- sicCode: the company's SIC code (2026-10-29), e.g. '7011' (industry is its description).
 -- The BFF records the view (UserHistory) separately.
 CREATE OR ALTER FUNCTION dbo_professional360.udf_GetCompanyDetails (@UserId INT, @CompanyId INT)
 RETURNS TABLE
@@ -312,6 +313,7 @@ AS RETURN (
         C.CompanyName AS name,
         C.NameAbbreviation AS ticker,
         S.Description AS industry,
+        S.SIC_Code AS sicCode,
         C.logo,
         C.Location AS location,
         C.UpdatedAt AS updatedAt,
