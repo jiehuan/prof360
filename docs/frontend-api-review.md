@@ -136,6 +136,8 @@ Cash Flow 是 4），并给 Cash Flow 一个区块。类别 7（Loan Portfolio�
 是普通指标卡片，"Loan Portfolio Composition" 本身不在这个数组里（它有自己的模块，见 A3）。
 检查数据：`deploy/sql/checks/operational_metrics.sql`（`scripts/databricks/run_query`）。
 
+2026-10-29：前端已改为按 `name` 显示，标题是 `<name> Metrics`。类别名 "Operational Metrics" 因此改为 **"Operational"**（id 仍是 5，`config/app_publish.yaml`；Azure 上用 `deploy/sql/category_operational.sql`），页面显示 "Operational Metrics"，不再是 "Operational Metrics Metrics"。其他类别名本来就不带 Metrics。
+
 ## B. 字段对齐
 
 ### B1. 来源只给一个，但数据有多个

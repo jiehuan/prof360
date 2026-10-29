@@ -83,7 +83,7 @@
 | Key Insights Summary | `insight` 中 `kind = 'KEY' AND is_current = 1`，按 `ordinal` 排序；关联 `insight_evidence` 和 `insight_metric` | insight_type (Warning/Negative/Positive/Info), title, summary, uw_relevance, supporting_evidence | 隐藏模块 |
 | Financial / Liquidity / Leverage / Cash Flow 指标 | `metric_value` 关联 `metric_definition`（`is_display = 1`），按 `section` 分组 | value, value_status, unit, derivation, period_* | 单个指标无值时显示 "—"；原因见覆盖率报告 |
 | QoQ / YoY / 5Ys 切换 | `metric_value` 中 `period_type` 取 Q（最近 8 个季度）或 FY（最近 5 年）；增长率是 `revenue_growth_qoq` / `revenue_growth_yoy` | — | — |
-| Operational Metrics（酒店：RevPAR、入住率、ADR） | `metric_value` 中 `metric_code IN ('revpar','occupancy','adr')`；同表还有 Marriott 的 `gross_fee_revenue` 和 `net_fee_revenue` | evidence | 隐藏 |
+| Operational（酒店：RevPAR、入住率、ADR） | `metric_value` 中 `metric_code IN ('revpar','occupancy','adr')`；同表还有 Marriott 的 `gross_fee_revenue` 和 `net_fee_revenue` | evidence | 隐藏 |
 | Performance Trends（仅 FI） | `metric_value` 中 `metric_code IN ('cet1_ratio','tier1_ratio','lcr','nim','npl_ratio','fee_income_growth_yoy')`；NIM / CET1 / NPL 有约 5 个财年 | evidence | **非 FI 公司隐藏整个模块**（`company.is_financial = 0`，这些行也不会存在） |
 | Loan Portfolio（仅 FI） | `loan_portfolio_segment`（贷款类别级，含当前期和上一年末），详情见下文弹窗部分 | parent_segment, segment, outstanding, pct_of_book, nonaccrual, nonaccrual_ratio, period_end | 同上 |
 | Strategic & Risk Insights | `insight` 中 `kind IN ('STRATEGIC_RISK','BEHAVIORAL') AND is_current = 1`；按 category 分组：Governance & Leadership / Risk & Legal / Event Signals / Behavioral Insights | title, summary, uw_relevance, event_date | `subcategory = 'No signal'` 的行表示"已审查，无重要信号"，可以显示为灰色说明 |
