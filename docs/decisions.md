@@ -1277,3 +1277,20 @@ LLM runs until the end, then one comparison.
   `config/logos.yaml` or a replaced file.
 - This release (Phase 16 code, 107 companies): only those companies' logo files and corrections
   are kept; every one of the 107 has a logo.
+
+**D-068 Metric underwriting relevance: no item ids in the text (2026-10-29).**
+- The metricdetail prompt lists the company's insights and follow-up questions with ids (K1,
+  R2, B3, Q4) so the model can pick related items; the model then often cited them in the text
+  the page shows ("(K2, R4)", "K1 and R8 show ..."), which means nothing to a reader. In the
+  2026-10-28 data: 702 of 2,455 metric relevance texts (29%); 481 only in brackets, 221 in the
+  sentence. Key insights, takeaways, risks and questions: none or one or two.
+- Options: (a) prompt only (no guarantee); (b) prompt plus validation; (c) remove ids when
+  publishing (an id in the sentence leaves a broken sentence). Chosen (user approval of the
+  plan): (b).
+- How: `metric_detail_v2` says the ids go only in the two id lists and the text names the event
+  or fact itself. `run_metric_detail.strip_ids` removes lists of the company's own ids in
+  brackets and drops a text that still names one of its K/R/B ids in the sentence (counted as
+  dropped, like an unverified number). Only that company's ids count: quarters ("Q2") and
+  ratings ("B2") of other text stay; a rating equal to one of its B ids drops the text (rare,
+  accepted). Links still come from the id lists.
+- Golden (MAR, JPM, ENPH, $0.02): 72 of 72 texts kept, none with ids (before: 22).

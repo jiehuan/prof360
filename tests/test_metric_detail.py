@@ -10,7 +10,7 @@ from uw_pipeline.config import CompanyConfig, load_industry_config
 from uw_pipeline.enrich.llm import load_llm_config
 from uw_pipeline.enrich.package import load_insights_config
 from uw_pipeline.enrich.sources import load_source_labels
-from uw_pipeline.jobs.run_metric_detail import run_metric_detail_stage
+from uw_pipeline.jobs.run_metric_detail import run_metric_detail_stage, strip_ids
 from uw_pipeline.schema import (
     followup_question,
     followup_question_metric,
@@ -87,6 +87,60 @@ def test_methodology_sources_relevance_and_links() -> None:
     assert (risk_id, "total_debt", "METRIC_DETAIL") in im
     assert (key_id, "total_debt", "METRIC_DETAIL") not in im
     assert (qid, "total_debt", "QUESTION") in qm
+
+
+def test_item_ids_are_kept_out_of_the_text() -> None:
+    """D-068: ids in brackets are removed, an id in the sentence drops the text; the links
+    still come from the id lists."""
+
+    def with_ids(model, user):
+        if "## Metrics (code | name" in user:
+            return {"metrics": [
+                {"metric_code": "total_debt",
+                 "uw_relevance": "Debt of $16.9B against negative equity (K1, R1).",
+                 "related_insight_ids": ["K1", "R1"], "related_question_ids": []},
+                {"metric_code": "equity",
+                 "uw_relevance": "R1 treats the negative equity as a governance risk.",
+                 "related_insight_ids": ["R1"], "related_question_ids": []},
+                {"metric_code": "debt_to_equity",
+                 "uw_relevance": "Debt-to-equity is N/M while equity is negative (Q1).",
+                 "related_insight_ids": [], "related_question_ids": ["Q1"]},
+            ]}  # fmt: skip
+        return ti.answer(model, user)
+
+    engine = _env()
+    llm = FakeLLM(with_ids)
+    ti._run(engine, llm)
+    assert "relevance=2/3" in _run(engine, llm)
+    with engine.connect() as c:
+        rel = {r.metric_code: r.uw_relevance for r in c.execute(select(metric_insight))}
+        risk_id = c.execute(
+            select(insight.c.insight_id).where(insight.c.title == "Negative equity with heavy debt")
+        ).scalar_one()  # fmt: skip
+        im = {tuple(r) for r in c.execute(select(insight_metric))}
+        qm = {r.metric_code for r in c.execute(select(followup_question_metric))}
+    assert rel == {
+        "total_debt": "Debt of $16.9B against negative equity.",
+        "debt_to_equity": "Debt-to-equity is N/M while equity is negative.",
+    }
+    assert (risk_id, "total_debt", "METRIC_DETAIL") in im
+    assert "debt_to_equity" in qm
+
+
+def test_strip_ids() -> None:
+    ids = {"K1", "K2", "K12", "R4", "B1", "Q3"}
+    assert strip_ids("Returns rose in 2026 (K2, R4) while equity fell.", ids) == (
+        "Returns rose in 2026 while equity fell."
+    )
+    assert strip_ids("N/M in FY2026 Q2 (Q3).", ids) == "N/M in FY2026 Q2."
+    assert strip_ids("Spending rose (K2 and R4; Q3).", ids) == "Spending rose."
+    assert strip_ids("K2 and R4 treat it as a warning.", ids) is None
+    assert strip_ids("Insider sales are flagged in K12.", ids) is None
+    # Not this company's ids: a rating, quarters.
+    assert strip_ids("Moody's rates the notes B2; flat in Q1 and Q3 2026.", ids) == (
+        "Moody's rates the notes B2; flat in Q1 and Q3 2026."
+    )
+    assert strip_ids("Uses (K2) here.", set()) == "Uses (K2) here."
 
 
 def test_rerun_unchanged_makes_no_calls_and_keeps_links() -> None:

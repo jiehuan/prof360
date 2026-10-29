@@ -108,7 +108,7 @@ flowchart LR
 | legal | `run_legal` | Litigation and regulatory matters from the latest 10-K and later 10-Qs, both models, matched across filings; new matters to review (D-050) | `legal_matter` | LLM |
 | signals | `run_signals` | 8-K, keyword, auditor, metric, threshold, board, 13D, market, insider and legal signals; LLM vote on judgment topics (D-027, D-028, D-045, D-049, D-050) | `signal`, `signal_vote` | LLM |
 | insights | `run_insights` | Activity summaries, behavioral, strategic & risk, key insights, follow-up questions (D-033), key takeaways (D-053) | `insight*`, `followup_question*`, `activity` | LLM |
-| metricdetail | `run_metric_detail` | Methodology and sources by rules; underwriting relevance by LLM (D-036) | `metric_detail`, `metric_source`, `metric_insight` | LLM |
+| metricdetail | `run_metric_detail` | Methodology and sources by rules; underwriting relevance by LLM (D-036), without item ids in the text (D-068) | `metric_detail`, `metric_source`, `metric_insight` | LLM |
 | publish | `run_publish` | Writes the app database (§11) | app tables | – |
 | dq | `run_dq` | Data-quality findings (§12) | `dq_finding` | – |
 
