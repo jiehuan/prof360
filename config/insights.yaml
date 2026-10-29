@@ -12,7 +12,7 @@ prompt_versions:
   key_insights: key_insights_v2
   followups: followups_v2
   key_takeaways: key_takeaways_v1   # 2-3 bullets for professional lines, shown without links
-  metric_detail: metric_detail_v1   # metricdetail stage (Phase 8): per-metric UW relevance
+  metric_detail: metric_detail_v2   # metricdetail stage: per-metric UW relevance (v2: D-068)
 
 # Filing excerpts in the package: section code -> max characters taken (latest filing with that
 # section). Sections longer than the budget are cut at a paragraph boundary and marked as cut.

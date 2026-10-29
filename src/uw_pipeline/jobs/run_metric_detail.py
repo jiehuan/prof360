@@ -17,7 +17,7 @@ import hashlib
 import json
 import logging
 import re
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Collection, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
@@ -201,6 +201,23 @@ def _replace_links(
         conn.execute(insert(followup_question_metric), new_q)
 
 
+def strip_ids(text: str, ids: Collection[str]) -> str | None:
+    """`text` without the prompt's item ids (D-068). Lists of them in brackets ("(K2, R4)",
+    "(Q3)") are removed; None when a K/R/B id is left in the sentence itself ("K2 treats ..."),
+    which cannot be removed. Only this company's ids count: a rating such as "B1" or a quarter
+    such as "Q2" is ordinary text."""
+    if not ids:
+        return text
+    alt = "|".join(sorted((re.escape(i) for i in ids), key=len, reverse=True))
+    text = re.sub(rf"\s*\((?:{alt})(?:\s*(?:,|;|/|\band\b)\s*(?:{alt}))*\)", "", text)
+    letters = [i for i in ids if not i.startswith("Q")]  # "Q2" is also a quarter
+    if letters:
+        bare = "|".join(sorted((re.escape(i) for i in letters), key=len, reverse=True))
+        if re.search(rf"\b(?:{bare})\b", text):
+            return None
+    return re.sub(r"\s+([.,;:])", r"\1", re.sub(r"[ \t]{2,}", " ", text)).strip()
+
+
 def relevance(
     conn: Connection,
     runner: TaskRunner,
@@ -236,7 +253,9 @@ def relevance(
     known = {m.code for m in metrics}
     numbers = [r["value"] for rows in values.values() for r in rows if r["value"] is not None]
     texts = [t for _, t in items]
+    item_ids = insight_ids.keys() | question_ids.keys()
     kept: dict[str, Any] = {}
+    written: dict[str, str] = {}
     for item in out.metrics:
         code = item.metric_code.strip()
         if code not in known or code in kept:
@@ -245,7 +264,12 @@ def relevance(
         if missing:
             stats.dropped.append(f"{code}: unverified numbers {missing}")
             continue
+        text = strip_ids(item.uw_relevance, item_ids)
+        if not text:
+            stats.dropped.append(f"{code}: cites item ids in the text")
+            continue
         kept[code] = item
+        written[code] = text
     stats.relevance = f"{len(kept)}/{len(known)}"
     conn.execute(insert(llm_task_stat).values(company_id=company_id, task=TASK,
                                               generated=len(out.metrics), kept=len(kept),
@@ -254,10 +278,10 @@ def relevance(
                  .values(is_current=False))  # fmt: skip
     if kept:
         conn.execute(insert(metric_insight), [
-            {"company_id": company_id, "metric_code": code, "uw_relevance": item.uw_relevance,
+            {"company_id": company_id, "metric_code": code, "uw_relevance": written[code],
              "is_current": True, "model": spec.model, "prompt_version": version,
              "input_hash": input_hash, "created_at": now}
-            for code, item in kept.items()
+            for code in kept
         ])  # fmt: skip
     pairs_i = {(insight_ids[i.strip()], code) for code, item in kept.items()
                for i in item.related_insight_ids if i.strip() in insight_ids}  # fmt: skip
