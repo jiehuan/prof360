@@ -8,9 +8,11 @@
 - 8-Ks with items in `fetch_body_items` are downloaded and split by item.
 - The EX-99.1 earnings release of every Item 2.02 8-K within `text_lookback_days` is downloaded
   for the Phase 5 preliminary-results extraction (decisions D-022).
-- For industry groups with `mdna_history_years`, older 10-Ks in that window are downloaded too,
-  keeping only their MD&A, for text-metric history (Phase 8, decisions D-036). With no other
-  sections stored they add no signal votes and no insight excerpts.
+- For text-metric history, older filings are downloaded too, keeping only their MD&A: the
+  10-Ks of the last `mdna_history_years` years (Phase 8, decisions D-036) and the 10-Qs of the
+  last `mdna_history_quarters` quarters (D-069); by default for every company that shows a
+  text metric (`text_metric_history` in industry_groups.yaml). With no other sections stored
+  they add no insight excerpts.
 """
 
 from __future__ import annotations
@@ -65,7 +67,7 @@ TEXT_FORMS = ("10-K", "10-Q")
 EVENT_FORMS = ("10-K", "10-K/A", "10-Q", "10-Q/A", "8-K", "8-K/A")
 PROXY_FORMS = ("DEF 14A",)
 # Sections that must be found; a miss is logged (PLAN Phase 3 acceptance).
-HISTORY_SECTIONS = ("10K-7",)
+HISTORY_SECTIONS = {"10-K": "10K-7", "10-Q": "10Q-I-2"}  # MD&A
 REQUIRED_SECTIONS = {"10-K": ("10K-1A", "10K-3", "10K-7"), "10-Q": ("10Q-I-2",)}
 # A 10-K MD&A shorter than this is a cross-reference to the annual report (D-060).
 STUB_CHARS = 3_000
@@ -237,6 +239,7 @@ def process_company(
     force: bool,
     now: datetime,
     history_years: int = 0,
+    history_quarters: int = 0,
 ) -> dict[str, int]:
     row = company_row(conn, cfg)
     stats: Counter[str] = Counter()
@@ -248,7 +251,7 @@ def process_company(
             cfg, sec, registry, rules, conn, row["company_id"], cik, kept_ownership,
             today=today, text_lookback_days=text_lookback_days,
             event_lookback_days=event_lookback_days, force=force, now=now,
-            history_years=history_years,
+            history_years=history_years, history_quarters=history_quarters,
         ))  # fmt: skip
     _drop_stray_ownership(conn, row["company_id"], kept_ownership, rules)
     return dict(stats)
@@ -258,7 +261,7 @@ def _process_registrant(
     cfg: CompanyConfig, sec: SecClient, registry: Registry, rules: SignalRules,
     conn: Connection, company_id: int, cik: str, kept_ownership: set[str], *, today: date,
     text_lookback_days: int, event_lookback_days: int, force: bool, now: datetime,
-    history_years: int,
+    history_years: int, history_quarters: int,
 ) -> dict[str, int]:  # fmt: skip
     subs = sec.submissions(cik, force=force).payload
     since_events = today - timedelta(days=event_lookback_days)
@@ -344,9 +347,11 @@ def _process_registrant(
         else since_events  # fmt: skip
     stats["form4"], stats["insider_values"] = _insiders(
         conn, sec, cfg, company_id, cik, subs, since_form4, force=force, now=now)  # fmt: skip
-    if history_years:
-        stats["history_10k"] = _mdna_history(
-            conn, sec, cfg, company_id, cik, subs, today - timedelta(days=366 * history_years),
+    if history_years or history_quarters:
+        stats["history_10k"], stats["history_10q"] = _mdna_history(
+            conn, sec, cfg, company_id, cik, subs,
+            {"10-K": today - timedelta(days=366 * history_years),
+             "10-Q": today - timedelta(days=92 * history_quarters)},
             since_text, section_rules, force=force, now=now,
         )  # fmt: skip
     return stats
@@ -445,17 +450,19 @@ def _mdna_history(
     company_id: int,
     cik: str,
     subs: dict[str, Any],
-    since: date,
+    since: dict[str, date],
     since_text: str,
     section_rules: dict[str, tuple[str, str]],
     *,
     force: bool,
     now: datetime,
-) -> int:
-    """MD&A of the 10-Ks filed between `since` and the normal text window."""
+) -> tuple[int, int]:
+    """MD&A of the 10-Ks and 10-Qs filed between `since[form]` and the normal text window;
+    (10-Ks kept, 10-Qs kept)."""
+    start = min(since.values())
     older = [
-        f for f in filings_since(sec, cik, subs, since, ("10-K",), force=force)
-        if f.filed < since_text
+        f for f in filings_since(sec, cik, subs, start, tuple(since), force=force)
+        if since[f.form].isoformat() <= f.filed < since_text
         and (cfg.history_start is None or f.filed >= cfg.history_start.isoformat())
     ]  # fmt: skip
     insert_missing(
@@ -464,7 +471,7 @@ def _mdna_history(
         [_doc_row(company_id, cik, f, f.primary_doc, "PRIMARY") for f in older],
         key_cols=["accession_no", "doc_name"],
     )
-    done = 0
+    done: Counter[str] = Counter()
     for f in older:
         doc_id, data = _download(conn, sec, cik, f.accn, f.primary_doc, force=force, now=now)
         if data is None:
@@ -472,13 +479,13 @@ def _mdna_history(
         doc_id, sections = _filing_sections(
             conn, sec, company_id, cik, f, doc_id, html_to_text(data), section_rules, now=now
         )
-        mdna = [s for s in sections if s.code in HISTORY_SECTIONS]
+        mdna = [s for s in sections if s.code == HISTORY_SECTIONS[f.form]]
         if not mdna:
-            log.warning("%s 10-K %s: MD&A not found", cfg.ticker, f.accn)
+            log.warning("%s %s %s: MD&A not found", cfg.ticker, f.form, f.accn)
             continue
         _store_sections(conn, doc_id, mdna)
-        done += 1
-    return done
+        done[f.form] += 1
+    return done["10-K"], done["10-Q"]
 
 
 def run_documents_stage(
@@ -491,7 +498,8 @@ def run_documents_stage(
     text_lookback_days: int = 400,
     event_lookback_days: int = 730,
     force: bool = False,
-    history_years: dict[str, int] | None = None,  # industry group -> mdna_history_years
+    # (company, industry group code) -> (years of 10-Ks, quarters of 10-Qs) of MD&A history
+    history: Callable[[CompanyConfig, str], tuple[int, int]] | None = None,
     today: Callable[[], date] = lambda: datetime.now(UTC).date(),
     now: Callable[[], datetime] = lambda: datetime.now(UTC),
 ) -> list[TaskResult]:
@@ -500,11 +508,12 @@ def run_documents_stage(
         try:
             with engine.begin() as conn:
                 group = company_row(conn, cfg)["industry_group"]
+                years, quarters = history(cfg, group) if history else (0, 0)
                 stats = process_company(
                     cfg, sec, registry, rules, conn,
                     today=today(), text_lookback_days=text_lookback_days,
                     event_lookback_days=event_lookback_days, force=force, now=now(),
-                    history_years=(history_years or {}).get(group, 0),
+                    history_years=years, history_quarters=quarters,
                 )  # fmt: skip
             log.info("%s: documents %s", cfg.ticker, stats)
             detail = ", ".join(f"{k}={v}" for k, v in stats.items())

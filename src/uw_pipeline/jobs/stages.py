@@ -184,6 +184,14 @@ class StageRunner:
         results = self._stage(stage)([cfg])
         return results[0]
 
+    def _mdna_history(self, cfg: CompanyConfig, group_code: str) -> tuple[int, int]:
+        """Years of 10-Ks and quarters of 10-Qs whose MD&A the documents stage keeps for this
+        company's text-metric history (D-069)."""
+        group = self.industry.group_of(group_code, cfg)
+        metrics = self.registry.for_company(cfg.ticker, group).metrics
+        has_text = any(m.kind == "text" and m.display and m.extraction for m in metrics)
+        return self.industry.mdna_history(group, has_text)
+
     def _stage(self, stage: str) -> Callable[[list[CompanyConfig]], list[TaskResult]]:
         s, e, f = self.settings, self.engine, self.force
         reg, ind = self.registry, self.industry
@@ -200,7 +208,7 @@ class StageRunner:
                 c, self.sec, reg, self.signal_rules, e,
                 text_lookback_days=s.text_lookback_days,
                 event_lookback_days=s.event_lookback_days, force=f,
-                history_years={k: g.mdna_history_years for k, g in ind.groups.items()},
+                history=self._mdna_history,
             )  # fmt: skip
         if stage in ("transcripts", "news", "market"):
             return lambda c: self._av_stage(stage, c)

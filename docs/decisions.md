@@ -1622,3 +1622,22 @@ LLM runs until the end, then one comparison.
   ratings ("B2") of other text stay; a rating equal to one of its B ids drops the text (rare,
   accepted). Links still come from the id lists.
 - Golden (MAR, JPM, ENPH, Haiku 5.5, $0.02): 72 of 72 texts kept, none with ids (before: 22).
+
+**D-069 MD&A history for text metrics: 5 years of 10-Ks, 8 quarters of 10-Qs (2026-10-29).**
+- Metrics read from filing text (RevPAR, occupancy, postpaid churn, medical cost ratio, ...)
+  had only the filings of the 400-day text window: Marriott's RevPAR had 4 quarters and one
+  fiscal year, and such metrics 12 points on average against about 85 for XBRL metrics. Banks
+  alone kept 5 years of 10-K MD&A (`mdna_history_years`, Phase 8). Some tables give only the
+  change against the prior year (Marriott), so the comparative columns do not fill the gap.
+- Options (user decision 2026-10-29: B): (A) 5 years of 10-K MD&A for every group with a text
+  metric (annual points only); (B) A plus the MD&A of the 10-Qs of the last 8 quarters, so the
+  quarterly cards have 8 quarters like the XBRL metrics; (C) a longer text window for every
+  section (more cost, and older text in signals and insight excerpts).
+- How: `text_metric_history: {years: 5, quarters: 8}` in industry_groups.yaml applies to every
+  company whose displayed metrics include a `kind: text` metric; a group's own
+  `mdna_history_years` / `mdna_history_quarters` override it (BANKS keeps its 5 years and now
+  also gets 8 quarters). The documents stage keeps only the MD&A of those older filings (10-K
+  Item 7, 10-Q Part I Item 2), as for banks before; the textmetrics stage reads every stored
+  MD&A, so it picks them up with no change. A fourth quarter comes from an earnings release or
+  the 10-K; releases outside the text window are not downloaded, so an older Q4 can be
+  missing where the 10-K gives only the year.
