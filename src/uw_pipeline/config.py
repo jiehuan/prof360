@@ -102,9 +102,12 @@ class IndustryGroup(BaseModel):
     # Business-model traits (D-043, e.g. lodging, bank); each adds the metric sets that
     # `trait_metric_sets` lists for it, so a new group names its traits instead of its sets.
     traits: list[str] = Field(default_factory=list)
-    # Years of older 10-Ks whose MD&A is kept for text-metric history (Phase 8, e.g. 5 years of
-    # NIM / CET1 / NPL for banks). 0 = only the documents in the normal text window.
-    mdna_history_years: int = 0
+    # MD&A kept from filings older than the normal text window, for text-metric history: 10-Ks
+    # of the last `mdna_history_years` years (Phase 8, e.g. 5 years of NIM / CET1 / NPL for
+    # banks) and 10-Qs of the last `mdna_history_quarters` quarters (D-069). None = the
+    # `text_metric_history` default for a company with a displayed text metric, else 0.
+    mdna_history_years: int | None = None
+    mdna_history_quarters: int | None = None
     # What this industry does not track (D-049): metrics from its sets (still computed, hidden,
     # when another tracked metric needs them) and signals by rule id (`8k_5.02` covers its CEO /
     # CFO variants); `signal_params` sets rule fields for this industry only.
@@ -119,6 +122,13 @@ class SicRange(BaseModel):
     group: str
 
 
+class TextMetricHistory(BaseModel):
+    """Default MD&A history for companies with a displayed `kind: text` metric (D-069)."""
+
+    years: int = Field(default=0, ge=0)  # 10-Ks
+    quarters: int = Field(default=0, ge=0)  # 10-Qs
+
+
 class IndustryConfig(BaseModel):
     default_group: str
     groups: dict[str, IndustryGroup]
@@ -126,6 +136,7 @@ class IndustryConfig(BaseModel):
     sic_ranges: list[SicRange] = Field(default_factory=list)
     trait_metric_sets: dict[str, list[str]] = Field(default_factory=dict)
     common_metric_sets: list[str] = Field(default_factory=list)  # every group (governance)
+    text_metric_history: TextMetricHistory = Field(default_factory=TextMetricHistory)
 
     @model_validator(mode="after")
     def _check_refs(self) -> IndustryConfig:
@@ -148,6 +159,17 @@ class IndustryConfig(BaseModel):
                    if c.industry and c.industry not in self.groups}  # fmt: skip
         if unknown:
             raise ValueError(f"companies.yaml: unknown industry group(s) {unknown}")
+
+    def mdna_history(self, group: IndustryGroup, has_text_metrics: bool) -> tuple[int, int]:
+        """(years of 10-Ks, quarters of 10-Qs) whose MD&A the documents stage keeps beyond the
+        text window: the group's own settings, else the default when the company shows a text
+        metric (D-069)."""
+        d = self.text_metric_history if has_text_metrics else TextMetricHistory()
+        years = d.years if group.mdna_history_years is None else group.mdna_history_years
+        quarters = (
+            d.quarters if group.mdna_history_quarters is None else group.mdna_history_quarters
+        )
+        return years, quarters
 
     def classify(
         self, sic: int | None, company: CompanyConfig | None = None

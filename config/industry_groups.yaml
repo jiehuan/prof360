@@ -24,6 +24,13 @@ trait_metric_sets:
   manufacturing: [MANUFACTURING_OPERATING]
   captive_finance: []                    # debt includes a finance arm (Ford Credit): see coverage
 
+# MD&A history for text metrics (D-069): a company that shows a `kind: text` metric (RevPAR,
+# CET1, postpaid churn, ...) keeps the MD&A of its 10-Ks of the last `years` years and of its
+# 10-Qs of the last `quarters` quarters, beyond the normal text window, so the cards and the
+# 5-year view have history (otherwise only the filings of about the last 13 months are read).
+# A group's own `mdna_history_years` / `mdna_history_quarters` override this.
+text_metric_history: {years: 5, quarters: 8}
+
 groups:
   UNCLASSIFIED:
     label: Unclassified
