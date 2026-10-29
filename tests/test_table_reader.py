@@ -92,6 +92,33 @@ def test_wrong_cells_are_withheld(fixture, metric, table, row, col, value, end, 
     assert checked.value is None, f"{why} was accepted"
 
 
+# -- D-070: a 10-K column headed by its year alone (Marriott's "2024 | Change vs. 2023") --------
+
+ANNUAL = b"""<html><body><table><tr><td colspan="3">Comparable Systemwide Properties</td></tr>
+<tr><td></td><td colspan="2">2024</td></tr>
+<tr><td></td><td>RevPAR</td><td>Change vs. 2023</td></tr>
+<tr><td>Worldwide</td><td>131.72</td><td>4.6%</td></tr></table>
+<table><tr><td colspan="3">Comparable Systemwide Properties - Fourth Quarter</td></tr>
+<tr><td></td><td colspan="2">2024</td></tr>
+<tr><td></td><td>RevPAR</td><td>Change vs. 2023</td></tr>
+<tr><td>Worldwide</td><td>127.40</td><td>3.9%</td></tr></table></body></html>"""
+
+
+def test_a_bare_year_header_is_the_fiscal_year_only_in_a_10k() -> None:
+    grid = {f"T{t.index}": t for t in tables(ANNUAL)}
+    year = _cell("revpar", "T0", 3, 1, "131.72", "2024-12-31", "year")
+    assert check_cell(grid, year, SPECS["revpar"], annual=True).value is not None
+    # Elsewhere (10-Q, earnings release) the header must say it is a year.
+    assert check_cell(grid, year, SPECS["revpar"]).value is None
+    # A quarter's table, the other year and the change column stay withheld in a 10-K.
+    quarter = _cell("revpar", "T1", 3, 1, "127.40", "2024-12-31", "year")
+    assert check_cell(grid, quarter, SPECS["revpar"], annual=True).value is None
+    other = _cell("revpar", "T0", 3, 1, "131.72", "2023-12-31", "year")
+    assert check_cell(grid, other, SPECS["revpar"], annual=True).value is None
+    change = _cell("revpar", "T0", 3, 2, "4.6", "2024-12-31", "year")
+    assert check_cell(grid, change, SPECS["revpar"], annual=True).value is None
+
+
 # -- adversarial content (Jira T3): hidden text, embedded instructions, decoy tables ------------
 
 DECOY = """<html><head><meta charset="utf-8"></head><body>
