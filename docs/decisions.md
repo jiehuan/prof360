@@ -1641,3 +1641,20 @@ LLM runs until the end, then one comparison.
   MD&A, so it picks them up with no change. A fourth quarter comes from an earnings release or
   the 10-K; releases outside the text window are not downloaded, so an older Q4 can be
   missing where the 10-K gives only the year.
+
+**D-070 Table cells: in a 10-K a column headed by its year alone is that fiscal year
+(2026-10-29).**
+- With the MD&A history of D-069, the model read Marriott's and BNY's older 10-K tables, but 45
+  annual cells were withheld: the cell check (D-044) wanted the header or title to say the
+  column is a year ("year ended", "fiscal year", ...), and these tables head the column with
+  the year alone ("2024", next to "Change vs. 2023"). Marriott's FY2021-FY2024 RevPAR,
+  occupancy and ADR were lost that way.
+- Options: (a) keep the rule (no annual history for such layouts); (b) accept a bare-year header
+  in a 10-K only, where an annual report's MD&A columns are fiscal years; (c) accept it
+  everywhere (10-Qs and releases show quarters and year-to-date under year headers too).
+  Chosen (user approval): (b).
+- How: `check_cell(..., annual=True)` for tables of a 10-K: a cell the model reads as a year
+  passes when its column's dated header is only that year (as before) and nothing in the title
+  or headers names a quarter. Elsewhere the rule is unchanged; year-to-date, change columns,
+  subsets and the other year stay withheld. The model's readings are cached, so the next
+  textmetrics run applies the rule to them without new LLM calls.
