@@ -138,6 +138,17 @@ Cash Flow 是 4），并给 Cash Flow 一个区块。类别 7（Loan Portfolio�
 
 2026-10-29：前端已改为按 `name` 显示，标题是 `<name> Metrics`。类别名 "Operational Metrics" 因此改为 **"Operational"**（id 仍是 5，`config/app_publish.yaml`；Azure 上用 `deploy/sql/category_operational.sql`），页面显示 "Operational Metrics"，不再是 "Operational Metrics Metrics"。其他类别名本来就不带 Metrics。
 
+### A8. 指标图表的柱子位置不对，Data 视图是对的（2026-10-29 发现）
+以 Marriott 的 RevPAR 为例，数据是 FY2025 Q3 $131.43、Q4 $127.64，FY2026 Q1 $123.09、Q2 $138.74，
+Data 视图显示正确。但 Chart 视图（QoQ）里 Q3、Q4 各有两根柱子，Q1、Q2 是空的。
+
+原因看起来是图表**按数组下标**放柱子：每个财年的值依次放在横轴第 1、2 个位置，没有按
+`fiscalPeriod`（"Q1"…"Q4"）对到横轴。FY2026 的 Q1、Q2 因此画在了 Q3、Q4 的位置。
+
+**建议**：每个数据点按 `fiscalPeriod` 找横轴位置，按 `fiscalYear` 决定是哪个系列；没有数据的
+位置留空，不要把后面的值往前挪。YoY 和 5Ys 视图也请按同样方法核对（5Ys 按 `fiscalYear` 对应
+横轴）。数据格式见 A2（`quarterly` / `annual` 每项都有 `fiscalYear`、`fiscalPeriod`、`periodEnd`）。
+
 ## B. 字段对齐
 
 ### B1. 来源只给一个，但数据有多个
