@@ -71,7 +71,7 @@
   | FORM4 | 由内部人的 Form 4 汇总（内部人净卖出、高管卖出比例；D-050） | 可加 tooltip "Form 4" |
 
 - **新指标类别（D-050）**：`Reporting Quality`（应收 / 存货周转天数、应计、商誉、债务到期、Altman Z 等）和 `Market & Trading`（市值、波动率、回撤、EPS 超预期、内部人交易）。**2026-10-20 起暂时隐藏（D-054）**：这两个类别的指标不再发布，MatrixData、CompanyMetricDetail、SIC_Preferences 里的相关行已删除；`metric_category` 和 `metrics` 里的定义行保留。BFF / 前端需要隐藏没有指标的类别（与"无数据时隐藏该模块"的约定一致）；如果是按 SIC_Preferences 或 MatrixData 取指标清单，不需要改动。表结构不变，新指标作为 MatrixData 的新行；新事件（股价大跌、内部人集中卖出、13D、诉讼和监管调查）经信号和洞察进入 StrategicRisk，RiskTypes 可能新增 Market、Insider Trading。
-- **Phase 17 行业模块（D-055、D-056）**：表结构不变。新增 15 个行业组（化工材料、采矿、钢铁金属、住宅建筑商、医疗服务、博彩休闲、餐饮等），新指标都在已有的 `Operational Metrics` 类别里，作为 MatrixData 的新行；每个新 SIC 代码在 SIC_Preferences 里有自己的指标清单。开发样本把公司数从 107 家增加到 230 家。新的 subtitle 见上面的数值单位。
+- **Phase 17 行业模块（D-055、D-056）**：表结构不变。新增 15 个行业组（化工材料、采矿、钢铁金属、住宅建筑商、医疗服务、博彩休闲、餐饮等），新指标都在已有的 `Operational` 类别里（2026-10-29 前叫 `Operational Metrics`），作为 MatrixData 的新行；每个新 SIC 代码在 SIC_Preferences 里有自己的指标清单。开发样本把公司数从 107 家增加到 230 家。新的 subtitle 见上面的数值单位。
 
 - **溯源**：`source_document.url` 指向 SEC 或 AV 的原始文件。`insight_evidence` 给出每条洞察的原文片段，以及对应的文件和章节。
 
@@ -86,7 +86,7 @@
 | Key Insights Summary | `insight` 中 `kind = 'KEY' AND is_current = 1`，按 `ordinal` 排序；关联 `insight_evidence` 和 `insight_metric` | insight_type (Warning/Negative/Positive/Info), title, summary, uw_relevance, supporting_evidence | 隐藏模块 |
 | Financial / Liquidity / Leverage / Cash Flow 指标 | `metric_value` 关联 `metric_definition`（`is_display = 1`），按 `section` 分组 | value, value_status, unit, derivation, period_* | 单个指标无值时显示 "—"；原因见覆盖率报告 |
 | QoQ / YoY / 5Ys 切换 | `metric_value` 中 `period_type` 取 Q（最近 8 个季度）或 FY（最近 5 年）；增长率是 `revenue_growth_qoq` / `revenue_growth_yoy` | — | — |
-| Operational Metrics（酒店：RevPAR、入住率、ADR） | `metric_value` 中 `metric_code IN ('revpar','occupancy','adr')`；同表还有 Marriott 的 `gross_fee_revenue` 和 `net_fee_revenue` | evidence | 隐藏 |
+| Operational（酒店：RevPAR、入住率、ADR） | `metric_value` 中 `metric_code IN ('revpar','occupancy','adr')`；同表还有 Marriott 的 `gross_fee_revenue` 和 `net_fee_revenue` | evidence | 隐藏 |
 | Performance Trends（仅 FI） | `metric_value` 中 `metric_code IN ('cet1_ratio','tier1_ratio','lcr','nim','npl_ratio','fee_income_growth_yoy')`；NIM / CET1 / NPL 有约 5 个财年 | evidence | **非 FI 公司隐藏整个模块**（`company.is_financial = 0`，这些行也不会存在） |
 | Loan Portfolio（仅 FI） | `loan_portfolio_segment`（贷款类别级，含当前期和上一年末），详情见下文弹窗部分 | parent_segment, segment, outstanding, pct_of_book, nonaccrual, nonaccrual_ratio, period_end | 同上 |
 | Strategic & Risk Insights | `insight` 中 `kind IN ('STRATEGIC_RISK','BEHAVIORAL') AND is_current = 1`；按 category 分组：Governance & Leadership / Risk & Legal / Event Signals / Behavioral Insights | title, summary, uw_relevance, event_date | `subcategory = 'No signal'` 的行表示"已审查，无重要信号"，可以显示为灰色说明 |

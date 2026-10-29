@@ -17,20 +17,20 @@ SELECT
     (SELECT STRING_AGG(M.metric_name, ', ') WITHIN GROUP (ORDER BY M.metric_id)
      FROM dbo_professional360.metrics M
      JOIN dbo_professional360.metric_category MC ON MC.metric_category_Id = M.metric_category_Id
-     WHERE MC.categoryName = N'Operational Metrics'
+     WHERE MC.categoryName = N'Operational'
        AND EXISTS (SELECT 1 FROM dbo_professional360.MatrixData D
                    WHERE D.CompanyId = C.CompanyId AND D.metric_id = M.metric_id)) AS has_data,
     (SELECT STRING_AGG(M.metric_name, ', ') WITHIN GROUP (ORDER BY M.metric_id)
      FROM dbo_professional360.SIC_Preferences P
      JOIN dbo_professional360.metrics M ON M.metric_id = P.metric_id
      JOIN dbo_professional360.metric_category MC ON MC.metric_category_Id = M.metric_category_Id
-     WHERE P.SIC_Id = C.SIC_Id AND MC.categoryName = N'Operational Metrics') AS sic_default,
+     WHERE P.SIC_Id = C.SIC_Id AND MC.categoryName = N'Operational') AS sic_default,
     (SELECT STRING_AGG(M.metric_name, ', ') WITHIN GROUP (ORDER BY M.metric_id)
      FROM dbo_professional360.UserMetricsSelection X
      JOIN dbo_professional360.metrics M ON M.metric_id = X.metric_id
      JOIN dbo_professional360.metric_category MC ON MC.metric_category_Id = M.metric_category_Id
      WHERE X.UserId = @UserId AND X.SIC_Id = C.SIC_Id
-       AND MC.categoryName = N'Operational Metrics') AS your_choice,
+       AND MC.categoryName = N'Operational') AS your_choice,
     D.userMetricSelections
 FROM dbo_professional360.Company C
 LEFT JOIN dbo_professional360.SIC_Code S ON S.SIC_Id = C.SIC_Id

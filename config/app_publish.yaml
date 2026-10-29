@@ -7,7 +7,7 @@ metric_categories:
   liquidity: Liquidity
   leverage: Leverage
   cash_flow: Cash Flow
-  operational: Operational Metrics
+  operational: Operational
   fi_performance: Performance Trends
   loan_portfolio: Loan Portfolio
   reporting_quality: Reporting Quality
