@@ -270,3 +270,20 @@ def test_footnote_rule_keeps_period_labels_apart() -> None:
     assert not is_grounded("Q3 net revenue increased 12% on higher fees", src)
     assert not is_grounded("FY24 net revenue increased 12%", "FY25 net revenue increased 12%")
     assert is_grounded("Q4 net revenue increased 12%", src)
+
+
+def test_a_restatement_finding_outside_the_voted_topics_is_ignored() -> None:
+    """The model may report a restatement (the schema allows it) where only going concern is
+    voted; it is not a voted topic and must not stop the stage (CGC, NFE: KeyError)."""
+    from uw_pipeline.signals.vote import llm_answers
+
+    source = ("We have restated our previously issued financial statements for 2024. "
+              "There is no substantial doubt about our ability to continue as a going concern.")  # fmt: skip
+    parsed = SectionSignals.model_validate({
+        "leadership_changes": [],
+        "findings": [{"topic": "restatement",
+                      "evidence": "We have restated our previously issued financial statements"}],
+        "summary": "Restatement.",
+    })  # fmt: skip
+    out, dropped = llm_answers(parsed, ["going_concern"], source)
+    assert out == {"going_concern": Answer("none")} and dropped == 0

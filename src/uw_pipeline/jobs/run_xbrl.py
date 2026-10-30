@@ -151,9 +151,10 @@ def load_company_facts(
         if frame is not None:
             frames.append(frame)
             fingerprint.append(filing.accn)
-    facts = pd.concat([f for f in frames if not f.empty], ignore_index=True)
-    if facts.empty:
-        facts = pd.DataFrame(columns=FACT_COLUMNS)
+    # No US-GAAP facts at all (a foreign filer's 20-F / 40-F reports under IFRS): an empty
+    # table, so the later stages still run on the company's other sources.
+    found = [f for f in frames if not f.empty]
+    facts = pd.concat(found, ignore_index=True) if found else pd.DataFrame(columns=FACT_COLUMNS)
     digest = hashlib.sha256("\n".join(fingerprint).encode()).hexdigest()
     return facts, digest
 
