@@ -60,6 +60,9 @@ concepts:
     tags:
       - us-gaap:CashAndCashEquivalentsAtCarryingValue
       - us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents
+      # D-071: cash alone, where no cash-and-equivalents line is tagged (SLB since 2016 shows
+      # cash and short-term investments separately).
+      - us-gaap:Cash
   short_term_investments:   # Phase 15c: liquidity beside cash (marketable securities)
     tags:
       - us-gaap:ShortTermInvestments
@@ -92,6 +95,10 @@ concepts:
     tags: [us-gaap:LongTermDebtCurrent]
   short_term_borrowings:
     tags: [us-gaap:ShortTermBorrowings, us-gaap:CommercialPaper]
+  # D-071: notes payable as their own family (ILMN since 2023: "Notes Payable, Noncurrent" and
+  # "Notes Payable, Current", no LongTermDebt tags).
+  notes_noncurrent: {tags: [us-gaap:LongTermNotesPayable]}
+  notes_current: {tags: [us-gaap:NotesPayableCurrent]}
   # Finance lease liabilities, added only to the LongTermDebt family, which excludes them
   # (the ...AndCapitalLeaseObligations family already includes them). Decisions D-046.
   finance_lease_liabilities:

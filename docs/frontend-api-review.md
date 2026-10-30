@@ -149,6 +149,14 @@ Data 视图显示正确。但 Chart 视图（QoQ）里 Q3、Q4 各有两根柱�
 位置留空，不要把后面的值往前挪。YoY 和 5Ys 视图也请按同样方法核对（5Ys 按 `fiscalYear` 对应
 横轴）。数据格式见 A2（`quarterly` / `annual` 每项都有 `fiscalYear`、`fiscalPeriod`、`periodEnd`）。
 
+### A9. 金额单位可能是 CAD（2026-10-30，D-072）
+Canopy Growth（CGC）用加元申报，它的金额类指标在 `MatrixData.unit`、指标接口的 `unit` 和
+`dataPoints[].unit` 里是 **`CAD`**，不是 `USD`。其他 276 家公司都是 `USD`。
+
+**需要前端做的**：金额按 `unit` 显示货币符号，`USD` 显示 `$`，`CAD` 显示 `C$`（例如 C$1.23B）。
+不要把所有金额都写死成 `$`。比例、百分比、天数等单位不变。CGC 的市值仍是美元（按美股股价算），
+所以市值卡片的 `unit` 是 `USD`。
+
 ## B. 字段对齐
 
 ### B1. 来源只给一个，但数据有多个

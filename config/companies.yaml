@@ -1185,3 +1185,97 @@ companies:
     cik: 1287750
     display_name: "Ares Capital"
     news_aliases: ["Ares Capital"]
+
+  # Client portfolio (2026-10-30, D-071): the SEC registrants of the top-50 client list that
+  # were not covered yet. Clients that do not file with the SEC are not added (D-071 lists
+  # them); New Fortress Energy is the listed parent of the client New Fortress Energy
+  # Marketing LLC. Paysafe (20-F) and Allied Gold (40-F) are foreign filers: no 10-K/10-Q, so
+  # their data is partial (user decision).
+  - ticker: BRO
+    cik: 79282
+    display_name: "Brown & Brown"
+    news_aliases: ["Brown & Brown"]
+    industry: BUSINESS_SERVICES
+    industry_reason: "Insurance broker (commissions and fees), not an insurer; SIC 6411 is insurance agents and brokers"
+  - ticker: PFG
+    cik: 1126328
+    display_name: "Principal Financial Group"
+    news_aliases: ["Principal Financial", "Principal Financial Group"]
+  - ticker: SLB
+    cik: 87347
+    display_name: "SLB"
+    news_aliases: ["SLB", "Schlumberger"]
+  - ticker: MTB
+    cik: 36270
+    display_name: "M&T Bank"
+    news_aliases: ["M&T Bank"]
+  - ticker: AMC
+    cik: 1411579
+    display_name: "AMC Entertainment"
+    news_aliases: ["AMC Entertainment", "AMC Theatres"]
+  - ticker: CVNA
+    cik: 1690820
+    display_name: "Carvana"
+    news_aliases: ["Carvana"]
+  - ticker: EVEX
+    cik: 1823652
+    display_name: "Eve Holding"
+    news_aliases: ["Eve Air Mobility", "Eve Holding"]
+    history_start: 2022-05-09   # successor of the SPAC Zanite Acquisition Corp. (D-012)
+  - ticker: RBRK
+    cik: 1943896
+    display_name: "Rubrik"
+    news_aliases: ["Rubrik"]
+  - ticker: RBLX
+    cik: 1315098
+    display_name: "Roblox"
+    news_aliases: ["Roblox"]
+  - ticker: CGC
+    cik: 1737927
+    display_name: "Canopy Growth"
+    news_aliases: ["Canopy Growth"]
+  - ticker: HE
+    cik: 354707
+    display_name: "Hawaiian Electric Industries"
+    news_aliases: ["Hawaiian Electric"]
+  - ticker: BTSG
+    cik: 1865782
+    display_name: "BrightSpring Health Services"
+    news_aliases: ["BrightSpring"]
+  - ticker: ACRE
+    cik: 1529377
+    display_name: "Ares Commercial Real Estate"
+    news_aliases: ["Ares Commercial Real Estate"]
+  - ticker: RJF
+    cik: 720005
+    display_name: "Raymond James Financial"
+    news_aliases: ["Raymond James"]
+  - ticker: ILMN
+    cik: 1110803
+    display_name: "Illumina"
+    news_aliases: ["Illumina"]
+  - ticker: ALDX
+    cik: 1341235
+    display_name: "Aldeyra Therapeutics"
+    news_aliases: ["Aldeyra"]
+    traits: [clinical_stage]   # no product revenue yet (D-058)
+  - ticker: CVSA
+    cik: 730464
+    display_name: "Covista"
+    news_aliases: ["Covista", "Adtalem"]
+  - ticker: XE
+    cik: 2088896
+    display_name: "X-Energy"
+    news_aliases: ["X-energy", "X-Energy"]
+  - ticker: NFE
+    cik: 1749723
+    display_name: "New Fortress Energy"
+    news_aliases: ["New Fortress Energy"]
+  - ticker: PSFE
+    cik: 1833835
+    display_name: "Paysafe"
+    news_aliases: ["Paysafe"]
+  - ticker: AAUC
+    cik: 1993344
+    display_name: "Allied Gold"
+    news_aliases: ["Allied Gold"]

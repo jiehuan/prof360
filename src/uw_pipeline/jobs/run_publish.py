@@ -159,7 +159,7 @@ class Stats:
 def value_point(r: Mapping[str, Any], unit: str, source: str | None = None) -> dict[str, Any]:
     """A metric value as a data point of a modal: `label` and `text` as shown, and the numbers
     (value null when not meaningful, as in MatrixData) so the front end need not parse text."""
-    shown = fmt_value(r["value"], unit, r["value_status"])
+    shown = fmt_value(r["value"], r.get("unit") or unit, r["value_status"])
     ok = r["value_status"] != "NM" and r["value"] is not None
     fy = r["period_type"] == "FY"
     return {

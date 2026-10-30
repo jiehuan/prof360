@@ -380,6 +380,11 @@ def process_company(
     text_metrics: dict[str, MetricDef] = {m.code: m for m in creg.metrics if m.extraction}
     listed = {m.code: m for m in creg.metrics}
     prelim = {c: d for c, d in text_cfg.preliminary.items() if c in listed}
+    if creg.currency != "USD":
+        # Amounts are read from text as US dollars only; another currency's would be stored
+        # as USD (D-072). Counts, ratios and percentages are still read.
+        text_metrics = {c: m for c, m in text_metrics.items() if m.unit != "USD"}
+        prelim = {}
     cal: FiscalCalendar = learn_calendar(
         read_facts(conn, company_id), row["fiscal_year_end"] or "1231"
     )  # same fallback as the compute stage

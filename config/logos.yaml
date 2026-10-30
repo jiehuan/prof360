@@ -29,12 +29,17 @@ refresh_days: 180
 # the item has no (or an outdated) website.
 overrides:
   AAPL: {logo_file: "Apple logo black.svg"}   # also a white version
+  AAUC: {wikipedia: "Allied Gold", website: "https://alliedgold.com"}  # client portfolio (2026-10-30): no Wikidata item by CIK
+  ACRE: {website: "https://www.arescre.com"}  # client portfolio (2026-10-30): no Wikidata item by CIK
+  ALDX: {wikipedia: "Aldeyra Therapeutics", website: "https://www.aldeyra.com"}  # client portfolio (2026-10-30): no Wikidata item by CIK
+  AMC: {wikipedia: "AMC Theatres", website: "https://www.amctheatres.com"}  # client portfolio (2026-10-30): no Wikidata item by CIK
   ANNX: {wikidata: Q61934465}
   ARCC: {website: "https://www.arescapitalcorp.com"}  # Wikidata: Ares Management only
   AVO: {website: "https://missionproduce.com"}
   BFH: {website: "https://www.breadfinancial.com"}   # item's site: alliancedata.com (old name)
   BG: {wikipedia: "Bunge Global", website: "https://www.bunge.com"}
   BHVN: {wikidata: Q92546757}
+  BTSG: {wikipedia: "BrightSpring Health Services", website: "https://www.brightspringhealth.com"}  # client portfolio (2026-10-30): no Wikidata item by CIK
   CEG: {wikidata: Q259195}
   CGEM: {website: "https://cullinantherapeutics.com"}
   CHH: {wikidata: Q1075788}
@@ -42,6 +47,7 @@ overrides:
   COGT: {wikidata: Q119857276}
   COMP: {website: "https://www.compass.com"}
   CSTM: {wikidata: Q2995071}
+  CVNA: {wikipedia: "Carvana", website: "https://www.carvana.com"}  # client portfolio (2026-10-30): no Wikidata item by CIK
   CWK: {wikidata: Q1146061}
   DNLI: {wikidata: Q50037774}
   DRVN: {wikidata: Q64187080}
@@ -49,6 +55,7 @@ overrides:
   ECHO: {wikidata: Q1280748}
   EME: {wikidata: Q5370289}
   ENVA: {wikidata: Q51137086}
+  EVEX: {wikipedia: "Eve Air Mobility", website: "https://www.eveairmobility.com"}  # client portfolio (2026-10-30): no Wikidata item by CIK
   GEV: {wikidata: Q118957699}
   GPCR: {website: "https://structuretx.com"}
   HGV: {wikidata: Q13636126}
@@ -59,11 +66,13 @@ overrides:
   MAN: {wikidata: Q1472539}
   MDLN: {wikidata: Q6807236}
   MLTX: {website: "https://moonlaketx.com"}
+  NFE: {wikipedia: "New Fortress Energy", website: "https://www.newfortressenergy.com"}  # client portfolio (2026-10-30): no Wikidata item by CIK
   OMF: {wikidata: Q28444592}
   PCVX: {website: "https://vaxcyte.com"}
   PK: {wikidata: Q55075186}
   PRAX: {wikidata: Q140045988}
   PYPL: {website: "https://www.paypal.com"}  # item has neither logo nor website
+  RBRK: {wikipedia: "Rubrik", website: "https://www.rubrik.com"}  # client portfolio (2026-10-30): no Wikidata item by CIK
   REPL: {wikidata: Q140046459}
   ROIV: {wikidata: Q53308720}
   SCCO: {wikidata: Q7569806}
@@ -80,4 +89,5 @@ overrides:
   VLTO: {wikidata: Q124721239}
   VOR: {website: "https://www.vorbio.com"}
   WBD: {wikipedia: "Warner Bros. Discovery"}  # item's article: Discovery, Inc.
+  XE: {wikipedia: "X-energy", website: "https://x-energy.com"}  # client portfolio (2026-10-30): no Wikidata item by CIK
   YUMC: {wikidata: Q30645592}

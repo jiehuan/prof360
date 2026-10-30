@@ -334,6 +334,8 @@ metrics:
       # long-term debt including current maturities plus short-term borrowings (TSLA).
       - ltd_noncurrent + debt_current + finance_lease_liabilities
       - ltd_total + short_term_borrowings + finance_lease_liabilities
+      # D-071: the notes payable family (ILMN).
+      - notes_noncurrent + notes_current + short_term_borrowings + finance_lease_liabilities
       # Non-current only, used when the family has no current sibling. Understates debt;
       # dq_rules.yaml debt_completeness reports it.
       - ltdcl_noncurrent + short_term_borrowings
@@ -347,6 +349,7 @@ metrics:
     formula:
       - ltdcl_noncurrent
       - ltd_noncurrent
+      - notes_noncurrent   # D-071 (ILMN)
   - code: equity
     display_name: Stockholders' Equity
     subtitle: "Assets minus liabilities: the shareholders' stake"

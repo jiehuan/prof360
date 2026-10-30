@@ -556,3 +556,137 @@ JNJ:
 AMGN:
   top_product_share: >-
     Largest product revenue not read in the last 4 quarters (follow-up: holdout review).
+
+# -- Client portfolio companies (D-071, in the development sample since 2026-10-30) ----------
+PSFE:
+  "*": >-
+    Foreign private issuer: annual report on Form 20-F under IFRS (ifrs-full), no 10-K/10-Q and
+    no US-GAAP XBRL, so no XBRL metric is available (D-071). Insights come from news, calls and
+    filings.
+AAUC:
+  "*": >-
+    Foreign issuer filing Form 40-F (Canada) under IFRS, no 10-K/10-Q and no US-GAAP XBRL, so no
+    XBRL metric is available (D-071). Insights come from news, calls and filings.
+XE:
+  "*": >-
+    Listed in 2026 (X-Energy, Inc.): two 10-Qs and no 10-K yet, so history covers only the
+    periods of those filings; it grows each quarter.
+  warranty_reserve: No product warranty reserve tagged (reactors not yet delivered).
+  pension_liability: No pension or retiree benefit liability tagged.
+  long_term_debt: No non-current debt line tagged; debt is tagged only as LongTermDebt.
+BTSG:
+  "*": >-
+    Listed in January 2024: XBRL history starts with the IPO registration and first 10-K
+    (fiscal years from 2021-2022 only), so fewer than 5 fiscal years.
+  labor_to_revenue: Salaries and wages are not tagged as a separate expense line.
+  same_facility_revenue_growth: >-
+    Home and community pharmacy and provider services: no same-facility (hospital) growth is
+    disclosed.
+  same_facility_volume_growth: No same-facility volume figure is disclosed (not a hospital operator).
+  admissions: No hospital admissions (home and community-based care).
+RBRK:
+  "*": >-
+    Listed in April 2024 (fiscal year ends January 31): XBRL history starts with the IPO
+    registration, so fewer than 5 fiscal years.
+  total_debt: >-
+    Since FY2026 Q2 Rubrik's debt is convertible senior notes tagged
+    ConvertibleLongTermNotesPayable, which is in no debt family yet (NEEDS_REVIEW: a candidate
+    for the notes family); the term loan tagged LongTermDebtNoncurrent was repaid in 2025.
+  long_term_debt: Same as total_debt (convertible notes not in a debt family).
+  debt_to_equity: Needs total debt; see total_debt.
+EVEX:
+  "*": >-
+    Successor of the SPAC Zanite Acquisition Corp. since the May 2022 merger; only its own
+    filings from 2022-05-09 are read (history_start, D-012), so fewer than 5 fiscal years.
+  revenue: "Pre-revenue: the eVTOL aircraft is in development and not yet certified or sold."
+  revenue_growth_qoq: No revenue yet; see revenue.
+  revenue_growth_yoy: No revenue yet; see revenue.
+  warranty_reserve: No product warranty reserve (no aircraft delivered).
+  pension_liability: No pension or retiree benefit liability tagged.
+ACRE:
+  operating_income: >-
+    Mortgage REIT: the income statement has no operating income line (net interest margin and
+    income before taxes).
+  ebitda_computed: >-
+    Interest is tagged only as cash interest paid (InterestPaidNet) in annual cash flows, so the
+    quarterly EBIT/EBITDA inputs are missing; annual values are complete.
+  current_assets: "Unclassified balance sheet (mortgage REIT): no current assets line."
+  current_liabilities: "Unclassified balance sheet (mortgage REIT): no current liabilities line."
+  current_ratio: Unclassified balance sheet; see current_assets.
+  working_capital: Unclassified balance sheet; see current_assets.
+  total_debt: >-
+    Debt is tagged as LongTermDebt in the 10-K only; quarterly filings tag borrowings by facility
+    (DebtInstrumentCarryingAmount), so quarters are missing.
+  long_term_debt: No non-current debt line (unclassified balance sheet).
+  debt_to_equity: Same quarters missing as total_debt.
+  interest_expense: >-
+    Only cash interest paid (InterestPaidNet) is tagged, in annual cash flows; the income
+    statement's interest expense uses a company tag.
+  interest_coverage: Same quarters missing as interest_expense.
+  capex: "A lender: no purchases of property and equipment since 2015 (ACRE Capital was sold)."
+  free_cash_flow: No capital expenditures; see capex.
+ALDX:
+  revenue: "Clinical-stage biotech (trait clinical_stage, D-058): no product revenue."
+  revenue_growth_qoq: No revenue; see revenue.
+  revenue_growth_yoy: No revenue; see revenue.
+  total_debt: >-
+    In FY2026 Q2 the remaining loan is all current (due within a year); total debt needs a
+    non-current amount of the same family, so the latest quarter is missing.
+  long_term_debt: No non-current debt in FY2026 Q2 (all due within a year).
+  debt_to_equity: Needs total debt; see total_debt.
+  capex: No purchases of property and equipment tagged since FY2023.
+  free_cash_flow: No capital expenditures tagged since FY2023; see capex.
+  rnd_to_opex: Total operating expenses are not tagged (only the separate expense lines).
+BRO:
+  operating_income: >-
+    Insurance broker: the income statement has no operating income line (income before taxes
+    only); EBIT and EBITDA use pre-tax income + interest expense.
+CGC:
+  rnd_to_revenue: Research and development is tagged in the annual 10-K only, not quarterly.
+  top_product_share: >-
+    Reports in CAD (D-072): money metrics read from filing text are skipped for a non-USD
+    company, so the largest product's revenue is not read.
+CVNA:
+  operating_income: FY2021 operating income is not tagged with OperatingIncomeLoss.
+  ebitda_computed: >-
+    Depreciation and amortization is tagged only with company tags (no standard D&A tag).
+  interest_coverage: Same fiscal year missing as operating_income.
+  comparable_sales_growth: >-
+    Online used-car retailer without stores: no comparable-store sales; it reports retail units
+    sold instead.
+HE:
+  current_assets: >-
+    Classified balance sheet only since 2024; before, with its bank (American Savings Bank), the
+    balance sheet was unclassified.
+  current_liabilities: Same as current_assets (unclassified before 2024).
+  current_ratio: Same as current_assets.
+  working_capital: Same as current_assets.
+  long_term_debt: >-
+    Debt is tagged only as LongTermDebt (including current maturities), not split; total debt
+    is complete.
+  regulatory_assets: Non-current regulatory assets are tagged in some periods only.
+ILMN:
+  total_debt: >-
+    One quarter in the last eight has no debt tag of a single family (the switch to notes payable
+    in 2023-2024, D-071).
+  debt_to_equity: Same quarter missing as total_debt.
+MTB:
+  loan_loss_reserve_ratio: >-
+    The loans and allowance tags change after FY2024 Q1 (LoansAndLeasesReceivableAllowance ends),
+    so the ratio's quarters stop there.
+  lcr: >-
+    Liquidity coverage ratio read from the MD&A only for the latest quarter (FY2026 Q3), outside
+    the 4-quarter window counted here.
+  cre_loan_share: Commercial real estate loans are tagged only at fiscal year-ends through FY2023.
+NFE:
+  production_boe_per_day: LNG infrastructure and supply company, not an oil and gas producer.
+SLB:
+  production_boe_per_day: Oilfield services company, not an oil and gas producer.
+RJF:
+  total_debt: >-
+    Raymond James tags its debt as SeniorNotes and OtherBorrowings, in no debt family; only
+    some periods have a reported total.
+  debt_to_equity: Same periods missing as total_debt.
+  net_flows: >-
+    Not found in the text read (Raymond James reports net new assets by segment, not a firm
+    total).

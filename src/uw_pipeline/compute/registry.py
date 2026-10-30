@@ -204,6 +204,9 @@ class SectionRule(BaseModel):
 
 
 class CompanyOverride(BaseModel):
+    # The currency the company reports in, when not USD (D-072: Canopy Growth, CAD): its money
+    # facts are read in it and its money metrics stored with it as their unit.
+    currency: str = Field(default="USD", pattern=r"^[A-Z]{3}$")
     concepts: dict[str, ConceptDef] = Field(default_factory=dict)
     metrics: list[MetricDef] = Field(default_factory=list)
     sections: dict[str, SectionRule] = Field(default_factory=dict)
@@ -299,7 +302,15 @@ class Registry(BaseModel):
         used = {n for m in metrics for n in m.inputs()}
         concepts = {code: tags for code, tags in concepts.items()
                     if code in used or not any(t.needs_instance for t in tags)}  # fmt: skip
-        return CompanyRegistry(concepts=concepts, units=units, metrics=metrics)
+        currency = override.currency
+        if currency != "USD":  # D-072
+            units = {code: currency if unit == "USD" else unit for code, unit in units.items()}
+            # Market cap comes from the USD share price: no metric may combine it with the
+            # company's own currency (Altman Z).
+            metrics = [
+                m for m in metrics if m.code == "market_cap" or "market_cap" not in m.inputs()
+            ]
+        return CompanyRegistry(concepts=concepts, units=units, metrics=metrics, currency=currency)
 
 
 class CompanyRegistry(BaseModel):
@@ -308,6 +319,11 @@ class CompanyRegistry(BaseModel):
     concepts: dict[str, list[TagRef]]
     units: dict[str, str] = Field(default_factory=dict)  # concept -> fact unit (default USD)
     metrics: list[MetricDef]
+    currency: str = "USD"  # the company's reporting currency (D-072)
+
+    def unit_of(self, m: MetricDef) -> str:
+        """The unit stored for metric `m`: its own, with money in the company's currency."""
+        return self.currency if m.unit == "USD" else m.unit
 
     def tag_refs(self) -> set[TagRef]:
         return {t for tags in self.concepts.values() for t in tags}

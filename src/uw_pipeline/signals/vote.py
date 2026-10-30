@@ -49,6 +49,8 @@ _FINDING_TOPIC = {
     "going_concern": ("going_concern", "present"),
     "material_weakness": ("material_weakness", "present"),
     "controls_not_effective": ("controls_not_effective", "present"),
+    # Not a voted topic (the keyword rule covers it): ignored below, but the model may report it.
+    "restatement": ("restatement", "present"),
     "listing_adverse": ("listing", "adverse"),
     "listing_voluntary_transfer": ("listing", "voluntary_transfer"),
 }

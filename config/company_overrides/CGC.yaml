@@ -1,0 +1,4 @@
+# Canopy Growth reports in Canadian dollars (D-072): its money facts are read in CAD and its
+# money metrics shown in CAD (unit CAD, "C$"). Market cap stays in USD (Nasdaq share price),
+# so Altman Z, which would mix the two, is not computed.
+currency: CAD

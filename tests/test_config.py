@@ -17,11 +17,12 @@ def test_mvp_company_list() -> None:
     ]  # fmt: skip
     # Phase 16: the S&P 100 (100 companies; GOOGL and GOOG are one) plus seven MVP companies;
     # Phase 17a': 123 more from the development sample (5 per industry group, D-055); 17c: 20
-    # clinical-stage companies (D-058); 17g: 6 outside every group (D-059).
-    assert len(companies) == 256 and {"AAPL", "GOOGL", "BRK.B", "XOM", "DHI", "NEM"} <= {
+    # clinical-stage companies (D-058); 17g: 6 outside every group (D-059); 21 from the client
+    # portfolio (D-071), one of them clinical-stage (ALDX).
+    assert len(companies) == 277 and {"AAPL", "GOOGL", "BRK.B", "XOM", "DHI", "NEM", "BRO"} <= {
         c.ticker for c in companies
     }
-    assert sum("clinical_stage" in c.traits for c in companies) == 20
+    assert sum("clinical_stage" in c.traits for c in companies) == 21
     assert all(c.cik for c in companies), "every company pins its CIK"
     assert len({c.cik for c in companies}) == len(companies), "one entry per CIK"
 

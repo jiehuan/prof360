@@ -151,9 +151,10 @@ def load_company_facts(
         if frame is not None:
             frames.append(frame)
             fingerprint.append(filing.accn)
-    facts = pd.concat([f for f in frames if not f.empty], ignore_index=True)
-    if facts.empty:
-        facts = pd.DataFrame(columns=FACT_COLUMNS)
+    # No US-GAAP facts at all (a foreign filer's 20-F / 40-F reports under IFRS, D-071): an
+    # empty table, so the later stages still run on the company's other sources.
+    found = [f for f in frames if not f.empty]
+    facts = pd.concat(found, ignore_index=True) if found else pd.DataFrame(columns=FACT_COLUMNS)
     digest = hashlib.sha256("\n".join(fingerprint).encode()).hexdigest()
     return facts, digest
 
@@ -381,7 +382,7 @@ def run_compute_stage(
             stamp = now()
             out: list[dict[str, Any]] = []
             for code, by_period in metrics.items():
-                unit = next(m.unit for m in creg.metrics if m.code == code)
+                unit = next(creg.unit_of(m) for m in creg.metrics if m.code == code)
                 for (ptype, fy, fq), v in by_period.items():
                     out.append(
                         {

@@ -8,6 +8,7 @@ quote against exactly that item.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -125,6 +126,10 @@ class Package:
 _VOLUME = {"count": "", "ounces": " oz", "pounds": " lb", "tons": " tons"}
 
 
+_CURRENCY = re.compile(r"[A-Z]{3}")  # an ISO currency code, as metric_value.unit stores it
+_CURRENCY_SIGN = {"USD": "$", "CAD": "C$"}
+
+
 def fmt_value(value: float | None, unit: str, status: str = "OK") -> str:
     if status == "NM" or value is None:
         return "N/M"
@@ -145,11 +150,13 @@ def fmt_value(value: float | None, unit: str, status: str = "OK") -> str:
         if abs(value) >= 1e9:
             return f"{value / 1e9:,.2f}B{suffix}"
         return f"{value / 1e6:,.2f}M{suffix}" if abs(value) >= 1e6 else f"{value:,.0f}{suffix}"
+    # Money: USD, or the company's own reporting currency (D-072: Canopy Growth reports in CAD).
+    sign = _CURRENCY_SIGN.get(unit, f"{unit} " if _CURRENCY.fullmatch(unit) else "$")
     if abs(value) >= 1e9:
-        return f"${value / 1e9:,.2f}B"
+        return f"{sign}{value / 1e9:,.2f}B"
     if abs(value) >= 1e6:
-        return f"${value / 1e6:,.0f}M"
-    return f"${value:,.2f}"
+        return f"{sign}{value / 1e6:,.0f}M"
+    return f"{sign}{value:,.2f}"
 
 
 def _period_label(ptype: str, fy: int, fq: int) -> str:
@@ -252,7 +259,7 @@ def build_package(
         taken[slot] = taken.get(slot, 0) + 1
         n += 1
         label = _period_label(r["period_type"], r["fiscal_year"], r["fiscal_quarter"])
-        shown = fmt_value(r["value"], m.unit, r["value_status"])
+        shown = fmt_value(r["value"], r["unit"] or m.unit, r["value_status"])
         pkg.add(
             Source(
                 id=f"M{n}", kind="METRIC",

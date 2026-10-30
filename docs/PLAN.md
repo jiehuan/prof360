@@ -758,6 +758,7 @@ uw-pipeline dq-report --run-id <id>
   - PAYMENTS 只有两家：PayPal、Fiserv、FIS 等按 SIC 不在这个组，要用 `industry` 归入。
 - 样本用途：每个新模块的 golden 值和文本指标留出公司从样本里取；覆盖率说明、DQ、`audit-insights` 和费用 / 时长都先在样本上做完，再扩到全量。规模与 Phase 16 相当（新增 98 家：Haiku 约 $12，SQLite 上串行约半天）。
 - 计算脚本：`build_universe.py` 增加 `--sample 5`（每组前 N 家），输出审阅用的清单。
+- **客户名单加入样本（2026-10-30 用户决定，D-071）**：业务方前 50 大客户里在 SEC 申报、此前没有覆盖的 21 家（BRO、PFG、SLB、MTB、AMC、CVNA、EVEX、RBRK、RBLX、CGC、HE、BTSG、ACRE、RJF、ILMN、ALDX、CVSA、XE、NFE、PSFE、AAUC）不按收入排序，直接加入开发样本，按样本的要求处理：每个缺口都写覆盖率说明，允许公司级设置，DQ、`audit-insights` 和 golden 检查都包括它们。`build_universe.py --sample` 生成样本时不会选出它们，审阅样本时保留。
 - **样本做完后冻结，直接对全部公司上线（2026-10-18 用户决定）**：226 家做完、通过 17e 的质量关口之后，不再按公司调整，直接处理全部公司。含义：
   - 只在配置的通用层面改：行业组的 SIC 映射、指标集、tag 候选（`concept_map.yaml`、`by_group`）、公式、行业组级覆盖率说明、DQ 规则。改动对同一行业的所有公司生效。
   - 样本外的公司不再加公司级设置：不加 `company_overrides`（如 BLK 的收入 tag）、不加公司级覆盖率说明；`industry` 只用于样本审阅时发现的分错组，以及上线后承保人员报告的问题。

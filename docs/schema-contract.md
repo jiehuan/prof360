@@ -49,6 +49,7 @@
 - **期间**：`metric_value` 中 `period_type` 取 `Q` 或 `FY`，并有 `fiscal_year` 和 `fiscal_quarter`（FY 行的季度为 0）。这些都按**公司自己的财年**口径。例如 Macy's 截至 2026-01-31 的年度是 FY2025。`period_end` 是期末日期。
 - **数值单位**：`unit` 取以下几种之一（应用库 `metrics.subtitle` 是对应的显示单位）：
   - `USD`：金额，以美元为单位，不是百万美元（subtitle `USD`）。
+  - `CAD`：金额，以加元为单位（2026-10-30 起，只有用加元申报的 Canopy Growth，D-072）；前端显示为 C$。
   - `ratio`：倍数，例如 0.53 显示为 0.53x（subtitle `x`）。
   - `fraction`：比例，例如 0.049 显示为 4.9%（subtitle `%`）。
   - `days`：天数，例如存货周转天数（subtitle `days`）。

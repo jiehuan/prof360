@@ -1658,3 +1658,58 @@ LLM runs until the end, then one comparison.
   or headers names a quarter. Elsewhere the rule is unchanged; year-to-date, change columns,
   subsets and the other year stay withheld. The model's readings are cached, so the next
   textmetrics run applies the rule to them without new LLM calls.
+
+**D-071 Client portfolio companies added (2026-10-30).**
+- Source: the business's top-50 client portfolio list (52 rows). Rule (user decision): add the
+  clients that file with the SEC; leave out the others. Each was matched against SEC's ticker
+  list and its submissions (name, former names, recent periodic reports), never by name alone.
+- Already covered (9): CVS, BAC, UWMC, GS, FLR, PFE, GEV, UNH, JNJ.
+- Added (21; 256 -> 277 companies): BRO, PFG, SLB (formerly Schlumberger), MTB, AMC, CVNA, EVEX,
+  RBRK, RBLX, CGC, HE, BTSG, ACRE, RJF, ILMN, ALDX, CVSA (Covista, formerly Adtalem Global
+  Education, renamed 2026-01), XE (X-Energy; listed in 2026, two 10-Qs so far), and by user
+  decision: NFE, the listed parent of the client New Fortress Energy Marketing LLC; PSFE
+  (20-F) and AAUC (40-F), foreign filers with no 10-K/10-Q, so no MD&A, risk factors or
+  quarterly text: their data is partial. BRO is grouped with BUSINESS_SERVICES (an insurance
+  broker, not an insurer); EVEX reads only filings after its SPAC merger (`history_start`).
+- Not added (22): no SEC registrant - Highmark, Cerberus Capital Management, MLB Players
+  Association, Alvarez & Marsal, AlixPartners, AXA, College Sports Commission, Lockton, Encap
+  Investments, REM OptionCo, Auto Club Group, Horizon Healthcare Services, CAH Holdings,
+  Coinsafe, Delaware Charter Guarantee & Trust, Jencap Holdings; a subsidiary whose parent is
+  covered or not listed - NB Holdings (Bank of America), Lux Vending (Bitcoin Depot, not in
+  SEC's ticker list); no longer reporting - Focus Financial (private since 2023), Confluent and
+  ON24 (Form 15 in 2026), Tokio Marine (no annual report at the SEC since 2006).
+- Development sample (user decision 2026-10-30: they are the business's top clients): the 21
+  join the development sample of PLAN 17a′ (D-055) although the revenue ranking did not pick
+  them. So, as for the rest of the sample: every metric gap in `coverage-report` gets a note in
+  `config/coverage_notes.yaml` (by group where the whole group shares it, else by company), a
+  company-level setting (`company_overrides`, `industry`) is allowed where a filing needs one,
+  and DQ, `audit-insights` and golden checks cover them. Logos: 15 from Wikipedia, 6 website icons; 10 needed an
+  article or website in `config/logos.yaml` (no Wikidata item by CIK).
+
+**D-072 A company that reports in another currency: Canopy Growth in CAD (2026-10-30).**
+- Canopy Growth (CGC, added by D-071) files 10-K/10-Q with US GAAP XBRL in Canadian dollars.
+  The pipeline read money facts in USD only, so CGC had almost no metrics. It is the only one
+  of the 277 companies with non-USD money facts.
+- Options: (a) no metrics (a coverage note); (b) its own currency, shown as such; (c) convert to
+  USD at period-end exchange rates (needs an FX source and a rate per period). Chosen (user
+  decision): (b).
+- How: `config/company_overrides/CGC.yaml` sets `currency: CAD`. For such a company the money
+  concepts read facts in that currency and money metrics are stored with it as their unit
+  (`metric_value.unit`, `MatrixData.unit` = `CAD`); ratios and percentages are unchanged; a
+  quarter is derived from year-to-date amounts in any currency, not only USD. Amounts are
+  written "C$1.23B" (`fmt_value`) in methodology, data points and the insight input, so
+  generated text says C$ and its numbers are still checked. Market cap comes from the USD share
+  price and stays USD; Altman Z, which would combine it with CAD amounts, is not computed.
+  Money metrics read from filing text and preliminary results from earnings releases are read
+  as USD only, so they are skipped for such a company (counts and ratios are still read).
+- The front end must show unit `CAD` as C$ (frontend-api-review A9); CGC is not comparable in
+  amounts with USD peers, only in ratios.
+- First runs (2026-10-30, runs 148-155, Haiku 5.5, about $2.1 in all): the 19 10-K filers
+  have 13-51 metrics, the two foreign filers none; every company has 11-31 current insights and
+  11-16 questions. Found and fixed on the way: the facts stage failed on a company with no
+  US-GAAP facts (PSFE, AAUC); the signals stage failed when the model reported a restatement
+  outside the voted topics (CGC, NFE); SEC's fiscalYearEnd for Brown & Brown is wrong (0119),
+  so the latest 10-K year end now wins when they disagree (`learn_calendar`); Canopy Growth
+  reports in CAD (D-072). General candidates added: `us-gaap:Cash` for cash (SLB, AAL) and a
+  notes-payable debt family (ILMN; also AMGN, BHVN, LH, LRN, OMC, ORCL), only filling periods
+  that had no value. Coverage: every gap of the 21 has a note (178 notes).
