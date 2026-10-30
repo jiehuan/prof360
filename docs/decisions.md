@@ -1746,3 +1746,6 @@ LLM runs until the end, then one comparison.
   reports in CAD (D-072). General candidates added: `us-gaap:Cash` for cash (SLB, AAL) and a
   notes-payable debt family (ILMN; also AMGN, BHVN, LH, LRN, OMC, ORCL), only filling periods
   that had no value. Coverage: every gap of the 21 has a note (178 notes).
+- 2026-10-31: convertible notes as a debt family too (`ConvertibleLongTermNotesPayable`, "Convertible
+  Notes Payable, Noncurrent", with `ConvertibleNotesPayableCurrent`): Rubrik's $1.13B notes since
+  2025; also NOW, RVMD, VKTX, only where no earlier family has a value.

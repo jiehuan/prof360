@@ -99,6 +99,10 @@ concepts:
   # "Notes Payable, Current", no LongTermDebt tags).
   notes_noncurrent: {tags: [us-gaap:LongTermNotesPayable]}
   notes_current: {tags: [us-gaap:NotesPayableCurrent]}
+  # Convertible notes as their own family (Rubrik since 2025: "Convertible Notes Payable,
+  # Noncurrent", no other debt tag).
+  convertible_noncurrent: {tags: [us-gaap:ConvertibleLongTermNotesPayable]}
+  convertible_current: {tags: [us-gaap:ConvertibleNotesPayableCurrent]}
   # Phase 17e: total debt presented as notes payable (D.R. Horton, PulteGroup, Omnicom).
   notes_payable: {tags: [us-gaap:NotesPayable]}
   # Phase 17e: long-term debt as presented on a balance sheet with no current / non-current

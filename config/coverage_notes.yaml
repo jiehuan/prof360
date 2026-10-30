@@ -1014,12 +1014,6 @@ RBRK:
   "*": >-
     Listed in April 2024 (fiscal year ends January 31): XBRL history starts with the IPO
     registration, so fewer than 5 fiscal years.
-  total_debt: >-
-    Since FY2026 Q2 Rubrik's debt is convertible senior notes tagged
-    ConvertibleLongTermNotesPayable, which is in no debt family yet (NEEDS_REVIEW: a candidate
-    for the notes family); the term loan tagged LongTermDebtNoncurrent was repaid in 2025.
-  long_term_debt: Same as total_debt (convertible notes not in a debt family).
-  debt_to_equity: Needs total debt; see total_debt.
 EVEX:
   "*": >-
     Successor of the SPAC Zanite Acquisition Corp. since the May 2022 merger; only its own

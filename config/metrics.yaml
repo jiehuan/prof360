@@ -334,14 +334,18 @@ metrics:
       # long-term debt including current maturities plus short-term borrowings (TSLA).
       - ltd_noncurrent + debt_current + finance_lease_liabilities
       - ltd_total + short_term_borrowings + finance_lease_liabilities
-      # D-071: the notes payable family (ILMN).
+      # D-071: the notes payable family (ILMN) and the convertible notes family (RBRK).
       - notes_noncurrent + notes_current + short_term_borrowings + finance_lease_liabilities
+      - convertible_noncurrent + convertible_current + short_term_borrowings
       # Non-current only, used when the family has no current sibling. Understates debt;
       # dq_rules.yaml debt_completeness reports it.
       - ltdcl_noncurrent + short_term_borrowings
       - ltd_noncurrent + short_term_borrowings + finance_lease_liabilities
       # Phase 17e: debt presented as notes payable (homebuilders, Omnicom).
       - notes_payable + short_term_borrowings
+      # Convertible notes with no current portion tagged (RBRK); understates like the
+      # non-current-only formulas above.
+      - convertible_noncurrent + short_term_borrowings
     optional: [short_term_borrowings, finance_lease_liabilities]
   - code: long_term_debt
     display_name: Long-term Debt
@@ -357,6 +361,7 @@ metrics:
       - ltdcl_noncurrent
       - ltd_noncurrent
       - notes_noncurrent   # D-071 (ILMN)
+      - convertible_noncurrent   # D-071 (RBRK)
       - ltd_unclassified  # Phase 17e: mapped only for unclassified balance sheets
   - code: equity
     display_name: Stockholders' Equity
