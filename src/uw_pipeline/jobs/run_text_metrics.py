@@ -272,7 +272,8 @@ class Extractor:
             for cell in out.values:
                 m = metrics.get(cell.metric_code)
                 table_spec = m.extraction.table if m and m.extraction else None
-                checked = check_cell(by_id, cell, table_spec) if table_spec else None
+                checked = (check_cell(by_id, cell, table_spec, annual=doc.form_type == "10-K")
+                           if table_spec else None)  # fmt: skip
                 if checked is None or checked.value is None:
                     rejected += 1
                     log.info("%s %s %s r%s c%s withheld: %s", doc.label, cell.metric_code,

@@ -82,7 +82,11 @@ def _is_data(text: str) -> bool:
     return parse_number(text) is not None and not _YEAR.fullmatch(text.strip())
 
 
-def check_cell(tables: dict[str, Table], cell: TableCell, spec: TableSpec) -> Checked:
+def check_cell(
+    tables: dict[str, Table], cell: TableCell, spec: TableSpec, *, annual: bool = False
+) -> Checked:
+    """`annual`: the table is from a 10-K, where a column headed by its year alone is that
+    fiscal year (D-070)."""
     table = tables.get(cell.table.strip().upper())
     if table is None:
         return Checked(None, f"no table {cell.table}")
@@ -108,7 +112,7 @@ def check_cell(tables: dict[str, Table], cell: TableCell, spec: TableSpec) -> Ch
     stub, _ = _period_header(table, cell.row, 0)  # the top-left header ("year ended ...")
     if not dated and _YEAR.fullmatch(table.section_label(cell.row).strip()):
         dated = table.section_label(cell.row)  # years as row groups, measures across
-    problem = _period_problem(cell, header, dated, f"{_title(table)} {stub} {header}")
+    problem = _period_problem(cell, header, dated, f"{_title(table)} {stub} {header}", annual)
     if problem:
         return Checked(None, problem)
     context = f"{_title(table)} | {section} | {label}"
@@ -129,7 +133,9 @@ def check_cell(tables: dict[str, Table], cell: TableCell, spec: TableSpec) -> Ch
     )  # fmt: skip
 
 
-def _period_problem(cell: TableCell, header: str, dated: str, context: str) -> str | None:
+def _period_problem(
+    cell: TableCell, header: str, dated: str, context: str, annual: bool = False
+) -> str | None:
     try:
         end = date.fromisoformat(cell.period_end)
     except ValueError:
@@ -145,7 +151,10 @@ def _period_problem(cell: TableCell, header: str, dated: str, context: str) -> s
         return "year-to-date column"
     if cell.period == "quarter" and not _QUARTER.search(context):
         return "header does not say the column is a quarter"
-    if cell.period == "year" and not _YEAR_WORDS.search(context):
+    # In a 10-K a column headed by the year alone ("2024", checked above to be only that year)
+    # is the fiscal year when nothing names a quarter (D-070).
+    bare_year = annual and not _QUARTER.search(context)
+    if cell.period == "year" and not _YEAR_WORDS.search(context) and not bare_year:
         return "header does not say the column is a year"
     if cell.period == "point_in_time" and (_QUARTER.search(context) or _YEAR_WORDS.search(context)):
         return "a duration column read as a point in time"

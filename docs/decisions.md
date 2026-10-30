@@ -1294,3 +1294,39 @@ LLM runs until the end, then one comparison.
   ratings ("B2") of other text stay; a rating equal to one of its B ids drops the text (rare,
   accepted). Links still come from the id lists.
 - Golden (MAR, JPM, ENPH, $0.02): 72 of 72 texts kept, none with ids (before: 22).
+
+**D-069 MD&A history for text metrics: 5 years of 10-Ks, 8 quarters of 10-Qs (2026-10-29).**
+- Metrics read from filing text (RevPAR, occupancy, postpaid churn, medical cost ratio, ...)
+  had only the filings of the 400-day text window: Marriott's RevPAR had 4 quarters and one
+  fiscal year, and such metrics 12 points on average against about 85 for XBRL metrics. Banks
+  alone kept 5 years of 10-K MD&A (`mdna_history_years`, Phase 8). Some tables give only the
+  change against the prior year (Marriott), so the comparative columns do not fill the gap.
+- Options (user decision 2026-10-29: B): (A) 5 years of 10-K MD&A for every group with a text
+  metric (annual points only); (B) A plus the MD&A of the 10-Qs of the last 8 quarters, so the
+  quarterly cards have 8 quarters like the XBRL metrics; (C) a longer text window for every
+  section (more cost, and older text in signals and insight excerpts).
+- How: `text_metric_history: {years: 5, quarters: 8}` in industry_groups.yaml applies to every
+  company whose displayed metrics include a `kind: text` metric; a group's own
+  `mdna_history_years` / `mdna_history_quarters` override it (BANKS keeps its 5 years and now
+  also gets 8 quarters). The documents stage keeps only the MD&A of those older filings (10-K
+  Item 7, 10-Q Part I Item 2), as for banks before; the textmetrics stage reads every stored
+  MD&A, so it picks them up with no change. A fourth quarter comes from an earnings release or
+  the 10-K; releases outside the text window are not downloaded, so an older Q4 can be
+  missing where the 10-K gives only the year.
+
+**D-070 Table cells: in a 10-K a column headed by its year alone is that fiscal year
+(2026-10-29).**
+- With the MD&A history of D-069, the model read Marriott's and BNY's older 10-K tables, but 45
+  annual cells were withheld: the cell check (D-044) wanted the header or title to say the
+  column is a year ("year ended", "fiscal year", ...), and these tables head the column with
+  the year alone ("2024", next to "Change vs. 2023"). Marriott's FY2021-FY2024 RevPAR,
+  occupancy and ADR were lost that way.
+- Options: (a) keep the rule (no annual history for such layouts); (b) accept a bare-year header
+  in a 10-K only, where an annual report's MD&A columns are fiscal years; (c) accept it
+  everywhere (10-Qs and releases show quarters and year-to-date under year headers too).
+  Chosen (user approval): (b).
+- How: `check_cell(..., annual=True)` for tables of a 10-K: a cell the model reads as a year
+  passes when its column's dated header is only that year (as before) and nothing in the title
+  or headers names a quarter. Elsewhere the rule is unchanged; year-to-date, change columns,
+  subsets and the other year stay withheld. The model's readings are cached, so the next
+  textmetrics run applies the rule to them without new LLM calls.
