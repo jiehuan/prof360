@@ -44,6 +44,29 @@ def test_learn_calendar_offset_from_10k() -> None:
     assert learn_calendar(facts, "0201") == FiscalCalendar("0201", -1)
 
 
+def test_a_wrong_sec_fiscal_year_end_gives_way_to_the_10k_years() -> None:
+    """SEC's submissions give Brown & Brown fiscalYearEnd 0119; its 10-Ks run to
+    December 31. The 10-Ks' own year end wins, so 2026-09-30 is FY2026 Q3, not FY2027."""
+    facts = frame(
+        fact("Revenues", "2025-01-01", "2025-12-31", 5900, form="10-K", fy=2025, fp="FY",
+             accn="k25"),
+        fact("Revenues", "2024-01-01", "2024-12-31", 4700, form="10-K", fy=2024, fp="FY",
+             accn="k24"),
+    )  # fmt: skip
+    cal = learn_calendar(facts, "0119")
+    assert cal == FiscalCalendar("1231", 0)
+    assert cal.locate(date(2026, 9, 30)) == (2026, 3)
+    # A year end that matches is left alone.
+    assert learn_calendar(facts, "1231") == FiscalCalendar("1231", 0)
+    # A company that moved its year end keeps SEC's current one: only the latest 10-K counts.
+    moved = frame(
+        fact("Revenues", "2025-07-01", "2026-06-30", 10, form="10-K", fy=2026, fp="FY", accn="k1"),
+        fact("Revenues", "2013-05-01", "2014-04-30", 9, form="10-K", fy=2014, fp="FY", accn="k2"),
+        fact("Revenues", "2012-05-01", "2013-04-30", 8, form="10-K", fy=2013, fp="FY", accn="k3"),
+    )
+    assert learn_calendar(moved, "0630").fye_mmdd == "0630"
+
+
 def test_q4_and_cash_flow_quarters_are_derived_from_ytd() -> None:
     facts = frame(
         # income statement: direct quarters for Q1-Q3, FY from the 10-K

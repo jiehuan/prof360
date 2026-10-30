@@ -20,6 +20,7 @@ Rules (PLAN §5.2):
 from __future__ import annotations
 
 import calendar
+import logging
 from collections import Counter
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -28,6 +29,8 @@ from typing import Any
 import pandas as pd
 
 from uw_pipeline.frames import records
+
+log = logging.getLogger(__name__)
 
 PERIOD_COLUMNS = [
     "taxonomy", "tag", "dims", "unit", "period_type", "fiscal_year", "fiscal_quarter",
@@ -84,23 +87,35 @@ class FiscalCalendar:
 
 
 def learn_calendar(facts: pd.DataFrame, fye_mmdd: str) -> FiscalCalendar:
-    """Infer the fiscal-year label offset from the `fy` companies put on their own 10-K facts."""
-    base = FiscalCalendar(fye_mmdd)
+    """Infer the fiscal-year label offset from the `fy` companies put on their own 10-K facts.
+    When the latest 10-K year does not end on `fye_mmdd` (SEC's `fiscalYearEnd`, which can be
+    wrong: Brown & Brown's says 0119 for December years), the 10-K's own year end wins."""
     annual = facts[
         facts["form"].astype(str).str.startswith("10-K")
         & (facts["fp"] == "FY")
         & facts["fy"].notna()
         & facts["start"].notna()
     ]
-    offsets: Counter[int] = Counter()
+    years: list[tuple[date, int]] = []  # (end of the 10-K's own year, its `fy`)
     for _, group in annual.groupby("accn"):
         end = max(date.fromisoformat(e) for e in group["end"])
         start = date.fromisoformat(group.loc[group["end"] == end.isoformat(), "start"].iloc[0])
-        if not 350 <= (end - start).days <= 380:
-            continue
+        if 350 <= (end - start).days <= 380:
+            years.append((end, int(group["fy"].iloc[0])))
+    base = FiscalCalendar(fye_mmdd)
+    # Only the latest 10-K year counts: a company that moved its year end (H&R Block from April
+    # to June) has older years on the old date, and SEC's current value is right for it.
+    latest = max((end for end, _ in years), default=None)
+    if latest is not None and (base.locate(latest) or (0, 0))[1] != 4:
+        log.warning("fiscal year end %s does not match the latest 10-K year (ends %s); using %s",
+                    fye_mmdd, latest, latest.strftime("%m%d"))  # fmt: skip
+        fye_mmdd = latest.strftime("%m%d")
+        base = FiscalCalendar(fye_mmdd)
+    offsets: Counter[int] = Counter()
+    for end, fy in years:
         loc = base.locate(end)
         if loc is not None and loc[1] == 4:
-            offsets[int(group["fy"].iloc[0]) - loc[0]] += 1
+            offsets[fy - loc[0]] += 1
     offset = offsets.most_common(1)[0][0] if offsets else 0
     return FiscalCalendar(fye_mmdd, offset, _quarter_ends(facts))
 
