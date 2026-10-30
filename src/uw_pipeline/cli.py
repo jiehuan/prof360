@@ -14,7 +14,12 @@ import typer
 from sqlalchemy import Connection, Engine, func, select
 
 from uw_pipeline.clients.db import app_engine, ensure_schema, pipeline_engine
-from uw_pipeline.compute.coverage import company_coverage, load_notes, render_markdown
+from uw_pipeline.compute.coverage import (
+    company_coverage,
+    history_start,
+    load_notes,
+    render_markdown,
+)
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import (
     CompanyConfig,
@@ -255,8 +260,9 @@ def coverage_report(
                     select(metric_value).where(metric_value.c.company_id == row["company_id"])
                 ).mappings()
             ]
-            mine = notes.for_company(cfg.ticker, row["industry_group"])
-            reports.append(company_coverage(cfg.ticker, creg.metrics, values, mine))
+            mine = notes.for_company(cfg.ticker, row["industry_group"], cfg.traits)
+            since = history_start(conn, row["company_id"])
+            reports.append(company_coverage(cfg.ticker, creg.metrics, values, mine, since))
     today = datetime.now(UTC).date().isoformat()
     out = settings.data_dir / "reports" / f"coverage-{today}.md"
     out.parent.mkdir(parents=True, exist_ok=True)

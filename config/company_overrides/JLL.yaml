@@ -1,0 +1,5 @@
+# JLL reports "net capital additions" (purchases less disposal proceeds) as its capital
+# expenditure line (Phase 17e).
+concepts:
+  capex:
+    tags: [us-gaap:PaymentsForProceedsFromProductiveAssets]

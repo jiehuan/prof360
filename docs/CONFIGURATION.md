@@ -46,7 +46,7 @@ code. Decisions D-016 and D-049 explain the design.
 | Hide or show a whole metric set (computed, but not in the app, the LLM inputs or threshold signals) | `metrics.yaml` | `hidden_metric_sets: [SET, ...]`; remove a set to show it again (D-054) |
 | Change an 8-K item's severity or title | `signal_rules.yaml` | `eight_k_items` |
 | Change a market, insider, 13D or litigation signal (threshold, window, severity) | `signal_rules.yaml` | `market`, `insiders`, `ownership_forms`, `legal` (2.4) |
-| Explain a missing metric | `coverage_notes.yaml` | a note per company and metric (or `"*"`), or per industry under `groups:` (2.6) |
+| Explain a missing metric | `coverage_notes.yaml` | a note per company and metric (or `"*"`), per industry under `groups:`, or per company trait under `traits:` (2.6) |
 
 ### 2.1 A company's industry
 
@@ -170,6 +170,9 @@ facts, documents and signals stages read their filings too. A company with `hist
 ### 2.6 Coverage notes
 
 `coverage-report` flags every metric short of 5 fiscal years and 8 quarters without a note.
+A company whose own 10-K / 10-Q filings start inside that window (a listing, a spin-off, a
+move from 20-F) is held to what they can hold: fiscal years from the earliest balance sheet
+in its first filing, quarters from its first 10-Q (D-063).
 
 ```yaml
 # coverage_notes.yaml
@@ -178,7 +181,10 @@ groups:
     goodwill_impairment: Tagged only in years with an impairment.
   SOFTWARE_INTERNET:         # every company of the group
     inventory_days: Software companies hold little or no inventory.
-MSFT:                        # one company; wins over its group's note
+traits:
+  clinical_stage:            # every company with this trait; wins over its group's note
+    revenue: Pre-revenue.
+MSFT:                        # one company; wins over its traits' and group's notes
   "*": Explains every gap of this company.
   gross_margin: ...
 ```

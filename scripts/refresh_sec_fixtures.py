@@ -41,6 +41,8 @@ GOLDEN = {
     "SBUX",
     # Phase 17c (D-058): cash runway over four quarters, and the latest-quarter fallback.
     "VKTX", "XENE",
+    # Phase 17e: debt as presented on unclassified balance sheets and as notes payable.
+    "PK", "OMC", "PLD",
 }  # fmt: skip
 FACT_YEARS = 7
 

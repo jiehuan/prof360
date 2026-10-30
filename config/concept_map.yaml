@@ -99,6 +99,17 @@ concepts:
   # "Notes Payable, Current", no LongTermDebt tags).
   notes_noncurrent: {tags: [us-gaap:LongTermNotesPayable]}
   notes_current: {tags: [us-gaap:NotesPayableCurrent]}
+  # Phase 17e: total debt presented as notes payable (D.R. Horton, PulteGroup, Omnicom).
+  notes_payable: {tags: [us-gaap:NotesPayable]}
+  # Phase 17e: long-term debt as presented on a balance sheet with no current / non-current
+  # split. Only for these groups (and company_overrides): elsewhere a period without the
+  # non-current tag would get the total including current maturities, mixing two measures.
+  ltd_unclassified:
+    tags: []
+    by_group:
+      HOMEBUILDERS: [us-gaap:NotesPayable, us-gaap:LongTermDebt]
+      REIT: [us-gaap:LongTermDebt]
+      REAL_ESTATE_OPERATING: [us-gaap:LongTermDebt]
   # Finance lease liabilities, added only to the LongTermDebt family, which excludes them
   # (the ...AndCapitalLeaseObligations family already includes them). Decisions D-046.
   finance_lease_liabilities:

@@ -680,6 +680,9 @@ companies:
     cik: 1996862
     display_name: "Bunge"
     news_aliases: ["Bunge"]
+    # Bunge Global SA (2023 redomicile to Switzerland); earlier filings under Bunge Limited,
+    # which deregistered in November 2023 (Phase 17e).
+    predecessor_ciks: [1144519]
   # CREDIT
   - ticker: OMF
     cik: 1584207

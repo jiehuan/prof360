@@ -253,5 +253,20 @@
   "cik_str": 1582313,
   "ticker": "XENE",
   "title": "Xenon Pharmaceuticals Inc."
+ },
+ "51": {
+  "cik_str": 1045609,
+  "ticker": "PLD",
+  "title": "Prologis, Inc."
+ },
+ "52": {
+  "cik_str": 29989,
+  "ticker": "OMC",
+  "title": "OMNICOM GROUP INC."
+ },
+ "53": {
+  "cik_str": 1617406,
+  "ticker": "PK",
+  "title": "Park Hotels & Resorts Inc."
  }
 }

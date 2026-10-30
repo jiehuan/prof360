@@ -1520,6 +1520,39 @@ LLM runs until the end, then one comparison.
   syntheses each). Live (run 137, 2026-10-21): textmetrics for the six banks and JPMorgan from
   the cache: no model calls, the stored values unchanged.
 
+**D-063 Coverage of the development sample: XBRL gaps (Phase 17e, 2026-10-22).**
+- Starting point: 627 metric gaps without a note on the 256 companies (546 XBRL, 81 text;
+  the text gaps wait for the first full LLM run).
+- Short histories, options: (a) a note per company; (b) a general rule. Chosen: (b). The
+  target counts from the company's first own 10-K / 10-Q: fiscal years from the earliest
+  balance sheet in that filing (total assets; the equity statement's opening balance reaches
+  a year further back), quarters from its first 10-Q (`compute/coverage.history_start`; used by
+  `coverage-report` and the DQ rule). 118 gaps (Dole, Constellium, Medline, Solventum, Ingram
+  Micro, Veralto, CRH, a 2023 biotech IPO). Bunge instead gets its predecessor, Bunge Limited
+  (CIK 1144519, deregistered November 2023).
+- Mapping fixes, each checked against the company's facts: `NotesPayable` is total debt for
+  D.R. Horton, PulteGroup and Omnicom (a last `total_debt` form); revenue for Bread Financial
+  is total net revenue (override, like the banks); capital expenditures for VF Corp and JLL
+  (overrides: a generic `PaymentsForCapitalImprovements` would give Weyerhaeuser $51M of its
+  several hundred million).
+- Long-term debt where the balance sheet has no current / non-current split, options: (a) a
+  generic last form `LongTermDebt` (including current maturities); (b) only for those groups.
+  (a) was tried and rejected: some periods of 30 companies (Apple, Adobe, NVIDIA, Tesla, ...)
+  lack the non-current tag and would have mixed two measures in one series. Chosen: (b), the
+  concept `ltd_unclassified` mapped for HOMEBUILDERS, REIT and REAL_ESTATE_OPERATING, and by
+  override for Park Hotels and Omnicom.
+- Notes: group notes (homebuilders and REITs: unclassified balance sheet, no operating income
+  line, capitalized interest, no REIT capex); a new `traits:` section (clinical-stage:
+  pre-revenue, equity-funded, little equipment); company notes for the rest, each stating what
+  the facts show: single-step income statements (Dow, Nucor, ADM, HCA, ...), interest expense
+  tagged in the 10-K only with net interest in the 10-Qs (Delta, Nike, Newmont, ...), capex or
+  debt moved to the company's own tags (Freeport, United Rentals, Valero, Lennar, NVR), no debt
+  (lululemon, Cal-Maine, Dolby, Texas Pacific Land, Yum China).
+- Result: no XBRL gap without a note; the 80 left are text metrics of companies not yet read
+  by the LLM stages. Golden values (from the FY2025 10-Ks): D.R. Horton notes payable 5,965.5,
+  Park Hotels long-term debt 3,856, Prologis 35,037.073, Omnicom long-term notes 7,655 and
+  total debt 9,272.9 + 62.0 + 104.5.
+
 **D-064 Daily copy from SQLite to Azure SQL: sync by primary key (2026-10-24).**
 - Need: the pipeline runs on SQLite; Azure SQL, read by the BFF, must get each run's results
   without a full reload. A full reload (`clear_target`, `load`) breaks once the BFF's user

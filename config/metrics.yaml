@@ -340,16 +340,24 @@ metrics:
       # dq_rules.yaml debt_completeness reports it.
       - ltdcl_noncurrent + short_term_borrowings
       - ltd_noncurrent + short_term_borrowings + finance_lease_liabilities
+      # Phase 17e: debt presented as notes payable (homebuilders, Omnicom).
+      - notes_payable + short_term_borrowings
     optional: [short_term_borrowings, finance_lease_liabilities]
   - code: long_term_debt
     display_name: Long-term Debt
     subtitle: "Borrowings due after more than a year"
+    description: >-
+      Non-current long-term debt. Where the balance sheet has no current / non-current split
+      (homebuilders, REITs, timeshare owners, Park Hotels), or no non-current amount is tagged
+      in those groups (Equinix, JLL), long-term debt as presented, including current
+      maturities.
     section: leverage
     unit: USD
     formula:
       - ltdcl_noncurrent
       - ltd_noncurrent
       - notes_noncurrent   # D-071 (ILMN)
+      - ltd_unclassified  # Phase 17e: mapped only for unclassified balance sheets
   - code: equity
     display_name: Stockholders' Equity
     subtitle: "Assets minus liabilities: the shareholders' stake"
