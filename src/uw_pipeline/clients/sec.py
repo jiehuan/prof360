@@ -31,6 +31,7 @@ log = logging.getLogger(__name__)
 SEC_WWW = "https://www.sec.gov"
 SEC_DATA = "https://data.sec.gov"
 COMPANY_TICKERS_URL = f"{SEC_WWW}/files/company_tickers.json"
+COMPANY_TICKERS_EXCHANGE_URL = f"{SEC_WWW}/files/company_tickers_exchange.json"
 
 RETRYABLE_STATUS = frozenset({429, 500, 502, 503, 504})
 
@@ -154,9 +155,23 @@ class SecClient:
         doc = self._fetch_json(COMPANY_TICKERS_URL, "sec/company_tickers", force=force)
         return {row["ticker"].upper(): int(row["cik_str"]) for row in doc.payload.values()}
 
-    def submissions(self, cik: int | str, *, force: bool = False) -> RawDocument:
+    def company_tickers_exchange(self, *, force: bool = False) -> list[dict[str, Any]]:
+        """Every ticker SEC lists, with its exchange (Phase 17): dicts of cik, name, ticker,
+        exchange (NYSE, Nasdaq, CBOE, OTC or None)."""
+        doc = self._fetch_json(COMPANY_TICKERS_EXCHANGE_URL, "sec/company_tickers_exchange",
+                               force=force)  # fmt: skip
+        fields = doc.payload["fields"]
+        return [dict(zip(fields, row, strict=True)) for row in doc.payload["data"]]
+
+    def submissions(self, cik: int | str, *, force: bool = False, land: bool = True) -> RawDocument:
+        """A registrant's metadata and recent filings. `land=False` reads without storing the
+        response (the universe build reads ~6,000 registrants and keeps a summary, D-055)."""
         padded = pad_cik(cik)
         url = f"{SEC_DATA}/submissions/CIK{padded}.json"
+        if not land:
+            data = self.get_bytes(url)
+            return RawDocument(url=url, raw_path="", content_hash=hashlib.sha256(data).hexdigest(),
+                               from_cache=False, payload=json.loads(data))  # fmt: skip
         return self._fetch_json(url, f"sec/submissions/CIK{padded}", force=force)
 
     def submissions_page(self, cik: int | str, name: str, *, force: bool = False) -> RawDocument:
@@ -169,6 +184,14 @@ class SecClient:
         padded = pad_cik(cik)
         url = f"{SEC_DATA}/api/xbrl/companyfacts/CIK{padded}.json"
         return self._fetch_json(url, f"sec/companyfacts/CIK{padded}", force=force)
+
+    def frame(
+        self, tag: str, unit: str, period: str, *, taxonomy: str = "us-gaap", force: bool = False
+    ) -> RawDocument:
+        """One XBRL frame: every filer's latest value of `tag` for a period such as CY2025
+        (a full year that best matches the calendar year) or CY2025Q4I (an instant)."""
+        url = f"{SEC_DATA}/api/xbrl/frames/{taxonomy}/{tag}/{unit}/{period}.json"
+        return self._fetch_json(url, f"sec/frames/{taxonomy}/{tag}/{unit}/{period}", force=force)
 
     # Archive documents are immutable once filed, so they are cached by accession, not by date.
 

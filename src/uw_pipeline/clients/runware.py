@@ -17,11 +17,11 @@ from pathlib import Path
 from typing import Any, Literal
 
 import httpx
-import yaml
 from pydantic import BaseModel
 
 from uw_pipeline.clients.llm import LLMError, LLMResult, LLMSetupError
 from uw_pipeline.clients.openai_chat import EFFORT, chat_result, error_text
+from uw_pipeline.yaml_load import safe_load
 
 log = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class RunwareConfig(BaseModel):
 
 def load_runware_config(config_dir: Path) -> RunwareConfig:
     with (config_dir / "runware.yaml").open(encoding="utf-8") as f:
-        return RunwareConfig.model_validate(yaml.safe_load(f))
+        return RunwareConfig.model_validate(safe_load(f))
 
 
 def schema_instruction(schema: dict[str, Any]) -> str:

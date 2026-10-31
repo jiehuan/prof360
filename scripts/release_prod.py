@@ -4,6 +4,7 @@ names another provider or model (code, config, tests, docs).
     python scripts/release_prod.py                    # build, check, commit on prod (no push)
     python scripts/release_prod.py --push             # ... and push origin prod
     python scripts/release_prod.py --refresh          # rewrite scripts/prod.patch from main..prod
+    python scripts/release_prod.py --source phase16   # release (or --refresh) a branch, not main
 
 `prod` has its own history (no commits from main). A release:
 1. checks out origin/prod in a temporary worktree and replaces its files with main's;
@@ -47,11 +48,12 @@ def git(*args: str, cwd: Path = ROOT, check: bool = True) -> str:
     return r.stdout
 
 
-def refresh() -> int:
-    diff = git("diff", "--full-index", "--binary", "main", "prod", "--", ".",
+def refresh(source: str) -> int:
+    diff = git("diff", "--full-index", "--binary", source, "prod", "--", ".",
                f":(exclude){PATCH}", f":(exclude){SELF}")  # fmt: skip
     (ROOT / PATCH).write_text(diff)
-    print(f"{PATCH}: {diff.count(chr(10) + 'diff --git ')} files differ between main and prod")
+    n = diff.count(chr(10) + "diff --git ") + diff.startswith("diff --git ")
+    print(f"{PATCH}: {n} files differ between {source} and prod")
     return 0
 
 
@@ -92,18 +94,20 @@ def main() -> int:
     ap.add_argument("--push", action="store_true")
     ap.add_argument("--refresh", action="store_true")
     ap.add_argument("-m", "--message", default=None)
+    ap.add_argument("--source", default="main", help="branch to release (default main)")
     args = ap.parse_args()
+    source = args.source
     if args.refresh:
-        return refresh()
+        return refresh(source)
     if git("status", "--porcelain").strip():
-        sys.exit("commit or stash your changes first (the release takes main as committed)")
+        sys.exit(f"commit or stash your changes first (the release takes {source} as committed)")
     git("fetch", "-q", "origin")
-    main_sha = git("rev-parse", "--short", "main").strip()
+    source_sha = git("rev-parse", "--short", source).strip()
     tree = Path(tempfile.mkdtemp(prefix="prod-release-"))
     shutil.rmtree(tree)
     git("worktree", "add", "-q", "-B", "prod", str(tree), "origin/prod")
     git("rm", "-r", "-q", ".", cwd=tree)
-    git("checkout", "main", "--", ".", cwd=tree)
+    git("checkout", source, "--", ".", cwd=tree)
     r = subprocess.run(["git", "apply", "--3way", "--index", str(ROOT / PATCH)], cwd=tree,
                        capture_output=True, text=True)  # fmt: skip
     if r.returncode:
@@ -130,10 +134,10 @@ def main() -> int:
         print(f"\nChecks failed; the tree is in {tree}.")
         return 1
     if not git("status", "--porcelain", cwd=tree).strip():
-        print(f"prod already matches main {main_sha}; nothing to release")
+        print(f"prod already matches {source} {source_sha}; nothing to release")
         git("worktree", "remove", str(tree))
         return 0
-    message = args.message or f"Release from main {main_sha}"
+    message = args.message or f"Release from {source} {source_sha}"
     git("commit", "-q", "-m", message, cwd=tree)
     print(git("log", "--oneline", "-1", cwd=tree).strip())
     if args.push:

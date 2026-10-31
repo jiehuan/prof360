@@ -8,15 +8,16 @@ quote against exactly that item.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import yaml
 from pydantic import BaseModel
 from sqlalchemy import Connection, desc, or_, select
 
 from uw_pipeline.compute.registry import MetricDef
+from uw_pipeline.enrich.clinical import clinical_text, current_programs
 from uw_pipeline.enrich.legal import legal_matters
 from uw_pipeline.enrich.llm import ModelSpec, load_llm_config
 from uw_pipeline.enrich.sources import SourceRef
@@ -31,6 +32,7 @@ from uw_pipeline.schema import (
     signal,
     source_document,
 )
+from uw_pipeline.yaml_load import safe_load
 
 
 class Materiality(BaseModel):
@@ -56,7 +58,7 @@ class InsightsConfig(BaseModel):
 def load_insights_config(config_dir: Path, provider: str | None = None) -> InsightsConfig:
     """insights.yaml plus the active provider's synthesis model (llm.yaml)."""
     with (config_dir / "insights.yaml").open(encoding="utf-8") as f:
-        raw = yaml.safe_load(f)
+        raw = safe_load(f)
     synthesis = load_llm_config(config_dir, provider).synthesis
     return InsightsConfig.model_validate({**raw, "synthesis": synthesis.model_dump()})
 
@@ -121,6 +123,13 @@ class Package:
 # -- formatting --------------------------------------------------------------------------------
 
 
+_VOLUME = {"count": "", "ounces": " oz", "pounds": " lb", "tons": " tons"}
+
+
+_CURRENCY = re.compile(r"[A-Z]{3}")  # an ISO currency code, as metric_value.unit stores it
+_CURRENCY_SIGN = {"USD": "$", "CAD": "C$"}
+
+
 def fmt_value(value: float | None, unit: str, status: str = "OK") -> str:
     if status == "NM" or value is None:
         return "N/M"
@@ -130,17 +139,24 @@ def fmt_value(value: float | None, unit: str, status: str = "OK") -> str:
         return f"{value:.2f}x"
     if unit == "days":
         return f"{value:.0f} days"
+    if unit == "months":  # cash runway (D-058)
+        return f"{value:.1f} months"
     if unit == "shares":
         return f"{value / 1e6:,.1f}M shares"
     if unit == "score":
         return f"{value:.2f}"
-    if unit == "count":  # members, vehicles, subscribers, barrels per day (Phase 16)
-        return f"{value / 1e6:,.2f}M" if abs(value) >= 1e6 else f"{value:,.0f}"
+    if unit in _VOLUME:  # members, vehicles, barrels per day (Phase 16); oz, lb, tons (Phase 17)
+        suffix = _VOLUME[unit]
+        if abs(value) >= 1e9:
+            return f"{value / 1e9:,.2f}B{suffix}"
+        return f"{value / 1e6:,.2f}M{suffix}" if abs(value) >= 1e6 else f"{value:,.0f}{suffix}"
+    # Money: USD, or the company's own reporting currency (D-072: Canopy Growth reports in CAD).
+    sign = _CURRENCY_SIGN.get(unit, f"{unit} " if _CURRENCY.fullmatch(unit) else "$")
     if abs(value) >= 1e9:
-        return f"${value / 1e9:,.2f}B"
+        return f"{sign}{value / 1e9:,.2f}B"
     if abs(value) >= 1e6:
-        return f"${value / 1e6:,.0f}M"
-    return f"${value:,.2f}"
+        return f"{sign}{value / 1e6:,.0f}M"
+    return f"{sign}{value:,.2f}"
 
 
 def _period_label(ptype: str, fy: int, fq: int) -> str:
@@ -243,7 +259,7 @@ def build_package(
         taken[slot] = taken.get(slot, 0) + 1
         n += 1
         label = _period_label(r["period_type"], r["fiscal_year"], r["fiscal_quarter"])
-        shown = fmt_value(r["value"], m.unit, r["value_status"])
+        shown = fmt_value(r["value"], r["unit"] or m.unit, r["value_status"])
         pkg.add(
             Source(
                 id=f"M{n}", kind="METRIC",
@@ -323,6 +339,15 @@ def build_package(
                        label=f"Litigation and regulatory matters in 10-K/10-Q filings through "
                              f"{latest['last_seen']}",
                        text=legal_text(matters), doc_id=latest["last_doc_id"]))  # fmt: skip
+
+    # Clinical-stage pipeline (Phase 17c, D-058): the current programs and their next milestones.
+    programs = current_programs(conn, company_id)
+    if programs:
+        latest = max(programs, key=lambda p: p["filed_at"])
+        e += 1
+        pkg.add(Source(id=f"E{e}", kind="DOCUMENT",
+                       label=f"Clinical pipeline in 10-K/10-Q filings through {latest['filed_at']}",
+                       text=clinical_text(programs), doc_id=latest["doc_id"]))  # fmt: skip
 
     transcripts = conn.execute(
         select(filing_section.c.text, source_document.c.doc_id, source_document.c.accession_no,

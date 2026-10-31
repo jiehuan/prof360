@@ -1,0 +1,235 @@
+{
+ "cik": "0000882184",
+ "entityType": "operating",
+ "sic": "1531",
+ "sicDescription": "Operative Builders",
+ "ownerOrg": "05 Real Estate & Construction",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "HORTON D R INC /DE/",
+ "tickers": [
+  "DHI"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "752386963",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "0930",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "1341 HORTON CIRCLE",
+   "street2": null,
+   "city": "ARLINGTON",
+   "stateOrCountry": "TX",
+   "zipCode": "76011",
+   "stateOrCountryDescription": "TX",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "1341 HORTON CIRCLE",
+   "street2": null,
+   "city": "ARLINGTON",
+   "stateOrCountry": "TX",
+   "zipCode": "76011",
+   "stateOrCountryDescription": "TX",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "(817) 390-8200",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000882184-26-000108",
+    "0000882184-26-000104",
+    "0000882184-26-000102",
+    "0000882184-26-000101",
+    "0000882184-26-000100",
+    "0000882184-26-000096",
+    "0000882184-26-000081",
+    "0000882184-26-000014",
+    "0000882184-25-000081"
+   ],
+   "filingDate": [
+    "2026-09-15",
+    "2026-09-10",
+    "2026-08-26",
+    "2026-08-26",
+    "2026-08-26",
+    "2026-07-23",
+    "2026-04-23",
+    "2026-01-22",
+    "2025-11-19"
+   ],
+   "reportDate": [
+    "2026-09-15",
+    "2026-09-08",
+    "2026-08-26",
+    "2026-08-26",
+    "2026-08-26",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-09-15T21:09:53.000Z",
+    "2026-09-10T23:54:27.000Z",
+    "2026-08-26T21:16:54.000Z",
+    "2026-08-26T21:15:38.000Z",
+    "2026-08-26T21:14:51.000Z",
+    "2026-07-23T20:10:32.000Z",
+    "2026-04-23T18:31:06.000Z",
+    "2026-01-22T20:00:22.000Z",
+    "2025-11-19T19:30:13.000Z"
+   ],
+   "act": [
+    "34",
+    "",
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "8-K",
+    "4",
+    "4",
+    "4",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-Q",
+    "10-K"
+   ],
+   "fileNumber": [
+    "001-14122",
+    "",
+    "",
+    "",
+    "",
+    "001-14122",
+    "001-14122",
+    "001-14122",
+    "001-14122"
+   ],
+   "filmNumber": [
+    "261381705",
+    "",
+    "",
+    "",
+    "",
+    "261197137",
+    "26887669",
+    "26551182",
+    "251498397"
+   ],
+   "items": [
+    "8.01",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "XBRL",
+    "4",
+    "4",
+    "4",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    196505,
+    6551,
+    6767,
+    6752,
+    6786,
+    10905563,
+    10670640,
+    8917926,
+    15341960
+   ],
+   "isXBRL": [
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "dhi-20260915.htm",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "dhi-20260630.htm",
+    "dhi-20260331.htm",
+    "dhi-20251231.htm",
+    "dhi-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "8-K",
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "10-Q",
+    "10-Q",
+    "10-Q",
+    "10-K"
+   ]
+  },
+  "files": []
+ }
+}

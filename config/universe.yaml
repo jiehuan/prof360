@@ -1,0 +1,75 @@
+# Company universe and development sample (scripts/build_universe.py, PLAN 17a / 17a', D-055).
+# Read only by that script, never by a pipeline run.
+#
+# industry: registrants not (yet) in companies.yaml whose SIC code puts them in the wrong
+#   group, found when reviewing the sample. When one is added to companies.yaml, the script's
+#   sample-<date>.yaml carries `industry` and `industry_reason` along; companies.yaml then
+#   wins. After the freeze (PLAN 17a') entries are added only for problems underwriters report.
+# sample_skip: registrants left out of the development sample (they stay in the universe),
+#   e.g. when the revenue that ranks them is not comparable.
+# Tickers are for reading only; the CIK identifies the company.
+
+industry:
+  # -- 2026-10-21 sample review ----------------------------------------------------------
+  - {cik: 320187, ticker: NKE, industry: CONSUMER_DURABLES_APPAREL,
+     reason: "Athletic footwear and apparel; SIC 3021 is rubber and plastics footwear"}
+  - {cik: 1748790, ticker: AMCR, industry: CHEMICALS_MATERIALS,
+     reason: "Flexible and rigid plastic packaging, grouped with paper packaging (Smurfit Westrock); SIC 3990 is miscellaneous manufacturing"}
+  - {cik: 723254, ticker: CTAS, industry: BUSINESS_SERVICES,
+     reason: "Uniform rental and facility services; SIC 2320 is work clothing manufacturing"}
+  - {cik: 717954, ticker: UNF, industry: BUSINESS_SERVICES,
+     reason: "Uniform rental (like Cintas); SIC 7200 is personal services"}
+  - {cik: 1584509, ticker: ARMK, industry: BUSINESS_SERVICES,
+     reason: "Contract food and facility services for institutions; SIC 5812 is eating places"}
+  - {cik: 789570, ticker: MGM, industry: LEISURE_GAMING,
+     reason: "Casino resorts: gaming is the largest revenue line; SIC 7011 is hotels and motels"}
+  - {cik: 1300514, ticker: LVS, industry: LEISURE_GAMING,
+     reason: "Casino resorts in Macau and Singapore; SIC 7011 is hotels and motels"}
+  - {cik: 1590895, ticker: CZR, industry: LEISURE_GAMING,
+     reason: "Casino resorts and online gaming; SIC 7011 is hotels and motels"}
+  - {cik: 1174922, ticker: WYNN, industry: LEISURE_GAMING,
+     reason: "Casino resorts in Las Vegas, Macau and Boston; SIC 7011 is hotels and motels"}
+  - {cik: 921738, ticker: PENN, industry: LEISURE_GAMING,
+     reason: "Regional casinos and online sports betting; SIC 7011 is hotels and motels"}
+  - {cik: 906553, ticker: BYD, industry: LEISURE_GAMING,
+     reason: "Regional casinos; SIC 7011 is hotels and motels"}
+  - {cik: 1653653, ticker: RRR, industry: LEISURE_GAMING,
+     reason: "Las Vegas locals casinos; SIC 7011 is hotels and motels"}
+  - {cik: 1747079, ticker: BALY, industry: LEISURE_GAMING,
+     reason: "Regional casinos and online gaming; SIC 7011 is hotels and motels"}
+  - {cik: 1734713, ticker: BV, industry: BUSINESS_SERVICES,
+     reason: "Commercial landscaping services; SIC 0700 is agricultural services"}
+  - {cik: 1361658, ticker: TNL, industry: REAL_ESTATE_OPERATING,
+     reason: "Timeshare sales and financing (Wyndham Destinations), grouped like Marriott Vacations; SIC 7011 is hotels and motels"}
+  - {cik: 1319161, ticker: WMG, industry: MEDIA,
+     reason: "Recorded music and music publishing; SIC 7900 is amusement and recreation services"}
+  - {cik: 1973266, ticker: TKO, industry: MEDIA,
+     reason: "Sports entertainment (UFC, WWE) earning mostly media rights; SIC 7900 is amusement and recreation services"}
+  - {cik: 1674168, ticker: HGV, industry: REAL_ESTATE_OPERATING,
+     reason: "Timeshare sales and financing, grouped like Marriott Vacations (SIC 6531); SIC 7000 is lodging"}
+  - {cik: 1679788, ticker: COIN, industry: BROKER_DEALERS,
+     reason: "Crypto exchange and custodian earning transaction and custody revenue; SIC 6199 is finance services"}
+  - {cik: 1466258, ticker: TT, industry: INDUSTRIALS,
+     reason: "Heating, ventilation and air conditioning equipment maker; SIC 3822 is environmental controls"}
+  - {cik: 319201, ticker: KLAC, industry: SEMICONDUCTORS,
+     reason: "Wafer inspection and process control equipment, underwritten with semiconductors like Applied Materials; SIC 3827 is optical instruments"}
+  - {cik: 24741, ticker: GLW, industry: HARDWARE,
+     reason: "Optical fiber and display glass for communications and electronics; SIC 3357 is nonferrous wire"}
+  - {cik: 764065, ticker: CLF, industry: METALS,
+     reason: "Integrated steel producer whose iron ore mines supply its own mills; SIC 1000 is metal mining"}
+  - {cik: 1633917, ticker: PYPL, industry: PAYMENTS,
+     reason: "Digital payments network and wallets; SIC 7389 is business services"}
+  - {cik: 798354, ticker: FISV, industry: PAYMENTS,
+     reason: "Merchant acquiring and payment processing (Clover); SIC 7389 is business services"}
+  - {cik: 1136893, ticker: FIS, industry: PAYMENTS,
+     reason: "Payment processing and banking software; SIC 7389 is business services"}
+  - {cik: 1099590, ticker: MELI, industry: SOFTWARE_INTERNET,
+     reason: "E-commerce marketplace and fintech, grouped like Amazon; SIC 7389 is business services"}
+  - {cik: 1324424, ticker: EXPE, industry: SOFTWARE_INTERNET,
+     reason: "Online travel platform, grouped like Booking Holdings; SIC 4700 is transportation services"}
+
+sample_skip:
+  - {cik: 913760, ticker: SNEX,
+     reason: "Revenue is gross sales of physical commodities, not comparable with other broker-dealers' net revenue"}
+  - {cik: 1859392, ticker: GLXY,
+     reason: "Revenue is gross digital-asset sales, not comparable with other broker-dealers' net revenue"}

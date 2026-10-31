@@ -1,5 +1,5 @@
 # Companies the pipeline covers: the 9 MVP companies, one per SIC code (D-007), then the
-# S&P 100 (Phase 16, D-052). The S&P 100 list is checked against the index each quarter.
+# S&P 100 (Phase 16, D-052), then the development sample (Phase 17a', D-055). The S&P 100 list is checked against the index each quarter.
 # `cik` is pinned and authoritative. Tickers get reassigned, so they are only checked against
 # SEC's ticker list and a mismatch is logged, never followed.
 # `industry: GROUP` with `industry_reason: "..."` puts a company in an industry group of
@@ -292,8 +292,8 @@ companies:
     cik: 1707925
     display_name: "Linde"
     news_aliases: ["Linde"]
-    industry: INDUSTRIALS
-    industry_reason: "Industrial gases and engineering; no materials group yet (Phase 17 plans CHEMICALS_MATERIALS)"
+    industry: CHEMICALS_MATERIALS
+    industry_reason: "Industrial gases (Phase 17 group, D-055); SIC 2810 is industrial inorganic chemicals, kept explicit because the company also reports engineering"
   - ticker: LLY
     cik: 59478
     display_name: "Eli Lilly"
@@ -501,3 +501,784 @@ companies:
     # ExxonMobil Holdings Corp became the listed parent on 2026-07-01 (holding-company
     # reorganization); earlier filings are Exxon Mobil Corp's.
     predecessor_ciks: [34088]
+
+  # Development sample (Phase 17a', D-055): the 5 largest companies by revenue in each of the
+  # 39 industry groups, from scripts/build_universe.py on 2026-10-21 (data/reports/sample-*.md),
+  # reviewed; misgrouped companies carry `industry` from config/universe.yaml.
+  # AGRICULTURE
+  - ticker: CTVA
+    cik: 1755672
+    display_name: "Corteva"
+    news_aliases: ["Corteva"]
+  - ticker: DOLE
+    cik: 1857475
+    display_name: "Dole"
+    news_aliases: ["Dole plc", "Dole"]
+  - ticker: DMC
+    cik: 1047340
+    display_name: "Del Monte Foods"
+    news_aliases: ["Del Monte"]
+  - ticker: CALM
+    cik: 16160
+    display_name: "Cal-Maine Foods"
+    news_aliases: ["Cal-Maine"]
+  - ticker: AVO
+    cik: 1802974
+    display_name: "Mission Produce"
+    news_aliases: ["Mission Produce"]
+  # AIRLINES
+  - ticker: DAL
+    cik: 27904
+    display_name: "Delta Air Lines"
+    news_aliases: ["Delta Air Lines", "Delta Airlines"]
+  - ticker: UAL
+    cik: 100517
+    display_name: "United Airlines"
+    news_aliases: ["United Airlines"]
+  - ticker: AAL
+    cik: 6201
+    display_name: "American Airlines"
+    news_aliases: ["American Airlines"]
+  - ticker: ALK
+    cik: 766421
+    display_name: "Alaska Air Group"
+    news_aliases: ["Alaska Air", "Alaska Airlines"]
+  # AUTOMOTIVE
+  - ticker: PCAR
+    cik: 75362
+    display_name: "PACCAR"
+    news_aliases: ["PACCAR", "Paccar"]
+  - ticker: LEA
+    cik: 842162
+    display_name: "Lear"
+    news_aliases: ["Lear Corp", "Lear Corporation"]
+  # BROKER_DEALERS
+  - ticker: APO
+    cik: 1858681
+    display_name: "Apollo Global Management"
+    news_aliases: ["Apollo Global", "Apollo"]
+  # BUSINESS_SERVICES
+  - ticker: ARMK
+    cik: 1584509
+    display_name: "Aramark"
+    news_aliases: ["Aramark"]
+    industry: BUSINESS_SERVICES
+    industry_reason: "Contract food and facility services for institutions; SIC 5812 is eating places"
+  - ticker: MAN
+    cik: 871763
+    display_name: "ManpowerGroup"
+    news_aliases: ["ManpowerGroup", "Manpower"]
+  - ticker: OMC
+    cik: 29989
+    display_name: "Omnicom"
+    news_aliases: ["Omnicom"]
+  - ticker: URI
+    cik: 1067701
+    display_name: "United Rentals"
+    news_aliases: ["United Rentals"]
+  - ticker: SPGI
+    cik: 64040
+    display_name: "S&P Global"
+    news_aliases: ["S&P Global"]
+  # CHEMICALS_MATERIALS
+  - ticker: DOW
+    cik: 1751788
+    display_name: "Dow"
+    news_aliases: ["Dow Inc", "Dow Chemical"]
+  - ticker: CRH
+    cik: 849395
+    display_name: "CRH"
+    news_aliases: ["CRH"]
+  - ticker: SW
+    cik: 2005951
+    display_name: "Smurfit Westrock"
+    news_aliases: ["Smurfit Westrock", "Smurfit WestRock"]
+  - ticker: LYB
+    cik: 1489393
+    display_name: "LyondellBasell"
+    news_aliases: ["LyondellBasell"]
+  # INDUSTRIALS
+  - ticker: BKR
+    cik: 1701605
+    display_name: "Baker Hughes"
+    news_aliases: ["Baker Hughes"]
+  # CONSTRUCTION_ENGINEERING
+  - ticker: PWR
+    cik: 1050915
+    display_name: "Quanta Services"
+    news_aliases: ["Quanta Services", "Quanta"]
+  - ticker: EME
+    cik: 105634
+    display_name: "EMCOR"
+    news_aliases: ["EMCOR", "Emcor"]
+  - ticker: FLR
+    cik: 1124198
+    display_name: "Fluor"
+    news_aliases: ["Fluor"]
+  - ticker: MTZ
+    cik: 15615
+    display_name: "MasTec"
+    news_aliases: ["MasTec"]
+  - ticker: J
+    cik: 52988
+    display_name: "Jacobs Solutions"
+    news_aliases: ["Jacobs Solutions", "Jacobs"]
+  # CONSUMER_DURABLES_APPAREL
+  - ticker: NKE
+    cik: 320187
+    display_name: "Nike"
+    news_aliases: ["Nike"]
+    industry: CONSUMER_DURABLES_APPAREL
+    industry_reason: "Athletic footwear and apparel; SIC 3021 is rubber and plastics footwear"
+  - ticker: WHR
+    cik: 106640
+    display_name: "Whirlpool"
+    news_aliases: ["Whirlpool"]
+  - ticker: LULU
+    cik: 1397187
+    display_name: "Lululemon"
+    news_aliases: ["Lululemon", "lululemon"]
+  - ticker: MHK
+    cik: 851968
+    display_name: "Mohawk Industries"
+    news_aliases: ["Mohawk"]
+  - ticker: VFC
+    cik: 103379
+    display_name: "VF Corporation"
+    news_aliases: ["VF Corp", "VF Corporation"]
+  # CONSUMER_SERVICES
+  - ticker: GHC
+    cik: 104889
+    display_name: "Graham Holdings"
+    news_aliases: ["Graham Holdings"]
+  - ticker: SCI
+    cik: 89089
+    display_name: "Service Corporation International"
+    news_aliases: ["Service Corporation International", "Service Corp"]
+  - ticker: HRB
+    cik: 12659
+    display_name: "H&R Block"
+    news_aliases: ["H&R Block"]
+  - ticker: LRN
+    cik: 1157408
+    display_name: "Stride"
+    news_aliases: ["Stride Inc", "Stride, Inc."]
+  - ticker: DRVN
+    cik: 1804745
+    display_name: "Driven Brands"
+    news_aliases: ["Driven Brands"]
+  # CONSUMER_STAPLES
+  - ticker: SYY
+    cik: 96021
+    display_name: "Sysco"
+    news_aliases: ["Sysco"]
+  - ticker: ADM
+    cik: 7084
+    display_name: "Archer-Daniels-Midland"
+    news_aliases: ["Archer-Daniels-Midland", "Archer Daniels Midland", "ADM"]
+  - ticker: BG
+    cik: 1996862
+    display_name: "Bunge"
+    news_aliases: ["Bunge"]
+    # Bunge Global SA (2023 redomicile to Switzerland); earlier filings under Bunge Limited,
+    # which deregistered in November 2023 (Phase 17e).
+    predecessor_ciks: [1144519]
+  # CREDIT
+  - ticker: OMF
+    cik: 1584207
+    display_name: "OneMain Holdings"
+    news_aliases: ["OneMain"]
+  - ticker: BFH
+    cik: 1101215
+    display_name: "Bread Financial"
+    news_aliases: ["Bread Financial"]
+  - ticker: AFRM
+    cik: 1820953
+    display_name: "Affirm"
+    news_aliases: ["Affirm Holdings", "Affirm"]
+  - ticker: UWMC
+    cik: 1783398
+    display_name: "UWM Holdings"
+    news_aliases: ["UWM", "United Wholesale Mortgage"]
+  - ticker: ENVA
+    cik: 1529864
+    display_name: "Enova International"
+    news_aliases: ["Enova"]
+  # ENERGY
+  - ticker: MPC
+    cik: 1510295
+    display_name: "Marathon Petroleum"
+    news_aliases: ["Marathon Petroleum"]
+  - ticker: PSX
+    cik: 1534701
+    display_name: "Phillips 66"
+    news_aliases: ["Phillips 66"]
+  - ticker: VLO
+    cik: 1035002
+    display_name: "Valero Energy"
+    news_aliases: ["Valero"]
+  # HARDWARE
+  - ticker: HPQ
+    cik: 47217
+    display_name: "HP Inc."
+    news_aliases: ["HP Inc"]
+  - ticker: HPE
+    cik: 1645590
+    display_name: "Hewlett Packard Enterprise"
+    news_aliases: ["Hewlett Packard Enterprise", "HPE"]
+  # HEALTHCARE_SERVICES
+  - ticker: HCA
+    cik: 860730
+    display_name: "HCA Healthcare"
+    news_aliases: ["HCA Healthcare", "HCA"]
+  - ticker: THC
+    cik: 70318
+    display_name: "Tenet Healthcare"
+    news_aliases: ["Tenet Healthcare", "Tenet"]
+  - ticker: UHS
+    cik: 352915
+    display_name: "Universal Health Services"
+    news_aliases: ["Universal Health Services"]
+  - ticker: LH
+    cik: 920148
+    display_name: "Labcorp"
+    news_aliases: ["Labcorp", "LabCorp"]
+  - ticker: DVA
+    cik: 927066
+    display_name: "DaVita"
+    news_aliases: ["DaVita"]
+  # HOMEBUILDERS
+  - ticker: DHI
+    cik: 882184
+    display_name: "D.R. Horton"
+    news_aliases: ["D.R. Horton", "DR Horton"]
+  - ticker: LEN
+    cik: 920760
+    display_name: "Lennar"
+    news_aliases: ["Lennar"]
+  - ticker: PHM
+    cik: 822416
+    display_name: "PulteGroup"
+    news_aliases: ["PulteGroup", "Pulte"]
+  - ticker: TOL
+    cik: 794170
+    display_name: "Toll Brothers"
+    news_aliases: ["Toll Brothers"]
+  - ticker: NVR
+    cik: 906163
+    display_name: "NVR"
+    news_aliases: ["NVR"]
+  # HOTELS
+  - ticker: HLT
+    cik: 1585689
+    display_name: "Hilton"
+    news_aliases: ["Hilton Worldwide", "Hilton"]
+  - ticker: H
+    cik: 1468174
+    display_name: "Hyatt Hotels"
+    news_aliases: ["Hyatt"]
+  - ticker: PK
+    cik: 1617406
+    display_name: "Park Hotels & Resorts"
+    news_aliases: ["Park Hotels"]
+  - ticker: CHH
+    cik: 1046311
+    display_name: "Choice Hotels"
+    news_aliases: ["Choice Hotels"]
+  # INDUSTRIALS
+  - ticker: CMI
+    cik: 26172
+    display_name: "Cummins"
+    news_aliases: ["Cummins"]
+  # INSTRUMENTS
+  - ticker: ROK
+    cik: 1024478
+    display_name: "Rockwell Automation"
+    news_aliases: ["Rockwell Automation"]
+  - ticker: ROP
+    cik: 882835
+    display_name: "Roper Technologies"
+    news_aliases: ["Roper Technologies", "Roper"]
+  - ticker: AME
+    cik: 1037868
+    display_name: "AMETEK"
+    news_aliases: ["AMETEK", "Ametek"]
+  - ticker: COHR
+    cik: 820318
+    display_name: "Coherent"
+    news_aliases: ["Coherent Corp"]
+  - ticker: VLTO
+    cik: 1967680
+    display_name: "Veralto"
+    news_aliases: ["Veralto"]
+  # INSURANCE
+  - ticker: PGR
+    cik: 80661
+    display_name: "Progressive"
+    news_aliases: ["Progressive Corp", "Progressive Insurance"]
+  - ticker: MET
+    cik: 1099219
+    display_name: "MetLife"
+    news_aliases: ["MetLife"]
+  - ticker: ALL
+    cik: 899051
+    display_name: "Allstate"
+    news_aliases: ["Allstate"]
+  - ticker: PRU
+    cik: 1137774
+    display_name: "Prudential Financial"
+    news_aliases: ["Prudential Financial"]
+  # LEISURE_GAMING
+  - ticker: LYV
+    cik: 1335258
+    display_name: "Live Nation Entertainment"
+    news_aliases: ["Live Nation", "Ticketmaster"]
+  - ticker: MGM
+    cik: 789570
+    display_name: "MGM Resorts International"
+    news_aliases: ["MGM Resorts"]
+    industry: LEISURE_GAMING
+    industry_reason: "Casino resorts: gaming is the largest revenue line; SIC 7011 is hotels and motels"
+  - ticker: LVS
+    cik: 1300514
+    display_name: "Las Vegas Sands"
+    news_aliases: ["Las Vegas Sands"]
+    industry: LEISURE_GAMING
+    industry_reason: "Casino resorts in Macau and Singapore; SIC 7011 is hotels and motels"
+  - ticker: CZR
+    cik: 1590895
+    display_name: "Caesars Entertainment"
+    news_aliases: ["Caesars"]
+    industry: LEISURE_GAMING
+    industry_reason: "Casino resorts and online gaming; SIC 7011 is hotels and motels"
+  - ticker: WYNN
+    cik: 1174922
+    display_name: "Wynn Resorts"
+    news_aliases: ["Wynn Resorts", "Wynn"]
+    industry: LEISURE_GAMING
+    industry_reason: "Casino resorts in Las Vegas, Macau and Boston; SIC 7011 is hotels and motels"
+  # MANAGED_CARE
+  - ticker: CI
+    cik: 1739940
+    display_name: "Cigna"
+    news_aliases: ["Cigna"]
+  - ticker: ELV
+    cik: 1156039
+    display_name: "Elevance Health"
+    news_aliases: ["Elevance"]
+  - ticker: CNC
+    cik: 1071739
+    display_name: "Centene"
+    news_aliases: ["Centene"]
+  # MEDIA
+  - ticker: CHTR
+    cik: 1091667
+    display_name: "Charter Communications"
+    news_aliases: ["Charter Communications"]
+  - ticker: WBD
+    cik: 1437107
+    display_name: "Warner Bros. Discovery"
+    news_aliases: ["Warner Bros. Discovery", "Warner Bros Discovery"]
+  # MEDTECH
+  - ticker: MDLN
+    cik: 2046386
+    display_name: "Medline"
+    news_aliases: ["Medline"]
+  - ticker: SYK
+    cik: 310764
+    display_name: "Stryker"
+    news_aliases: ["Stryker"]
+  # METALS
+  - ticker: NUE
+    cik: 73309
+    display_name: "Nucor"
+    news_aliases: ["Nucor"]
+  - ticker: CLF
+    cik: 764065
+    display_name: "Cleveland-Cliffs"
+    news_aliases: ["Cleveland-Cliffs"]
+    industry: METALS
+    industry_reason: "Integrated steel producer whose iron ore mines supply its own mills; SIC 1000 is metal mining"
+  - ticker: STLD
+    cik: 1022671
+    display_name: "Steel Dynamics"
+    news_aliases: ["Steel Dynamics"]
+  - ticker: AA
+    cik: 1675149
+    display_name: "Alcoa"
+    news_aliases: ["Alcoa"]
+  - ticker: CSTM
+    cik: 1563411
+    display_name: "Constellium"
+    news_aliases: ["Constellium"]
+  # MINING
+  - ticker: FCX
+    cik: 831259
+    display_name: "Freeport-McMoRan"
+    news_aliases: ["Freeport-McMoRan", "Freeport"]
+  - ticker: NEM
+    cik: 1164727
+    display_name: "Newmont"
+    news_aliases: ["Newmont"]
+  - ticker: SCCO
+    cik: 1001838
+    display_name: "Southern Copper"
+    news_aliases: ["Southern Copper"]
+  - ticker: VMC
+    cik: 1396009
+    display_name: "Vulcan Materials"
+    news_aliases: ["Vulcan Materials"]
+  - ticker: MLM
+    cik: 916076
+    display_name: "Martin Marietta Materials"
+    news_aliases: ["Martin Marietta"]
+  # PAYMENTS
+  - ticker: PYPL
+    cik: 1633917
+    display_name: "PayPal"
+    news_aliases: ["PayPal"]
+    industry: PAYMENTS
+    industry_reason: "Digital payments network and wallets; SIC 7389 is business services"
+  - ticker: FISV
+    cik: 798354
+    display_name: "Fiserv"
+    news_aliases: ["Fiserv"]
+    industry: PAYMENTS
+    industry_reason: "Merchant acquiring and payment processing (Clover); SIC 7389 is business services"
+  - ticker: FIS
+    cik: 1136893
+    display_name: "Fidelity National Information Services"
+    news_aliases: ["Fidelity National Information", "FIS"]
+    industry: PAYMENTS
+    industry_reason: "Payment processing and banking software; SIC 7389 is business services"
+  # REAL_ESTATE_OPERATING
+  - ticker: CBRE
+    cik: 1138118
+    display_name: "CBRE Group"
+    news_aliases: ["CBRE"]
+  - ticker: JLL
+    cik: 1037976
+    display_name: "JLL"
+    news_aliases: ["JLL", "Jones Lang LaSalle"]
+  - ticker: CWK
+    cik: 1628369
+    display_name: "Cushman & Wakefield"
+    news_aliases: ["Cushman & Wakefield"]
+  - ticker: COMP
+    cik: 1563190
+    display_name: "Compass"
+    news_aliases: ["Compass Inc", "Compass, Inc."]
+  - ticker: HGV
+    cik: 1674168
+    display_name: "Hilton Grand Vacations"
+    news_aliases: ["Hilton Grand Vacations"]
+    industry: REAL_ESTATE_OPERATING
+    industry_reason: "Timeshare sales and financing, grouped like Marriott Vacations (SIC 6531); SIC 7000 is lodging"
+  # REIT
+  - ticker: WELL
+    cik: 766704
+    display_name: "Welltower"
+    news_aliases: ["Welltower"]
+  - ticker: EQIX
+    cik: 1101239
+    display_name: "Equinix"
+    news_aliases: ["Equinix"]
+  - ticker: PLD
+    cik: 1045609
+    display_name: "Prologis"
+    news_aliases: ["Prologis"]
+  - ticker: WY
+    cik: 106535
+    display_name: "Weyerhaeuser"
+    news_aliases: ["Weyerhaeuser"]
+  # RESTAURANTS
+  - ticker: DRI
+    cik: 940944
+    display_name: "Darden Restaurants"
+    news_aliases: ["Darden"]
+  - ticker: CMG
+    cik: 1058090
+    display_name: "Chipotle Mexican Grill"
+    news_aliases: ["Chipotle"]
+  - ticker: YUMC
+    cik: 1673358
+    display_name: "Yum China"
+    news_aliases: ["Yum China"]
+  # RETAIL
+  - ticker: KR
+    cik: 56873
+    display_name: "Kroger"
+    news_aliases: ["Kroger"]
+  - ticker: TGT
+    cik: 27419
+    display_name: "Target"
+    news_aliases: ["Target Corp", "Target Corporation"]
+  # TELECOM
+  - ticker: ECHO
+    cik: 1415404
+    display_name: "EchoStar"
+    news_aliases: ["EchoStar"]
+  # TRANSPORT
+  - ticker: CHRW
+    cik: 1043277
+    display_name: "C.H. Robinson"
+    news_aliases: ["C.H. Robinson", "C. H. Robinson"]
+  - ticker: CSX
+    cik: 277948
+    display_name: "CSX"
+    news_aliases: ["CSX"]
+  # UTILITIES
+  - ticker: NRG
+    cik: 1013871
+    display_name: "NRG Energy"
+    news_aliases: ["NRG Energy", "NRG"]
+  - ticker: CEG
+    cik: 1868275
+    display_name: "Constellation Energy"
+    news_aliases: ["Constellation Energy"]
+  # WHOLESALE_DISTRIBUTION
+  - ticker: MCK
+    cik: 927653
+    display_name: "McKesson"
+    news_aliases: ["McKesson"]
+  - ticker: COR
+    cik: 1140859
+    display_name: "Cencora"
+    news_aliases: ["Cencora"]
+  - ticker: CAH
+    cik: 721371
+    display_name: "Cardinal Health"
+    news_aliases: ["Cardinal Health"]
+  - ticker: SNX
+    cik: 1177394
+    display_name: "TD SYNNEX"
+    news_aliases: ["TD SYNNEX", "TD Synnex"]
+  - ticker: INGM
+    cik: 1897762
+    display_name: "Ingram Micro"
+    news_aliases: ["Ingram Micro"]
+
+  # Clinical-stage development set (Phase 17c, D-058): the 20 clinical-stage candidates with the
+  # largest R&D expense (scripts/build_universe.py --clinical, 2026-10-21), reviewed: Arrowhead
+  # and IDEAYA left out (2025 license and collaboration revenue of $0.8B and $0.2B).
+  - ticker: RVMD
+    cik: 1628171
+    display_name: "Revolution Medicines"
+    news_aliases: ["Revolution Medicines"]
+    traits: [clinical_stage]
+  - ticker: PCVX
+    cik: 1649094
+    display_name: "Vaxcyte"
+    news_aliases: ["Vaxcyte"]
+    traits: [clinical_stage]
+  - ticker: ROIV
+    cik: 1635088
+    display_name: "Roivant Sciences"
+    news_aliases: ["Roivant"]
+    traits: [clinical_stage]
+  - ticker: BHVN
+    cik: 1935979
+    display_name: "Biohaven"
+    news_aliases: ["Biohaven"]
+    traits: [clinical_stage]
+  - ticker: DNLI
+    cik: 1714899
+    display_name: "Denali Therapeutics"
+    news_aliases: ["Denali Therapeutics", "Denali"]
+    traits: [clinical_stage]
+  - ticker: DYN
+    cik: 1818794
+    display_name: "Dyne Therapeutics"
+    news_aliases: ["Dyne Therapeutics", "Dyne"]
+    traits: [clinical_stage]
+  - ticker: VKTX
+    cik: 1607678
+    display_name: "Viking Therapeutics"
+    news_aliases: ["Viking Therapeutics"]
+    traits: [clinical_stage]
+  - ticker: VOR
+    cik: 1817229
+    display_name: "Vor Biopharma"
+    news_aliases: ["Vor Bio", "Vor Biopharma"]
+    traits: [clinical_stage]
+  - ticker: XENE
+    cik: 1582313
+    display_name: "Xenon Pharmaceuticals"
+    news_aliases: ["Xenon Pharmaceuticals", "Xenon"]
+    traits: [clinical_stage]
+  - ticker: CRSP
+    cik: 1674416
+    display_name: "CRISPR Therapeutics"
+    news_aliases: ["CRISPR Therapeutics"]
+    traits: [clinical_stage]
+  - ticker: COGT
+    cik: 1622229
+    display_name: "Cogent Biosciences"
+    news_aliases: ["Cogent Biosciences", "Cogent"]
+    traits: [clinical_stage]
+  - ticker: PRAX
+    cik: 1689548
+    display_name: "Praxis Precision Medicines"
+    news_aliases: ["Praxis Precision", "Praxis"]
+    traits: [clinical_stage]
+  - ticker: CLDX
+    cik: 744218
+    display_name: "Celldex Therapeutics"
+    news_aliases: ["Celldex"]
+    traits: [clinical_stage]
+  - ticker: GPCR
+    cik: 1888886
+    display_name: "Structure Therapeutics"
+    news_aliases: ["Structure Therapeutics"]
+    traits: [clinical_stage]
+  - ticker: REPL
+    cik: 1737953
+    display_name: "Replimune"
+    news_aliases: ["Replimune"]
+    traits: [clinical_stage]
+  - ticker: VERA
+    cik: 1831828
+    display_name: "Vera Therapeutics"
+    news_aliases: ["Vera Therapeutics"]
+    traits: [clinical_stage]
+  - ticker: SRRK
+    cik: 1727196
+    display_name: "Scholar Rock"
+    news_aliases: ["Scholar Rock"]
+    traits: [clinical_stage]
+  - ticker: MLTX
+    cik: 1821586
+    display_name: "MoonLake Immunotherapeutics"
+    news_aliases: ["MoonLake"]
+    traits: [clinical_stage]
+  - ticker: CGEM
+    cik: 1789972
+    display_name: "Cullinan Therapeutics"
+    news_aliases: ["Cullinan"]
+    traits: [clinical_stage]
+  - ticker: ANNX
+    cik: 1528115
+    display_name: "Annexon"
+    news_aliases: ["Annexon"]
+    traits: [clinical_stage]
+
+  # Industry choice trial (Phase 17g, D-059): companies whose SIC code maps to no group (the
+  # largest by revenue of each kind in the universe); the `industry` stage picks their group.
+  - ticker: CCL
+    cik: 815097
+    display_name: "Carnival"
+    news_aliases: ["Carnival"]
+  - ticker: KEX
+    cik: 56047
+    display_name: "Kirby"
+    news_aliases: ["Kirby Corp", "Kirby Corporation"]
+  - ticker: SSRM
+    cik: 921638
+    display_name: "SSR Mining"
+    news_aliases: ["SSR Mining"]
+  - ticker: DLB
+    cik: 1308547
+    display_name: "Dolby Laboratories"
+    news_aliases: ["Dolby"]
+  - ticker: TPL
+    cik: 1811074
+    display_name: "Texas Pacific Land"
+    news_aliases: ["Texas Pacific Land"]
+  - ticker: ARCC
+    cik: 1287750
+    display_name: "Ares Capital"
+    news_aliases: ["Ares Capital"]
+
+  # Client portfolio (2026-10-30, D-071): the SEC registrants of the top-50 client list that
+  # were not covered yet. Clients that do not file with the SEC are not added (D-071 lists
+  # them); New Fortress Energy is the listed parent of the client New Fortress Energy
+  # Marketing LLC. Paysafe (20-F) and Allied Gold (40-F) are foreign filers: no 10-K/10-Q, so
+  # their data is partial (user decision).
+  - ticker: BRO
+    cik: 79282
+    display_name: "Brown & Brown"
+    news_aliases: ["Brown & Brown"]
+    industry: BUSINESS_SERVICES
+    industry_reason: "Insurance broker (commissions and fees), not an insurer; SIC 6411 is insurance agents and brokers"
+  - ticker: PFG
+    cik: 1126328
+    display_name: "Principal Financial Group"
+    news_aliases: ["Principal Financial", "Principal Financial Group"]
+  - ticker: SLB
+    cik: 87347
+    display_name: "SLB"
+    news_aliases: ["SLB", "Schlumberger"]
+  - ticker: MTB
+    cik: 36270
+    display_name: "M&T Bank"
+    news_aliases: ["M&T Bank"]
+  - ticker: AMC
+    cik: 1411579
+    display_name: "AMC Entertainment"
+    news_aliases: ["AMC Entertainment", "AMC Theatres"]
+  - ticker: CVNA
+    cik: 1690820
+    display_name: "Carvana"
+    news_aliases: ["Carvana"]
+  - ticker: EVEX
+    cik: 1823652
+    display_name: "Eve Holding"
+    news_aliases: ["Eve Air Mobility", "Eve Holding"]
+    history_start: 2022-05-09   # successor of the SPAC Zanite Acquisition Corp. (D-012)
+  - ticker: RBRK
+    cik: 1943896
+    display_name: "Rubrik"
+    news_aliases: ["Rubrik"]
+  - ticker: RBLX
+    cik: 1315098
+    display_name: "Roblox"
+    news_aliases: ["Roblox"]
+  - ticker: CGC
+    cik: 1737927
+    display_name: "Canopy Growth"
+    news_aliases: ["Canopy Growth"]
+  - ticker: HE
+    cik: 354707
+    display_name: "Hawaiian Electric Industries"
+    news_aliases: ["Hawaiian Electric"]
+  - ticker: BTSG
+    cik: 1865782
+    display_name: "BrightSpring Health Services"
+    news_aliases: ["BrightSpring"]
+  - ticker: ACRE
+    cik: 1529377
+    display_name: "Ares Commercial Real Estate"
+    news_aliases: ["Ares Commercial Real Estate"]
+  - ticker: RJF
+    cik: 720005
+    display_name: "Raymond James Financial"
+    news_aliases: ["Raymond James"]
+  - ticker: ILMN
+    cik: 1110803
+    display_name: "Illumina"
+    news_aliases: ["Illumina"]
+  - ticker: ALDX
+    cik: 1341235
+    display_name: "Aldeyra Therapeutics"
+    news_aliases: ["Aldeyra"]
+    traits: [clinical_stage]   # no product revenue yet (D-058)
+  - ticker: CVSA
+    cik: 730464
+    display_name: "Covista"
+    news_aliases: ["Covista", "Adtalem"]
+  - ticker: XE
+    cik: 2088896
+    display_name: "X-Energy"
+    news_aliases: ["X-energy", "X-Energy"]
+  - ticker: NFE
+    cik: 1749723
+    display_name: "New Fortress Energy"
+    news_aliases: ["New Fortress Energy"]
+  - ticker: PSFE
+    cik: 1833835
+    display_name: "Paysafe"
+    news_aliases: ["Paysafe"]
+  - ticker: AAUC
+    cik: 1993344
+    display_name: "Allied Gold"
+    news_aliases: ["Allied Gold"]

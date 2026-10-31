@@ -1,0 +1,219 @@
+{
+ "cik": "0001300514",
+ "entityType": "operating",
+ "sic": "7011",
+ "sicDescription": "Hotels & Motels",
+ "ownerOrg": "05 Real Estate & Construction",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "LAS VEGAS SANDS CORP",
+ "tickers": [
+  "LVS"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "270099920",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "NV",
+ "stateOfIncorporationDescription": "NV",
+ "addresses": {
+  "mailing": {
+   "street1": "5420 S. DURANGO DRIVE",
+   "street2": null,
+   "city": "LAS VEGAS",
+   "stateOrCountry": "NV",
+   "zipCode": "89113",
+   "stateOrCountryDescription": "NV",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "5420 S. DURANGO DRIVE",
+   "street2": null,
+   "city": "LAS VEGAS",
+   "stateOrCountry": "NV",
+   "zipCode": "89113",
+   "stateOrCountryDescription": "NV",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "702-923-9000",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001300514-26-000090",
+    "0001193125-26-345232",
+    "0001300514-26-000085",
+    "0001300514-26-000078",
+    "0001193125-26-276271",
+    "0001300514-26-000046",
+    "0001300514-26-000013",
+    "0001300514-25-000163"
+   ],
+   "filingDate": [
+    "2026-09-02",
+    "2026-08-11",
+    "2026-07-24",
+    "2026-07-22",
+    "2026-06-18",
+    "2026-04-24",
+    "2026-02-06",
+    "2025-10-24"
+   ],
+   "reportDate": [
+    "2026-08-31",
+    "",
+    "2026-06-30",
+    "2026-07-22",
+    "",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-09-02T22:46:41.000Z",
+    "2026-08-11T22:36:57.000Z",
+    "2026-07-24T20:03:06.000Z",
+    "2026-07-22T20:09:10.000Z",
+    "2026-06-19T00:02:49.000Z",
+    "2026-04-24T20:06:38.000Z",
+    "2026-02-06T21:45:07.000Z",
+    "2025-10-24T20:06:42.000Z"
+   ],
+   "act": [
+    "",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "SCHEDULE 13D/A",
+    "10-Q",
+    "8-K",
+    "SCHEDULE 13D/A",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "005-80460",
+    "001-32373",
+    "001-32373",
+    "005-80460",
+    "001-32373",
+    "001-32373",
+    "001-32373"
+   ],
+   "filmNumber": [
+    "",
+    "261264817",
+    "261201486",
+    "261193791",
+    "261104535",
+    "26893689",
+    "26608381",
+    "251416230"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "2.02,9.01",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "SCHEDULE 13D/A",
+    "XBRL",
+    "XBRL",
+    "SCHEDULE 13D/A",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    7526,
+    27775,
+    12544146,
+    4849096,
+    28064,
+    11155563,
+    19373232,
+    11080393
+   ],
+   "isXBRL": [
+    0,
+    0,
+    1,
+    1,
+    0,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    1,
+    1,
+    0,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/wk-form4_1788389199.xml",
+    "xslSCHEDULE_13D_X02/primary_doc.xml",
+    "lvs-20260630.htm",
+    "lvs-20260722.htm",
+    "xslSCHEDULE_13D_X02/primary_doc.xml",
+    "lvs-20260331.htm",
+    "lvs-20251231.htm",
+    "lvs-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "FORM 4",
+    "",
+    "10-Q",
+    "8-K",
+    "",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

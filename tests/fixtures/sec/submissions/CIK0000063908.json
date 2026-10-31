@@ -1,0 +1,235 @@
+{
+ "cik": "0000063908",
+ "entityType": "operating",
+ "sic": "5812",
+ "sicDescription": "Retail-Eating  Places",
+ "ownerOrg": "07 Trade & Services",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "MCDONALDS CORP",
+ "tickers": [
+  "MCD"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "362361282",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "110 NORTH CARPENTER STREET",
+   "street2": null,
+   "city": "CHICAGO",
+   "stateOrCountry": "IL",
+   "zipCode": "60607",
+   "stateOrCountryDescription": "IL",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "110 NORTH CARPENTER STREET",
+   "street2": null,
+   "city": "CHICAGO",
+   "stateOrCountry": "IL",
+   "zipCode": "60607",
+   "stateOrCountryDescription": "IL",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "630 623 3000",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001332215-26-000004",
+    "0001745938-26-000005",
+    "0001554339-26-000004",
+    "0000063908-26-000076",
+    "0002150576-26-000002",
+    "0000063908-26-000073",
+    "0000063908-26-000051",
+    "0000063908-26-000035",
+    "0000063908-25-000059"
+   ],
+   "filingDate": [
+    "2026-10-02",
+    "2026-10-02",
+    "2026-10-02",
+    "2026-09-23",
+    "2026-08-14",
+    "2026-08-07",
+    "2026-05-07",
+    "2026-02-24",
+    "2025-11-05"
+   ],
+   "reportDate": [
+    "2026-09-30",
+    "2026-09-30",
+    "2026-09-30",
+    "2026-09-23",
+    "2026-08-04",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-02T19:12:15.000Z",
+    "2026-10-02T19:12:02.000Z",
+    "2026-10-02T19:11:52.000Z",
+    "2026-09-23T12:01:21.000Z",
+    "2026-08-14T22:00:51.000Z",
+    "2026-08-07T16:52:32.000Z",
+    "2026-05-07T18:31:30.000Z",
+    "2026-02-24T16:12:45.000Z",
+    "2025-11-05T20:06:57.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "34",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "4",
+    "4",
+    "8-K",
+    "3",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "001-05231",
+    "",
+    "001-05231",
+    "001-05231",
+    "001-05231",
+    "001-05231"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "261398217",
+    "",
+    "261252983",
+    "26952277",
+    "26668393",
+    "251453492"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "7.01,9.01",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "4",
+    "XBRL",
+    "3",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    5691,
+    5743,
+    6456,
+    543711,
+    26946,
+    6371608,
+    5485744,
+    12399291,
+    6406433
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "mcd-20260923.htm",
+    "xslF345X06/form3.xml",
+    "mcd-20260630.htm",
+    "mcd-20260331.htm",
+    "mcd-20251231.htm",
+    "mcd-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "LLOYD DEAN - FORM 4 (9.30.2026)",
+    "JENNIFER TAUBERT - FORM 4 (9.30.2026)",
+    "MICHAEL HSU - FORM 4 (9.30.26)",
+    "8-K",
+    "SKYE ANDERSON - FORM 3 (8.4.26)",
+    "10-Q",
+    "10-Q",
+    "FORM 10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

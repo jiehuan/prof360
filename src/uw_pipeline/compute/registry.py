@@ -8,10 +8,10 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, Literal
 
-import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from uw_pipeline.config import IndustryGroup
+from uw_pipeline.yaml_load import safe_load
 
 # Taxonomies SEC includes in companyfacts. Anything else (company extensions) needs the
 # filing's XBRL instance.
@@ -133,7 +133,21 @@ class MetricDef(BaseModel):
     subtitle: str | None = Field(default=None, max_length=90)
     description: str | None = None
     section: str
-    unit: Literal["USD", "ratio", "fraction", "days", "shares", "score", "count"]
+    # ounces, pounds, tons: production and shipment volumes (Phase 17, D-055); shown and given
+    # year-over-year growth like other metrics.
+    unit: Literal[
+        "USD",
+        "ratio",
+        "fraction",
+        "days",
+        "shares",
+        "score",
+        "count",
+        "ounces",
+        "pounds",
+        "tons",
+        "months",
+    ]
     kind: Literal["formula", "growth", "text", "external"] = "formula"  # external: Phase 15
     formula: list[str] = Field(default_factory=list)
     optional: list[str] = Field(default_factory=list)
@@ -174,7 +188,8 @@ class MetricDef(BaseModel):
             return {self.base} if self.base else set()
         exprs = [*self.formula, *([self.nm_when] if self.nm_when else [])]
         return {
-            n.id.removesuffix("_py")  # `x_py` = x a year earlier (compute/metrics.PRIOR_YEAR)
+            # `x_py`: x a year earlier; `x_ttm`: the last four quarters (compute/metrics.py)
+            n.id.removesuffix("_py").removesuffix("_ttm")
             for e in exprs
             for n in ast.walk(ast.parse(e, mode="eval"))
             if isinstance(n, ast.Name)
@@ -189,6 +204,9 @@ class SectionRule(BaseModel):
 
 
 class CompanyOverride(BaseModel):
+    # The currency the company reports in, when not USD (D-072: Canopy Growth, CAD): its money
+    # facts are read in it and its money metrics stored with it as their unit.
+    currency: str = Field(default="USD", pattern=r"^[A-Z]{3}$")
     concepts: dict[str, ConceptDef] = Field(default_factory=dict)
     metrics: list[MetricDef] = Field(default_factory=list)
     sections: dict[str, SectionRule] = Field(default_factory=dict)
@@ -277,7 +295,22 @@ class Registry(BaseModel):
             for m in catalog
             if m.code in wanted
         ]
-        return CompanyRegistry(concepts=concepts, units=units, metrics=metrics)
+        # A concept read from XBRL instances (dimensional or company tags) only when one of
+        # the company's metrics uses it: otherwise every company would read an instance per
+        # filing for, say, casino revenue (Phase 17). Other concepts stay, as stages other
+        # than compute read their facts.
+        used = {n for m in metrics for n in m.inputs()}
+        concepts = {code: tags for code, tags in concepts.items()
+                    if code in used or not any(t.needs_instance for t in tags)}  # fmt: skip
+        currency = override.currency
+        if currency != "USD":  # D-072
+            units = {code: currency if unit == "USD" else unit for code, unit in units.items()}
+            # Market cap comes from the USD share price: no metric may combine it with the
+            # company's own currency (Altman Z).
+            metrics = [
+                m for m in metrics if m.code == "market_cap" or "market_cap" not in m.inputs()
+            ]
+        return CompanyRegistry(concepts=concepts, units=units, metrics=metrics, currency=currency)
 
 
 class CompanyRegistry(BaseModel):
@@ -286,6 +319,11 @@ class CompanyRegistry(BaseModel):
     concepts: dict[str, list[TagRef]]
     units: dict[str, str] = Field(default_factory=dict)  # concept -> fact unit (default USD)
     metrics: list[MetricDef]
+    currency: str = "USD"  # the company's reporting currency (D-072)
+
+    def unit_of(self, m: MetricDef) -> str:
+        """The unit stored for metric `m`: its own, with money in the company's currency."""
+        return self.currency if m.unit == "USD" else m.unit
 
     def tag_refs(self) -> set[TagRef]:
         return {t for tags in self.concepts.values() for t in tags}
@@ -293,7 +331,7 @@ class CompanyRegistry(BaseModel):
 
 def _load(path: Path) -> Any:
     with path.open(encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        return safe_load(f)
 
 
 def load_registry(config_dir: Path) -> Registry:

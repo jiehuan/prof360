@@ -1,0 +1,20 @@
+# Citi's 10-K and 10-Q have no Item headings. MD&A runs through the risk management
+# discussion (credit, liquidity, market risk), which follows it under its own heading.
+# Section rules (D-060): from a `start` line to the first later `end` line, the longest such
+# block (regexes, case-insensitive, whole lines): the table of contents repeats the headings.
+sections:
+  10K-7:
+    start: "^MANAGEMENT.S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION"
+    end: "^DISCLOSURE CONTROLS AND PROCEDURES$"
+  10K-1A:
+    start: "^RISK FACTORS$"
+    end: "^(SUSTAINABILITY|HUMAN CAPITAL RESOURCES AND MANAGEMENT|MANAGING GLOBAL RISK)$"
+  10K-9A:
+    start: "^DISCLOSURE CONTROLS AND PROCEDURES$"
+    end: "^REPORT OF INDEPENDENT REGISTERED PUBLIC"
+  10Q-I-2:
+    start: "^MANAGEMENT.S DISCUSSION AND ANALYSIS OF FINANCIAL CONDITION"
+    end: "^DISCLOSURE CONTROLS AND PROCEDURES$"
+  10Q-I-4:
+    start: "^DISCLOSURE CONTROLS AND PROCEDURES$"
+    end: "^FINANCIAL STATEMENTS AND NOTES"

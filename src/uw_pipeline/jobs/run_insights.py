@@ -525,7 +525,7 @@ def process_company(
     row = company_row(conn, cfg)
     resolver = SourceResolver(conn, row, labels)
     company_id = row["company_id"]
-    group = industry.groups[row["industry_group"]]
+    group = industry.group_of(row["industry_group"], cfg)
     metrics = registry.for_company(cfg.ticker, group).metrics
     common = (PROMPTS_DIR / f"{icfg.prompt_versions['common']}.md").read_text(encoding="utf-8")
     runner = TaskRunner(client, conn, lambda: now, common, commit=True)
@@ -571,10 +571,22 @@ def process_company(
         ver.staged[kind] = ids
         return _rows(conn, ids)
 
+    # 2. behavioral and 3. strategic & risk are independent: their model calls run together
+    # (D-062); each step below then finds its answer in the cache.
+    has_calls = len(pkg.of("TRANSCRIPT")) >= 2
+    user_b = pkg.render("METRIC", "TRANSCRIPT")
+    user_r = pkg.render("METRIC", "SIGNAL", "DOCUMENT", "TRANSCRIPT", "NEWS")
+    runner.prefetch(
+        [*([runner.request(spec, "behavioral", versions["behavioral"], user_b,
+                           BehavioralInsights)] if has_calls else []),
+         runner.request(spec, "strategic_risk", versions["strategic_risk"], user_r,
+                        StrategicInsights)],
+        llm.company_calls,
+    )  # fmt: skip
+
     # 2. behavioral
     behavioral: list[dict[str, Any]] = []
-    if len(pkg.of("TRANSCRIPT")) >= 2:
-        user_b = pkg.render("METRIC", "TRANSCRIPT")
+    if has_calls:
 
         def run_b() -> list[dict[str, Any]] | None:
             out = runner.run(spec, "behavioral", versions["behavioral"], user_b,
@@ -591,7 +603,6 @@ def process_company(
         behavioral = produce("BEHAVIORAL", "behavioral", user_b, run_b)
 
     # 3. strategic & risk
-    user_r = pkg.render("METRIC", "SIGNAL", "DOCUMENT", "TRANSCRIPT", "NEWS")
 
     def run_r() -> list[dict[str, Any]] | None:
         out = runner.run(spec, "strategic_risk", versions["strategic_risk"], user_r,

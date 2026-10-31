@@ -1,0 +1,255 @@
+{
+ "cik": "0000860730",
+ "entityType": "operating",
+ "sic": "8062",
+ "sicDescription": "Services-General Medical & Surgical Hospitals, NEC",
+ "ownerOrg": "08 Industrial Applications and Services",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "HCA Healthcare, Inc.",
+ "tickers": [
+  "HCA"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "273865930",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "",
+ "stateOfIncorporationDescription": "",
+ "addresses": {
+  "mailing": {
+   "street1": "ONE PARK PLAZA",
+   "street2": null,
+   "city": "NASHVILLE",
+   "stateOrCountry": "TN",
+   "zipCode": "37203",
+   "stateOrCountryDescription": "TN",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "ONE PARK PLZ",
+   "street2": null,
+   "city": "NASHVILLE",
+   "stateOrCountry": "TN",
+   "zipCode": "37203",
+   "stateOrCountryDescription": "TN",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "6153449551",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "HCA Holdings, Inc.",
+   "from": "2010-06-03T00:00:00.000Z",
+   "to": "2017-05-05T00:00:00.000Z"
+  },
+  {
+   "name": "HCA INC/TN",
+   "from": "2001-08-07T00:00:00.000Z",
+   "to": "2010-11-24T00:00:00.000Z"
+  },
+  {
+   "name": "HCA THE HEALTHCARE CO",
+   "from": "2001-05-30T00:00:00.000Z",
+   "to": "2001-05-21T00:00:00.000Z"
+  },
+  {
+   "name": "HCA-THE HEALTHCARE CO",
+   "from": "2000-09-18T00:00:00.000Z",
+   "to": "2001-02-14T00:00:00.000Z"
+  },
+  {
+   "name": "COLUMBIA HCA HEALTHCARE CORP",
+   "from": "2000-05-26T00:00:00.000Z",
+   "to": "2000-05-19T00:00:00.000Z"
+  },
+  {
+   "name": "COLUMBIA HCA HEALTHCARE CORP/",
+   "from": "1994-05-16T00:00:00.000Z",
+   "to": "2000-02-16T00:00:00.000Z"
+  },
+  {
+   "name": "COLUMBIA HEALTHCARE CORP",
+   "from": "1994-02-14T00:00:00.000Z",
+   "to": "1994-03-01T00:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001193125-26-389379",
+    "0001193125-26-374693",
+    "0001193125-26-323731",
+    "0001193125-26-321077",
+    "0001193125-26-315151",
+    "0001193125-26-191444",
+    "0001193125-26-044769",
+    "0001193125-25-258667"
+   ],
+   "filingDate": [
+    "2026-09-11",
+    "2026-08-28",
+    "2026-07-29",
+    "2026-07-28",
+    "2026-07-24",
+    "2026-04-29",
+    "2026-02-10",
+    "2025-10-30"
+   ],
+   "reportDate": [
+    "2026-09-01",
+    "2026-08-26",
+    "2026-07-29",
+    "2026-06-30",
+    "2026-07-24",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-09-11T21:03:21.000Z",
+    "2026-08-28T21:00:01.000Z",
+    "2026-07-29T20:10:06.000Z",
+    "2026-07-28T20:30:41.000Z",
+    "2026-07-24T11:45:42.000Z",
+    "2026-04-29T20:02:37.000Z",
+    "2026-02-10T21:27:54.000Z",
+    "2025-10-30T20:30:56.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "3",
+    "4",
+    "8-K",
+    "10-Q",
+    "8-K",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "001-11239",
+    "001-11239",
+    "001-11239",
+    "001-11239",
+    "001-11239",
+    "001-11239"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "261217529",
+    "261212291",
+    "261198464",
+    "26915647",
+    "26616403",
+    "251436180"
+   ],
+   "items": [
+    "",
+    "",
+    "2.03,8.01",
+    "",
+    "2.02,7.01,8.01,9.01",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "3",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    40050,
+    8997,
+    134817,
+    10420498,
+    1488344,
+    8838383,
+    23725786,
+    13103876
+   ],
+   "isXBRL": [
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/ownership.xml",
+    "xslF345X06/ownership.xml",
+    "d315311d8k.htm",
+    "hca-20260630.htm",
+    "hca-20260724.htm",
+    "hca-20260331.htm",
+    "hca-20251231.htm",
+    "hca-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "3",
+    "4",
+    "8-K",
+    "10-Q",
+    "8-K",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

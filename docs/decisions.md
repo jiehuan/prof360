@@ -1224,6 +1224,117 @@ LLM runs until the end, then one comparison.
 - BFF: no change if it builds a company's metric list from SIC_Preferences or MatrixData and hides
   categories without metrics; "Market & Trading" and "Reporting Quality" are now empty.
 
+
+**D-055 Phase 17 scope decisions and the company universe build (2026-10-20).**
+- User decisions on the open Phase 17 questions:
+  - SPACs (SIC 6770, 174 companies) are not in underwriting scope: no SPAC_SHELL group, and the
+    universe excludes them. Coverage of the remaining universe stays about 98%.
+  - Clinical-stage trait: life-sciences companies with latest fiscal-year revenue below USD 10M.
+  - New units (ounces, tonnes, pounds, months) are displayed and get year-over-year growth like
+    other metrics (same unit in both years); no threshold signals on them except cash runway.
+  - Order: steps 17a/17a′ (universe and sample), the groups that only need SIC mapping, then the
+    six groups with their own metric modules; review after those.
+- Universe rule (口径 A without SPACs): CIKs listed on NYSE, Nasdaq or Cboe in SEC's
+  `company_tickers_exchange.json` whose latest annual report since 2024-07-01 is a 10-K (or
+  10-KT). Excluded with a reason in the report: foreign issuers (20-F / 40-F), funds (N-CSR), no
+  annual report since the cut-off, SPACs (6770), and exchange-traded products: SIC 6221 or 6199
+  with "Trust", "Fund" or "ETF" in the name (gold, oil, currency and crypto trusts; operating
+  companies under 6221 such as Uranium Royalty Corp. stay).
+- Revenue for ranking: XBRL frames (CY of the latest full year, the previous year as fallback),
+  the largest of the revenue tags; banks without a revenue tag rank by interest and dividend
+  income (marked in the sample list). The sample is a review list, not a run-time choice: the
+  chosen companies are pinned by CIK in `config/companies.yaml`.
+- Raw landing, options: (a) land all ~6,000 submissions responses (1–2 GB per build, quarterly);
+  (b) land the ticker list and frames as-is, and one summary line per registrant (the fields the
+  rule reads) instead of each submissions response; (c) SEC's bulk submissions.zip (about
+  1.5 GB). Chosen: (b). The build is replayable from the landed files, and local disk is short.
+- SIC ranges in `industry_groups.yaml` must not overlap (checked when the file loads), so the
+  order of the list no longer decides a company's group; exact `sic` codes still take
+  precedence over ranges.
+- Two of PLAN 17b's groups are split, as their companies need different module metrics (seen
+  in the companies' XBRL): MINING (1000–1499 without oil and gas: reserves, ounces and pounds,
+  asset retirement obligations) and METALS (3310–3399: tons shipped, mill utilization);
+  HOMEBUILDERS (1520–1531: land, closings, cancellations, inventory write-downs) and
+  CONSTRUCTION_ENGINEERING (1540–1799: backlog as remaining performance obligations, core
+  metrics only). 39 groups in all.
+- Casino operators file under SIC 7011 with the hotels; in the sample they get
+  `industry: LEISURE_GAMING` (gaming hold and visitation, not RevPAR). Outside the sample they
+  stay in HOTELS (PLAN 17a′: no per-company settings after the freeze).
+- Not mapped (PLAN 17, remaining 2%): water transportation (4400–4499), which is mostly cruise
+  lines (Carnival, Royal Caribbean, Norwegian); they fall under 17g's LLM choice until a module
+  exists.
+- The new groups' module metrics (user decision, 2026-10-21) are treated like Phase 16's
+  industry modules: shown under Operational Metrics and used by key insights, key takeaways and
+  the other LLM outputs. The Phase 15 sets hidden by D-054 stay hidden for the new groups too
+  (`hidden_metric_sets` applies to every group).
+- Sample review decisions are kept in `config/universe.yaml` (read only by the universe script):
+  `industry` for registrants not yet in companies.yaml whose SIC misleads (with the reason,
+  carried into companies.yaml when a company is added) and `sample_skip` for registrants whose
+  ranking revenue is not comparable (StoneX, Galaxy: gross commodity and digital-asset sales).
+  A year's revenue more than 20 times the year before is taken as a tagging error and the
+  earlier year ranks the company (Tigo Energy tagged $103.5B for CY2025).
+
+**D-056 Phase 17 industry modules (2026-10-21).**
+- Seven module sets, XBRL first, at most three text metrics per group (PLAN 17b), designed from
+  the sample companies' own XBRL (tags and dimensions each of them files):
+
+  | Group | XBRL | Text (two reads must agree) |
+  |---|---|---|
+  | CHEMICALS_MATERIALS | environmental remediation reserve, capex / D&A | sales change from volume, from price |
+  | MINING | asset retirement obligations, environmental reserve, capex / D&A | gold produced (oz), copper produced (lb), aggregates shipped (tons) |
+  | METALS | environmental reserve, capex / D&A | tons shipped, average selling price per ton (+ capacity utilization) |
+  | HOMEBUILDERS | homebuilding inventory, land and lots, land / equity, inventory impairments | homes closed, backlog value, cancellation rate |
+  | HEALTHCARE_SERVICES | labor cost / revenue | same-facility revenue growth, same-facility volume growth, admissions |
+  | LEISURE_GAMING | casino revenue / revenue (ProductOrServiceAxis = CasinoMember) | attendance |
+  | RESTAURANTS | labor cost / revenue, franchise revenue / revenue (FranchisorDisclosureAxis) | comparable sales, restaurants system-wide, franchised share of restaurants |
+
+- Left out of the plan's list, with the reason:
+  - All-in sustaining cost (gold): a fourth text metric for MINING, whose sample is two copper
+    miners, one gold miner and two aggregates producers; production volumes cover all five.
+  - Medicare and Medicaid share of revenue: filers give each payer separately (HCA: Medicare,
+    managed Medicare, Medicaid, managed Medicaid), so a share needs a sum, and text metrics
+    take numbers as printed, never computed.
+  - Average unit volume (restaurants): two of five sample companies report it.
+  - Revenue by property or region (gaming): segment members differ by company; casino share of
+    revenue uses the standard member instead.
+- Restaurant counts are text, not XBRL: us-gaap:NumberOfRestaurants comes in units
+  Restaurant, Store or Location (McDonald's uses all three), and a concept reads one unit.
+- Land and lots = homebuilding inventory − homes under construction, then the land tags:
+  PulteGroup tags only raw land ($0.57B) with the land tag while its land under development
+  ($7.4B) is the untagged remainder; D.R. Horton and Toll Brothers agree within 10–20% on
+  both definitions (the difference also holds model homes).
+- Company overrides (sample companies, PLAN 17a′): McDonald's and Yum China tag franchise
+  revenue under their own tag and member.
+- Text-metric holdouts (PLAN 17e), fixed before the first run: definitions are tuned on the
+  development companies only; the holdouts are read once the definitions are final.
+
+  | Metrics | Development | Holdout |
+  |---|---|---|
+  | volume and price effect | DOW, LYB, LIN | CRH, SW |
+  | gold produced | NEM | FCX (gold by-product) |
+  | copper produced | FCX | SCCO, NEM |
+  | aggregates shipped | VMC | MLM |
+  | tons shipped, selling price per ton | NUE, STLD | CLF, AA |
+  | homes closed, backlog, cancellation rate | DHI, LEN, PHM | TOL, NVR |
+  | same-facility revenue and volume growth, admissions | HCA, THC | UHS, DVA, LH (volume) |
+  | attendance | LYV | none: no other sample company reports it |
+  | restaurants, franchised share | MCD, SBUX, CMG | DRI, YUMC |
+
+- Holdout result (2026-10-21, definitions final; runs 125–126, Haiku $1.21): every holdout
+  value kept matches its filing, about 30 values across FCX gold, SCCO copper, MLM aggregates,
+  CLF and AA shipments and prices, TOL and NVR closings, backlog and cancellations, UHS
+  same-facility revenue, DVA treatments, YUMC restaurants and franchised share (quotes 100%
+  found, values 100% right; PLAN 17e asks 100% / 95%). No value where the filing gives no
+  company total: CRH (volume and price per product line), SW (none), UHS admissions and volume
+  (acute care and behavioral health apart; the second read refused the extractor's segment
+  figure), CLF utilization (not reported), NEM copper (tonnes). Misses, left as found
+  (holdouts are not tuned on): Labcorp's "organic volume increased by 1.8%" was not read;
+  Darden gives its restaurants in parts (2,218 owned plus franchised), not a system total.
+
+- Core change found on the sample: `RevenueFromContractWithCustomerIncludingAssessedTax` is the
+  last revenue candidate; it is Valero's only total and Wynn Resorts' since 2019 (both had no
+  current revenue). It fills only periods where no earlier candidate is tagged.
+
 **D-057 Azure credentials from a Databricks secret scope (2026-10-21).**
 - User request: connect to Azure SQL the way the team's loss-run project does on Databricks
   (`loss_run_integration`, data_io/sql_connect.py and config/main_config.cfg): an
@@ -1248,6 +1359,199 @@ LLM runs until the end, then one comparison.
   name Tenet's terms (same-hospital, adjusted admissions, net patient service revenues); capacity
   utilization (Phase 16, manufacturing trait) also reads steel mill utilization and operating
   rates (Nucor 83%, Steel Dynamics 90%), which re-reads it once for the other manufacturers.
+
+**D-058 Clinical-stage companies (Phase 17c, 2026-10-21).**
+- Which companies: life-sciences SIC codes (2833–2836, 8731–8734, 3826, 3841–3851) with latest
+  fiscal-year revenue under USD 10M or none (D-055 threshold); about 390 of the universe.
+  `scripts/build_universe.py` lists them; a person confirms each, and the result is pinned in
+  companies.yaml as a company trait, reviewed with the quarterly universe rebuild. Never decided
+  at run time.
+- How: `traits: [clinical_stage]` on a company (new; traits were per industry group). Options
+  for the metrics that do not fit (R&D / revenue, gross margin, largest product share): (a) a
+  separate CLINICAL group, which would lose the SIC group's other settings; (b) the trait adds
+  its sets and drops the metrics listed under `trait_exclude_metrics`. Chosen: (b); the company
+  keeps its PHARMA or MEDTECH group.
+- Metrics (XBRL, set CLINICAL_STAGE): cash runway in months = (cash + short-term investments) /
+  (operating cash outflow of the last four quarters / 12), N/M when operating cash flow is not
+  negative; R&D / total operating expenses. When the four quarters are not all available, or
+  one is N/M (a restated year, Xenon's Q4 2025), the latest quarter's burn is used. The four-quarter sum is a new formula suffix,
+  `x_ttm` (the four quarters ending at the period; the year itself for a fiscal year), like
+  `x_py`. Unit: months (D-055).
+- Signal: cash runway under 12 months (4 quarters), a threshold rule. Going concern and
+  dilution signals exist already.
+- Pipeline facts (LLM stage `clinical`, after `legal`): the lead programs from the latest 10-K
+  (Item 1) and 10-Q (MD&A): name, indication, phase, next milestone and its timing as written.
+  Both models read; a program is kept when its quote is in the filing, names the program and the
+  phase, and both models give it the same phase; a milestone only when both give the same
+  timing. Stored in `clinical_program` (one row per program, `is_current`); an insight input
+  like the board facts, not published to MatrixData.
+- Development set: the 20 clinical-stage candidates with the largest R&D expense (XBRL frames,
+  latest year), reviewed and added to companies.yaml; PLAN 17e checks revenue judgment and
+  pipeline facts on them.
+- Found while building it: a second `short_term_investments` concept in concept_map.yaml
+  silently replaced the Phase 15c one (plain YAML keeps the later key), which a golden test
+  caught. Config files are now read with a loader that refuses a key given twice
+  (`uw_pipeline/yaml_load.py`); the two biotech tags were added to the original concept.
+- Result on the 20 (runs 127–130, 2026-10-21; `clinical` on Haiku $0.29): all 20 are
+  pre-revenue (latest year at most $8.3M, nine tag none); cash runway at Q2 2026 from 6.3
+  months (Biohaven) to 77 (CRISPR), two under 12 (Biohaven, Replimune: `short_cash_runway`).
+  85 current programs, 52 with a dated milestone (Cogent's PDUFA date December 30, 2026;
+  Vaxcyte's VAX-31 adult Phase 3 topline data in Q4 2026; Xenon's azetukalner NDA in Q3
+  2026); seven companies checked against their filings. Tuned on them: a candidate named in
+  the heading just before a quote counts (Celldex states barzolvolimab once per section), and
+  indications are compared without their parenthetical detail (one CDX-622 program, not two).
+  Golden values: Viking (four quarters) and Xenon (latest-quarter burn).
+
+**D-059 Companies outside every industry group: the LLM picks one (Phase 17g, 2026-10-21).**
+- Applies to a company whose SIC code maps to no group and that has no `industry` in
+  companies.yaml (no SIC, BDCs, shipping, cruise lines). Foreign issuers stay out of scope.
+- What the model chooses, options: (a) any combination of metric sets; (b) one existing
+  industry group. Chosen: (b). A group carries its sets together with its traits, excluded
+  metrics, signal settings and `is_financial`, which a set combination would not; the plan's
+  bound holds either way (only existing metrics, no new ones, no formula changes).
+- Input: the business section of the latest 10-K (Item 1; the first passages of the filing
+  when it has no Item 1) and the SIC description; the list of groups with their label and the
+  names of the metrics their module sets add. Output: the group code (an enum of the configured
+  codes, so an unknown code fails schema validation), a verbatim quote from the business
+  section that supports it (must be found), and a one-sentence reason.
+- Both models choose (`industry_choice_v1`). The same group: AGREED and used. Different:
+  the tie-breaker's group is used, DISPUTED, and the choice waits in `uw-pipeline review` (type
+  INDUSTRY); a rejected choice is not used (the company stays in the default group until someone
+  sets `industry`). Calls are cached by input hash, so later runs reuse the choice until the
+  business section changes.
+- Where: a new `industry` stage after `documents` stores the choice in `industry_choice` and
+  sets the company's group; it recomputes that company's metrics in the same run (its facts
+  are those of every company: instance-only module concepts follow on the next run). The
+  `company` stage keeps a stored, usable choice when the SIC code gives no group.
+- App: the metric methodology text of such a company says the metrics were chosen by AI from
+  the business description (no new field, plan option A).
+- Trial (run 132, 2026-10-21, Haiku $0.01) on the largest company of each kind outside the
+  groups: both models chose the same group for all six, each supported by its 10-K: Ares
+  Capital (BDC, no SIC) CREDIT, Carnival (4400) HOTELS, Dolby (6794) SOFTWARE_INTERNET, Kirby
+  (4400) TRANSPORT, SSR Mining (6795) MINING, Texas Pacific Land (6792) ENERGY; their metrics
+  were recomputed in the same run (SSR Mining: retirement obligations, capex / D&A).
+
+**D-060 Bank MD&A: the annual report in Exhibit 13, and heading rules (Phase 17d, 2026-10-21).**
+- Found: Wells Fargo, U.S. Bancorp and BNY file the 10-K as a short wrapper (cover, Item 1,
+  a cross-reference index); MD&A, risk factors, controls and the financial statements are in
+  the annual report, filed as an `EX-13` / `EX-13.1` document (file names like
+  `wfc-20251231.htm` or `usb-20251231_d2.htm`, so the type comes from the filing index, not
+  the name). In the wrapper, Item 7 is a 300-character cross-reference. Bank of America's,
+  BNY's, Citi's, Morgan Stanley's, U.S. Bancorp's and Wells Fargo's 10-Qs and Citi's and Morgan
+  Stanley's 10-Ks use their own headings; their 10-Q MD&A was missing or a stub.
+- Which document is the 10-K's primary text, options: (a) keep the wrapper primary and add the
+  annual report as a second role every reader must learn; (b) the annual report becomes the
+  filing's PRIMARY document and the wrapper is kept as role `10-K-WRAPPER`. Chosen: (b). Every
+  reader (signals, text metrics with their table reads, legal, citations) already uses the
+  PRIMARY document of a filing, and the annual report is where the cited text is.
+- When: a 10-K whose MD&A (10K-7) is missing or shorter than 3,000 characters, and whose
+  filing index lists an EX-13 document. Its sections come from the item split plus the
+  company's `sections:` rules; the wrapper's sections the annual report does not have (Item 1,
+  Part III) are kept with it, after its text. Same for the older 10-Ks read for MD&A history.
+- Heading rules for BAC, BNY, C, MS, USB, WFC in `company_overrides/` (as JPM's). Two rule
+  changes: a rule's section is the longest block between a start and an end line (a table of
+  contents lists the same headings; of several starts reaching the same end the first counts,
+  since page headers repeat the start heading, as JPMorgan's do); a section the item split found at the same place under another code is
+  dropped (Bank of America's 10-Q puts MD&A before the "Part I" heading, so the split filed it
+  as Part II Item 2). Rules apply only to their own form (10K- / 10Q- codes).
+- Citi's and Morgan Stanley's risk management discussion (credit, liquidity, market risk:
+  nonperforming loans) follows the MD&A under its own heading; their MD&A rule runs through it,
+  so the MD&A text holds what the other banks' MD&A holds.
+- Result (runs 133–135, 2026-10-21; `textmetrics` on Haiku, 1.67M input / 0.29M output
+  tokens): every 10-K and 10-Q of the six banks now has its MD&A (108k–462k characters, was
+  0–776). Text metrics gained: Citi NIM, CET1, Tier 1, total capital, LCR (none before); U.S.
+  Bancorp and BNY the capital ratios and LCR; Wells Fargo the capital ratios, CRE loans and
+  uninsured deposits. Checked against their quotes: Wells Fargo CET1 10.61% at 2025-12-31,
+  10.29% at Q1 2026, 10.26% at Q2 2026; U.S. Bancorp CET1 10.8% at 2025-12-31; Citi NIM 2.47%
+  for 2025, 2.49% for Q4 2025, 2.46% / 2.54% for Q1 / Q2 2026.
+- Left for 17e: no NPL ratio for Citi, U.S. Bancorp and BNY (their filings do not state
+  nonaccrual loans to total loans directly, which the definition requires; U.S. Bancorp states
+  nonperforming assets to loans plus other real estate); no Item 3 section for Citi and Morgan
+  Stanley (legal proceedings are in the notes, which the legal stage reads from the whole
+  document); BNY's annual report has no auditor tenure sentence, so no auditor's report section.
+  Morgan Stanley is a broker-dealer: its text metrics are those of BROKER_DEALERS.
+
+**D-061 Short transactions for the other LLM stages (Phase 17d, 2026-10-21).**
+- Stages: textmetrics, governance, legal, clinical, industry, signals, scores and news join
+  insights and metricdetail (D-052): no transaction is open while a model answers, so on a
+  SQLite file their companies run in parallel too, and on Azure SQL no lock is held for minutes.
+- Checked per stage that no group of writes spans a model call: governance, legal, clinical,
+  industry and signals write only after all their calls; scores writes each news batch, and
+  each transcript's tone with its flags, after that item's calls; news commits pruned
+  articles, then the new articles (unjudged articles are judged on a later run if the
+  relevance call fails); textmetrics writes its metric values (upsert and stale deletes) as one
+  group after all extraction calls, then the loan book after its own calls.
+- How, options: (a) a `commit` argument through every helper that calls the model (as
+  insights' `TaskRunner`); (b) the stage opens its connection with `short_transactions(engine)`,
+  which marks it, and `cached_call` commits around the call on a marked connection. Chosen:
+  (b): one change per stage instead of a dozen signatures, and a helper called inside an
+  ordinary transaction (tests, other callers) keeps that transaction whole.
+- A company that fails partway keeps its committed groups and its cached answers; the next run
+  completes it without new calls for what was answered.
+- Tests (`tests/test_short_transactions.py`): for each stage but news, two companies in
+  parallel on a SQLite file store the same rows as one after the other, and during every model
+  call another connection gets the write lock at once (a stage switched back to one long
+  transaction fails this). Live (run 136, 2026-10-21): signals for eight companies, four
+  workers on `data/uw.db`, 23 s, no lock errors.
+
+**D-062 Model calls within one company in parallel (Phase 17d, 2026-10-21).**
+- Where: insights' behavioral and strategic-risk syntheses (independent: both prompts are
+  built from the package before either runs); textmetrics' reads of all documents, each with
+  its dual-check read and table reads, and the loan book (no request depends on another
+  answer: the second read is made whatever the first returns).
+- How, options: (a) run the stage's steps in threads, each with its own connection; (b) a
+  pre-fetch: build the company's requests first, ask the model for those not in `llm_call` a few
+  at a time in threads that do not touch the database, store the answers on the caller's
+  connection, then run the stage's code unchanged: every call finds its answer in the cache.
+  Chosen: (b). A connection cannot be shared between threads, and (a) would split one company's
+  writes across connections; with (b) validation, grounding, dual checks and writes stay
+  sequential and as tested.
+- textmetrics builds its requests by running its document loop once in a planning mode in
+  which the extractor records each request instead of calling (parsed tables are kept for the
+  real pass). A pre-fetched call that fails is not stored; the call that follows asks again and
+  records the error, as before. An answer that fails validation is stored as such (its tokens
+  count) and asked again by that call.
+- How many at a time: `company_calls` in config/llm.yaml (3); the per-model rate limits
+  (`rate_limits`) still apply across all threads, and the daily budget is checked first.
+- Tests (`tests/test_prefetch.py`): requests asked three at a time, duplicates and cached ones
+  not asked, a failed call not stored and asked again, an invalid answer kept for its tokens
+  and asked again; textmetrics on three releases stores the same values with one or three
+  calls at a time. The insights parallel test now sees four calls at once (two companies, two
+  syntheses each). Live (run 137, 2026-10-21): textmetrics for the six banks and JPMorgan from
+  the cache: no model calls, the stored values unchanged.
+
+**D-063 Coverage of the development sample: XBRL gaps (Phase 17e, 2026-10-22).**
+- Starting point: 627 metric gaps without a note on the 256 companies (546 XBRL, 81 text;
+  the text gaps wait for the first full LLM run).
+- Short histories, options: (a) a note per company; (b) a general rule. Chosen: (b). The
+  target counts from the company's first own 10-K / 10-Q: fiscal years from the earliest
+  balance sheet in that filing (total assets; the equity statement's opening balance reaches
+  a year further back), quarters from its first 10-Q (`compute/coverage.history_start`; used by
+  `coverage-report` and the DQ rule). 118 gaps (Dole, Constellium, Medline, Solventum, Ingram
+  Micro, Veralto, CRH, a 2023 biotech IPO). Bunge instead gets its predecessor, Bunge Limited
+  (CIK 1144519, deregistered November 2023).
+- Mapping fixes, each checked against the company's facts: `NotesPayable` is total debt for
+  D.R. Horton, PulteGroup and Omnicom (a last `total_debt` form); revenue for Bread Financial
+  is total net revenue (override, like the banks); capital expenditures for VF Corp and JLL
+  (overrides: a generic `PaymentsForCapitalImprovements` would give Weyerhaeuser $51M of its
+  several hundred million).
+- Long-term debt where the balance sheet has no current / non-current split, options: (a) a
+  generic last form `LongTermDebt` (including current maturities); (b) only for those groups.
+  (a) was tried and rejected: some periods of 30 companies (Apple, Adobe, NVIDIA, Tesla, ...)
+  lack the non-current tag and would have mixed two measures in one series. Chosen: (b), the
+  concept `ltd_unclassified` mapped for HOMEBUILDERS, REIT and REAL_ESTATE_OPERATING, and by
+  override for Park Hotels and Omnicom.
+- Notes: group notes (homebuilders and REITs: unclassified balance sheet, no operating income
+  line, capitalized interest, no REIT capex); a new `traits:` section (clinical-stage:
+  pre-revenue, equity-funded, little equipment); company notes for the rest, each stating what
+  the facts show: single-step income statements (Dow, Nucor, ADM, HCA, ...), interest expense
+  tagged in the 10-K only with net interest in the 10-Qs (Delta, Nike, Newmont, ...), capex or
+  debt moved to the company's own tags (Freeport, United Rentals, Valero, Lennar, NVR), no debt
+  (lululemon, Cal-Maine, Dolby, Texas Pacific Land, Yum China).
+- Result: no XBRL gap without a note; the 80 left are text metrics of companies not yet read
+  by the LLM stages. Golden values (from the FY2025 10-Ks): D.R. Horton notes payable 5,965.5,
+  Park Hotels long-term debt 3,856, Prologis 35,037.073, Omnicom long-term notes 7,655 and
+  total debt 9,272.9 + 62.0 + 104.5.
 
 **D-064 Daily copy from SQLite to Azure SQL: sync by primary key (2026-10-24).**
 - Need: the pipeline runs on SQLite; Azure SQL, read by the BFF, must get each run's results
@@ -1284,7 +1588,7 @@ LLM runs until the end, then one comparison.
   and with them the follow-up questions and takeaways that use them (about 3 synthesis calls
   per company); behavioral and strategic insights stay cached.
 - Result (MAR, JPM, ENPH, 2026-10-24): 10 key insights each, summaries of 94-169 characters,
-  none dropped.
+  none dropped. tests/golden re-exported.
 
 **D-066 A company's insight sets change together or not at all (2026-10-25).**
 - Found in nightly run 144 (107 companies, Phase 16 code): the Mac slept mid-run and four
@@ -1334,8 +1638,6 @@ LLM runs until the end, then one comparison.
   UWMC, DNLI, ANNX (to add by hand). 2.1 MB of files; the data URIs add about 2.8 MB to the
   app database. Logos were reviewed on the sheet, not one by one: corrections go into
   `config/logos.yaml` or a replaced file.
-- This release (Phase 16 code, 107 companies): only those companies' logo files and corrections
-  are kept; every one of the 107 has a logo.
 
 **D-068 Metric underwriting relevance: no item ids in the text (2026-10-29).**
 - The metricdetail prompt lists the company's insights and follow-up questions with ids (K1,
@@ -1352,7 +1654,7 @@ LLM runs until the end, then one comparison.
   dropped, like an unverified number). Only that company's ids count: quarters ("Q2") and
   ratings ("B2") of other text stay; a rating equal to one of its B ids drops the text (rare,
   accepted). Links still come from the id lists.
-- Golden (MAR, JPM, ENPH, $0.02): 72 of 72 texts kept, none with ids (before: 22).
+- Golden (MAR, JPM, ENPH, Haiku 5.5, $0.02): 72 of 72 texts kept, none with ids (before: 22).
 
 **D-069 MD&A history for text metrics: 5 years of 10-Ks, 8 quarters of 10-Qs (2026-10-29).**
 - Metrics read from filing text (RevPAR, occupancy, postpaid churn, medical cost ratio, ...)
@@ -1389,3 +1691,61 @@ LLM runs until the end, then one comparison.
   or headers names a quarter. Elsewhere the rule is unchanged; year-to-date, change columns,
   subsets and the other year stay withheld. The model's readings are cached, so the next
   textmetrics run applies the rule to them without new LLM calls.
+
+**D-071 Client portfolio companies added (2026-10-30).**
+- Source: the business's top-50 client portfolio list (52 rows). Rule (user decision): add the
+  clients that file with the SEC; leave out the others. Each was matched against SEC's ticker
+  list and its submissions (name, former names, recent periodic reports), never by name alone.
+- Already covered (9): CVS, BAC, UWMC, GS, FLR, PFE, GEV, UNH, JNJ.
+- Added (21; 256 -> 277 companies): BRO, PFG, SLB (formerly Schlumberger), MTB, AMC, CVNA, EVEX,
+  RBRK, RBLX, CGC, HE, BTSG, ACRE, RJF, ILMN, ALDX, CVSA (Covista, formerly Adtalem Global
+  Education, renamed 2026-01), XE (X-Energy; listed in 2026, two 10-Qs so far), and by user
+  decision: NFE, the listed parent of the client New Fortress Energy Marketing LLC; PSFE
+  (20-F) and AAUC (40-F), foreign filers with no 10-K/10-Q, so no MD&A, risk factors or
+  quarterly text: their data is partial. BRO is grouped with BUSINESS_SERVICES (an insurance
+  broker, not an insurer); EVEX reads only filings after its SPAC merger (`history_start`).
+- Not added (22): no SEC registrant - Highmark, Cerberus Capital Management, MLB Players
+  Association, Alvarez & Marsal, AlixPartners, AXA, College Sports Commission, Lockton, Encap
+  Investments, REM OptionCo, Auto Club Group, Horizon Healthcare Services, CAH Holdings,
+  Coinsafe, Delaware Charter Guarantee & Trust, Jencap Holdings; a subsidiary whose parent is
+  covered or not listed - NB Holdings (Bank of America), Lux Vending (Bitcoin Depot, not in
+  SEC's ticker list); no longer reporting - Focus Financial (private since 2023), Confluent and
+  ON24 (Form 15 in 2026), Tokio Marine (no annual report at the SEC since 2006).
+- Development sample (user decision 2026-10-30: they are the business's top clients): the 21
+  join the development sample of PLAN 17a′ (D-055) although the revenue ranking did not pick
+  them. So, as for the rest of the sample: every metric gap in `coverage-report` gets a note in
+  `config/coverage_notes.yaml` (by group where the whole group shares it, else by company), a
+  company-level setting (`company_overrides`, `industry`) is allowed where a filing needs one,
+  and DQ, `audit-insights` and golden checks cover them. Logos: 15 from Wikipedia, 6 website icons; 10 needed an
+  article or website in `config/logos.yaml` (no Wikidata item by CIK).
+
+**D-072 A company that reports in another currency: Canopy Growth in CAD (2026-10-30).**
+- Canopy Growth (CGC, added by D-071) files 10-K/10-Q with US GAAP XBRL in Canadian dollars.
+  The pipeline read money facts in USD only, so CGC had almost no metrics. It is the only one
+  of the 277 companies with non-USD money facts.
+- Options: (a) no metrics (a coverage note); (b) its own currency, shown as such; (c) convert to
+  USD at period-end exchange rates (needs an FX source and a rate per period). Chosen (user
+  decision): (b).
+- How: `config/company_overrides/CGC.yaml` sets `currency: CAD`. For such a company the money
+  concepts read facts in that currency and money metrics are stored with it as their unit
+  (`metric_value.unit`, `MatrixData.unit` = `CAD`); ratios and percentages are unchanged; a
+  quarter is derived from year-to-date amounts in any currency, not only USD. Amounts are
+  written "C$1.23B" (`fmt_value`) in methodology, data points and the insight input, so
+  generated text says C$ and its numbers are still checked. Market cap comes from the USD share
+  price and stays USD; Altman Z, which would combine it with CAD amounts, is not computed.
+  Money metrics read from filing text and preliminary results from earnings releases are read
+  as USD only, so they are skipped for such a company (counts and ratios are still read).
+- The front end must show unit `CAD` as C$ (frontend-api-review A9); CGC is not comparable in
+  amounts with USD peers, only in ratios.
+- First runs (2026-10-30, runs 148-155, Haiku 5.5, about $2.1 in all): the 19 10-K filers
+  have 13-51 metrics, the two foreign filers none; every company has 11-31 current insights and
+  11-16 questions. Found and fixed on the way: the facts stage failed on a company with no
+  US-GAAP facts (PSFE, AAUC); the signals stage failed when the model reported a restatement
+  outside the voted topics (CGC, NFE); SEC's fiscalYearEnd for Brown & Brown is wrong (0119),
+  so the latest 10-K year end now wins when they disagree (`learn_calendar`); Canopy Growth
+  reports in CAD (D-072). General candidates added: `us-gaap:Cash` for cash (SLB, AAL) and a
+  notes-payable debt family (ILMN; also AMGN, BHVN, LH, LRN, OMC, ORCL), only filling periods
+  that had no value. Coverage: every gap of the 21 has a note (178 notes).
+- 2026-10-31: convertible notes as a debt family too (`ConvertibleLongTermNotesPayable`, "Convertible
+  Notes Payable, Noncurrent", with `ConvertibleNotesPayableCurrent`): Rubrik's $1.13B notes since
+  2025; also NOW, RVMD, VKTX, only where no earlier family has a value.

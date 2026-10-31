@@ -723,28 +723,42 @@ uw-pipeline dq-report --run-id <id>
 
 ---
 
-### Phase 17 — 覆盖约 98% 的上市公司（10-K 运营公司）（2026-10-18 计划，待确认；依赖 Phase 16 和 Phase 10）
+### Phase 17 — 覆盖约 98% 的上市公司（10-K 运营公司）（2026-10-18 计划，2026-10-20 开始，D-055；全量上线依赖 Phase 10）
 
 **目标**：在 Phase 16 的行业组之上，让约 98% 的上市运营公司有行业组：公司较多、有自己风险特征的行业配专门模块（路径 1），其余只要改 SIC 映射就有合适指标的行业一并纳入。
 
 **口径 A**（2026-10-18 按 EDGAR 实测）：在 NYSE / Nasdaq / Cboe 上市、2024-07-01 之后交过 10-K 的运营公司，不含 ETF、商品和加密信托（SPDR Gold、USO 一类，105 家），共 **4,195 家**。不在口径内：外国发行人（20-F / 40-F，1,124 家）、封闭式基金（N-CSR，355 家）、2024-07-01 之后没交年报的 286 家（多为 SPAC）。数据来源：SEC `company_tickers_exchange.json`，每家 submissions 的 SIC 和最近年报类型，XBRL frames 的 FY2024–25 收入。
+
+#### 进度（D-055）
+- [x] 17a 公司范围：`scripts/build_universe.py`（口径 A 去掉 SPAC，排除原因写进报告）
+- [x] 17a′ 开发样本：每组收入最大的 5 家，人工审阅、钉住 CIK
+- [x] 17b-1 只改映射的 7 个新组和 9 个已有组的 SIC 范围（SIC 范围不得重叠，加载时检查）
+- [x] 17b-2 带模块的 6 个新组（不含 SPAC；拆分后 7 个模块组，D-056）：指标、golden 值（14 家）、文本指标留出测试（取到的值全部正确）
+- [x] 17c 临床阶段特性：公司级 `traits`、现金可支撑月数和研发 / 运营支出、信号、`clinical` 阶段（在研项目和下一个节点）、20 家开发集（D-058）
+- [x] 17d 其余 LLM 阶段改短事务、公司内并行、银行 MD&A
+  - [x] 银行 MD&A：Exhibit 13 年报作为 10-K 的 PRIMARY 文档（WFC、USB、BNY），BAC、BNY、C、MS、USB、WFC 的章节规则（D-060）
+  - [x] 其余 LLM 阶段改短事务：textmetrics、governance、legal、clinical、industry、signals、scores、news（D-061）；每个阶段一个并行与串行一致、等待模型时无写锁的测试（news 除外，它不并行）
+  - [x] 公司内的调用并行：先取（prefetch）各家公司互不依赖的请求，几个同时调用，答案进缓存，之后的顺序代码从缓存取；insights 的 behavioral 和 strategic、textmetrics 的各文件和双重读取（D-062，`company_calls: 3`）
+- [x] 17g 行业组以外的公司由 LLM 选行业组：`industry` 阶段、`industry_choice` 表、review 类型 INDUSTRY、应用里的说明（D-059；6 家试运行，两个模型全部一致）
+- [ ] 17e 样本上的质量关口，然后冻结
 
 **现状和目标**：Phase 16 的行业组按 SIC 覆盖 2,995 家（71.4%）。本阶段新增 14 个行业组（7 个带新模块，7 个只改映射）、扩大 9 个已有组的 SIC 范围，加一个临床阶段特性：带模块的 7 组加上 6 个映射项到 4,003 家（95.4%），其余只改映射的再加 114 家，共 **4,117 家（98.1%）**。
 
 #### 17a 公司范围
 - 名单由脚本生成（新 `scripts/build_universe.py`：上面的口径、排除规则、每家的 SIC 和年报类型），人工审阅后提交，仍按 CIK 钉住；不在运行时生成。约 4,000 家放进 `config/companies.yaml` 还是拆成 `config/universe/*.yaml`，实现时定。
 - 每季度重跑一次：新上市、退市、改 SIC、改交年报类型的公司列成差异报告，审阅后提交。
-- SIC 6770 的 SPAC 纳入（有专门模块），是否承保另定（见待确认）。
+- SIC 6770 的 SPAC 不在承保范围（2026-10-20 用户决定，D-055）：不做 SPAC_SHELL 组，口径 A 去掉 SPAC。
 
 #### 17a′ 开发阶段的样本（2026-10-18 用户决定）
 - 开发阶段不跑约 4,000 家，先用样本：38 个行业组（Phase 16 的 24 个加本阶段新增的 14 个）每组取最近财年收入最大的 5 家。按口径 A 和 SEC 数据实测（2026-10-18）：共 **187 家**（PAYMENTS 按现在的映射只有 Visa、Mastercard 两家），其中 68 家已在现在的 107 家里，**新增 119 家**，开发样本合计 **226 家**。
 - 新增分布：14 个新组共 69 家（餐饮组已有 MCD）；现有组补足到 5 家共 50 家，例如 REIT 4 家（WELL、EQIX、PLD、WY）、保险 4 家（PGR、MET、ALL、PRU）、酒店 4 家（MGM、LVS、HLT、CZR）、航空 4 家（DAL、UAL、AAL、ALK）、CREDIT 5 家（现在 0 家）。
 - 名单人工审阅后再提交，不直接用收入排序：
-  - 收入排序在几个组不合适：SPAC 没有收入（改按信托规模）；券商组的 SNEX、GLXY 是交易总收入，排在 KKR、Blackstone 前面。
+  - 收入排序在几个组不合适：券商组的 SNEX、GLXY 是交易总收入，排在 KKR、Blackstone 前面。
   - SIC 分错组的要用 `industry` 改：NKE（SIC 3021 橡胶鞋 → 化工）、CTAS（2320 服装 → 耐用消费品，实为制服租赁）、PAA / PAGP / DINO（4610 管道 → 运输，实为能源中游 / 炼油）、COIN（→ CREDIT）、KLAC（3827 → 仪器，实为半导体设备）。这与 Phase 16 的 S&P 100 有 21% 需要改行业的情况一致。
   - PAYMENTS 只有两家：PayPal、Fiserv、FIS 等按 SIC 不在这个组，要用 `industry` 归入。
 - 样本用途：每个新模块的 golden 值和文本指标留出公司从样本里取；覆盖率说明、DQ、`audit-insights` 和费用 / 时长都先在样本上做完，再扩到全量。规模与 Phase 16 相当（新增 98 家：Haiku 约 $12，SQLite 上串行约半天）。
 - 计算脚本：`build_universe.py` 增加 `--sample 5`（每组前 N 家），输出审阅用的清单。
+- **客户名单加入样本（2026-10-30 用户决定，D-071）**：业务方前 50 大客户里在 SEC 申报、此前没有覆盖的 21 家（BRO、PFG、SLB、MTB、AMC、CVNA、EVEX、RBRK、RBLX、CGC、HE、BTSG、ACRE、RJF、ILMN、ALDX、CVSA、XE、NFE、PSFE、AAUC）不按收入排序，直接加入开发样本，按样本的要求处理：每个缺口都写覆盖率说明，允许公司级设置，DQ、`audit-insights` 和 golden 检查都包括它们。`build_universe.py --sample` 生成样本时不会选出它们，审阅样本时保留。
 - **样本做完后冻结，直接对全部公司上线（2026-10-18 用户决定）**：226 家做完、通过 17e 的质量关口之后，不再按公司调整，直接处理全部公司。含义：
   - 只在配置的通用层面改：行业组的 SIC 映射、指标集、tag 候选（`concept_map.yaml`、`by_group`）、公式、行业组级覆盖率说明、DQ 规则。改动对同一行业的所有公司生效。
   - 样本外的公司不再加公司级设置：不加 `company_overrides`（如 BLK 的收入 tag）、不加公司级覆盖率说明；`industry` 只用于样本审阅时发现的分错组，以及上线后承保人员报告的问题。
@@ -758,7 +772,7 @@ uw-pipeline dq-report --run-id <id>
 
 | 行业组 | SIC | 公司数 | 累计 | 模块指标 |
 |---|---|---|---|---|
-| SPAC_SHELL | 6770 | 174 | 75.5% | XBRL：信托账户每股价值、信托外营运资金；文本：距截止日月数、最近一次延期的赎回比例 |
+| ~~SPAC_SHELL~~ | 6770 | 174 | — | 不做（SPAC 不在承保范围，D-055） |
 | CHEMICALS_MATERIALS | 2400–2499、2600–2679、2800–2829、2850–2899、3000–3299 | 134 | 78.7% | XBRL：环境修复计提、资本开支 / 折旧；文本：量价拆分 |
 | MINING_METALS | 1000–1499、3310–3399 | 89 | 83.6% | XBRL：弃置义务、资本开支；文本：产量、AISC、储量（S-K 1300） |
 | HEALTHCARE_SERVICES | 8000–8099 | 73 | 87.1% | XBRL：人工成本 / 收入；文本：同院收入增长、入院量或病人日、医保 / 医疗补助收入占比 |
@@ -827,6 +841,11 @@ uw-pipeline dq-report --run-id <id>
 - 样本：`coverage-report` 每个缺口有说明（行业组级优先）；DQ 无 Error；`audit-insights` 每个新组抽 2 家。
 - 全量上线后：覆盖率和 DQ 按行业组出比例，作为监控指标，不逐家处理。
 - 临床阶段特性：抽 20 家核对收入判断和管线事实。
+- 样本 XBRL 先跑后的发现（2026-10-21，留到本关口处理，按通用规则优先）。**已处理（2026-10-22，D-063）**：通用规则（目标从第一份 10-K / 10-Q 算起）、BG 的前身 CIK、债务和 capex 的映射、行业组 / 特性 / 公司说明；XBRL 缺口全部有说明，剩下 80 个文本指标缺口等全量 LLM 运行：
+  - 历史短的公司（新上市、分拆、从 20-F 改报 10-K：MDLN、INGM、SW、DOLE、CSTM、CRH、VLTO、BG）达不到 5 年 / 8 季目标：覆盖率目标改从公司第一份 10-K / 10-Q 算起（通用规则），BG 可用 `predecessor_ciks` 补历史。
+  - 季度利息费用：约 15 家的 10-Q 只标净利息（InterestIncomeExpenseNonoperatingNet）或不标，年度来自 10-K 或付现利息；用 `"*"` 说明或通用规则。
+  - capex、债务、营业利润的 tag 变体（ALK、URI、VLO、PHM、CMG、OMC、EME、MTZ、BKR、ROK、COHR）逐个查；BFH 的收入（CREDIT 组）缺。
+  - 弃置义务和环境计提多数只在 10-K 标注（FCX、MLM、NUE 2021 年后停标）：MINING / METALS / CHEMICALS 行业组说明。
 
 **要改的文件**：新 `scripts/build_universe.py`；`config/companies.yaml`（或 `config/universe/`）、`config/industry_groups.yaml`（新组、SIC 范围、`clinical_stage`）、`config/metrics.yaml`（新指标集）、`config/concept_map.yaml`、`config/coverage_notes.yaml`、`config/signal_rules.yaml`（SPAC 事件、现金可支撑阈值）、`config/app_publish.yaml`（新指标类别）；`compute/registry.py`（新单位：盎司、吨、磅、月）；管线事实的 prompt 和阶段；测试、golden 和留出 fixture；文档。
 
@@ -839,11 +858,11 @@ uw-pipeline dq-report --run-id <id>
 - 口径 A 之外，另开阶段：外国发行人（20-F / 40-F，1,124 家，54% 用 IFRS；需要 IFRS 概念映射、20-F 章节切分、6-K 事件、没有 Form 4 和委托书、最多半年数据）；封闭式基金（N-CSR）；ETF 和商品信托。
 
 #### Phase 17 待确认
-1. SPAC 是否在承保范围（不在的话 SPAC_SHELL 组不做；口径 A 去掉 174 家 SPAC 后覆盖率仍约 98%）。
+1. ~~SPAC 是否在承保范围~~：不在（2026-10-20 用户决定，D-055）。
 2. 约 4,000 家名单放在哪个配置文件，谁负责季度审阅。
-3. 临床阶段的收入门槛（1,000 万美元）。
+3. ~~临床阶段的收入门槛~~：1,000 万美元（2026-10-20 用户决定，D-055）。
 4. Tier 1 的范围（Phase 10），以及首次回补的预算上限。
-5. 新单位（盎司、吨、磅）只用于显示，还是也参与同比和阈值。
+5. ~~新单位只用于显示还是也参与同比和阈值~~：显示并计算同比；除现金可支撑外不设阈值信号（2026-10-20 用户决定，D-055）。
 
 ---
 

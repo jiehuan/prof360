@@ -461,3 +461,51 @@ class LegalMatters(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     matters: list[LegalMatterRead]
+
+
+# -- Clinical-stage pipeline (Phase 17c, D-058) -------------------------------------------------
+
+ClinicalPhase = Literal[
+    "preclinical", "phase_1", "phase_1_2", "phase_2", "phase_2_3", "phase_3", "submitted",
+    "approved",
+]  # fmt: skip
+
+
+class ClinicalProgramRead(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(description="Product candidate as written (e.g. 'VK2735', 'olezarsen')")
+    indication: str = Field(description="Disease or condition the program targets, as written")
+    phase: ClinicalPhase
+    quote: str = Field(
+        description="Verbatim passage (<= 400 chars) naming the candidate and its current phase"
+    )
+    next_milestone: str | None = Field(
+        description="The next expected event the excerpt states (e.g. 'Phase 3 topline data', "
+        "'NDA submission', 'PDUFA date'); null if none is stated"
+    )
+    milestone_timing: str | None = Field(
+        description="When, exactly as written (e.g. 'second half of 2026'); null if not stated"
+    )
+    milestone_quote: str | None = Field(
+        description="Verbatim passage (<= 400 chars) stating the milestone and its timing; null"
+    )
+
+
+class ClinicalPrograms(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    programs: list[ClinicalProgramRead]
+
+
+# -- Industry group for a company outside every group (Phase 17g, D-059) ------------------------
+
+
+class IndustryChoice(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    group: str = Field(description="Code of the closest industry group from the list")
+    quote: str = Field(
+        description="Verbatim passage (<= 400 chars) of the business section supporting it"
+    )
+    reason: str = Field(description="One sentence: why this group fits the business")

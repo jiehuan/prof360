@@ -62,6 +62,10 @@ IF OBJECT_ID(N'uw_pipeline.insider_transaction', N'U') IS NOT NULL
     DROP TABLE uw_pipeline.[insider_transaction];
 GO
 
+IF OBJECT_ID(N'uw_pipeline.industry_choice', N'U') IS NOT NULL
+    DROP TABLE uw_pipeline.[industry_choice];
+GO
+
 IF OBJECT_ID(N'uw_pipeline.followup_question_source', N'U') IS NOT NULL
     DROP TABLE uw_pipeline.[followup_question_source];
 GO
@@ -76,6 +80,10 @@ GO
 
 IF OBJECT_ID(N'uw_pipeline.filing_section', N'U') IS NOT NULL
     DROP TABLE uw_pipeline.[filing_section];
+GO
+
+IF OBJECT_ID(N'uw_pipeline.clinical_program', N'U') IS NOT NULL
+    DROP TABLE uw_pipeline.[clinical_program];
 GO
 
 IF OBJECT_ID(N'uw_pipeline.board_composition', N'U') IS NOT NULL

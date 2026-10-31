@@ -1,0 +1,5 @@
+# Park Hotels & Resorts (a lodging REIT) presents an unclassified balance sheet: debt is one
+# line, tagged us-gaap:LongTermDebt (Phase 17e).
+concepts:
+  ltd_unclassified:
+    tags: [us-gaap:LongTermDebt]

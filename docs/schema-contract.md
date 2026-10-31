@@ -49,12 +49,15 @@
 - **期间**：`metric_value` 中 `period_type` 取 `Q` 或 `FY`，并有 `fiscal_year` 和 `fiscal_quarter`（FY 行的季度为 0）。这些都按**公司自己的财年**口径。例如 Macy's 截至 2026-01-31 的年度是 FY2025。`period_end` 是期末日期。
 - **数值单位**：`unit` 取以下几种之一（应用库 `metrics.subtitle` 是对应的显示单位）：
   - `USD`：金额，以美元为单位，不是百万美元（subtitle `USD`）。
+  - `CAD`：金额，以加元为单位（2026-10-30 起，只有用加元申报的 Canopy Growth，D-072）；前端显示为 C$。
   - `ratio`：倍数，例如 0.53 显示为 0.53x（subtitle `x`）。
   - `fraction`：比例，例如 0.049 显示为 4.9%（subtitle `%`）。
   - `days`：天数，例如存货周转天数（subtitle `days`）。
   - `shares`：股数（subtitle `shares`）。
   - `count`：其他数量，例如会员人数、交付车辆、桶油当量 / 天（subtitle `count`，Phase 16）。
+  - `ounces`、`pounds`、`tons`：产量和发货量，例如黄金产量（盎司）、铜产量（磅）、钢材和骨料发货量（吨）（subtitle `oz`、`lb`、`tons`，Phase 17，D-055）。BFF 显示数值时需要支持这三个新的 subtitle。
   - `score`：无量纲的评分，目前只有 Altman Z（subtitle 为空）。
+  - `months`：月数，目前只有临床阶段公司的现金可支撑月数（Liquidity 类别，subtitle `months`，D-058）。
 - **N/M**：`value_status = 'NM'` 时 `value` 为 NULL，前端显示 "N/M"。典型情况是负权益下的 D/E；另外，重述之后无法在同一口径下算出的第四季度及由它算出的指标（增长率、EBITDA 等）也是 N/M（D-052）。
 - **来源标签**：`derivation` 用于前端标注数据来源：
 
@@ -69,6 +72,7 @@
   | FORM4 | 由内部人的 Form 4 汇总（内部人净卖出、高管卖出比例；D-050） | 可加 tooltip "Form 4" |
 
 - **新指标类别（D-050）**：`Reporting Quality`（应收 / 存货周转天数、应计、商誉、债务到期、Altman Z 等）和 `Market & Trading`（市值、波动率、回撤、EPS 超预期、内部人交易）。**2026-10-20 起暂时隐藏（D-054）**：这两个类别的指标不再发布，MatrixData、CompanyMetricDetail、SIC_Preferences 里的相关行已删除；`metric_category` 和 `metrics` 里的定义行保留。BFF / 前端需要隐藏没有指标的类别（与"无数据时隐藏该模块"的约定一致）；如果是按 SIC_Preferences 或 MatrixData 取指标清单，不需要改动。表结构不变，新指标作为 MatrixData 的新行；新事件（股价大跌、内部人集中卖出、13D、诉讼和监管调查）经信号和洞察进入 StrategicRisk，RiskTypes 可能新增 Market、Insider Trading。
+- **Phase 17 行业模块（D-055、D-056）**：表结构不变。新增 15 个行业组（化工材料、采矿、钢铁金属、住宅建筑商、医疗服务、博彩休闲、餐饮等），新指标都在已有的 `Operational` 类别里（2026-10-29 前叫 `Operational Metrics`），作为 MatrixData 的新行；每个新 SIC 代码在 SIC_Preferences 里有自己的指标清单。开发样本把公司数从 107 家增加到 230 家。新的 subtitle 见上面的数值单位。
 
 - **溯源**：`source_document.url` 指向 SEC 或 AV 的原始文件。`insight_evidence` 给出每条洞察的原文片段，以及对应的文件和章节。
 

@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import calendar
 import logging
+import re
 from collections import Counter
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -40,6 +41,9 @@ PERIOD_COLUMNS = [
 # Period length classes in days (end - start). Index = number of fiscal quarters covered.
 # 12/12/12/16-week years (Costco, PepsiCo): a 16-week Q4 is 112 days, 36 weeks 252.
 _DURATION_CLASSES = {1: (75, 115), 2: (160, 195), 3: (245, 285), 4: (350, 380)}
+# Money is additive in any currency (USD, or CAD for Canopy Growth, D-072); shares, per-share
+# amounts and ratios are not.
+_CURRENCY = re.compile(r"[A-Z]{3}")
 # 52/53-week calendars put period ends a few days off the nominal month end.
 _END_TOLERANCE_DAYS = 10
 # A quarter end the company's own 10-Q reports matches within this many days (Phase 16).
@@ -88,8 +92,8 @@ class FiscalCalendar:
 
 def learn_calendar(facts: pd.DataFrame, fye_mmdd: str) -> FiscalCalendar:
     """Infer the fiscal-year label offset from the `fy` companies put on their own 10-K facts.
-    When the latest 10-K year does not end on `fye_mmdd` (SEC's `fiscalYearEnd`, which can be
-    wrong: Brown & Brown's says 0119 for December years), the 10-K's own year end wins."""
+    When the company's 10-K years do not end on `fye_mmdd` (SEC's `fiscalYearEnd`, which can be
+    wrong: Brown & Brown's says 0119 for December years, D-071), the 10-Ks' own year end wins."""
     annual = facts[
         facts["form"].astype(str).str.startswith("10-K")
         & (facts["fp"] == "FY")
@@ -262,7 +266,7 @@ def standardize(
                 continue
 
             direct = {fq: facts_by_period.get((fy, fq, 1)) for fq in range(1, 5)}
-            if next(iter(facts_by_period.values()))["unit"] != "USD":
+            if not _CURRENCY.fullmatch(next(iter(facts_by_period.values()))["unit"]):
                 # Not additive (a weighted-average share count, a per-share amount): quarters
                 # and years only as reported; Q4 = FY - 9M would be meaningless (Phase 15c).
                 for fq, reported in direct.items():

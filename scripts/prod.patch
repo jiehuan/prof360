@@ -1,8 +1,8 @@
 diff --git a/.env.example b/.env.example
-index 527afcbd03102a401c4529903aa89f1fc601c566..326f71f294f0958ae49700124ff1e40c851dc0fe 100644
+index b384848a7a636a8e4efc6509ea885cdf64859dd1..69a83d24adaa4b09ad08157b01f1179cd92bc0fd 100644
 --- a/.env.example
 +++ b/.env.example
-@@ -11,18 +11,10 @@ SEC_USER_AGENT="Your Name your.email@example.com"
+@@ -13,19 +13,10 @@ SEC_USER_AGENT="Your Name your.email@example.com"
  ALPHAVANTAGE_API_KEY=
  # ALPHAVANTAGE_CALLS_PER_MINUTE=75   # premium plan
  # ALPHAVANTAGE_DAILY_QUOTA=0         # 0 = unlimited
@@ -19,6 +19,7 @@ index 527afcbd03102a401c4529903aa89f1fc601c566..326f71f294f0958ae49700124ff1e40c
 -ANTHROPIC_API_KEY=
 -# Required when the API key is not scoped to a workspace
 -# ANTHROPIC_WORKSPACE_ID=
+-# ANTHROPIC_TIMEOUT_SEC=600   # longest one Claude call may take, retries included
 -# Only with LLM_PROVIDER=runware (account needs at least $5 credit)
 -RUNWARE_API_KEY=
  # LLM_ENABLED=false   # rules only
@@ -26,10 +27,10 @@ diff --git a/CLAUDE.md b/CONTRIBUTING.md
 similarity index 93%
 rename from CLAUDE.md
 rename to CONTRIBUTING.md
-index 585561174469c2e7ec7e00c07f677f50c5db9bbc..387700b08aeb3827838d28e0f116cd8f1e06cd0b 100644
+index 1a08e27b045ccc628bb0e7efe9e00c22f9c12bf6..c0397c3fd7a4e73c366fdfff370d8ebadd581bee 100644
 --- a/CLAUDE.md
 +++ b/CONTRIBUTING.md
-@@ -27,11 +27,9 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
+@@ -27,12 +27,10 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
  .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy
  .venv/bin/python scripts/refresh_sec_fixtures.py   # rebuild SEC fixtures from data/raw
  .venv/bin/python scripts/securegpt_smoke.py         # SecureGPT gateway check (work network)
@@ -37,21 +38,22 @@ index 585561174469c2e7ec7e00c07f677f50c5db9bbc..387700b08aeb3827838d28e0f116cd8f
  .venv/bin/python scripts/azure_smoke.py             # Azure SQL + ADLS check (work network)
  scripts/test_mssql.sh --all                          # whole test suite on a local SQL Server (Docker)
  .venv/bin/python scripts/export_app_ddl.py           # regenerate deploy/sql/*.sql after schema changes
+ .venv/bin/python scripts/fetch_logos.py              # config/logos/ for new companies (open network, D-067)
 -.venv/bin/python scripts/compare_models.py --model claude-sonnet-5-5 MAR JPM ENPH  # model A/B
  ```
  
  Architecture, stages, data model and internals: `docs/TECHNICAL.md`.
-@@ -71,5 +69,3 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
+@@ -77,5 +75,3 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
  - Signal and section rules live in `config/signal_rules.yaml` and `company_overrides/*.yaml`
    (`sections:`); every false positive found becomes a test case in `tests/test_signals.py`.
  
 -Release to the SecureGPT-only `prod` branch: `.venv/bin/python scripts/release_prod.py --push`
 -(it stops on a patch conflict or a provider name; fix in its worktree, then `--refresh`).
 diff --git a/config/insights.yaml b/config/insights.yaml
-index 39a6ec1207ede1aeb873d234eb10587b130d5151..e007724f78e3d0c49347fd26477e4485dc176112 100644
+index e148969c6330daa4449e78fcbc820e321b598bbd..58c99b588bbf5c647edc760005e720e84fc1aaaa 100644
 --- a/config/insights.yaml
 +++ b/config/insights.yaml
-@@ -24,7 +24,7 @@ excerpts:
+@@ -25,7 +25,7 @@ excerpts:
  transcripts: 3            # latest earnings calls for behavioral insights
  news_days: 30             # activities in the package
  # Only material news enters the package (Phase 9.4, decisions D-037), so routine news does not
@@ -61,7 +63,7 @@ index 39a6ec1207ede1aeb873d234eb10587b130d5151..e007724f78e3d0c49347fd26477e4485
  news_materiality:
    overall: 0.5
 diff --git a/config/llm.yaml b/config/llm.yaml
-index aa21943ac84a8d9955cac93b47472f9739c390dc..d9e8f2a804e91e6a131faadbe06e83284216b3b3 100644
+index b45f71ddfae33a5b754463de630836987a2cd234..a1c11f251b0db34773ff66ddef8eec2603e25a88 100644
 --- a/config/llm.yaml
 +++ b/config/llm.yaml
 @@ -2,13 +2,8 @@
@@ -80,7 +82,7 @@ index aa21943ac84a8d9955cac93b47472f9739c390dc..d9e8f2a804e91e6a131faadbe06e8328
  # The model is part of every cache key: each profile keeps its own cached results, and switching
  # re-uses them; a new model runs all LLM tasks again once.
  # `synthesis` is the model of the company-level tasks (config/insights.yaml).
-@@ -41,62 +36,6 @@ providers:
+@@ -40,72 +35,6 @@ providers:
        gpt-6-sol-2026-09-22: {tpm: 500000}
      # task_max_tokens: lower max_tokens per task, from this profile's own llm_call
      # output_tokens (reasoning included); see docs/OPERATIONS.md.
@@ -114,6 +116,16 @@ index aa21943ac84a8d9955cac93b47472f9739c390dc..d9e8f2a804e91e6a131faadbe06e8328
 -      followups: 14000         # 6,492
 -      behavioral: 18000        # 7,967
 -      key_insights: 22000      # 9,462
+-  anthropic_haiku:
+-    # Development runs from Phase 16 (user decision, 2026-10-18): Claude Haiku 5.5 in every
+-    # role, for cost. Extractor and tie-breaker differ in effort only, so the two reads of a
+-    # dual check are the same model (less independent than with Sonnet as second model).
+-    extractor: {model: claude-haiku-5-5, effort: low, max_tokens: 8000}
+-    tiebreaker: {model: claude-haiku-5-5, effort: high, max_tokens: 16000}
+-    synthesis: {model: claude-haiku-5-5, effort: high, max_tokens: 32000}
+-    pricing_currency: USD
+-    pricing:
+-      claude-haiku-5-5: [0.1, 0.5]    # prompts <= 100K tokens; longer prompts 0.5 / 2.5
 -  runware:
 -    # Runware model ids. Extractor and tie-breaker are different models, so dual checks and
 -    # signal votes stay two independent reads.
@@ -178,13 +190,13 @@ index cbb941ae3e3c5da587cf6399ab86d05e8125a0d1..00000000000000000000000000000000
 -backoff_initial: 5
 -backoff_max: 120
 diff --git a/config/text_extraction.yaml b/config/text_extraction.yaml
-index f04022bfd39b8e7c1859138f038c60553901477a..7b9e84145fd41b384c590935283d8049ee84e57a 100644
+index 435715c21cac1b595e4b5f0957ecc3d140807d5d..9996ae4590c8328f3be4ab78eb15938fcc61b93d 100644
 --- a/config/text_extraction.yaml
 +++ b/config/text_extraction.yaml
 @@ -2,8 +2,8 @@
  # Every value needs a verbatim quote that contains the number as written; otherwise dropped.
  
- prompt_version: text_metrics_v2
+ prompt_version: text_metrics_v3
 -# Claude Haiku 5.5 at `low` skipped comparative columns and rewrote table headers in quotes
 -# (D-038), so this task runs the extractor at a higher effort.
 +# At `low` effort the extractor skipped comparative columns and rewrote table headers in
@@ -207,7 +219,7 @@ index 26638f2f64a3f45f56c4819754ad965413547e13..634a0767cb348389b10706270c9d9c50
    # Azure SQL + ADLS (D-040; non-secret settings in config/azure.yaml)
    DATABASE_BACKEND: "azure_sql"
 diff --git a/docs/OPERATIONS.md b/docs/OPERATIONS.md
-index 161151730a39f137f6c93c07a523f727428d70d3..80c92347e53efb96b255ce85c422c2468b3df8f3 100644
+index d31edaffb234c2f7c33b11d9e0a7d8166bb67313..ac67a830e274fa056999eb306de761dc6dca05b6 100644
 --- a/docs/OPERATIONS.md
 +++ b/docs/OPERATIONS.md
 @@ -1,6 +1,6 @@
@@ -218,7 +230,7 @@ index 161151730a39f137f6c93c07a523f727428d70d3..80c92347e53efb96b255ce85c422c246
  
  ## 1. 日常运行
  
-@@ -77,7 +77,7 @@
+@@ -78,7 +78,7 @@
  
  ## 7. 详情弹窗数据（Phase 8，D-036）
  
@@ -227,8 +239,8 @@ index 161151730a39f137f6c93c07a523f727428d70d3..80c92347e53efb96b255ce85c422c246
  - 章节的可读名称、公式里概念的名称在 `config/source_labels.yaml`。新增章节代码或概念时在这里加一项，否则界面上会直接显示代码。
  - 银行的 5 年历史由 `config/industry_groups.yaml` 的 `mdna_history_years` 控制，只保存旧 10-K 的 MD&A。
  - 贷款组合的口径在 `config/text_extraction.yaml` 的 `loan_portfolio`。只保留两个模型一致、且原文给出余额的类别，不会从百分比反推余额。
-@@ -87,20 +87,15 @@
- - `publish` 阶段把管线结果写进应用库（`APP_DATABASE_URL`，dev 是 `data/app.db`）。管线不写 `Company.logo` 和用户相关的表。重跑只写有变化的行。
+@@ -89,21 +89,15 @@
+ - 公司 logo（D-067）：`config/logos/<TICKER>.png`（或 .jpg/.gif/.webp，不超过 200 KB，宽约 250 px），`publish` 转成 data URI 写进 `Company.logo`。管线运行时不联网取 logo。新增公司时：在能访问 Wikipedia 的网络上运行 `python scripts/fetch_logos.py`（只取没有文件的公司），打开 `data/reports/logos.html` 看一遍再提交；取不到或取错的，手工放一个文件，并在 `config/logos/SOURCES.yaml` 记 `source: manual` 和来源。取错的也可以在 `config/logos.yaml` 指定 Wikidata 条目、Wikipedia 文章或网站，再 `--ticker XXX` 重取。
  - 应用库的映射规则（指标分类、风险类型、confidence）在 `config/app_publish.yaml`。如果 `RiskTypes` 里出现 "Other"，在 `risk_types` 里加一条规则即可，重新 publish 不需要 LLM。
  - 新闻相关性：公司别名在 `config/companies.yaml` 的 `news_aliases`；排除规则和 LLM 判断在 `config/news.yaml`。新闻阶段的 `pruned` 是按当前规则删掉的旧文章数。
 -- 风险评分在 `scores` 阶段（`config/scores.yaml`）。只有重要新闻进入洞察输入，阈值在 `config/insights.yaml` 的 `news_materiality`；阈值调低会让洞察更常重新生成（每家公司每次约 $0.9）。
@@ -239,21 +251,40 @@ index 161151730a39f137f6c93c07a523f727428d70d3..80c92347e53efb96b255ce85c422c246
 +## 9. LLM：SecureGPT（D-039）
  
 -- `config/llm.yaml` 里每个提供方有一套完整的模型配置（抽取、复核、综合、价格）。用环境变量 `LLM_PROVIDER` 选择，不设时用 `default_provider`（securegpt）：
--  - **securegpt**（公司网络内）：日常调用 gpt-6-luna，复核和综合 gpt-6-sol（D-051；之前是 gpt-5-nano / gpt-5-mini）。gpt-6 的价格暂用第三方列出的 gpt-6-luna 价格（两个模型都按 0.10 / 0.50 每百万 token），拿到 SecureGPT 的价格后替换；sol 实际可能更贵，预算会少算。网关地址、api-version（2025-04-01-preview，结构化输出）、部署名在 `config/securegpt.yaml`。
+-  - **securegpt**（公司网络内）：日常调用 gpt-6-luna，复核和综合 gpt-6-sol（D-051；之前是 gpt-5-nano / gpt-5-mini）。价格（每百万 token，美元）：gpt-6-sol 输入 2.00、输出 10.00；gpt-6-luna 暂用第三方列出的 0.10 / 0.50，拿到 SecureGPT 的价格后替换。网关地址、api-version（2025-04-01-preview，结构化输出）、部署名在 `config/securegpt.yaml`。
 -  - **anthropic**（公司网络外开发和测试）：抽取 Claude Haiku 5.5，复核和综合 Claude Sonnet 5.5，需要 `ANTHROPIC_API_KEY`。
+-  - **anthropic_haiku**（开发运行的默认，D-052）：抽取、复核、综合都用 Claude Haiku 5.5（effort 分别为 low / high / high）。双重检查是同一模型的两种 effort，独立性比 Sonnet 复核低。一次调用（含 SDK 的重试）最长 `ANTHROPIC_TIMEOUT_SEC`（默认 600 秒），超过就算这一项失败。
 -  - **runware**（经 Runware 网关，OpenAI 兼容接口）：抽取 DeepSeek V4 Flash（`deepseek:v4@flash`），复核 Claude Haiku 5.5，综合 Claude Sonnet 5.5，需要 `RUNWARE_API_KEY`，账户余额至少 $5。网关设置在 `config/runware.yaml`；先跑 `python scripts/runware_smoke.py`（每个模型、每种输出方式调用一次，不写数据库）。新增模型时，smoke test 显示只支持 JSON 模式的，写进 `output:`。
 -- 每个提供方的缓存各自保留：切换回来时，输入没变的任务直接用缓存，不产生费用。
-+- 模型配置在 `config/llm.yaml`：日常调用 gpt-6-luna，复核和综合 gpt-6-sol（D-051；之前是 gpt-5-nano / gpt-5-mini），以及价格。gpt-6 的价格暂用第三方列出的 gpt-6-luna 价格（两个模型都按 0.10 / 0.50 每百万 token），拿到 SecureGPT 的价格后替换；sol 实际可能更贵，预算会少算。网关地址、api-version（2025-04-01-preview，结构化输出）、部署名在 `config/securegpt.yaml`。
++- 模型配置在 `config/llm.yaml`：日常调用 gpt-6-luna，复核和综合 gpt-6-sol（D-051；之前是 gpt-5-nano / gpt-5-mini），以及价格（每百万 token，美元）：gpt-6-sol 输入 2.00、输出 10.00；gpt-6-luna 暂用第三方列出的 0.10 / 0.50，拿到 SecureGPT 的价格后替换。网关地址、api-version（2025-04-01-preview，结构化输出）、部署名在 `config/securegpt.yaml`。
  - 凭证只放环境变量：`SECUREGPT_CLIENT_ID`、`SECUREGPT_CLIENT_SECRET`、`SECUREGPT_SUBSCRIPTION_KEY`，环境用 `SECUREGPT_ENV`（dv / pp / pr）。
 -- 切换或更换环境前先跑 `python scripts/securegpt_smoke.py`：每个模型调用一次，并测试网关是否接受 `reasoning_effort`；接受的话把 `send_reasoning_effort` 改为 true。
 +- 更换环境或模型前先跑 `python scripts/securegpt_smoke.py`：每个模型调用一次，并测试网关是否接受 `reasoning_effort`；接受的话把 `send_reasoning_effort` 改为 true。
 +- 模型是缓存键的一部分：换模型后所有 LLM 任务会重新请求一次。
  - 模型输出没通过 schema 校验，或者输入超出模型的上下文长度时，只有这一项失败（记录在 `llm_call.error`），其他项照常运行；校验失败的会在下次运行时重新请求。
--- 在公司网络外开发：本地 `.env` 里设 `LLM_PROVIDER=anthropic`。不要在两个提供方之间来回切换同一个部署环境：每次切换，当前版本的洞察会换成另一个提供方的结果。
+-- 在公司网络外开发：本地 `.env` 里设 `LLM_PROVIDER=anthropic_haiku`（或 `anthropic`）。不要在两个提供方之间来回切换同一个部署环境：每次切换，当前版本的洞察会换成另一个提供方的结果。
  
  ## 10. Azure SQL 和 ADLS（D-040）
  
-@@ -160,5 +155,5 @@
+@@ -147,7 +141,7 @@
+ - 行业组 24 个，每组的模块指标以 XBRL 为主；文本指标（产品收入占比、医疗赔付率、无保险存款、可比销售额等）从 MD&A 和新闻稿读取，两次读取一致才保存。
+ - 财年：季度结束日从公司自己的 10-Q 学习（Costco、PepsiCo 的 12/12/12/16 周）；Alpha Vantage 把这类季度记在月末，业绩匹配允许 25 天误差。
+ - 覆盖率：`coverage-report` 每个缺口要有行业组或公司说明。先看是不是整个行业都缺（写 `groups:`），再写公司说明；写之前在 companyfacts 里核对该 tag 确实不存在。
+-- 首次全量 LLM（Haiku）约 1–2 小时、费用见运行统计（`uw-pipeline runs` 的 `llm=`）。
++- 首次全量 LLM（开发用模型）约 1–2 小时、费用见运行统计（`uw-pipeline runs` 的 `llm=`）。
+ 
+ ## 11. 常见故障
+ 
+@@ -157,7 +151,7 @@
+ | transcripts 显示 `unavailable` | AV 没有这家公司这一季的记录。改过 ticker 的公司，AV 常把旧数据留在旧代码下：在 `config/companies.yaml` 设置 `av_symbols`（新代码在前，例如 SKYD 是 `[SKYD, PSKY]`），下次运行会按新列表重试，新闻也会重新回补 30 天 |
+ | SEC 返回 403/429 | 检查 `SEC_USER_AGENT` 是否包含联系邮箱，限速不要超过 10 次/秒（默认 8）。客户端已经带了重试 |
+ | 日志里出现 `LLM unavailable` | 凭证、环境或部署名有问题（SecureGPT：检查 `SECUREGPT_*` 和 `config/securegpt.yaml`，先跑 smoke test）。此时 signals 会退回纯规则，textmetrics 和 insights 会失败 |
+-| 某家公司的阶段长时间没有日志 | 本地运行时先看电脑是否睡眠过（`pmset -g log | grep Sleep`）：睡眠会冻结进程、断开连接，计时也暂停。长时间运行用 `caffeinate -i uw-pipeline run ...`。否则多半是一次 LLM 请求没有返回：Claude 一次调用最长 `ANTHROPIC_TIMEOUT_SEC`（默认 600 秒，含重试），之后这一项失败、运行继续，下次运行重新请求 |
++| 某家公司的阶段长时间没有日志 | 本地运行时先看电脑是否睡眠过（`pmset -g log | grep Sleep`）：睡眠会冻结进程、断开连接，计时也暂停。长时间运行用 `caffeinate -i uw-pipeline run ...`。否则多半是一次 LLM 请求没有返回：超过 `config/securegpt.yaml` 的 `timeout_sec` 后这一项失败、运行继续，下次运行重新请求 |
+ | 运行一直显示 RUNNING | 进程已经死了。30 分钟后再次启动同一个 job 就会续跑（12 小时之内）；也可以等下一次 CronJob。超过 12 小时的会被关闭，新运行从头开始 |
+ | 退出码 2 | 有运行正在进行（任何 job，运行锁），无需处理；被挡住的 news 会在下一个时间点运行 |
+ | DQ 报出 `quarters_vs_year` 错误 | 通常是公司在新申报里重述了前期数据，新旧口径混在一起（例如 LUV 2025 年的 capex，见 D-035）。要核对原始文件；等下一份 10-K 入库后，口径通常会恢复一致 |
+@@ -173,5 +167,5 @@
  ## 12. 密钥和费用
  
  - 密钥只放在 `.env`（本地，已被 git 忽略）或 OpenShift Secret 中，**不要写进代码、日志或测试数据**。Alpha Vantage 的报错消息里会带 key，客户端已经做了脱敏。
@@ -261,7 +292,7 @@ index 161151730a39f137f6c93c07a523f727428d70d3..80c92347e53efb96b255ce85c422c246
 +- 提交前检查：用 `git grep --cached` 搜索 SecureGPT 订阅 key 和 Alpha Vantage key 的前几位，应该没有任何结果。
  - LLM 调用会按输入哈希缓存，输入不变时不会再次调用。每晚的费用只来自内容发生变化的公司。可以用 `runs` 查看每次运行的估算费用。
 diff --git a/docs/PLAN.md b/docs/PLAN.md
-index 4695137b20769fd3fac89f24a3de0d8cb05e92c1..93df1f20d28e1a18566159750b4d14f1bdf9e6df 100644
+index 9c3ecb87e0a24886667498d84821252b30352fa0..36d9802ebea9acf5e6b8752cd883ec1d3515569c 100644
 --- a/docs/PLAN.md
 +++ b/docs/PLAN.md
 @@ -1,6 +1,6 @@
@@ -337,7 +368,40 @@ index 4695137b20769fd3fac89f24a3de0d8cb05e92c1..93df1f20d28e1a18566159750b4d14f1
  
  **验收**：
  - 9 家公司全部写入应用库；无变化时重跑写入 0 行
-@@ -743,15 +743,15 @@ uw-pipeline dq-report --run-id <id>
+@@ -667,7 +667,7 @@ uw-pipeline dq-report --run-id <id>
+ - [x] 16b 行业组 24 个（新增 12 个，金融类用 FINANCIAL_CORE）；模块指标以 XBRL 为主，文本指标双重读取；单位 `count`、`text_metrics_v3`；季度结束日从公司 10-Q 学习（Costco、PepsiCo）
+ - [x] 16c `coverage_notes.yaml` 的 `groups:`（行业组和 `"*"`）；XBRL 指标缺口全部有说明
+ - [x] 16e golden 值：每个新增或修改的模块 2 家，24 个测试，取自 10-K / 10-Q
+-- [x] 16d 首次全量 LLM（Haiku 5.5，D-052）：$13.32、6,054 次调用、0 错误；insights 和 metricdetail 改短事务后同时 4 家
++- [x] 16d 首次全量 LLM（开发用模型，D-052）：$13.32、6,054 次调用、0 错误；insights 和 metricdetail 改短事务后同时 4 家
+ - [x] 第一次 DQ 复查：Error 37 → 6（重述年度的第四季度 N/M、BlackRock 收入 tag、新闻稿按取整精度比较、更严格的定义、删除过时核对；剩下 6 个已有解释）
+ - [x] 暂时隐藏 Phase 15 超出 BRD 的指标（用户新需求，2026-10-20，D-054）：Reporting Quality、Market、Capital Quality 三组共 21 个指标照常计算，但不发布到应用库、不进任何 LLM 输入、不触发阈值信号；`config/metrics.yaml` 的 `hidden_metric_sets` 删掉一组即恢复
+ - [x] Key Takeaway（用户新需求，2026-10-20，D-053）：insights 阶段第 6 步 `key_takeaways_v1`，2–3 条对专业责任险最重要的要点，不显示链接；应用库新表 `KeyTakeaways`（需要 BFF 新增读取）
+@@ -743,12 +743,12 @@ uw-pipeline dq-report --run-id <id>
+   - 收入排序在几个组不合适：SPAC 没有收入（改按信托规模）；券商组的 SNEX、GLXY 是交易总收入，排在 KKR、Blackstone 前面。
+   - SIC 分错组的要用 `industry` 改：NKE（SIC 3021 橡胶鞋 → 化工）、CTAS（2320 服装 → 耐用消费品，实为制服租赁）、PAA / PAGP / DINO（4610 管道 → 运输，实为能源中游 / 炼油）、COIN（→ CREDIT）、KLAC（3827 → 仪器，实为半导体设备）。这与 Phase 16 的 S&P 100 有 21% 需要改行业的情况一致。
+   - PAYMENTS 只有两家：PayPal、Fiserv、FIS 等按 SIC 不在这个组，要用 `industry` 归入。
+-- 样本用途：每个新模块的 golden 值和文本指标留出公司从样本里取；覆盖率说明、DQ、`audit-insights` 和费用 / 时长都先在样本上做完，再扩到全量。规模与 Phase 16 相当（新增 98 家：Haiku 约 $12，SQLite 上串行约半天）。
++- 样本用途：每个新模块的 golden 值和文本指标留出公司从样本里取；覆盖率说明、DQ、`audit-insights` 和费用 / 时长都先在样本上做完，再扩到全量。规模与 Phase 16 相当（新增 98 家：开发用模型约 $12，SQLite 上串行约半天）。
+ - 计算脚本：`build_universe.py` 增加 `--sample 5`（每组前 N 家），输出审阅用的清单。
+ - **样本做完后冻结，直接对全部公司上线（2026-10-18 用户决定）**：226 家做完、通过 17e 的质量关口之后，不再按公司调整，直接处理全部公司。含义：
+   - 只在配置的通用层面改：行业组的 SIC 映射、指标集、tag 候选（`concept_map.yaml`、`by_group`）、公式、行业组级覆盖率说明、DQ 规则。改动对同一行业的所有公司生效。
+   - 样本外的公司不再加公司级设置：不加 `company_overrides`（如 BLK 的收入 tag）、不加公司级覆盖率说明；`industry` 只用于样本审阅时发现的分错组，以及上线后承保人员报告的问题。
+-  - 样本外的缺口和 DQ 发现只按行业组统计（覆盖率报告和 DQ 报告给出每组的比例），不逐家说明。CLAUDE.md 里"每个缺口都要有说明"的约定改为只适用于样本。
++  - 样本外的缺口和 DQ 发现只按行业组统计（覆盖率报告和 DQ 报告给出每组的比例），不逐家说明。CONTRIBUTING.md 里"每个缺口都要有说明"的约定改为只适用于样本。
+   - 安全网是现有的自动检查：恒等式不符的值不保存（D-042），季度与年度不符、财报新闻稿与 XBRL 不符、重述后口径不一致（N/M，D-052）都会报出来。上线后 DQ 的 Error 按行业组看比例，比例高的说明是通用规则的问题，在通用层面修。
+   - 已知代价：SIC 分错组的公司会拿到不对口的模块（样本里约 21%，大公司比例更高）；公司自己特有的标注方式（如 BLK）会让个别指标缺失或偏差，由 DQ 报出，不逐家修。
+ 
+@@ -818,7 +818,7 @@ uw-pipeline dq-report --run-id <id>
+   - 双重检查：日常模型和复核模型各选一次，一致才用；不一致时用复核模型的结果，并进 `uw-pipeline review`（新类型 INDUSTRY）。
+   - 选择结果存表（模型、prompt 版本、输入哈希、理由），按输入哈希缓存，之后的夜间运行沿用，不每次重选；业务描述变了才重选。
+   - 应用里标注"指标由 AI 按业务描述选择"；人工复核通过的可以写成 `industry`。
+-- 改动：新 prompt `industry_choice_v1.md`、选择结果表、`registry.for_company` 支持存表的选择、review 新类型、测试（fake LLM，无效代码被拒）。CLAUDE.md 的"指标清单不在运行时生成"写明这个例外。
++- 改动：新 prompt `industry_choice_v1.md`、选择结果表、`registry.for_company` 支持存表的选择、review 新类型、测试（fake LLM，无效代码被拒）。CONTRIBUTING.md 的"指标清单不在运行时生成"写明这个例外。
+ - 表结构：管线库加一张选择结果表（重新生成 `deploy/sql`）；应用库不改（方案 A）："指标由 AI 选择"的说明写进应用库已有的 `Methodology` 文本，不加字段。
+ 
+ #### 17e 质量关口
+@@ -881,15 +881,15 @@ uw-pipeline dq-report --run-id <id>
  |---|---|---|---|
  | sec | company、facts、documents | SEC 每秒 10 次（所有 pod 共用一个 IP / User-Agent） | 少量 worker + 全局令牌桶（8/秒） |
  | av | news、transcripts | AV 每分钟配额 | 全局令牌桶 |
@@ -356,7 +420,7 @@ index 4695137b20769fd3fac89f24a3de0d8cb05e92c1..93df1f20d28e1a18566159750b4d14f1
  
  #### 10.E 必须先改的代码结构
  - **事务缩短**：现在每个阶段把一家公司的网络和 LLM 调用都放在同一个数据库事务里，可能持续几分钟。改成"先读输入（短事务）→ 在事务外调用 SEC / AV / LLM → 一次性写结果（短事务）"。这是并行的前提，也是改动最大的一步。
-@@ -761,13 +761,13 @@ uw-pipeline dq-report --run-id <id>
+@@ -899,13 +899,13 @@ uw-pipeline dq-report --run-id <id>
  - **数据库**：SQLite 无法并发写，必须换 Azure SQL；在拿到权限前用本地 Postgres 开发和压测。
  
  #### 10.F LLM 的 Batch 化（夜间）
@@ -373,7 +437,7 @@ index 4695137b20769fd3fac89f24a3de0d8cb05e92c1..93df1f20d28e1a18566159750b4d14f1
  - 结论：23:30 开始，约 03:00 前完成，满足次日早上更新的要求；早上 05:30 的补跑处理失败项和晚到的申报。
  - 首次回补 4,000 家：companyfacts / submissions 用 SEC 批量包，不逐家请求；文件下载约 6 万次请求，约 2 小时；Tier 1 的洞察用 Batch。
  
-@@ -788,7 +788,7 @@ uw-pipeline dq-report --run-id <id>
+@@ -926,7 +926,7 @@ uw-pipeline dq-report --run-id <id>
  
  ---
  
@@ -382,7 +446,7 @@ index 4695137b20769fd3fac89f24a3de0d8cb05e92c1..93df1f20d28e1a18566159750b4d14f1
  
  - 每个 Phase 开始前先列出要改动的文件和计划，等待确认后再动手
  - 单测不得访问外网；新增外部调用必须同时加 fixture
-@@ -807,8 +807,8 @@ uw-pipeline dq-report --run-id <id>
+@@ -945,8 +945,8 @@ uw-pipeline dq-report --run-id <id>
  暂时不用管
  2. Alpha Vantage 订阅档位与限速？
  现在用 free key（存于本地 `.env` 的 `ALPHAVANTAGE_API_KEY`）。之后是75call/min
@@ -394,7 +458,7 @@ index 4695137b20769fd3fac89f24a3de0d8cb05e92c1..93df1f20d28e1a18566159750b4d14f1
  每个SIC在yaml里分开计划，可以同一个SIC用同一批metrics
  5. Adjusted EBITDA 展示计算值即可，还是必须用公司公布值？
 diff --git a/docs/TECHNICAL.md b/docs/TECHNICAL.md
-index ab482b1e7772b372d1b7c361e19cf97c019a3d66..eb032c486cd152c86c41876f74940aff201624f9 100644
+index 3b12f3d76b159027c02a078b5bea8d056cf2bc48..40399b09e770e850ffe1e4e439a407af44cd3db7 100644
 --- a/docs/TECHNICAL.md
 +++ b/docs/TECHNICAL.md
 @@ -9,7 +9,7 @@ done; Phase 10 planned, on hold). Related documents:
@@ -406,7 +470,7 @@ index ab482b1e7772b372d1b7c361e19cf97c019a3d66..eb032c486cd152c86c41876f74940aff
  
  ## 1. What it does
  
-@@ -34,7 +34,7 @@ designed in and tested:
+@@ -35,7 +35,7 @@ designed in and tested:
  flowchart LR
    SEC[SEC EDGAR<br/>submissions, companyfacts,<br/>XBRL instances, documents] --> C
    AV[Alpha Vantage<br/>news, transcripts] --> C
@@ -415,24 +479,24 @@ index ab482b1e7772b372d1b7c361e19cf97c019a3d66..eb032c486cd152c86c41876f74940aff
    C[clients/<br/>rate limits, retries, raw landing] --> RAW[(Raw storage<br/>data/raw or ADLS)]
    C --> S[Stages<br/>jobs/run_*.py]
    S --> P[(Pipeline DB<br/>SQLite or Azure SQL)]
-@@ -52,7 +52,7 @@ swap them for fakes.
+@@ -53,7 +53,7 @@ swap them for fakes.
  | `cli.py` | Typer CLI: `run`, `runs`, `dq-report`, `coverage-report`, `audit-insights`, `review` (list / approve / reject), `init-db` |
  | `settings.py` | Settings from environment / `.env` (pydantic-settings), §13 |
  | `config.py` | Loads companies and industry groups (traits merged into each group's metric sets) |
--| `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing), `alphavantage.py` (quota, key masking), `llm.py` (Claude), `securegpt.py` (Azure OpenAI gateway), `runware.py` (Runware gateway), `openai_chat.py` (shared OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py` |
-+| `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing), `alphavantage.py` (quota, key masking), `llm.py` (client interface), `securegpt.py` (Azure OpenAI gateway), `openai_chat.py` (OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py` |
- | `extract/` | Company metadata, filing lists from submissions |
+-| `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing), `alphavantage.py` (quota, key masking), `llm.py` (Claude), `securegpt.py` (Azure OpenAI gateway), `runware.py` (Runware gateway), `openai_chat.py` (shared OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py`, `logos.py` (Wikidata, Commons, Wikipedia, favicons; used only by `scripts/fetch_logos.py`, D-067) |
++| `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing), `alphavantage.py` (quota, key masking), `llm.py` (client interface), `securegpt.py` (Azure OpenAI gateway), `openai_chat.py` (OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py`, `logos.py` (Wikidata, Commons, Wikipedia, favicons; used only by `scripts/fetch_logos.py`, D-067) |
+ | `extract/` | Company metadata, filing lists from submissions; `logos.py`: where `scripts/fetch_logos.py` finds a logo (D-067) |
+ | `logos.py` | Logo files under `config/logos/`: type and size checks, data URIs that `publish` writes to `Company.logo` (D-067) |
  | `normalize/` | XBRL facts, fiscal periods (restatement basis), HTML to text, table grids (`table_grid.py`), section splitting, news normalisation |
- | `compute/` | Metric registry (from `config/metrics.yaml`), formulas, coverage |
-@@ -212,7 +212,6 @@ versioned with the code.
+@@ -223,7 +223,6 @@ versioned with the code.
  | `scores.yaml` | News and transcript risk scoring |
  | `llm.yaml` | Provider profiles (models, effort, token limits, prices, `rate_limits`, `task_max_tokens`), signal topics, `max_input_chars` |
  | `securegpt.yaml` | Gateway and token URLs per environment, API version, deployments |
 -| `runware.yaml` | Runware base URL, output mode per model, `reasoning_effort` models, retries |
- | `azure.yaml` | Azure SQL server, database, schemas; ADLS account, container, root (placeholders) |
+ | `azure.yaml` | Azure SQL server, database, schemas, ODBC driver, certificate check; ADLS account, container, root; Databricks secret scope and key names per environment (D-057; placeholders) |
  | `app_publish.yaml` | Metric categories, RiskTypes regex rules, confidence rules, trend and loan metrics |
  | `source_labels.yaml` | Readable names for sections and concepts |
-@@ -221,18 +220,16 @@ versioned with the code.
+@@ -232,18 +231,16 @@ versioned with the code.
  
  ## 8. LLM layer
  
@@ -459,7 +523,7 @@ index ab482b1e7772b372d1b7c361e19cf97c019a3d66..eb032c486cd152c86c41876f74940aff
  schema is checked against strict-mode rules in a test). Errors are classified:
  `LLMError` fails one item (refusal, truncation, content filter, request too large);
  `LLMSetupError` (bad credentials, unknown model or deployment) stops LLM use for the run, and
-@@ -241,7 +238,7 @@ the stages fall back to rules (`signals`) or fail (`textmetrics`, `insights`).
+@@ -252,7 +249,7 @@ the stages fall back to rules (`signals`) or fail (`textmetrics`, `insights`).
  
  **Cache** (`enrich/llm.cached_call`). Every call is stored in `llm_call`, keyed by a hash of
  task, prompt version, model, effort, system prompt, user prompt and schema; an unchanged input
@@ -468,10 +532,10 @@ index ab482b1e7772b372d1b7c361e19cf97c019a3d66..eb032c486cd152c86c41876f74940aff
  it is cached; an invalid output is recorded as an error and asked again next run. On SQL Server
  the cache row commits in its own transaction, so a stage that rolls back keeps calls already
  paid for.
-@@ -395,10 +392,8 @@ because the service echoes the key.
+@@ -407,10 +404,8 @@ because the service echoes the key.
  | `AZURE_ENV` | from `azure.yaml` | dv / pp / pr |
- | `AZURE_SQL_CLIENT_ID`, `AZURE_SQL_CLIENT_SECRET` | – | Azure SQL service principal |
- | `ADLS_CLIENT_ID`, `ADLS_CLIENT_SECRET` | – | ADLS service principal |
+ | `AZURE_SQL_CLIENT_ID`, `AZURE_SQL_CLIENT_SECRET` | – | Azure SQL service principal; unset on Databricks: read from the secret scope and key names in `azure.yaml` (D-057) |
+ | `ADLS_CLIENT_ID`, `ADLS_CLIENT_SECRET` | – | ADLS service principal; same fallback |
 -| `LLM_PROVIDER` | `securegpt` | `anthropic` for development off the corporate network; `runware` for DeepSeek + Claude via Runware |
 +| `LLM_PROVIDER` | `securegpt` | Model profile in `config/llm.yaml` |
  | `SECUREGPT_CLIENT_ID`, `SECUREGPT_CLIENT_SECRET`, `SECUREGPT_SUBSCRIPTION_KEY`, `SECUREGPT_ENV` | – | SecureGPT gateway |
@@ -481,7 +545,7 @@ index ab482b1e7772b372d1b7c361e19cf97c019a3d66..eb032c486cd152c86c41876f74940aff
  | `LLM_DAILY_BUDGET` | 25 | New LLM spend per day in the profile's currency; 0 = unlimited |
  | `ALPHAVANTAGE_CALLS_PER_MINUTE`, `ALPHAVANTAGE_DAILY_QUOTA` | 5, 25 | Paid plan: 75 and 0 (unlimited) |
 diff --git a/docs/decisions.md b/docs/decisions.md
-index 1b3fc9cdec610ecd6e5f067c38c668d6a4290a55..82f82b081c9bfc524996d92c8e2c640b6f7d2350 100644
+index 1514c698e56990b2364eebd7b53711d865b11780..0c60548e47461dc3bf7b81249013560de6a6d6e3 100644
 --- a/docs/decisions.md
 +++ b/docs/decisions.md
 @@ -220,7 +220,7 @@ has no exhibit; this is logged.
@@ -782,8 +846,99 @@ index 1b3fc9cdec610ecd6e5f067c38c668d6a4290a55..82f82b081c9bfc524996d92c8e2c640b
  **D-049 Industry membership, tracked metrics and signals, by editing config/ (Phase 18, 2026-10-17).**
  - User request: per company, which industry it belongs to; per industry, which metrics and
    insights it tracks; new metrics and insights; in YAML or JSON. "Insights" means what the
+@@ -1143,14 +1084,14 @@ LLM runs until the end, then one comparison.
+   `compute` from the text values stored earlier, as Altman Z uses the stored market cap: a new
+   text value gets its ratio on the next run. Only metrics of kind `text` are read back; a
+   metric with XBRL and a text fallback (CET1) keeps its XBRL values as formula input.
+-- Claude calls get a 10-minute deadline, retries included (`ANTHROPIC_TIMEOUT_SEC`; the
++- Calls to the development LLM provider get a 10-minute deadline, retries included (the
+   SDK's timeout bounds each socket read, not the call). A call past it fails as one item
+   (retried next run); later calls use a new client. The stalls that prompted it (BAC legal
+   at 15:38, INTC legal at 16:34) began the second the laptop went into idle sleep (pmset
+   log): the process freezes, the connection dies, and timers count only awake time. Long
+   local runs go under `caffeinate -i`; servers don't sleep.
+-- Development LLM runs use Claude Haiku 5.5 only (user decision; profile `anthropic_haiku`):
+-  dual checks then compare Haiku with itself at two efforts, less independent than with Sonnet.
++- Development LLM runs use one small model in every role (user decision, for cost): dual
++  checks then compare that model with itself at two efforts, less independent than two models.
+ - Open: market cap for multi-class companies (Alphabet, Visa, Berkshire) needs per-class
+   share counts; total loans for Wells Fargo and American Express are not tagged with standard
+   tags (company concepts needed); the quarterly list review owner.
+@@ -1199,7 +1140,7 @@ LLM runs until the end, then one comparison.
+   `docs/schema-contract.md`, DDL in `deploy/sql/app_schema_changes.sql`.
+ - Trial on MAR, JPM, ENPH: 3 of 3 bullets kept for each, all specific and dated (e.g. ENPH:
+   three open securities class actions, the newest filed 2026-02-17). Some run past the 35-word
+-  target. Cost: one call per company with changed inputs (about $0.01 on Haiku).
++  target. Cost: one call per company with changed inputs (about $0.01 on the development model).
+ 
+ 
+ **D-054 Hide the Phase 15 metrics beyond the BRD (2026-10-20).**
+diff --git a/docs/phases-15-17-review.md b/docs/phases-15-17-review.md
+index e11940c11a789856854e52827ee709e8fa851d78..6d6fb164d3294033a6e538202a715c1a3b078030 100644
+--- a/docs/phases-15-17-review.md
++++ b/docs/phases-15-17-review.md
+@@ -159,7 +159,7 @@ Phase 16 so far: +2,351 / −217 lines outside test fixtures, of which config +1
+   without an operating income line (pre-tax income + interest + D&A).
+ - **Coverage notes per industry group** (and `"*"` for all companies) instead of one note per
+   company for gaps a whole industry shares.
+-- **Claude call deadline** of 10 minutes per call, retries included (development only). The
++- **LLM call deadline** of 10 minutes per call, retries included (development only). The
+   long stalls in the first run turned out to be the laptop's idle sleep (the process freezes
+   and timers stop); long local runs now go under `caffeinate -i`.
+ - **Restated years.** A fourth quarter is derived as year minus nine months. When a filing in
+@@ -229,8 +229,8 @@ net income including minority interests. No stored value is affected: XBRL wins.
+ | Insights: one at a time / 4 at a time | 3.5 min per company / 88 min for 95 companies |
+ | Metricdetail (4 at a time); publish + DQ | 22 min; 3 min |
+ 
+-**LLM cost of the first full pass: $13.32** (6,054 calls, 0 errors), all on **Claude Haiku
+-5.5** (development only, cost decision). The same tokens at SecureGPT prices (insights at
++**LLM cost of the first full pass: $13.32** (6,054 calls, 0 errors), all on a **small development
++model** (development only, cost decision). The same tokens at SecureGPT prices (insights at
+ gpt-6-sol, the rest at gpt-6-luna) come to about **$116**, roughly $1.1 per company, above the
+ plan's $70–100; second reads at gpt-6-sol would add some, and the gpt-6-luna price is still
+ provisional.
+@@ -362,7 +362,7 @@ When a user asks for a company that maps to no group (e.g. no SIC, BDCs, shippin
+ ## 6. Risks and trade-offs we already see
+ 
+ 1. **Same-model dual checks in development.** Text metrics are kept only when two reads
+-   agree, but in development both reads are Haiku (at two effort levels), so agreement is
++   agree, but in development both reads are the same model (at two effort levels), so agreement is
+    weaker evidence than in production (gpt-6-luna vs gpt-6-sol). Holdout checks against the
+    filings matter more until a production run exists.
+ 2. **SIC is coarse for large companies.** 21% of the S&P 100 needed a manual industry. Phase
+diff --git a/docs/phases-15-17-review.zh.md b/docs/phases-15-17-review.zh.md
+index cbc24a32a3a60ba51eb613dfd35ed400a47bf598..1f7d7eaac7f674c1c3b2f0d19a0743304f569c6f 100644
+--- a/docs/phases-15-17-review.zh.md
++++ b/docs/phases-15-17-review.zh.md
+@@ -122,7 +122,7 @@ Phase 16 到目前为止：不含测试 fixture，+2,351 / −217 行，其中
+ - **新单位 `count`**（会员数、车辆数、桶 / 天），以及新的抽取 prompt 版本 `text_metrics_v3`。
+ - **补充 tag。** 银行和券商的净收入、公用事业的营业收入、利息费用的替代 tag、分开标注的折旧和摊销、几种债务组合、没有营业利润行时的 EBITDA（税前利润 + 利息 + 折旧摊销）。
+ - **覆盖率说明按行业组写**（`"*"` 表示所有公司），整个行业共有的缺口不再逐家写。
+-- **Claude 调用时限**：每次调用（含重试）最长 10 分钟（只用于开发）。第一次全量运行中几次长时间卡住，原因是笔记本电脑空闲睡眠（进程被冻结、计时也停止）；本地长时间运行改用 `caffeinate -i`。
++- **开发用 LLM 调用时限**：每次调用（含重试）最长 10 分钟（只用于开发）。第一次全量运行中几次长时间卡住，原因是笔记本电脑空闲睡眠（进程被冻结、计时也停止）；本地长时间运行改用 `caffeinate -i`。
+ - **重述的年度。** 第四季度 = 年度 − 前九个月。中间如果有文件重述了某个财年（107 家里有 19 家自 2022 年起有重述：分拆、终止经营、列报方式改变），这个季度就吸收了全部重述差额，例如 Bank of America 2025 年第四季度收入算出来是 31,180，按重述后口径约 28,400。现在这样的季度显示 N/M，由它算出的指标也是 N/M；年度用最新的重述值。否决的方案：保留错误值（DQ 看不出来），或用首次报告的年度值来推（存下的年度和季度对不上）。
+ - **BlackRock** 的总收入标注为合同收入；它的 `us-gaap:Revenues`（每年约 110–130 亿美元）不是总收入。用公司级覆盖（`company_overrides/BLK.yaml`）。
+ - **新闻稿与 XBRL 的核对。** 新闻稿写的是取整的标题数字（"净利润 18 亿美元"，XBRL 是 1,777M）时，只要 XBRL 按同样精度取整后等于它，就算一致。新闻稿的定义改为要求表格里的精确数字，并写明是哪一行（"Net income attributable to <公司>"，不是"available to common shareholders"、"profit"或调整后数字）。新的读取不再产生的核对记录会被删除。
+@@ -170,7 +170,7 @@ Phase 16 到目前为止：不含测试 fixture，+2,351 / −217 行，其中
+ | insights：一次一家 / 同时 4 家 | 每家 3.5 分钟 / 95 家 88 分钟 |
+ | metricdetail（同时 4 家）；publish + DQ | 22 分钟；3 分钟 |
+ 
+-**第一次全量的 LLM 费用：$13.32**（6,054 次调用，0 错误），全部用 **Claude Haiku 5.5**（只用于开发，出于费用考虑）。同样的 token 按 SecureGPT 价格算（insights 用 gpt-6-sol，其余用 gpt-6-luna）约 **$116**，每家约 $1.1，高于计划估算的 $70–100；复核调用也用 gpt-6-sol 的话还会多一些，而且 gpt-6-luna 的价格仍是暂定的。
++**第一次全量的 LLM 费用：$13.32**（6,054 次调用，0 错误），全部用**开发用的小模型**（只用于开发，出于费用考虑）。同样的 token 按 SecureGPT 价格算（insights 用 gpt-6-sol，其余用 gpt-6-luna）约 **$116**，每家约 $1.1，高于计划估算的 $70–100；复核调用也用 gpt-6-sol 的话还会多一些，而且 gpt-6-luna 的价格仍是暂定的。
+ 
+ ### 4.7 推迟的内容（记录在 D-052）
+ 
+@@ -257,7 +257,7 @@ Phase 16 到目前为止：不含测试 fixture，+2,351 / −217 行，其中
+ 
+ ## 6. 我们已经看到的风险和取舍
+ 
+-1. **开发环境里双重检查用的是同一个模型。** 文本指标两次读取一致才保存，但开发时两次都是 Haiku（不同的 effort），所以"一致"的证明力比生产环境弱（生产是 gpt-6-luna 对 gpt-6-sol）。在有生产运行之前，对照原文的留出测试更重要。
++1. **开发环境里双重检查用的是同一个模型。** 文本指标两次读取一致才保存，但开发时两次都是同一个模型（不同的 effort），所以"一致"的证明力比生产环境弱（生产是 gpt-6-luna 对 gpt-6-sol）。在有生产运行之前，对照原文的留出测试更重要。
+ 2. **SIC 对大公司太粗。** S&P 100 有 21% 需要人工指定行业。Phase 17 按 SIC 范围映射约 4,000 家，人工审阅少得多；分错组的公司会悄悄拿到错误的模块。
+ 3. **覆盖率说明可能掩盖真正的缺口。** 行业组级和 `"*"` 说明（例如"商誉减值只在发生减值的年份标注"）效率高，但一条宽泛的说明会解释很多行。每条说明写的时候都对照过公司数据，但之后没有机制重新核对。冻结之后（§5.8）只有样本写说明，样本外的缺口只看比例。
+ 4. **诉讼基线。** 公司第一次运行找到的事项是基线，不进复核。新加入的 98 家，现有事项全部是基线。近期且仍在进行的事项仍会出信号，但没有人把它们当作"新事项"复核。
 diff --git a/pyproject.toml b/pyproject.toml
-index 0df7ca8673e935675e5b5c33244a56bf14ec6c8a..a2439538bc086dfd80e431be75dd80f30222ec59 100644
+index 4114bb04a0ac57cc452760338dfac2b3c4e7337e..a47913d8915765fb9d78b8c342f953ffeb4a1041 100644
 --- a/pyproject.toml
 +++ b/pyproject.toml
 @@ -17,7 +17,6 @@ dependencies = [
@@ -1064,10 +1219,10 @@ index e9099d729b8a5183209b4ca17c7a8f49b2ebf3fc..00000000000000000000000000000000
 -if __name__ == "__main__":
 -    sys.exit(main())
 diff --git a/src/uw_pipeline/clients/llm.py b/src/uw_pipeline/clients/llm.py
-index 6a473615156e7ca05bd02a9c194618e2f2f66246..73878448a4f43dd6e6ecb8a4de3dd08430c25145 100644
+index 1735c184ffd0dcfc7d3d28ecfca7d526ff59eb5e..73878448a4f43dd6e6ecb8a4de3dd08430c25145 100644
 --- a/src/uw_pipeline/clients/llm.py
 +++ b/src/uw_pipeline/clients/llm.py
-@@ -1,26 +1,14 @@
+@@ -1,29 +1,14 @@
 -"""LLM client interface and the Claude implementation.
 -
 -Pipeline code depends only on `LLMClient`; switching to the Secure GPT gateway later means
@@ -1078,8 +1233,11 @@ index 6a473615156e7ca05bd02a9c194618e2f2f66246..73878448a4f43dd6e6ecb8a4de3dd084
  
  from __future__ import annotations
  
+-import contextvars
 -import json
  import logging
+-import threading
+-from collections.abc import Callable
  from dataclasses import dataclass
  from typing import Any, Protocol
  
@@ -1096,16 +1254,49 @@ index 6a473615156e7ca05bd02a9c194618e2f2f66246..73878448a4f43dd6e6ecb8a4de3dd084
  
  class LLMError(Exception):
      """The model produced no usable output (refusal, truncation, invalid JSON)."""
-@@ -50,52 +38,3 @@ class LLMClient(Protocol):
+@@ -53,87 +38,3 @@ class LLMClient(Protocol):
          user: str,
          schema: dict[str, Any],
      ) -> LLMResult: ...
 -
 -
 -class ClaudeClient:
--    def __init__(self, api_key: str, *, workspace_id: str | None = None) -> None:
+-    def __init__(
+-        self, api_key: str, *, workspace_id: str | None = None, timeout: float = 600.0
+-    ) -> None:
 -        headers = {"anthropic-workspace-id": workspace_id} if workspace_id else None
--        self._client = anthropic.Anthropic(api_key=api_key, default_headers=headers)
+-        self._make: Callable[[], Any] = lambda: anthropic.Anthropic(
+-            api_key=api_key, default_headers=headers, timeout=timeout
+-        )
+-        self._client = self._make()
+-        self._deadline = timeout
+-
+-    def _within_deadline(self, call: Callable[[Any], Any]) -> Any:
+-        """Run one API call, giving up after `timeout` seconds in all, retries included (the
+-        SDK's timeout bounds each socket read, not the call). A call past the deadline is left
+-        on its own thread and later calls get a fresh client. Timers count only while the
+-        machine is awake: in Phase 16 a laptop's idle sleep froze calls mid-flight (run
+-        locally with `caffeinate -i`)."""
+-        client = self._client
+-        box: dict[str, Any] = {}
+-
+-        def run() -> None:
+-            try:
+-                box["value"] = call(client)
+-            except BaseException as exc:  # handed to the caller below
+-                box["error"] = exc
+-
+-        # Copy the context so log lines keep the run / ticker / stage fields.
+-        worker = threading.Thread(target=contextvars.copy_context().run, args=(run,),
+-                                  name="claude-call", daemon=True)  # fmt: skip
+-        worker.start()
+-        worker.join(self._deadline)
+-        if worker.is_alive():
+-            self._client = self._make()
+-            raise LLMError(f"no answer within {self._deadline:.0f} s")
+-        if "error" in box:
+-            raise box["error"]
+-        return box["value"]
 -
 -    def complete_json(
 -        self,
@@ -1118,19 +1309,21 @@ index 6a473615156e7ca05bd02a9c194618e2f2f66246..73878448a4f43dd6e6ecb8a4de3dd084
 -        schema: dict[str, Any],
 -    ) -> LLMResult:
 -        # Plain dicts below; the SDK's TypedDict overloads are too narrow for mypy here.
--        create: Any = self._client.beta.messages.create
 -        fallback: dict[str, Any] = (
 -            {} if model.startswith(NO_FALLBACK_PREFIXES)
 -            else {"betas": [FALLBACK_BETA], "fallbacks": "default"}
 -        )  # fmt: skip
--        response = create(
--            model=model,
--            max_tokens=max_tokens,
--            output_config={"effort": effort, "format": {"type": "json_schema", "schema": schema}},
--            system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
--            messages=[{"role": "user", "content": user}],
--            **fallback,
--        )
+-        response = self._within_deadline(
+-            lambda client: client.beta.messages.create(
+-                model=model,
+-                max_tokens=max_tokens,
+-                output_config={"effort": effort,
+-                               "format": {"type": "json_schema", "schema": schema}},
+-                system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+-                messages=[{"role": "user", "content": user}],
+-                **fallback,
+-            )
+-        )  # fmt: skip
 -        if response.stop_reason == "refusal":
 -            details = getattr(response, "stop_details", None)
 -            raise LLMError(f"{model} declined: {getattr(details, 'category', None)}")
@@ -1360,7 +1553,7 @@ index 13f4ee53c4c8acaf6af42286fa3c324eaa4efb42..407473e1bbde769e3735fe053d232e2a
  
  - token: POST token_url with Client_Id / Client_Secret / scope / Ocp-Apim-Subscription-Key
 diff --git a/src/uw_pipeline/enrich/llm.py b/src/uw_pipeline/enrich/llm.py
-index 02d6a2981a4f97185488374ee40d5525fb7a398a..6f9f6bb9891f79ef7c0935caaabc8d581495ce4c 100644
+index fc81afcc4174810bd73dd6b390de8168a3583cae..642f9817c881cd7eccae8471e639b1661fa91b87 100644
 --- a/src/uw_pipeline/enrich/llm.py
 +++ b/src/uw_pipeline/enrich/llm.py
 @@ -13,7 +13,6 @@ from datetime import UTC, datetime
@@ -1389,10 +1582,10 @@ index 02d6a2981a4f97185488374ee40d5525fb7a398a..6f9f6bb9891f79ef7c0935caaabc8d58
 -                      "maximum context", "string_above_max_length")  # fmt: skip
 -
 -
- def _store(conn: Connection, row: dict[str, Any]) -> None:
-     """Write an llm_call row. On a server database it commits on its own, so a later failure in
-     the stage's transaction cannot roll back answers already paid for. (SQLite allows a single
-@@ -231,14 +225,6 @@ def cached_call(
+ def _store(conn: Connection, row: dict[str, Any], commit: bool = False) -> None:
+     """Write an llm_call row so that a later failure in the stage cannot roll back answers
+     already paid for. `commit`: the caller works in short transactions (D-052), so the row is
+@@ -243,14 +237,6 @@ def cached_call(
          return None
      except LLMSetupError as exc:
          raise LLMUnavailableError(str(exc)) from exc
@@ -1401,14 +1594,14 @@ index 02d6a2981a4f97185488374ee40d5525fb7a398a..6f9f6bb9891f79ef7c0935caaabc8d58
 -    except anthropic.BadRequestError as exc:
 -        if any(m in str(exc).lower() for m in _REQUEST_TOO_LARGE):
 -            log.warning("%s on %s: request too large: %s", task, spec.model, exc)
--            _store(conn, row | {"error": f"request too large: {str(exc)[:450]}"})
+-            _store(conn, row | {"error": f"request too large: {str(exc)[:450]}"}, commit)
 -            return None
 -        raise LLMUnavailableError(str(exc)) from exc
      usage = {"served_model": result.model, "input_tokens": result.input_tokens,
               "output_tokens": result.output_tokens}  # fmt: skip
      if budget is not None:
 diff --git a/src/uw_pipeline/jobs/stages.py b/src/uw_pipeline/jobs/stages.py
-index 98d1585747272842d740d6c4954feab80879af01..65a7abb4dc231b5875ed74ab4dbc23f8ff2702fc 100644
+index 36678a75ae138eb8a97eefb969241f598e3e1d3a..74e95853c39fc216cf7c7bf4efe3332e77ac1b84 100644
 --- a/src/uw_pipeline/jobs/stages.py
 +++ b/src/uw_pipeline/jobs/stages.py
 @@ -13,10 +13,9 @@ from sqlalchemy import Engine, func, select
@@ -1423,7 +1616,7 @@ index 98d1585747272842d740d6c4954feab80879af01..65a7abb4dc231b5875ed74ab4dbc23f8
  from uw_pipeline.clients.sec import SecClient
  from uw_pipeline.clients.securegpt import SecureGPTClient, load_securegpt_config
  from uw_pipeline.clients.storage import make_storage
-@@ -124,26 +123,15 @@ class StageRunner:
+@@ -124,26 +123,14 @@ class StageRunner:
              s = self.settings
              cfg = load_llm_config(s.config_dir, s.llm_provider)
              client: LLMClient | None = None
@@ -1445,8 +1638,8 @@ index 98d1585747272842d740d6c4954feab80879af01..65a7abb4dc231b5875ed74ab4dbc23f8
 -                    client = RunwareClient(load_runware_config(s.config_dir), api_key=key)
 -            elif s.anthropic_api_key is not None:
 -                client = ClaudeClient(
--                    s.anthropic_api_key.get_secret_value(), workspace_id=s.anthropic_workspace_id
--                )
+-                    s.anthropic_api_key.get_secret_value(), workspace_id=s.anthropic_workspace_id,
+-                    timeout=s.anthropic_timeout_sec,
 +            if s.llm_enabled and s.securegpt_client_id and s.securegpt_client_secret and \
 +                    s.securegpt_subscription_key:  # fmt: skip
 +                gcfg = load_securegpt_config(s.config_dir)
@@ -1455,10 +1648,9 @@ index 98d1585747272842d740d6c4954feab80879af01..65a7abb4dc231b5875ed74ab4dbc23f8
 +                    client_id=s.securegpt_client_id,
 +                    client_secret=s.securegpt_client_secret.get_secret_value(),
 +                    subscription_key=s.securegpt_subscription_key.get_secret_value(),
-+                )  # fmt: skip
+                 )  # fmt: skip
              if client is not None:
                  # Per-model RPM / TPM limits shared by parallel workers (Phase 15i).
-                 if cfg.rate_limits:
 diff --git a/src/uw_pipeline/logs.py b/src/uw_pipeline/logs.py
 index 94ecc992bf23093a6fb4759c975b588b5c46bc3d..3d1554d23f5dac2246d03325b0a4ff12ca877c17 100644
 --- a/src/uw_pipeline/logs.py
@@ -1471,16 +1663,19 @@ index 94ecc992bf23093a6fb4759c975b588b5c46bc3d..3d1554d23f5dac2246d03325b0a4ff12
 +    for noisy in ("httpx", "httpcore"):
          logging.getLogger(noisy).setLevel(logging.WARNING)
 diff --git a/src/uw_pipeline/settings.py b/src/uw_pipeline/settings.py
-index 8fac00900fe9d9e801a58f6d96b4825c8fdc7a6f..9375f47840ffe708a062dabfc6d3fd1d8f147a07 100644
+index 2b90d8c315e26a0323df9e517231fdd2d901bff4..9375f47840ffe708a062dabfc6d3fd1d8f147a07 100644
 --- a/src/uw_pipeline/settings.py
 +++ b/src/uw_pipeline/settings.py
-@@ -52,19 +52,13 @@ class Settings(BaseSettings):
+@@ -52,22 +52,13 @@ class Settings(BaseSettings):
      # Free plan: 25 calls/day. Premium (75 calls/min): set the rate to 75 and the quota to 0.
      alphavantage_calls_per_minute: float = Field(default=5, gt=0)
      alphavantage_daily_quota: int = Field(default=25, ge=0)  # 0 = unlimited
 -    anthropic_api_key: SecretStr | None = None
 -    # Needed for user-level API keys that aren't scoped to a workspace.
 -    anthropic_workspace_id: str | None = None
+-    # The longest one Claude call may take, retries included; past it the call fails and the
+-    # run goes on (Phase 16).
+-    anthropic_timeout_sec: float = Field(default=600.0, gt=0)
 -    # LLM provider profile in config/llm.yaml: securegpt | anthropic | runware
 -    # (default: default_provider).
 +    # LLM provider profile in config/llm.yaml (default: default_provider, securegpt).
@@ -1586,10 +1781,10 @@ index 14bd6359bcc3399921969c03e1079dbb10edcdec..00000000000000000000000000000000
 - }
 -}
 diff --git a/tests/test_config.py b/tests/test_config.py
-index 8f00f58f774c863ed25660bceb2c32a6fa5bf9b8..f9135123e2db9b2b0d0f5b64d991e56938abcdd5 100644
+index 581edd2fd146d1e7cc6934eea661a2bd2f01c382..203dd9aa437a2aed7780e1d9406d47e5e7ad3521 100644
 --- a/tests/test_config.py
 +++ b/tests/test_config.py
-@@ -61,8 +61,7 @@ def test_unknown_group_reference_rejected() -> None:
+@@ -58,8 +58,7 @@ def test_unknown_group_reference_rejected() -> None:
  
  
  def test_llm_provider_profiles(monkeypatch) -> None:
@@ -1599,7 +1794,7 @@ index 8f00f58f774c863ed25660bceb2c32a6fa5bf9b8..f9135123e2db9b2b0d0f5b64d991e569
      import pytest
  
      from uw_pipeline.enrich.llm import load_llm_config
-@@ -75,14 +74,9 @@ def test_llm_provider_profiles(monkeypatch) -> None:
+@@ -72,14 +71,9 @@ def test_llm_provider_profiles(monkeypatch) -> None:
          "gpt-6-luna-2026-09-22", "gpt-6-sol-2026-09-22", "gpt-6-sol-2026-09-22")  # fmt: skip
      assert default.pricing_currency == "EUR"
  
@@ -1618,7 +1813,7 @@ index 8f00f58f774c863ed25660bceb2c32a6fa5bf9b8..f9135123e2db9b2b0d0f5b64d991e569
      with pytest.raises(ValueError, match=r"not in config/llm\.yaml"):
          load_llm_config(CONFIG_DIR, "nope")
 diff --git a/tests/test_llm_cache.py b/tests/test_llm_cache.py
-index fc36e8ae6c56a757faec1a9c2d5996090685f7f3..2f0dae6faf0db56923f73d926d6f8a6fa6356d30 100644
+index ca787fc1c6c4f4b8513dd1dd13bc0c745ba95a20..c2b7d3bbf7b4b3a9a4d7ff310ef99824dce60225 100644
 --- a/tests/test_llm_cache.py
 +++ b/tests/test_llm_cache.py
 @@ -3,13 +3,12 @@ one item, not the whole run."""
@@ -1654,6 +1849,57 @@ index fc36e8ae6c56a757faec1a9c2d5996090685f7f3..2f0dae6faf0db56923f73d926d6f8a6f
  
      with pytest.raises(LLMUnavailableError):
          _call(conn, FakeLLM(bad_setup), user="other")
+diff --git a/tests/test_llm_limits.py b/tests/test_llm_limits.py
+index db6a34289f4972f18ecb0d7551f3f93fc398e3da..3bf9d74db9ff69e52bb4767be4dd24ea1ed0549e 100644
+--- a/tests/test_llm_limits.py
++++ b/tests/test_llm_limits.py
+@@ -83,46 +83,3 @@ def test_task_max_tokens_caps_the_request() -> None:
+             cached_call(conn, inner, spec, task=task, prompt_version="v1", system="s",
+                         user=task, schema={}, now=now)  # fmt: skip
+     assert inner.max_tokens == [4000, 16000]
+-
+-
+-def test_claude_call_gives_up_at_the_deadline() -> None:
+-    """Phase 16: a call that never answers fails at the deadline (the SDK's timeout bounds
+-    each socket read, not the call), and later calls get a fresh client."""
+-    import threading
+-    import time
+-    from types import SimpleNamespace
+-
+-    import pytest
+-
+-    from uw_pipeline.clients.llm import ClaudeClient, LLMError
+-
+-    assert ClaudeClient("test-key", timeout=45)._client.timeout == 45
+-    release = threading.Event()
+-    made: list[object] = []
+-
+-    def make() -> object:
+-        hang = not made  # the first client's connection stops sending
+-
+-        def create(**_: object) -> object:
+-            if hang:
+-                release.wait(5)
+-            return SimpleNamespace(
+-                stop_reason="end_turn", model="m",
+-                content=[SimpleNamespace(type="text", text='{"ok": 1}')],
+-                usage=SimpleNamespace(input_tokens=1, output_tokens=1),
+-            )  # fmt: skip
+-
+-        client = SimpleNamespace(beta=SimpleNamespace(messages=SimpleNamespace(create=create)))
+-        made.append(client)
+-        return client
+-
+-    claude = ClaudeClient("test-key", timeout=0.2)
+-    claude._make, claude._client = make, make()
+-    call = dict(model="m", effort="low", max_tokens=10, system="s", user="u", schema={})
+-    start = time.monotonic()
+-    with pytest.raises(LLMError, match="no answer within"):
+-        claude.complete_json(**call)  # type: ignore[arg-type]
+-    assert time.monotonic() - start < 2
+-    assert claude.complete_json(**call).output == {"ok": 1}  # type: ignore[arg-type]
+-    assert len(made) == 2
+-    release.set()
 diff --git a/tests/test_phase3_stages.py b/tests/test_phase3_stages.py
 index 3617a480c1b01c7b2bd98b12af71c441695d4c3a..87cb055341ba0ace3abc55216d20eb1528e39da0 100644
 --- a/tests/test_phase3_stages.py

@@ -112,6 +112,10 @@ prompt_version: signals_v1
 tiebreak_prompt_version: tiebreak_v2
 # Longer inputs are not sent (never silently truncated); those documents stay rule-only.
 max_input_chars: 120000
+# Model calls of one company asked at a time where they do not depend on each other (D-062:
+# insights' behavioral and strategic syntheses, textmetrics' document reads). The per-model
+# `rate_limits` still apply across all of them.
+company_calls: 3
 
 # Judgment questions ("topics") asked of each section; only these sections are sent.
 # Answers: leadership:* -> departure | appointment | succession (both) | none; listing -> adverse |

@@ -90,24 +90,37 @@ def split_items(text: str, form: str) -> list[Section]:
 
 
 def section_by_headings(text: str, code: str, start: str, end: str) -> Section | None:
-    """From the first line matching `start` to the first later line matching `end`."""
+    """From a line matching `start` to the first later line matching `end`: the longest such
+    block. A table of contents lists the same headings, so the real section is the longest;
+    page headers repeat the start heading, so of several starts reaching the same end the
+    first counts."""
     start_re = re.compile(start, re.I | re.M)
     end_re = re.compile(end, re.I | re.M)
+    by_end: dict[int, int] = {}  # end offset -> first start reaching it
     for m in start_re.finditer(text):
         stop = end_re.search(text, m.end())
         if stop:
-            return Section(code, m.start(), stop.start(), text[m.start() : stop.start()].strip())
-    return None
+            by_end.setdefault(stop.start(), m.start())
+    if not by_end:
+        return None
+    finish, begin = max(by_end.items(), key=lambda kv: kv[0] - kv[1])
+    return Section(code, begin, finish, text[begin:finish].strip())
 
 
 def apply_rules(
-    text: str, sections: list[Section], rules: Mapping[str, tuple[str, str]]
+    text: str, sections: list[Section], rules: Mapping[str, tuple[str, str]], form: str
 ) -> list[Section]:
-    """Replace (or add) sections located by configured heading rules."""
+    """Replace (or add) sections located by configured heading rules for this form. A section
+    the item split found at the same place under another code is dropped (a filing whose MD&A
+    precedes its "Part I" heading gets it split as Part II Item 2)."""
+    prefix = "10K-" if form.startswith("10-K") else "10Q-"
     by_code = {s.code: s for s in sections}
     for code, (start, end) in rules.items():
+        if not code.startswith(prefix):
+            continue
         found = section_by_headings(text, code, start, end)
         if found is not None:
+            by_code = {c: s for c, s in by_code.items() if s.start != found.start}
             by_code[code] = found
     return sorted(by_code.values(), key=lambda s: s.start)
 

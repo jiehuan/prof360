@@ -102,9 +102,10 @@ def instance_name(names: list[str], primary_doc: str) -> str | None:
     return plain[0] if plain else None
 
 
-def exhibit_by_type(index_html: bytes, doc_type: str) -> str | None:
+def exhibit_by_type(index_html: bytes, doc_type: str, *, numbered: bool = False) -> str | None:
     """File name of the document with the given type (e.g. "EX-99.1") in a filing's
-    `<accession>-index.html` page. File names alone are unreliable ("er-6302026xerdoc.htm")."""
+    `<accession>-index.html` page. File names alone are unreliable ("er-6302026xerdoc.htm").
+    `numbered`: "EX-13" also matches "EX-13.1"."""
     doc = lxml.html.document_fromstring(index_html)
     rows = cast(
         list[lxml.html.HtmlElement], doc.xpath("//table[contains(@class, 'tableFile')]//tr")
@@ -113,7 +114,8 @@ def exhibit_by_type(index_html: bytes, doc_type: str) -> str | None:
         cells = cast(list[lxml.html.HtmlElement], row.xpath("./td"))
         if len(cells) < 4:
             continue
-        if cells[3].text_content().strip().upper() == doc_type.upper():
+        kind = cells[3].text_content().strip().upper()
+        if kind == doc_type.upper() or (numbered and kind.startswith(doc_type.upper() + ".")):
             links = cast(list[str], cells[2].xpath(".//a/@href"))
             if links:
                 return str(links[0]).rsplit("/", 1)[-1].split("?")[0]

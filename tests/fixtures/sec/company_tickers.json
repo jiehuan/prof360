@@ -173,5 +173,100 @@
   "cik_str": 2041610,
   "ticker": "PSKY",
   "title": "Skydance Corp"
+ },
+ "35": {
+  "cik_str": 63908,
+  "ticker": "MCD",
+  "title": "MCDONALDS CORP"
+ },
+ "36": {
+  "cik_str": 1164727,
+  "ticker": "NEM",
+  "title": "NEWMONT Corp /DE/"
+ },
+ "37": {
+  "cik_str": 829224,
+  "ticker": "SBUX",
+  "title": "STARBUCKS CORP"
+ },
+ "38": {
+  "cik_str": 860730,
+  "ticker": "HCA",
+  "title": "HCA Healthcare, Inc."
+ },
+ "39": {
+  "cik_str": 831259,
+  "ticker": "FCX",
+  "title": "FREEPORT-MCMORAN INC"
+ },
+ "40": {
+  "cik_str": 882184,
+  "ticker": "DHI",
+  "title": "HORTON D R INC /DE/"
+ },
+ "41": {
+  "cik_str": 1300514,
+  "ticker": "LVS",
+  "title": "LAS VEGAS SANDS CORP"
+ },
+ "42": {
+  "cik_str": 1751788,
+  "ticker": "DOW",
+  "title": "DOW INC."
+ },
+ "43": {
+  "cik_str": 1489393,
+  "ticker": "LYB",
+  "title": "LyondellBasell Industries N.V."
+ },
+ "44": {
+  "cik_str": 794170,
+  "ticker": "TOL",
+  "title": "Toll Brothers, Inc."
+ },
+ "45": {
+  "cik_str": 352915,
+  "ticker": "UHS",
+  "title": "UNIVERSAL HEALTH SERVICES INC"
+ },
+ "46": {
+  "cik_str": 1675149,
+  "ticker": "AA",
+  "title": "Alcoa Corp"
+ },
+ "47": {
+  "cik_str": 789570,
+  "ticker": "MGM",
+  "title": "MGM Resorts International"
+ },
+ "48": {
+  "cik_str": 764065,
+  "ticker": "CLF",
+  "title": "CLEVELAND-CLIFFS INC."
+ },
+ "49": {
+  "cik_str": 1607678,
+  "ticker": "VKTX",
+  "title": "Viking Therapeutics, Inc."
+ },
+ "50": {
+  "cik_str": 1582313,
+  "ticker": "XENE",
+  "title": "Xenon Pharmaceuticals Inc."
+ },
+ "51": {
+  "cik_str": 1045609,
+  "ticker": "PLD",
+  "title": "Prologis, Inc."
+ },
+ "52": {
+  "cik_str": 29989,
+  "ticker": "OMC",
+  "title": "OMNICOM GROUP INC."
+ },
+ "53": {
+  "cik_str": 1617406,
+  "ticker": "PK",
+  "title": "Park Hotels & Resorts Inc."
  }
 }

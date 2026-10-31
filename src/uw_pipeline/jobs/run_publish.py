@@ -25,6 +25,7 @@ from sqlalchemy import Connection, Engine, desc, select, true
 
 from uw_pipeline.compute.registry import MetricDef, Registry
 from uw_pipeline.config import CompanyConfig, IndustryConfig
+from uw_pipeline.enrich.industry_choice import usable_choice
 from uw_pipeline.enrich.metric_detail import definition_lines, period_label, shown_rows
 from uw_pipeline.enrich.package import fmt_value
 from uw_pipeline.enrich.sources import SourceLabels, SourceResolver
@@ -83,6 +84,12 @@ from uw_pipeline.schema_app import (
 )
 
 log = logging.getLogger(__name__)
+
+
+AI_GROUP_NOTE = (
+    "Metrics for this company were chosen by AI from its business description "
+    "(the company's SIC code maps to no industry group)."
+)
 
 
 class RiskTypeRule(BaseModel):
@@ -152,7 +159,7 @@ class Stats:
 def value_point(r: Mapping[str, Any], unit: str, source: str | None = None) -> dict[str, Any]:
     """A metric value as a data point of a modal: `label` and `text` as shown, and the numbers
     (value null when not meaningful, as in MatrixData) so the front end need not parse text."""
-    shown = fmt_value(r["value"], unit, r["value_status"])
+    shown = fmt_value(r["value"], r.get("unit") or unit, r["value_status"])
     ok = r["value_status"] != "NM" and r["value"] is not None
     fy = r["period_type"] == "FY"
     return {
@@ -195,6 +202,8 @@ class Publisher:
         hidden: frozenset[str] = frozenset(),
     ) -> None:
         self.src, self.w, self.cfg, self.labels, self.row = src, w, cfg, labels, row
+        # Phase 17g (D-059): the group came from the LLM, not the SIC code or companies.yaml.
+        self.ai_group = usable_choice(src, row["company_id"]) == row["industry_group"]
         self.company_id: int = row["company_id"]
         self.cik: str = row["cik"]
         self.p = f"{self.cik}:"  # key prefix of this company's objects
@@ -497,8 +506,11 @@ class Publisher:
                 for r in shown_rows(values.get(code, []))
             ]  # fmt: skip
             key = f"{self.p}{code}"
+            method = d["methodology"]
+            if self.ai_group:  # D-059: the company's metrics were chosen by the LLM
+                method = f"{method} {AI_GROUP_NOTE}".strip() if method else AI_GROUP_NOTE
             self.w.put(CompanyMetricDetail, key, {
-                "CompanyId": self.app_company, "metric_id": mid, "Methodology": d["methodology"],
+                "CompanyId": self.app_company, "metric_id": mid, "Methodology": method,
                 "DataSources": _json(sources), "DataPoints": _json(points),
                 "UnderwritingRelevance": rel.get(code), "UpdatedAt": d["updated_at"],
             })  # fmt: skip
@@ -766,7 +778,7 @@ def publish_company(
     now: datetime,
 ) -> tuple[Stats, AppWriter]:
     row = company_row(src, cfg)
-    group = industry.groups[row["industry_group"]]
+    group = industry.group_of(row["industry_group"], cfg)
     defs = registry.for_company(cfg.ticker, group).metrics
     names = {m.code: m.display_name for m in defs} | labels.concepts
     w = AppWriter(dst, now, scope=f"{row['cik']}:")

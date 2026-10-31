@@ -38,6 +38,7 @@
 5. 首次运行的 LLM 费用约为每家公司 $1.5–3。
 5a. Logo：见第 8 节（`scripts/fetch_logos.py` 或手工放文件）。
 6. MVP 阶段每个 SIC 只放一家公司（D-007）；Phase 16 起加入 S&P 100（2026-09-21 的名单，D-052），名单每季度对照指数核对一次。
+7. Phase 17 起：`python scripts/build_universe.py --sample 5` 生成公司范围（口径 A 去掉 SPAC，`data/reports/universe-<日期>.md` / `.csv`，列出每家的排除原因、行业组和覆盖率）和开发样本（每组收入最大的 5 家，`sample-<日期>.md` / `.yaml`）。读约 6,000 家的 submissions，约 45 分钟；同一天重跑会接着读。样本人工审阅：SIC 分错组的写 `industry` 和原因，再跑一次（该组会补到 5 家），然后把 `.yaml` 里的新公司加进 `companies.yaml`（D-055）。每季度重跑一次，对照 `companies.yaml outside the universe` 一节处理退市、改报 20-F 的公司。
 
 ## 3. 新增指标或修改指标集合
 
@@ -67,6 +68,9 @@
 - `concepts`：替换某个概念的候选 tag。可以写公司扩展 taxonomy 或带维度的 tag，管线会从每份申报的 XBRL instance 里读取，参考 `MAR.yaml` 中的 fee revenue。
 - `metrics`：公司专属指标。
 - `sections`：标准的 Item 标题切不出章节时，用起止标题的正则来定位，参考 `JPM.yaml` 中的 MD&A。
+  - 规则只用于同类表格（`10K-` 代码只用于 10-K，`10Q-` 只用于 10-Q）。从匹配 `start` 的行到其后第一个匹配 `end` 的行，取最长的一段；多个 `start` 到达同一个 `end` 时取第一个（页眉会重复标题）。目录也会列出同样的标题：如果目录里的 `start` 会一直延伸到正文的 `end`，就在 `end` 里加上目录中的下一项（参考 `USB.yaml`）。
+  - 在加规则前，先把文档转成文本看标题行；改完用 `uw-pipeline run --ticker X --stage documents --force` 重切，再查 `filing_section` 的长度。银行的规则见 `BAC`、`BNY`、`C`、`MS`、`USB`、`WFC`（D-060）。
+- 10-K 本身只是封套、正文在年报附件（Exhibit 13）里的公司（Wells Fargo、U.S. Bancorp、BNY）不需要配置：MD&A 不到 3,000 字符时，documents 阶段从申报索引里找 `EX-13` 文件，把它作为这份申报的 PRIMARY 文档，10-K 本身保留为 `10-K-WRAPPER`（D-060）。
 
 ## 6. 修改 prompt 或 grounding 规则
 
@@ -138,7 +142,7 @@
 - 13D：EDGAR 的列表里也有公司自己就其他发行人提交的 13D，只保留 index headers 里 SUBJECT COMPANY 是本公司的。
 - 诉讼和监管调查：`legal` 阶段读最新 10-K 和之后的 10-Q，输入不变不重复调用。一家公司第一次运行找到的事项是基线；之后新出现的（或换了名字的已知事项）进 `uw-pipeline review`（类型 MATTER）。重复的旧事项驳回即可：被驳回的不再出信号，也不进洞察。两个模型类型不一致的不保存（日志里的 `unpaired`），多半是本来就有两种读法的事项。
 - 委托书 `board_v2`：审计费、双重股权、CEO 任期。JPM 的审计费是文字叙述，两个模型读法不同时为空，属于正常。
-- 并行：`config/jobs.yaml` 的 `parallel` 设各阶段同时处理几家公司，在 Azure SQL 上对所有阶段生效；在本地 SQLite 文件上只对 insights 和 metricdetail 生效（短事务：等待模型时不占写锁，D-052），其他阶段一次一家。SecureGPT 每个部署的 TPM 设为 50 万（`config/llm.yaml` 的 `rate_limits`，D-051）；RPM 网关团队给出后再加。出现 429 失败或数据库死锁时，先调小该阶段的 workers。
+- 并行：`config/jobs.yaml` 的 `parallel` 设各阶段同时处理几家公司，在 Azure SQL 上对所有阶段生效；在本地 SQLite 文件上只对调用 LLM 的阶段生效（textmetrics、governance、legal、clinical、industry、signals、scores、insights、metricdetail；短事务：等待模型时不占写锁，D-052、D-061），其他阶段一次一家。news 不并行（Alpha Vantage 配额）。同一家公司内互不依赖的调用（insights 的 behavioral 和 strategic、textmetrics 的各文件）同时发出，个数由 `config/llm.yaml` 的 `company_calls` 控制（D-062）；总并发约为 workers × company_calls，仍受 `rate_limits` 限制。新增调用 LLM 的阶段时，用 `short_transactions(engine)` 打开每家公司的连接，加进 `SHORT_TRANSACTION_STAGES`，并在 `tests/test_short_transactions.py` 加一个用例。SecureGPT 每个部署的 TPM 设为 50 万（`config/llm.yaml` 的 `rate_limits`，D-051）；RPM 网关团队给出后再加。出现 429 失败或数据库死锁时，先调小该阶段的 workers。
 - 按任务的 max_tokens（`task_max_tokens`，每个提供方各自配置）：用 `SELECT task, model, MAX(output_tokens) FROM llm_call GROUP BY task, model` 看最大输出（gpt-6 含推理 token），取约 2 倍。它不在缓存 key 里，改了不会重复调用；某任务出现截断（`llm_call.error`）时调大。
 
 ## 10d. S&P 100（Phase 16，D-052）
@@ -146,8 +150,16 @@
 - 公司：9 家 MVP 公司加 S&P 100（共 107 家）。SIC 太粗或分错组的 22 家在 `companies.yaml` 用 `industry` 指定行业（例如 AMZN、GOOGL 归 SOFTWARE_INTERNET，V、MA 归 PAYMENTS），每家写了原因。
 - 行业组 24 个，每组的模块指标以 XBRL 为主；文本指标（产品收入占比、医疗赔付率、无保险存款、可比销售额等）从 MD&A 和新闻稿读取，两次读取一致才保存。
 - 财年：季度结束日从公司自己的 10-Q 学习（Costco、PepsiCo 的 12/12/12/16 周）；Alpha Vantage 把这类季度记在月末，业绩匹配允许 25 天误差。
-- 覆盖率：`coverage-report` 每个缺口要有行业组或公司说明。先看是不是整个行业都缺（写 `groups:`），再写公司说明；写之前在 companyfacts 里核对该 tag 确实不存在。
+- 覆盖率：`coverage-report` 每个缺口要有行业组或公司说明。先看是不是整个行业都缺（写 `groups:`），再写公司说明；写之前在 companyfacts 里核对该 tag 确实不存在。同一特性的公司共有的缺口（如临床阶段公司没有收入、没有借款）写在 `traits:` 下（D-063）。新上市、分拆或从 20-F 改报 10-K 的公司，目标从它第一份 10-K / 10-Q 算起，不需要说明。不要为补缺口加通用的 tag 回退：先查回退会不会让别的公司同一指标在不同期间混用两种口径（D-063 的 long_term_debt 教训）。
 - 首次全量 LLM（Haiku）约 1–2 小时、费用见运行统计（`uw-pipeline runs` 的 `llm=`）。
+
+## 10e. Phase 17：公司范围、样本和行业模块（D-055、D-056、D-058）
+
+- 公司范围和样本：`python scripts/build_universe.py --sample 5`（见第 2 节第 7 条）。SIC 分错组的样本公司写进 `config/universe.yaml`（`industry`，写原因），加进 `companies.yaml` 时一起带上。
+- 行业组 39 个；7 个模块组（化工材料、采矿、钢铁金属、住宅建筑商、医疗服务、博彩休闲、餐饮）有自己的 XBRL 和文本指标。产量和发货量的单位是盎司、磅、吨，现金可支撑是月。
+- 临床阶段公司：`python scripts/build_universe.py --clinical 20` 列出候选（生命科学 SIC、收入低于 1,000 万美元或没有收入 tag）。逐家确认后在 `companies.yaml` 写 `traits: [clinical_stage]`：加现金可支撑月数、研发 / 运营支出，去掉毛利率、研发 / 收入等产品指标，并由 `clinical` 阶段读取在研项目（阶段、下一个节点和时间）。注意：收入一年跳到 20 倍以上的公司（授权收入，例如 Arrowhead），报告会标"set aside"，这类不是临床阶段。每季度重建范围时复核。
+- 现金可支撑少于 12 个月会发出信号 `short_cash_runway`。
+- 行业组以外的公司（SIC 不属于任何组，也没有 `industry`）：`industry` 阶段让两个模型根据 10-K 第 1 项从已有行业组里选一个。一致就用；不一致时用复核模型的选择，并进 `uw-pipeline review`（类型 INDUSTRY），驳回后公司回到默认组，需要时人工写 `industry`。应用里这类公司的指标说明会注明"由 AI 根据业务描述选择"（D-059）。
 
 ## 11. 常见故障
 

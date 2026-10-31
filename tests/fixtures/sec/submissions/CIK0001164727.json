@@ -1,0 +1,253 @@
+{
+ "cik": "0001164727",
+ "entityType": "operating",
+ "sic": "1040",
+ "sicDescription": "Gold and Silver Ores",
+ "ownerOrg": "01 Energy & Transportation",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "NEWMONT Corp /DE/",
+ "tickers": [
+  "NEM",
+  "NEMCL"
+ ],
+ "exchanges": [
+  "NYSE",
+  "OTC"
+ ],
+ "ein": "841611629",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "6900 E LAYTON AVE",
+   "street2": "SUITE 700",
+   "city": "DENVER",
+   "stateOrCountry": "CO",
+   "zipCode": "80237",
+   "stateOrCountryDescription": "CO",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "6900 E LAYTON AVE",
+   "street2": "SUITE 700",
+   "city": "DENVER",
+   "stateOrCountry": "CO",
+   "zipCode": "80237",
+   "stateOrCountryDescription": "CO",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "303-863-7414",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "NEWMONT GOLDCORP CORP /DE/",
+   "from": "2019-04-22T00:00:00.000Z",
+   "to": "2020-01-03T00:00:00.000Z"
+  },
+  {
+   "name": "NEWMONT MINING CORP /DE/",
+   "from": "2002-03-12T00:00:00.000Z",
+   "to": "2019-04-16T00:00:00.000Z"
+  },
+  {
+   "name": "DELTA HOLDCO CORP",
+   "from": "2002-02-15T00:00:00.000Z",
+   "to": "2002-02-05T00:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001936354-26-000022",
+    "0001994131-26-000012",
+    "0001959173-26-007176",
+    "0001959173-26-007168",
+    "0002150921-26-000004",
+    "0001164727-26-000036",
+    "0001164727-26-000019",
+    "0001164727-26-000010",
+    "0001164727-25-000046"
+   ],
+   "filingDate": [
+    "2026-10-02",
+    "2026-10-02",
+    "2026-10-01",
+    "2026-10-01",
+    "2026-09-03",
+    "2026-07-23",
+    "2026-04-23",
+    "2026-02-19",
+    "2025-10-23"
+   ],
+   "reportDate": [
+    "2026-10-01",
+    "2026-10-01",
+    "",
+    "",
+    "2026-09-02",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-02T20:36:04.000Z",
+    "2026-10-02T20:32:18.000Z",
+    "2026-10-01T15:27:13.000Z",
+    "2026-10-01T14:28:28.000Z",
+    "2026-09-03T20:42:30.000Z",
+    "2026-07-23T20:46:06.000Z",
+    "2026-04-23T20:31:21.000Z",
+    "2026-02-19T21:18:40.000Z",
+    "2025-10-23T20:58:39.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "33",
+    "33",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "4",
+    "144",
+    "144",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "001-31240",
+    "001-31240",
+    "",
+    "001-31240",
+    "001-31240",
+    "001-31240",
+    "001-31240"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "261429693",
+    "261429415",
+    "",
+    "261197603",
+    "26889133",
+    "26654704",
+    "251413693"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "144",
+    "144",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    5063,
+    5072,
+    6422,
+    5929,
+    5370,
+    24416156,
+    22635370,
+    282630784,
+    19167969
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xsl144X01/primary_doc.xml",
+    "xsl144X01/primary_doc.xml",
+    "xslF345X06/form4.xml",
+    "nem-20260630.htm",
+    "nem-20260331.htm",
+    "nem-20251231.htm",
+    "nem-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "",
+    "",
+    "STATEMENT OF CHANGES IN BENEFICIAL OWNERSHIP OF SECURITIES",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

@@ -1,0 +1,246 @@
+{
+ "cik": "0000764065",
+ "entityType": "operating",
+ "sic": "1000",
+ "sicDescription": "Metal Mining",
+ "ownerOrg": "01 Energy & Transportation",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "CLEVELAND-CLIFFS INC.",
+ "tickers": [
+  "CLF"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "341464672",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "OH",
+ "stateOfIncorporationDescription": "OH",
+ "addresses": {
+  "mailing": {
+   "street1": "200 PUBLIC SQUARE",
+   "street2": "STE. 3300",
+   "city": "CLEVELAND",
+   "stateOrCountry": "OH",
+   "zipCode": "44114-2315",
+   "stateOrCountryDescription": "OH",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "200 PUBLIC SQUARE",
+   "street2": "STE. 3300",
+   "city": "CLEVELAND",
+   "stateOrCountry": "OH",
+   "zipCode": "44114-2315",
+   "stateOrCountryDescription": "OH",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "216-694-5700",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "CLIFFS NATURAL RESOURCES INC.",
+   "from": "2008-09-03T00:00:00.000Z",
+   "to": "2017-08-14T00:00:00.000Z"
+  },
+  {
+   "name": "CLEVELAND CLIFFS INC",
+   "from": "1994-03-25T00:00:00.000Z",
+   "to": "2008-10-15T00:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000764065-26-000115",
+    "0000764065-26-000112",
+    "0000764065-26-000109",
+    "0000764065-26-000108",
+    "0000764065-26-000105",
+    "0000764065-26-000100",
+    "0000764065-26-000070",
+    "0000764065-26-000025",
+    "0000764065-25-000149"
+   ],
+   "filingDate": [
+    "2026-10-20",
+    "2026-10-19",
+    "2026-10-02",
+    "2026-10-02",
+    "2026-09-18",
+    "2026-07-23",
+    "2026-04-21",
+    "2026-02-09",
+    "2025-10-22"
+   ],
+   "reportDate": [
+    "2026-09-30",
+    "2026-10-19",
+    "2026-10-01",
+    "2026-10-01",
+    "",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-20T20:10:00.000Z",
+    "2026-10-19T14:52:29.000Z",
+    "2026-10-03T03:17:56.000Z",
+    "2026-10-03T03:17:50.000Z",
+    "2026-09-19T00:02:51.000Z",
+    "2026-07-24T00:08:50.000Z",
+    "2026-04-22T00:43:08.000Z",
+    "2026-02-10T02:28:05.000Z",
+    "2025-10-23T00:24:15.000Z"
+   ],
+   "act": [
+    "34",
+    "34",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "10-Q",
+    "8-K",
+    "4",
+    "4",
+    "SD",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "001-08944",
+    "001-08944",
+    "",
+    "",
+    "001-08944",
+    "001-08944",
+    "001-08944",
+    "001-08944",
+    "001-08944"
+   ],
+   "filmNumber": [
+    "261472820",
+    "261467478",
+    "",
+    "",
+    "261390797",
+    "261197108",
+    "26880114",
+    "26611852",
+    "251410404"
+   ],
+   "items": [
+    "",
+    "2.02,9.01",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "XBRL",
+    "XBRL",
+    "4",
+    "4",
+    "SD",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    10065031,
+    889668,
+    5276,
+    5264,
+    129728,
+    9622933,
+    8882185,
+    27666583,
+    12445943
+   ],
+   "isXBRL": [
+    1,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    1,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "clf-20260930.htm",
+    "clf-20261019.htm",
+    "xslF345X06/wk-form4_1790983073.xml",
+    "xslF345X06/wk-form4_1790983067.xml",
+    "clf-20251231formsdxgovernma.htm",
+    "clf-20260630.htm",
+    "clf-20260331.htm",
+    "clf-20251231.htm",
+    "clf-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "10-Q",
+    "8-K",
+    "FORM 4",
+    "FORM 4",
+    "SD",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

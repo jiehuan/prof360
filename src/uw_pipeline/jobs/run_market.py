@@ -253,7 +253,7 @@ def run_market_stage(
                 earn, ekey = av.earnings(symbol)
                 upsert(conn, earnings_report, earnings_rows(earn, symbol, ekey, stamp),
                        key_cols=["symbol", "fiscal_date_ending"])  # fmt: skip
-                group = industry.groups[row["industry_group"]]
+                group = industry.group_of(row["industry_group"], cfg)
                 codes = MARKET_CODES & {
                     m.code for m in registry.for_company(cfg.ticker, group).metrics
                 }

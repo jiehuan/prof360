@@ -1,0 +1,225 @@
+{
+ "cik": "0000794170",
+ "entityType": "operating",
+ "sic": "1531",
+ "sicDescription": "Operative Builders",
+ "ownerOrg": "05 Real Estate & Construction",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Toll Brothers, Inc.",
+ "tickers": [
+  "TOL"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "232416878",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1031",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "1140 VIRGINIA DRIVE",
+   "street2": null,
+   "city": "FORT WASHINGTON",
+   "stateOrCountry": "PA",
+   "zipCode": "19034",
+   "stateOrCountryDescription": "PA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "1140 VIRGINIA DRIVE",
+   "street2": null,
+   "city": "FORT WASHINGTON",
+   "stateOrCountry": "PA",
+   "zipCode": "19034",
+   "stateOrCountryDescription": "PA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "2159388000",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "TOLL BROTHERS INC",
+   "from": "1994-01-10T00:00:00.000Z",
+   "to": "2019-03-28T00:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000794170-26-000104",
+    "0001921094-26-001049",
+    "0002012383-26-003269",
+    "0000794170-26-000102",
+    "0000794170-26-000096",
+    "0000794170-26-000087",
+    "0000794170-26-000056",
+    "0000794170-25-000112"
+   ],
+   "filingDate": [
+    "2026-09-25",
+    "2026-09-24",
+    "2026-09-04",
+    "2026-08-28",
+    "2026-08-18",
+    "2026-05-29",
+    "2026-02-27",
+    "2025-12-19"
+   ],
+   "reportDate": [
+    "2026-09-24",
+    "",
+    "",
+    "2026-07-31",
+    "2026-08-18",
+    "2026-04-30",
+    "2026-01-31",
+    "2025-10-31"
+   ],
+   "acceptanceDateTime": [
+    "2026-09-25T20:08:51.000Z",
+    "2026-09-24T20:22:17.000Z",
+    "2026-09-04T16:15:26.000Z",
+    "2026-08-28T20:21:20.000Z",
+    "2026-08-18T20:46:57.000Z",
+    "2026-05-29T20:10:23.000Z",
+    "2026-02-27T21:17:08.000Z",
+    "2025-12-19T21:31:31.000Z"
+   ],
+   "act": [
+    "",
+    "33",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "144",
+    "SCHEDULE 13G/A",
+    "10-Q",
+    "8-K",
+    "10-Q",
+    "10-Q",
+    "10-K"
+   ],
+   "fileNumber": [
+    "",
+    "001-09186",
+    "005-37253",
+    "001-09186",
+    "001-09186",
+    "001-09186",
+    "001-09186",
+    "001-09186"
+   ],
+   "filmNumber": [
+    "",
+    "261405019",
+    "261361196",
+    "261340531",
+    "261291565",
+    "261044456",
+    "26700135",
+    "251587993"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "2.02,9.01",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "144",
+    "SCHEDULE 13G/A",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    4458,
+    4815,
+    11209,
+    11176062,
+    843831,
+    10935464,
+    9232125,
+    17562768
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/form4.xml",
+    "xsl144X01/primary_doc.xml",
+    "xslSCHEDULE_13G_X02/primary_doc.xml",
+    "tol-20260731.htm",
+    "tol-20260818.htm",
+    "tol-20260430.htm",
+    "tol-20260131.htm",
+    "tol-20251031.htm"
+   ],
+   "primaryDocDescription": [
+    "PRIMARY DOCUMENT",
+    "",
+    "",
+    "10-Q",
+    "8-K",
+    "10-Q",
+    "10-Q",
+    "10-K"
+   ]
+  },
+  "files": []
+ }
+}

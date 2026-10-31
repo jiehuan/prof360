@@ -132,6 +132,9 @@ def number_in_quote(number_text: str, quote: str) -> bool:
     return False
 
 
+VOLUME_UNITS = frozenset({"count", "ounces", "pounds", "tons"})
+
+
 def to_metric_value(ext: ExtractedValue, metric: MetricDef) -> float | None:
     """Convert to the metric's stored unit (fractions for ratios; USD for money)."""
     raw = parse_number(ext.value)
@@ -145,7 +148,8 @@ def to_metric_value(ext: ExtractedValue, metric: MetricDef) -> float | None:
         return None
     if metric.unit == "USD" and ext.unit == "usd":
         return raw * SCALES[ext.scale]
-    if metric.unit == "count" and ext.unit == "count":  # members, vehicles, barrels (Phase 16)
+    # Members, vehicles, barrels (Phase 16); ounces, pounds and tons are counts too (Phase 17).
+    if metric.unit in VOLUME_UNITS and ext.unit == "count":
         return raw * SCALES[ext.scale]
     return None
 

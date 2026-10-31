@@ -19,7 +19,7 @@ from uw_pipeline.clients.alphavantage import (
 )
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.config import CompanyConfig
-from uw_pipeline.enrich.llm import LLMConfig, LLMUnavailableError
+from uw_pipeline.enrich.llm import LLMConfig, LLMUnavailableError, short_transactions
 from uw_pipeline.enrich.news_events import event_pairs
 from uw_pipeline.enrich.news_relevance import judge
 from uw_pipeline.jobs.run_company import TaskResult
@@ -353,7 +353,7 @@ def run_news_stage(
     results: list[TaskResult] = []
     for company_cfg in companies:
         try:
-            with engine.begin() as conn:
+            with short_transactions(engine) as conn:
                 row = company_row(conn, company_cfg)
                 latest = conn.execute(
                     select(func.max(news_item.c.published_at)).where(

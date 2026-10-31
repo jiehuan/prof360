@@ -1,0 +1,241 @@
+{
+ "cik": "0001617406",
+ "entityType": "operating",
+ "sic": "7011",
+ "sicDescription": "Hotels & Motels",
+ "ownerOrg": "05 Real Estate & Construction",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Park Hotels & Resorts Inc.",
+ "tickers": [
+  "PK"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "362058176",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "1775 TYSONS BLVD",
+   "street2": "7TH FLOOR",
+   "city": "TYSONS",
+   "stateOrCountry": "VA",
+   "zipCode": "22102",
+   "stateOrCountryDescription": "VA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "1775 TYSONS BLVD",
+   "street2": "7TH FLOOR",
+   "city": "TYSONS",
+   "stateOrCountry": "VA",
+   "zipCode": "22102",
+   "stateOrCountryDescription": "VA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "(571) 302-5757",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "Hilton Worldwide, Inc.",
+   "from": "2014-09-11T00:00:00.000Z",
+   "to": "2014-11-20T00:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001617406-26-000045",
+    "0001214659-26-011960",
+    "0001214659-26-011959",
+    "0001214659-26-011958",
+    "0001193125-26-388548",
+    "0001617406-26-000042",
+    "0001617406-26-000035",
+    "0001617406-26-000006",
+    "0001617406-25-000053"
+   ],
+   "filingDate": [
+    "2026-09-30",
+    "2026-09-24",
+    "2026-09-24",
+    "2026-09-24",
+    "2026-09-11",
+    "2026-08-07",
+    "2026-05-01",
+    "2026-02-20",
+    "2025-11-03"
+   ],
+   "reportDate": [
+    "2026-09-30",
+    "2026-09-23",
+    "2026-09-23",
+    "2026-09-23",
+    "2026-09-08",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-09-30T20:25:20.000Z",
+    "2026-09-24T21:50:09.000Z",
+    "2026-09-24T21:50:07.000Z",
+    "2026-09-24T21:50:06.000Z",
+    "2026-09-11T10:01:22.000Z",
+    "2026-08-07T20:02:23.000Z",
+    "2026-05-01T20:03:32.000Z",
+    "2026-02-20T21:07:33.000Z",
+    "2025-11-03T21:17:38.000Z"
+   ],
+   "act": [
+    "34",
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "8-K",
+    "4",
+    "4",
+    "4",
+    "8-K",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "001-37795",
+    "",
+    "",
+    "",
+    "001-37795",
+    "001-37795",
+    "001-37795",
+    "001-37795",
+    "001-37795"
+   ],
+   "filmNumber": [
+    "261427434",
+    "",
+    "",
+    "",
+    "261372613",
+    "261253837",
+    "26932362",
+    "26659887",
+    "251444338"
+   ],
+   "items": [
+    "1.02",
+    "",
+    "",
+    "",
+    "5.02,9.01",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "XBRL",
+    "4",
+    "4",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    142530,
+    11021,
+    5658,
+    5693,
+    217398,
+    7168920,
+    62658099,
+    12140347,
+    6117388
+   ],
+   "isXBRL": [
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "pk-20260930.htm",
+    "xslF345X06/marketforms-74040.xml",
+    "xslF345X06/marketforms-74039.xml",
+    "xslF345X06/marketforms-74038.xml",
+    "d122328d8k.htm",
+    "pk-20260630.htm",
+    "pk-20260331.htm",
+    "pk-20251231.htm",
+    "pk-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "8-K",
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "8-K",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

@@ -1,4 +1,4 @@
-"""A foreign filer (20-F / 40-F) reports XBRL under IFRS, with no US-GAAP facts at all;
+"""D-071: a foreign filer (20-F / 40-F) reports XBRL under IFRS, with no US-GAAP facts at all;
 the facts stage must still succeed, with no facts, so the later stages run."""
 
 from datetime import date

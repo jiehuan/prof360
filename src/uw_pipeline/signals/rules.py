@@ -7,8 +7,9 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
-import yaml
 from pydantic import BaseModel, Field, field_validator
+
+from uw_pipeline.yaml_load import safe_load
 
 if TYPE_CHECKING:
     from uw_pipeline.config import IndustryGroup
@@ -270,4 +271,4 @@ def _spec_of(data: dict[str, Any], rule_id: str) -> dict[str, Any]:
 
 def load_signal_rules(config_dir: Path) -> SignalRules:
     with (config_dir / "signal_rules.yaml").open(encoding="utf-8") as f:
-        return SignalRules.model_validate(yaml.safe_load(f))
+        return SignalRules.model_validate(safe_load(f))

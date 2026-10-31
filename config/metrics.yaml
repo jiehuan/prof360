@@ -197,6 +197,21 @@ metric_sets:
   TRANSPORT_OPERATING:
     - operating_ratio
     - pension_liability
+  # Industry modules (Phase 17, D-055): XBRL first, at most 3 text metrics per group.
+  CHEMICALS_OPERATING: [environmental_reserve, capex_to_depreciation, volume_effect, price_effect]
+  MINING_OPERATING: [asset_retirement_obligation, environmental_reserve, capex_to_depreciation,
+                     gold_production, copper_production, aggregates_shipments]
+  METALS_OPERATING: [environmental_reserve, capex_to_depreciation, metal_shipments,
+                     average_selling_price_per_ton]
+  HOMEBUILDING_OPERATING: [homebuilding_inventory, land_inventory, land_to_equity,
+                           inventory_impairments, homes_closed, backlog_value, cancellation_rate]
+  HEALTHCARE_OPERATING: [labor_to_revenue, same_facility_revenue_growth,
+                         same_facility_volume_growth, admissions]
+  GAMING_OPERATING: [casino_revenue_share, attendance]
+  RESTAURANT_OPERATING: [comparable_sales_growth, labor_to_revenue, franchise_revenue_share,
+                         restaurant_count, franchised_unit_share]
+  # Trait clinical_stage (Phase 17c, D-058), set per company in companies.yaml.
+  CLINICAL_STAGE: [cash_runway_months, rnd_to_opex]
 
 metrics:
   # -- Financial -------------------------------------------------------------------------
@@ -319,19 +334,35 @@ metrics:
       # long-term debt including current maturities plus short-term borrowings (TSLA).
       - ltd_noncurrent + debt_current + finance_lease_liabilities
       - ltd_total + short_term_borrowings + finance_lease_liabilities
+      # D-071: the notes payable family (ILMN) and the convertible notes family (RBRK).
+      - notes_noncurrent + notes_current + short_term_borrowings + finance_lease_liabilities
+      - convertible_noncurrent + convertible_current + short_term_borrowings
       # Non-current only, used when the family has no current sibling. Understates debt;
       # dq_rules.yaml debt_completeness reports it.
       - ltdcl_noncurrent + short_term_borrowings
       - ltd_noncurrent + short_term_borrowings + finance_lease_liabilities
+      # Phase 17e: debt presented as notes payable (homebuilders, Omnicom).
+      - notes_payable + short_term_borrowings
+      # Convertible notes with no current portion tagged (RBRK); understates like the
+      # non-current-only formulas above.
+      - convertible_noncurrent + short_term_borrowings
     optional: [short_term_borrowings, finance_lease_liabilities]
   - code: long_term_debt
     display_name: Long-term Debt
     subtitle: "Borrowings due after more than a year"
+    description: >-
+      Non-current long-term debt. Where the balance sheet has no current / non-current split
+      (homebuilders, REITs, timeshare owners, Park Hotels), or no non-current amount is tagged
+      in those groups (Equinix, JLL), long-term debt as presented, including current
+      maturities.
     section: leverage
     unit: USD
     formula:
       - ltdcl_noncurrent
       - ltd_noncurrent
+      - notes_noncurrent   # D-071 (ILMN)
+      - convertible_noncurrent   # D-071 (RBRK)
+      - ltd_unclassified  # Phase 17e: mapped only for unclassified balance sheets
   - code: equity
     display_name: Stockholders' Equity
     subtitle: "Assets minus liabilities: the shareholders' stake"
@@ -705,10 +736,11 @@ metrics:
     extraction:
       definition: >-
         Company-wide manufacturing capacity utilization for the period, as a percentage (a
-        level, not a change).
-      keywords: [capacity utilization]
+        level, not a change). For a steel or metals producer: the steel mills' utilization or
+        operating rate (Phase 17), not one mill or the downstream products segment.
+      keywords: [capacity utilization, mill utilization, utilization rate, operating rates]
       table:
-        column: [capacity utilization, capacity utilisation]
+        column: [capacity utilization, capacity utilisation, utilization, operating rate]
 
   # -- Market data (Phase 15a) ------------------------------------------------------------------
   # kind: external -> written by another stage, here the market stage (prices at the period
@@ -1221,3 +1253,351 @@ metrics:
     unit: fraction
     formula: top_product_revenue / revenue
     nm_when: revenue <= 0
+
+  # -- Industry modules (Phase 17, D-055) --------------------------------------------------
+  # Chemicals, mining and metals.
+  - code: environmental_reserve
+    display_name: Environmental Remediation Reserve
+    subtitle: "Amount set aside to clean up environmental damage"
+    description: Accrued liabilities for environmental remediation (current and non-current).
+    section: operational
+    unit: USD
+    formula:
+      - env_accrual
+      - env_accrual_current + env_accrual_noncurrent
+    optional: [env_accrual_current]
+  - code: asset_retirement_obligation
+    display_name: Asset Retirement Obligations
+    subtitle: "Future cost of closing and restoring mines and plants"
+    description: Liabilities for closing and reclaiming mines and plants (current and non-current).
+    section: operational
+    unit: USD
+    formula:
+      - aro
+      - aro_current + aro_noncurrent
+    optional: [aro_current]
+  - code: capex_to_depreciation
+    display_name: Capex to Depreciation
+    subtitle: "Capital spending / depreciation; below 1 the asset base is shrinking"
+    description: >-
+      Capital expenditures / depreciation and amortization; below 1 the company is not replacing
+      the assets it uses up.
+    section: operational
+    unit: ratio
+    formula:
+      - capex / d_and_a
+      - capex / depreciation
+  - code: volume_effect
+    display_name: Sales Change from Volume
+    subtitle: "Part of the sales change that came from selling more or less"
+    description: The part of the change in net sales from a year earlier that came from volume.
+    section: operational
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        The contribution of sales volume to the change in total company net sales versus the
+        same period a year earlier, as a percentage of net sales ("volume 3%", "lower volumes
+        reduced sales 2%"): give a decrease as a negative number. The company total, not a
+        segment; not price, currency, or acquisition and divestiture effects.
+      keywords: [volume, local price, price/mix, sales volume, change in net sales]
+      dual_check: true
+  - code: price_effect
+    display_name: Sales Change from Price
+    subtitle: "Part of the sales change that came from prices"
+    description: The part of the change in net sales from a year earlier that came from prices.
+    section: operational
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        The contribution of selling prices (local price, price/mix) to the change in total
+        company net sales versus the same period a year earlier, as a percentage of net sales
+        ("local price -4%"): give a decrease as a negative number. The company total, not a
+        segment; not volume, currency, or acquisition and divestiture effects.
+      keywords: [local price, price/mix, selling prices, pricing, change in net sales]
+      dual_check: true
+  - code: gold_production
+    display_name: Gold Production (ounces)
+    subtitle: "Ounces of gold produced"
+    section: operational
+    unit: ounces
+    kind: text
+    extraction:
+      definition: >-
+        Attributable gold produced in the period, in ounces (unit: count), company total over
+        all sites. Not gold-equivalent ounces that include other metals, not ounces sold when
+        production is given, not guidance. "1.5 million attributable ounces" is 1.5 in
+        millions; "1,520 koz" is 1,520 in thousands.
+      keywords: [attributable gold production, gold production, ounces produced, attributable ounces, koz]
+      dual_check: true
+  - code: copper_production
+    display_name: Copper Production (pounds)
+    subtitle: "Pounds of copper produced"
+    section: operational
+    unit: pounds
+    kind: text
+    extraction:
+      definition: >-
+        Copper produced in the period, in pounds (unit: count), consolidated company total;
+        copper sold only when production is not given. Not guidance, not a single mine when a
+        total is given; a figure in metric tons is not this metric. "1.0 billion pounds" is
+        1.0 in billions.
+      keywords: [copper production, pounds of copper, copper sales, million pounds, consolidated copper]
+      dual_check: true
+  - code: aggregates_shipments
+    display_name: Aggregates Shipments (tons)
+    subtitle: "Tons of crushed stone, sand and gravel shipped"
+    section: operational
+    unit: tons
+    kind: text
+    extraction:
+      definition: >-
+        Aggregates (crushed stone, sand and gravel) shipped in the period, in tons (unit:
+        count), company total. Not revenue or price per ton, not cement or asphalt. "220 million
+        tons" is 220 in millions.
+      keywords: [aggregates shipments, aggregates volume, shipments, tons]
+      dual_check: true
+  - code: metal_shipments
+    display_name: Steel and Metal Shipments (tons)
+    subtitle: "Tons of steel and other metal shipped"
+    section: operational
+    unit: tons
+    kind: text
+    extraction:
+      definition: >-
+        Total tons of steel or aluminum products shipped to outside customers in the period, in
+        net tons or metric tons as the company reports them (unit: count), company total. Not
+        production or capacity, not one segment or mill when a total is given. "6.2 million
+        tons" is 6.2 in millions; "5,800 thousand net tons" is 5,800 in thousands.
+      keywords: [shipments, tons shipped, net tons, metric tons, total shipments]
+      dual_check: true
+  - code: average_selling_price_per_ton
+    display_name: Average Selling Price per Ton
+    subtitle: "Average price received per ton shipped"
+    section: operational
+    unit: USD
+    kind: text
+    extraction:
+      definition: >-
+        Average selling (realized) price per ton of the company's main metal products in the
+        period, in US dollars: total steel mills or all steel products for a steelmaker, the
+        realized primary aluminum price for an aluminum producer. A price level, not a change;
+        not one product line when a total is given.
+      keywords: [average selling price per ton, average sales price per ton, average net selling price, realized price, per ton, per metric ton]
+      dual_check: true
+  # Homebuilders.
+  - code: homebuilding_inventory
+    display_name: Homebuilding Inventory
+    subtitle: "Homes under construction, finished homes, land and lots"
+    description: Homes under construction, finished homes, land and lots.
+    section: operational
+    unit: USD
+    formula: homebuilding_inventory
+  - code: land_inventory
+    display_name: Land and Lots
+    subtitle: "Land and lots held for future homebuilding"
+    description: >-
+      Homebuilding inventory other than homes under construction (land, lots, model homes),
+      the main exposure to land write-downs. Some builders tag only raw land as land (PulteGroup:
+      $0.57B of $13.7B), so the difference comes first.
+    section: operational
+    unit: USD
+    formula:
+      - homebuilding_inventory - homes_under_construction
+      - land_development + land_held
+    optional: [land_held]
+  - code: land_to_equity
+    display_name: Land to Equity
+    subtitle: "Land and lots / shareholders' equity"
+    section: operational
+    unit: ratio
+    formula: land_inventory / equity
+    nm_when: equity <= 0
+  - code: inventory_impairments
+    display_name: Inventory and Land Impairments
+    subtitle: "Write-downs of homes, land and lots"
+    description: Write-downs of homes, land and lots in the period.
+    section: operational
+    unit: USD
+    formula: inventory_writedown
+  - code: homes_closed
+    display_name: Homes Closed
+    subtitle: "Homes delivered to buyers in the period"
+    section: operational
+    unit: count
+    kind: text
+    extraction:
+      definition: >-
+        Number of homes closed (delivered to buyers, "settlements") in the period, company total
+        over all segments and brands, a count of homes. Not net new orders, not backlog, not one
+        region when a total is given.
+      keywords: [homes closed, closings, homes delivered, deliveries, settlements]
+      dual_check: true
+  - code: backlog_value
+    display_name: Backlog Value
+    subtitle: "Value of homes sold but not yet delivered"
+    description: Sales value of homes under contract but not yet closed at the end of the period.
+    section: operational
+    unit: USD
+    kind: text
+    extraction:
+      definition: >-
+        Dollar value of the homebuilding sales backlog (homes under contract, not yet closed)
+        at the end of the period, company total. Not the number of homes, not net new orders.
+      keywords: [backlog, sales backlog, homes in backlog, value of backlog]
+      dual_check: true
+  - code: cancellation_rate
+    display_name: Cancellation Rate
+    subtitle: "Share of new home orders cancelled by buyers"
+    description: Share of gross new home orders cancelled by buyers in the period.
+    section: operational
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Cancellation rate for the period: cancellations as a percentage of gross new orders,
+        company total. A level ("13%"), not a change.
+      keywords: [cancellation rate, cancellations as a percentage, cancellation]
+      dual_check: true
+  # Healthcare services and restaurants.
+  - code: labor_to_revenue
+    display_name: Labor Cost / Revenue
+    subtitle: "Salaries, wages and benefits / revenue"
+    description: Salaries, wages and benefits / revenue (staffing cost pressure).
+    section: operational
+    unit: fraction
+    formula: labor_expense / revenue
+    nm_when: revenue <= 0
+  - code: same_facility_revenue_growth
+    display_name: Same-Facility Revenue Growth
+    subtitle: "Revenue growth at facilities open in both periods"
+    section: operational
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Growth in net revenue (net patient service revenues) on a same-facility or
+        same-hospital basis versus the same period a year earlier, company total, a growth rate:
+        give a decrease as a negative number. Not revenue per admission or per adjusted
+        admission, not total growth including acquired facilities.
+      keywords: [same facility, same-facility, same hospital, same-hospital, same store, net patient service revenues]
+      dual_check: true
+  - code: same_facility_volume_growth
+    display_name: Same-Facility Volume Growth
+    subtitle: "Patient volume growth at facilities open in both periods"
+    description: >-
+      Growth in patient volume on a same-facility or organic basis: equivalent admissions for
+      hospitals, treatments for dialysis, requisitions for laboratories.
+    section: operational
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Growth in patient volume versus the same period a year earlier on a same-facility,
+        same-hospital or organic basis, company total, a growth rate (give a decrease as a
+        negative number): equivalent (adjusted) admissions for hospitals, admissions when
+        neither is given; treatments for dialysis; requisitions or organic volume for
+        laboratories. Not revenue growth, not per-day or per-admission figures.
+      keywords: [equivalent admissions, adjusted admissions, admissions, treatments, requisitions, organic volume, same facility, same-hospital]
+      dual_check: true
+  - code: admissions
+    display_name: Hospital Admissions
+    subtitle: "Patients admitted to the company's hospitals"
+    section: operational
+    unit: count
+    kind: text
+    extraction:
+      definition: >-
+        Number of inpatient admissions in the period at all consolidated hospitals, a count of
+        admissions. Not equivalent admissions, not same-facility only when a consolidated
+        figure is given, not admissions per day or per bed.
+      keywords: [admissions, inpatient admissions]
+      dual_check: true
+  # Gaming and leisure.
+  - code: casino_revenue_share
+    display_name: Casino Revenue / Revenue
+    subtitle: "Gaming revenue / total revenue"
+    description: Gaming revenue / total revenue; the rest is rooms, food and beverage and other.
+    section: operational
+    unit: fraction
+    formula: casino_revenue / revenue
+    nm_when: revenue <= 0
+  - code: attendance
+    display_name: Attendance
+    subtitle: "Visitors or fans attending events and venues"
+    section: operational
+    unit: count
+    kind: text
+    extraction:
+      definition: >-
+        Total attendance at the company's events, venues or parks in the period (fans,
+        visitors, guests), company total, a count of people. Not tickets sold through a
+        ticketing platform for others, not one venue or region when a total is given.
+      keywords: [attendance, fans, visitors, guests, attended]
+      dual_check: true
+  - code: franchise_revenue_share
+    display_name: Franchise Revenue / Revenue
+    subtitle: "Revenue from franchised restaurants / total revenue"
+    description: Revenue from franchised or licensed restaurants / total revenue.
+    section: operational
+    unit: fraction
+    formula: franchise_revenue / revenue
+    nm_when: revenue <= 0
+  - code: restaurant_count
+    display_name: Restaurants (system-wide)
+    subtitle: "Restaurants open across the whole system"
+    section: operational
+    unit: count
+    kind: text
+    extraction:
+      definition: >-
+        Total number of restaurants (stores) open at the end of the period, system-wide
+        (company-operated plus franchised or licensed) and worldwide, a count. Not net openings
+        in the period, not one brand or country when a total is given.
+      keywords: [restaurants, system-wide, systemwide, stores, total restaurants, restaurant count]
+      dual_check: true
+  - code: franchised_unit_share
+    display_name: Franchised Share of Restaurants
+    subtitle: "Franchised restaurants / all restaurants"
+    section: operational
+    unit: fraction
+    kind: text
+    extraction:
+      definition: >-
+        Share of the system's restaurants (stores) operated by franchisees or licensees at the
+        end of the period, as a percentage ("approximately 95% franchised"). Not the share of
+        revenue or sales.
+      keywords: [franchised, licensed stores, franchisees, percent franchised]
+      dual_check: true
+  # Clinical-stage companies (Phase 17c, D-058).
+  - code: monthly_cash_burn
+    display_name: Monthly Cash Burn
+    description: >-
+      Operating cash outflow per month over the last four quarters; the latest quarter's when
+      the four are not all available or one is N/M (Xenon's Q4 2025). Negative: cash generated.
+    section: liquidity
+    unit: USD
+    display: false
+    formula:
+      - -operating_cash_flow_ttm / 12
+      - -operating_cash_flow / 3
+  - code: cash_runway_months
+    display_name: Cash Runway (months)
+    subtitle: "Months the cash would last at the recent rate of cash burn"
+    description: >-
+      Cash and short-term investments / the monthly operating cash outflow of the last four
+      quarters (or the latest quarter). N/M when there is no cash burn.
+    section: liquidity
+    unit: months
+    formula: (cash + short_term_investments) / monthly_cash_burn
+    optional: [short_term_investments]
+    nm_when: monthly_cash_burn <= 0
+  - code: rnd_to_opex
+    display_name: R&D / Operating Expenses
+    subtitle: "Research and development / total operating expenses"
+    description: Research and development / total operating expenses.
+    section: operational
+    unit: fraction
+    formula: research_development / operating_expenses
+    nm_when: operating_expenses <= 0

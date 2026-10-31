@@ -133,7 +133,8 @@ def methodology(
                      "the 10-Q or 10-K is filed.")  # fmt: skip
     top = latest(rows, "Q") or latest(rows, "FY")
     if top is not None:
-        lines.append(f"Latest: {fmt_value(top['value'], m.unit, top['value_status'])} "
+        unit = top.get("unit") or m.unit
+        lines.append(f"Latest: {fmt_value(top['value'], unit, top['value_status'])} "
                      f"({period_label(top)}, period ended {top['period_end']}).")  # fmt: skip
         if top["derivation"] in LLM_DERIVATIONS and top["evidence"]:
             lines.append(f"Source text: “{top['evidence'][:300]}”")

@@ -168,6 +168,9 @@ def _combine(parts: list[Value], value: float | None, status: str, formula: str)
 
 
 PRIOR_YEAR = "_py"  # `assets_py`: assets for the same period a year earlier (averages, D-043)
+# `operating_cash_flow_ttm`: the four quarters ending at the period, summed; a fiscal year's own
+# value for a fiscal year (cash runway, D-058).
+TRAILING = "_ttm"
 
 
 def _lookup(
@@ -175,6 +178,22 @@ def _lookup(
 ) -> Value | None:
     if name.endswith(PRIOR_YEAR):
         return known.get(name[: -len(PRIOR_YEAR)], {}).get((key[0], key[1] - 1, key[2]))
+    if name.endswith(TRAILING):
+        base = name[: -len(TRAILING)]
+        series = known.get(base, {})
+        if key[0] != "Q":
+            return series.get(key)
+        keys, fy, fq = [key], key[1], key[2]
+        for _ in range(3):
+            fy, fq = (fy - 1, 4) if fq == 1 else (fy, fq - 1)
+            keys.append(("Q", fy, fq))
+        parts = [v for k in keys if (v := series.get(k)) is not None]
+        if len(parts) < 4:
+            return None
+        values = [p.value for p in parts if p.value is not None]
+        label = f"{base} (4 quarters)"
+        return _combine(parts, sum(values), "OK", label) if len(values) == 4 else (
+            _combine(parts, None, "NM", label))  # fmt: skip
     return known.get(name, {}).get(key)
 
 
@@ -200,12 +219,12 @@ def _formula_value(
         if metric.nm_when:
             nm_names = _names(metric.nm_when)
             nm_env = {n: 0.0 for n in nm_names if n in metric.optional} | {
-                n: known[n][key].value
+                n: v.value
                 for n in nm_names
-                if key in known.get(n, {}) and known[n][key].value is not None
+                if (v := _lookup(n, key, known)) is not None and v.value is not None
             }
             nm_expr = ast.parse(metric.nm_when, mode="eval")
-            if set(nm_env) == set(nm_names) and _eval(nm_expr, nm_env):  # type: ignore[arg-type]
+            if set(nm_env) == set(nm_names) and _eval(nm_expr, nm_env):
                 return _combine(parts, None, "NM", expr)
         try:
             value = _eval(ast.parse(expr, mode="eval"), env)
