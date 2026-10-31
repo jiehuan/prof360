@@ -241,3 +241,24 @@ def test_schedule_13d_filed_about_the_company() -> None:
         ("13d", "Warning", "2026-09-01"),
         ("13d_amendment", "Info", "2026-10-01"),
     ]
+
+
+def test_short_cash_runway_fires_on_the_latest_quarter() -> None:
+    """Phase 17c (D-058): under 12 months of cash at the last four quarters' burn rate."""
+    from uw_pipeline.signals.detect import threshold_signals
+    from uw_pipeline.signals.rules import load_signal_rules
+
+    rules = load_signal_rules(CONFIG_DIR)
+
+    def row(fq: int, months: float | None) -> dict:
+        return {"metric_code": "cash_runway_months", "period_type": "Q", "fiscal_year": 2026,
+                "fiscal_quarter": fq, "value": months, "period_end": f"2026-{3 * fq:02d}-30",
+                "source_accn": "a"}  # fmt: skip
+
+    fired = [s for s in threshold_signals([row(1, 30.0), row(2, 9.5)], rules)
+             if s.rule_id == "short_cash_runway"]  # fmt: skip
+    assert len(fired) == 1 and fired[0].key_extra == "FY2026 Q2"
+    assert not [s for s in threshold_signals([row(1, 9.0), row(2, 15.0)], rules)
+                if s.rule_id == "short_cash_runway"]  # fmt: skip
+    assert not [s for s in threshold_signals([row(2, None)], rules)  # N/M: no burn
+                if s.rule_id == "short_cash_runway"]  # fmt: skip

@@ -1,0 +1,235 @@
+{
+ "cik": "0001582313",
+ "entityType": "operating",
+ "sic": "2834",
+ "sicDescription": "Pharmaceutical Preparations",
+ "ownerOrg": "03 Life Sciences",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Xenon Pharmaceuticals Inc.",
+ "tickers": [
+  "XENE"
+ ],
+ "exchanges": [
+  "Nasdaq"
+ ],
+ "ein": "980661854",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "A1",
+ "stateOfIncorporationDescription": "British Columbia, Canada",
+ "addresses": {
+  "mailing": {
+   "street1": "200 - 3650 GILMORE WAY",
+   "street2": null,
+   "city": "BURNABY",
+   "stateOrCountry": null,
+   "zipCode": null,
+   "stateOrCountryDescription": null,
+   "isForeignLocation": 1,
+   "foreignStateTerritory": null,
+   "country": "British Columbia, Canada",
+   "countryCode": "A1"
+  },
+  "business": {
+   "street1": "200 - 3650 GILMORE WAY",
+   "street2": null,
+   "city": "BURNABY",
+   "stateOrCountry": null,
+   "zipCode": null,
+   "stateOrCountryDescription": null,
+   "isForeignLocation": 1,
+   "foreignStateTerritory": null,
+   "country": "British Columbia, Canada",
+   "countryCode": "A1"
+  }
+ },
+ "phone": "(604) 484-3300",
+ "flags": "",
+ "formerNames": [],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0001193125-26-424428",
+    "0001193125-26-410001",
+    "0001193125-26-409999",
+    "0001193125-26-382412",
+    "0001193125-26-377309",
+    "0001193125-26-338244",
+    "0001193125-26-212153",
+    "0001193125-26-076650",
+    "0001193125-25-262646"
+   ],
+   "filingDate": [
+    "2026-10-16",
+    "2026-10-01",
+    "2026-10-01",
+    "2026-09-03",
+    "2026-08-31",
+    "2026-08-06",
+    "2026-05-07",
+    "2026-02-26",
+    "2025-11-03"
+   ],
+   "reportDate": [
+    "2026-10-15",
+    "2026-09-30",
+    "2026-09-30",
+    "2026-09-01",
+    "2026-08-28",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-17T04:22:19.000Z",
+    "2026-10-01T17:20:20.000Z",
+    "2026-10-01T17:19:28.000Z",
+    "2026-09-04T04:26:18.000Z",
+    "2026-09-01T05:59:36.000Z",
+    "2026-08-07T00:31:10.000Z",
+    "2026-05-08T00:35:11.000Z",
+    "2026-02-27T02:12:42.000Z",
+    "2025-11-04T02:31:50.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "001-36687",
+    "001-36687",
+    "001-36687",
+    "001-36687"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "261249722",
+    "26954188",
+    "26688172",
+    "251444614"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    7076,
+    4654,
+    5354,
+    6907,
+    7879,
+    10151852,
+    8889649,
+    16934986,
+    9095174
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/ownership.xml",
+    "xslF345X06/ownership.xml",
+    "xslF345X06/ownership.xml",
+    "xslF345X06/ownership.xml",
+    "xslF345X06/ownership.xml",
+    "xene-20260630.htm",
+    "xene-20260331.htm",
+    "xene-20251231.htm",
+    "xene-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

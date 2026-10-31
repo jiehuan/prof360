@@ -29,8 +29,10 @@ code. Decisions D-016 and D-049 explain the design.
 
 | I want to | File | What to write |
 |---|---|---|
-| Add a company | `companies.yaml` | `ticker`, `cik` (pinned; the ticker is only for display), `display_name`, `news_aliases` |
+| Add a company | `companies.yaml` | `ticker`, `cik` (pinned; the ticker is only for display), `display_name`, `news_aliases`; candidates from `scripts/build_universe.py --sample N` (D-055) |
 | Put a company in an industry, whatever its SIC code | `companies.yaml` | `industry: GROUP` and `industry_reason: "..."` (required) |
+| Mark a company clinical-stage (pre-revenue life sciences) | `companies.yaml` | `traits: [clinical_stage]`: adds cash runway, R&D / operating expenses and the `clinical` stage; drops the product metrics (`trait_exclude_metrics`); candidates from `scripts/build_universe.py --clinical N` (D-058) |
+| Correct a group in the company universe or sample (before the company is added) | `universe.yaml` | under `industry`: `cik`, `ticker`, `industry`, `reason`; `sample_skip` to leave one out of the sample (D-055) |
 | Keep a company's history across a new parent registrant | `companies.yaml` | `predecessor_ciks: [old CIK]` (D-052) |
 | Create an industry, or map SIC codes to one | `industry_groups.yaml` | a group under `groups` (`label`, `is_financial`, `metric_sets`); codes under `sic` |
 | Choose an industry's metrics | `industry_groups.yaml` | `metric_sets`, `metrics` (add codes), `exclude_metrics` (drop codes), `traits` |
@@ -44,7 +46,7 @@ code. Decisions D-016 and D-049 explain the design.
 | Hide or show a whole metric set (computed, but not in the app, the LLM inputs or threshold signals) | `metrics.yaml` | `hidden_metric_sets: [SET, ...]`; remove a set to show it again (D-054) |
 | Change an 8-K item's severity or title | `signal_rules.yaml` | `eight_k_items` |
 | Change a market, insider, 13D or litigation signal (threshold, window, severity) | `signal_rules.yaml` | `market`, `insiders`, `ownership_forms`, `legal` (2.4) |
-| Explain a missing metric | `coverage_notes.yaml` | a note per company and metric (or `"*"`), or per industry under `groups:` (2.6) |
+| Explain a missing metric | `coverage_notes.yaml` | a note per company and metric (or `"*"`), per industry under `groups:`, or per company trait under `traits:` (2.6) |
 
 ### 2.1 A company's industry
 
@@ -58,7 +60,8 @@ code. Decisions D-016 and D-049 explain the design.
 ```
 
 Without `industry`, the company is classified by its SIC code: exact `sic` mapping, then
-`sic_ranges`, then `default_group`. `is_financial` on the group decides whether the bank modules
+`sic_ranges`, then `default_group`. SIC ranges must not overlap (the file is rejected on load,
+D-055); to carve a code out of a range, map it under `sic` or split the range. `is_financial` on the group decides whether the bank modules
 (NIM, CET1, loan book, Performance Trends) get data.
 
 ### 2.2 What an industry tracks
@@ -167,6 +170,9 @@ facts, documents and signals stages read their filings too. A company with `hist
 ### 2.6 Coverage notes
 
 `coverage-report` flags every metric short of 5 fiscal years and 8 quarters without a note.
+A company whose own 10-K / 10-Q filings start inside that window (a listing, a spin-off, a
+move from 20-F) is held to what they can hold: fiscal years from the earliest balance sheet
+in its first filing, quarters from its first 10-Q (D-063).
 
 ```yaml
 # coverage_notes.yaml
@@ -175,7 +181,10 @@ groups:
     goodwill_impairment: Tagged only in years with an impairment.
   SOFTWARE_INTERNET:         # every company of the group
     inventory_days: Software companies hold little or no inventory.
-MSFT:                        # one company; wins over its group's note
+traits:
+  clinical_stage:            # every company with this trait; wins over its group's note
+    revenue: Pre-revenue.
+MSFT:                        # one company; wins over its traits' and group's notes
   "*": Explains every gap of this company.
   gross_margin: ...
 ```
@@ -201,7 +210,7 @@ MSFT:                        # one company; wins over its group's note
 | Different insight tasks per industry, or a new kind of insight | Behavioral, strategic & risk, key insights and follow-up questions run for every company; their wording is in versioned prompts. |
 | Changing a prompt | Prompts live in `src/uw_pipeline/enrich/prompts/`; a change needs a new version and a review of the golden outputs. |
 | Functions in formulas (min, max, abs, if) | Formulas support + - * /, unary minus, parentheses; comparisons only in `nm_when`. |
-| Units other than USD, ratio, fraction, days, shares, score, count; periods other than quarter and fiscal year | Fixed in the metric model and the period logic. |
+| Units other than USD, ratio, fraction, days, shares, score, count, ounces, pounds, tons, months; periods other than quarter and fiscal year | Fixed in the metric model and the period logic. |
 | A new market, insider or litigation metric (`kind: external`) | Written by the market or documents stage in code. |
 | A new section code or document type | Section splitting is in code. |
 | New data sources, a new LLM provider | Clients live in `src/uw_pipeline/clients/`. |

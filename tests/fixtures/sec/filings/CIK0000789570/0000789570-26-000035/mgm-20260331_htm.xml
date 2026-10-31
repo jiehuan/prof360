@@ -1,0 +1,658 @@
+<?xml version='1.0' encoding='utf-8'?>
+<xbrl xmlns="http://www.xbrl.org/2003/instance" xmlns:us-gaap="http://fasb.org/us-gaap/2025" xmlns:xbrldi="http://xbrl.org/2006/xbrldi" xml:lang="en-US">
+    <context id="c-1">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-5">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-6">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-7">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-8">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-9">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-10">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-11">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mgm:EntertainmentRetailAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-12">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mgm:EntertainmentRetailAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-13">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-149">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:LasVegasStripResortsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-150">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:LasVegasStripResortsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-151">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:LasVegasStripResortsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-152">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:LasVegasStripResortsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-153">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:LasVegasStripResortsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-154">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:LasVegasStripResortsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-155">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mgm:EntertainmentRetailAndOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:LasVegasStripResortsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-156">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mgm:EntertainmentRetailAndOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:LasVegasStripResortsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-157">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:LasVegasStripResortsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-158">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:LasVegasStripResortsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-159">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:RegionalOperationsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-160">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:RegionalOperationsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-161">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:RegionalOperationsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-162">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:RegionalOperationsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-163">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:RegionalOperationsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-164">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:RegionalOperationsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-165">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mgm:EntertainmentRetailAndOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:RegionalOperationsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-166">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mgm:EntertainmentRetailAndOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:RegionalOperationsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-167">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:RegionalOperationsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-168">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:RegionalOperationsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-169">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:MGMChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-170">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:MGMChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-171">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:MGMChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-172">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:MGMChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-173">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:MGMChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-174">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:MGMChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-175">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mgm:EntertainmentRetailAndOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:MGMChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-176">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">mgm:EntertainmentRetailAndOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:MGMChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-177">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:MGMChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-178">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:MGMChinaMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-179">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:MGMDigitalMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-180">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">mgm:MGMDigitalMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-181">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-182">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-183">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">mgm:CorporateAndReconcilingItemsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2026-01-01</startDate>
+            <endDate>2026-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-184">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000789570</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">mgm:CorporateAndReconcilingItemsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <unit id="usd">
+        <measure>iso4217:USD</measure>
+    </unit>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-5" decimals="-3" id="f-108" unitRef="usd">2378855000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-6" decimals="-3" id="f-109" unitRef="usd">2252148000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-7" decimals="-3" id="f-110" unitRef="usd">867854000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-8" decimals="-3" id="f-111" unitRef="usd">863408000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-9" decimals="-3" id="f-112" unitRef="usd">804840000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-10" decimals="-3" id="f-113" unitRef="usd">770173000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-11" decimals="-3" id="f-114" unitRef="usd">403169000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-12" decimals="-3" id="f-115" unitRef="usd">391353000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-1" decimals="-3" id="f-116" unitRef="usd">4454718000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-13" decimals="-3" id="f-117" unitRef="usd">4277082000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-149" decimals="-3" id="f-656" unitRef="usd">513145000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-150" decimals="-3" id="f-657" unitRef="usd">538259000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-151" decimals="-3" id="f-658" unitRef="usd">751484000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-152" decimals="-3" id="f-659" unitRef="usd">750049000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-153" decimals="-3" id="f-660" unitRef="usd">606587000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-154" decimals="-3" id="f-661" unitRef="usd">586039000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-155" decimals="-3" id="f-662" unitRef="usd">309214000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-156" decimals="-3" id="f-663" unitRef="usd">301773000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-157" decimals="-3" id="f-664" unitRef="usd">2180430000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-158" decimals="-3" id="f-665" unitRef="usd">2176120000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-159" decimals="-3" id="f-666" unitRef="usd">684490000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-160" decimals="-3" id="f-667" unitRef="usd">671975000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-161" decimals="-3" id="f-668" unitRef="usd">68592000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-162" decimals="-3" id="f-669" unitRef="usd">66725000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-163" decimals="-3" id="f-670" unitRef="usd">110164000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-164" decimals="-3" id="f-671" unitRef="usd">109081000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-165" decimals="-3" id="f-672" unitRef="usd">54664000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-166" decimals="-3" id="f-673" unitRef="usd">52638000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-167" decimals="-3" id="f-674" unitRef="usd">917910000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-168" decimals="-3" id="f-675" unitRef="usd">900419000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-169" decimals="-3" id="f-676" unitRef="usd">976514000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-170" decimals="-3" id="f-677" unitRef="usd">895852000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-171" decimals="-3" id="f-678" unitRef="usd">47778000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-172" decimals="-3" id="f-679" unitRef="usd">46634000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-173" decimals="-3" id="f-680" unitRef="usd">88089000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-174" decimals="-3" id="f-681" unitRef="usd">75053000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-175" decimals="-3" id="f-682" unitRef="usd">9654000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-176" decimals="-3" id="f-683" unitRef="usd">9933000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-177" decimals="-3" id="f-684" unitRef="usd">1122035000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-178" decimals="-3" id="f-685" unitRef="usd">1027472000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-179" decimals="-3" id="f-686" unitRef="usd">182741000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-180" decimals="-3" id="f-687" unitRef="usd">128058000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-181" decimals="-3" id="f-688" unitRef="usd">4403116000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-182" decimals="-3" id="f-689" unitRef="usd">4232069000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-183" decimals="-3" id="f-690" unitRef="usd">51602000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-184" decimals="-3" id="f-691" unitRef="usd">45013000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-1" decimals="-3" id="f-692" unitRef="usd">4454718000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-13" decimals="-3" id="f-693" unitRef="usd">4277082000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    </xbrl>

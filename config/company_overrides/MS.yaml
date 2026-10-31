@@ -1,0 +1,20 @@
+# Morgan Stanley's 10-K and 10-Q have no Item headings. MD&A runs through "Quantitative and
+# Qualitative Disclosures about Risk" (credit risk: nonperforming loans), which follows it.
+# Section rules (D-060): from a `start` line to the first later `end` line, the longest such
+# block (regexes, case-insensitive, whole lines): the table of contents repeats the headings.
+sections:
+  10K-7:
+    start: "^Management.s Discussion and Analysis of Financial Condition and Results of Operations$"
+    end: "^Financial Statements and Supplementary Data$"
+  10K-1A:
+    start: "^Risk Factors$"
+    end: "^Management.s Discussion and Analysis of Financial Condition and Results of Operations$"
+  10K-9A:
+    start: "^Controls and Procedures$"
+    end: "^(Legal Proceedings|Other Information)$"
+  10Q-I-2:
+    start: "^Management.s Discussion and Analysis of Financial Condition and Results of Operations$"
+    end: "^Report of Independent Registered Public Accounting Firm"
+  10Q-I-4:
+    start: "^Controls and Procedures$"
+    end: "^Legal Proceedings$"

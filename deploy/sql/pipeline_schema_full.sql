@@ -486,6 +486,28 @@ IF COL_LENGTH(N'uw_pipeline.board_composition', N'ceo_since') IS NULL
     ALTER TABLE uw_pipeline.board_composition ADD ceo_since INTEGER NULL;
 GO
 
+IF OBJECT_ID(N'uw_pipeline.clinical_program', N'U') IS NULL
+CREATE TABLE uw_pipeline.clinical_program (
+	company_id INTEGER NOT NULL, 
+	program_key NVARCHAR(200) NOT NULL, 
+	name NVARCHAR(200) NOT NULL, 
+	indication NVARCHAR(300) NOT NULL, 
+	phase NVARCHAR(20) NOT NULL, 
+	next_milestone NVARCHAR(300) NULL, 
+	milestone_timing NVARCHAR(100) NULL, 
+	quote NVARCHAR(max) NOT NULL, 
+	milestone_quote NVARCHAR(max) NULL, 
+	doc_id INTEGER NOT NULL, 
+	is_current BIT NOT NULL, 
+	model NVARCHAR(60) NOT NULL, 
+	prompt_version NVARCHAR(40) NOT NULL, 
+	updated_at DATETIMEOFFSET NOT NULL, 
+	PRIMARY KEY (company_id, program_key), 
+	FOREIGN KEY(company_id) REFERENCES uw_pipeline.company (company_id), 
+	FOREIGN KEY(doc_id) REFERENCES uw_pipeline.source_document (doc_id)
+);
+GO
+
 IF OBJECT_ID(N'uw_pipeline.filing_section', N'U') IS NULL
 CREATE TABLE uw_pipeline.filing_section (
 	section_id INTEGER NOT NULL IDENTITY, 
@@ -539,6 +561,26 @@ CREATE TABLE uw_pipeline.followup_question_source (
 GO
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_followup_question_source_question_id' AND object_id = OBJECT_ID(N'uw_pipeline.followup_question_source'))
     CREATE INDEX ix_followup_question_source_question_id ON uw_pipeline.followup_question_source (question_id);
+GO
+
+IF OBJECT_ID(N'uw_pipeline.industry_choice', N'U') IS NULL
+CREATE TABLE uw_pipeline.industry_choice (
+	company_id INTEGER NOT NULL, 
+	group_code NVARCHAR(40) NOT NULL, 
+	status NVARCHAR(10) NOT NULL, 
+	extractor_group NVARCHAR(40) NULL, 
+	tiebreaker_group NVARCHAR(40) NULL, 
+	quote NVARCHAR(max) NOT NULL, 
+	reason NVARCHAR(1000) NOT NULL, 
+	doc_id INTEGER NOT NULL, 
+	model NVARCHAR(60) NOT NULL, 
+	prompt_version NVARCHAR(40) NOT NULL, 
+	input_hash NVARCHAR(64) NOT NULL, 
+	updated_at DATETIMEOFFSET NOT NULL, 
+	PRIMARY KEY (company_id), 
+	FOREIGN KEY(company_id) REFERENCES uw_pipeline.company (company_id), 
+	FOREIGN KEY(doc_id) REFERENCES uw_pipeline.source_document (doc_id)
+);
 GO
 
 IF OBJECT_ID(N'uw_pipeline.insider_transaction', N'U') IS NULL

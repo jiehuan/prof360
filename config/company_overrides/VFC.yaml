@@ -1,0 +1,5 @@
+# VF Corp tags its capital expenditures as capital improvements; software purchases are a
+# separate line, not included (Phase 17e).
+concepts:
+  capex:
+    tags: [us-gaap:PaymentsForCapitalImprovements]

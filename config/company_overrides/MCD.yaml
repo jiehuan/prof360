@@ -1,0 +1,5 @@
+# McDonald's reports revenue from franchised restaurants under its own tag (Phase 17, D-055),
+# read from each filing's XBRL instance.
+concepts:
+  franchise_revenue:
+    tags: [mcd:Revenuesfromfranchisedrestaurants]

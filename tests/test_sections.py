@@ -79,7 +79,7 @@ def test_heading_rules_override_item_split() -> None:
             "^Management.s report on internal control",
         )
     }
-    secs = {s.code: s for s in apply_rules(text, split_items(text, "10-K"), rules)}
+    secs = {s.code: s for s in apply_rules(text, split_items(text, "10-K"), rules, "10-K")}
     assert secs["10K-7"].text.startswith("Management's discussion and analysis\nx x")
 
 

@@ -125,7 +125,8 @@ def _render(
     for m in metrics:
         shown = shown_rows(values[m.code])
         vals = "; ".join(
-            f"{period_label(r)} {fmt_value(r['value'], m.unit, r['value_status'])}" for r in shown
+            f"{period_label(r)} {fmt_value(r['value'], r['unit'] or m.unit, r['value_status'])}"
+            for r in shown
         )
         parts.append(f"{m.code} | {m.display_name} | {vals}")
     for title, prefix in (("Key insights", "K"), ("Strategic & risk insights", "R"),
@@ -305,7 +306,7 @@ def process_company(
 ) -> Stats:
     row = company_row(conn, cfg)
     company_id = row["company_id"]
-    group = industry.groups[row["industry_group"]]
+    group = industry.group_of(row["industry_group"], cfg)
     all_metrics = registry.for_company(cfg.ticker, group).metrics
     values = _values(conn, company_id)
     shown = [m for m in all_metrics if m.display and values.get(m.code)]
@@ -327,7 +328,8 @@ def process_company(
             "methodology": methodology(m, rows, names, labels),
             "latest_period": period_label(top) if top else None,
             "latest_value_text":
-                fmt_value(top["value"], m.unit, top["value_status"]) if top else None,
+                fmt_value(top["value"], top["unit"] or m.unit, top["value_status"])
+                if top else None,
         }  # fmt: skip
         old = before.get(m.code)
         same = old is not None and all(

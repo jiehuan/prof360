@@ -19,7 +19,7 @@ from sqlalchemy import Connection
 
 from uw_pipeline.clients.llm import LLMClient
 from uw_pipeline.enrich.grounding import is_grounded, ungrounded_numbers
-from uw_pipeline.enrich.llm import PROMPTS_DIR, ModelSpec, cached_call
+from uw_pipeline.enrich.llm import PROMPTS_DIR, ModelSpec, Request, cached_call, prefetch
 from uw_pipeline.enrich.package import Package, Source
 from uw_pipeline.enrich.schemas import Evidence, strict_json_schema
 
@@ -93,6 +93,19 @@ class TaskRunner:
         self.client, self.conn, self.now, self.common = client, conn, now, common_prompt
         self.commit = commit
 
+    def request(
+        self, spec: ModelSpec, task: str, prompt_version: str, user: str, model: type[BaseModel],
+        *, with_common: bool = True,
+    ) -> Request:  # fmt: skip
+        """The call `run` would make, for `prefetch` (D-062)."""
+        task_prompt = (PROMPTS_DIR / f"{prompt_version}.md").read_text(encoding="utf-8")
+        system = f"{self.common}\n\n{task_prompt}" if with_common else task_prompt
+        return Request(spec, task, prompt_version, system, user, strict_json_schema(model),
+                       model.model_validate)  # fmt: skip
+
+    def prefetch(self, requests: Sequence[Request], workers: int) -> int:
+        return prefetch(self.conn, self.client, requests, now=self.now(), workers=workers)
+
     def run(
         self,
         spec: ModelSpec,
@@ -103,11 +116,10 @@ class TaskRunner:
         *,
         with_common: bool = True,
     ) -> T | None:
-        task_prompt = (PROMPTS_DIR / f"{prompt_version}.md").read_text(encoding="utf-8")
-        system = f"{self.common}\n\n{task_prompt}" if with_common else task_prompt
+        r = self.request(spec, task, prompt_version, user, model, with_common=with_common)
         raw = cached_call(
             self.conn, self.client, spec, task=task, prompt_version=prompt_version,
-            system=system, user=user, schema=strict_json_schema(model), now=self.now(),
+            system=r.system, user=user, schema=r.schema, now=self.now(),
             validate=model.model_validate, commit=self.commit,
         )  # fmt: skip
         if raw is None:

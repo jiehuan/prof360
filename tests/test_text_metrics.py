@@ -19,6 +19,7 @@ from uw_pipeline.enrich.text_metrics import (
     parse_number,
     period_keys,
     select_chunks,
+    to_metric_value,
 )
 from uw_pipeline.jobs.run_text_metrics import run_text_metrics_stage
 from uw_pipeline.normalize.periods import FiscalCalendar
@@ -387,3 +388,20 @@ def test_release_figures_match_xbrl_rounded_as_printed(printed, scale, xbrl, mat
     c = Candidate("net_income", ("Q", 2026, 1), "2026-03-31", value, "q",
                   printed_step(printed, value))  # fmt: skip
     assert matches_release(xbrl, c) is match
+
+
+def test_volume_units_are_counts_of_ounces_pounds_and_tons() -> None:
+    """Phase 17 (D-055): production and shipments are read as counts with their scale; a
+    money or percent reading of them is refused."""
+    mining = {m.code: m for m in REG.for_company("NEM", IND.groups["MINING"]).metrics}
+    metals = {m.code: m for m in REG.for_company("NUE", IND.groups["METALS"]).metrics}
+
+    def read(metric, value, unit, scale):
+        return to_metric_value(ev(metric.code, value, unit, "year", "2025-12-31", "q", scale),
+                               metric)  # fmt: skip
+
+    assert read(mining["gold_production"], "5.9", "count", "millions") == 5_900_000
+    assert read(mining["copper_production"], "1,520", "count", "millions") == 1_520_000_000
+    assert read(metals["metal_shipments"], "5,800", "count", "thousands") == 5_800_000
+    assert read(mining["gold_production"], "5.9", "usd", "millions") is None
+    assert read(metals["average_selling_price_per_ton"], "1,045", "usd", "units") == 1_045

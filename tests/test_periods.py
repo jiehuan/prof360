@@ -45,7 +45,7 @@ def test_learn_calendar_offset_from_10k() -> None:
 
 
 def test_a_wrong_sec_fiscal_year_end_gives_way_to_the_10k_years() -> None:
-    """SEC's submissions give Brown & Brown fiscalYearEnd 0119; its 10-Ks run to
+    """D-071: SEC's submissions give Brown & Brown fiscalYearEnd 0119; its 10-Ks run to
     December 31. The 10-Ks' own year end wins, so 2026-09-30 is FY2026 Q3, not FY2027."""
     facts = frame(
         fact("Revenues", "2025-01-01", "2025-12-31", 5900, form="10-K", fy=2025, fp="FY",

@@ -1,0 +1,241 @@
+{
+ "cik": "0001675149",
+ "entityType": "operating",
+ "sic": "3334",
+ "sicDescription": "Primary Production of  Aluminum",
+ "ownerOrg": "04 Manufacturing",
+ "insiderTransactionForOwnerExists": 0,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "Alcoa Corp",
+ "tickers": [
+  "AA"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "811789115",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "201 ISABELLA STREET",
+   "street2": "SUITE 500",
+   "city": "PITTSBURGH",
+   "stateOrCountry": "PA",
+   "zipCode": "15212",
+   "stateOrCountryDescription": "PA",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "201 ISABELLA STREET",
+   "street2": "SUITE 500",
+   "city": "PITTSBURGH",
+   "stateOrCountry": "PA",
+   "zipCode": "15212",
+   "stateOrCountryDescription": "PA",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "412-315-2900",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "Alcoa Upstream Corp",
+   "from": "2016-06-29T04:00:00.000Z",
+   "to": "2016-10-31T04:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000950103-26-015727",
+    "0000950103-26-015659",
+    "0001193125-26-422891",
+    "0001193125-26-399539",
+    "0001193125-26-399499",
+    "0001193125-26-326265",
+    "0001193125-26-197447",
+    "0001193125-26-077167",
+    "0001193125-25-253570"
+   ],
+   "filingDate": [
+    "2026-10-16",
+    "2026-10-15",
+    "2026-10-15",
+    "2026-09-23",
+    "2026-09-23",
+    "2026-07-30",
+    "2026-04-30",
+    "2026-02-26",
+    "2025-10-28"
+   ],
+   "reportDate": [
+    "",
+    "",
+    "2026-10-15",
+    "",
+    "2026-09-23",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-17T00:59:48.000Z",
+    "2026-10-16T00:37:39.000Z",
+    "2026-10-16T00:14:04.000Z",
+    "2026-09-24T00:41:19.000Z",
+    "2026-09-24T00:33:30.000Z",
+    "2026-07-31T00:35:11.000Z",
+    "2026-05-01T00:26:35.000Z",
+    "2026-02-27T02:52:29.000Z",
+    "2025-10-29T00:23:39.000Z"
+   ],
+   "act": [
+    "34",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "425",
+    "425",
+    "8-K",
+    "425",
+    "8-K",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "001-37816",
+    "001-37816",
+    "001-37816",
+    "001-37816",
+    "001-37816",
+    "001-37816",
+    "001-37816",
+    "001-37816",
+    "001-37816"
+   ],
+   "filmNumber": [
+    "261466792",
+    "261463466",
+    "261463223",
+    "261401427",
+    "261401381",
+    "261223920",
+    "26925991",
+    "26690125",
+    "251425138"
+   ],
+   "items": [
+    "",
+    "",
+    "2.02,9.01",
+    "",
+    "1.01,2.03,7.01,8.01,9.01",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "425",
+    "425",
+    "XBRL",
+    "425",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    36762,
+    2427055,
+    1786812,
+    3777492,
+    4261836,
+    18864661,
+    15084420,
+    115599232,
+    24786446
+   ],
+   "isXBRL": [
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "dp255130_425.htm",
+    "dp255040_425.htm",
+    "aa-20261015.htm",
+    "alcoa_closing_425_8-k_co.htm",
+    "aa-20260923.htm",
+    "aa-20260630.htm",
+    "aa-20260331.htm",
+    "aa-20251231.htm",
+    "aa-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "FORM 425",
+    "FORM 425",
+    "8-K",
+    "425",
+    "8-K",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

@@ -1,0 +1,3244 @@
+<?xml version='1.0' encoding='utf-8'?>
+<xbrl xmlns="http://www.xbrl.org/2003/instance" xmlns:us-gaap="http://fasb.org/us-gaap/2025" xmlns:xbrldi="http://xbrl.org/2006/xbrldi" xml:lang="en-US">
+    <context id="c-1">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-6">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-7">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-8">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-9">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-10">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-11">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-12">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-13">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-14">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-15">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-16">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-17">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-18">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-19">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-20">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-21">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-22">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-168">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-172">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-173">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-187">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-506">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:RelatedPartyTransactionAxis">lvs:SecurityAndMedicalSupportAndOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:RelatedPartyTransactionsByRelatedPartyAxis">lvs:PrincipalStockholdersMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-507">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:RelatedPartyTransactionAxis">lvs:SecurityAndMedicalSupportAndOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:RelatedPartyTransactionsByRelatedPartyAxis">lvs:PrincipalStockholdersMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-508">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:RelatedPartyTransactionAxis">lvs:SecurityAndMedicalSupportAndOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:RelatedPartyTransactionsByRelatedPartyAxis">lvs:PrincipalStockholdersMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-515">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:RelatedPartyTransactionAxis">lvs:AviationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:RelatedPartyTransactionsByRelatedPartyAxis">lvs:PrincipalStockholdersMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-516">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:RelatedPartyTransactionAxis">lvs:AviationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:RelatedPartyTransactionsByRelatedPartyAxis">lvs:PrincipalStockholdersMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-517">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="us-gaap:RelatedPartyTransactionAxis">lvs:AviationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:RelatedPartyTransactionsByRelatedPartyAxis">lvs:PrincipalStockholdersMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-523">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-524">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-525">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-526">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-527">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-528">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-529">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-530">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-531">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-532">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-533">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-534">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-535">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-536">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-537">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-538">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-539">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-540">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-541">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-542">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-543">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-544">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-545">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-546">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-547">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-548">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-549">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-550">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-551">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-552">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-553">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-554">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-555">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-556">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-557">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-558">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-559">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-560">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-561">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-562">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-563">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-564">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-565">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-566">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-567">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-568">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-569">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-570">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-571">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-572">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-573">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-574">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-575">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-576">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-577">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-578">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-579">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-580">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-581">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-582">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MacaoOperatingSegmentsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-583">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-584">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-585">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-586">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-587">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-588">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-589">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-590">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-591">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-592">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-593">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-594">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-595">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-596">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-597">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-598">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-599">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-600">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-601">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-602">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-603">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-604">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-605">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-606">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-607">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-608">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-609">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-610">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-611">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-612">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-613">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-614">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-615">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-616">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-617">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-618">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-619">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-620">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-621">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-622">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-623">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-624">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-625">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-626">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-627">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-628">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-629">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-630">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-631">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-632">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-633">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-634">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-635">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-636">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-637">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-638">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-639">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-640">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-641">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-642">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-643">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-644">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-645">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MacaoOperatingSegmentsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-646">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-647">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-648">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-649">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-650">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-651">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-652">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-653">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-654">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-655">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-656">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-657">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:CasinoMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-658">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-659">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-660">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-661">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-662">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-663">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-664">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-665">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-666">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:OccupancyMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-667">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-668">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-669">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-670">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-671">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-672">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-673">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-674">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-675">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:FoodAndBeverageMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-676">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-677">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-678">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-679">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-680">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-681">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-682">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-683">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-684">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">lvs:MallMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-685">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-686">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-687">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-688">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-689">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-690">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-691">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-692">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-693">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-694">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-695">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-696">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-697">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-698">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-699">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-700">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-701">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:VenetianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-702">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:TheLondonerMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-703">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ParisianMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-704">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:ThePlazaMacaoAndFourSeasonsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-705">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:SandsMacaoMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-706">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:FerryOperationsandOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-707">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:MO</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MacaoOperatingSegmentsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-708">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:SG</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">lvs:MarinaBaySandsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-709">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-710">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:IntersegmentEliminationMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-01-01</startDate>
+            <endDate>2023-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-739">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-740">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+        </entity>
+        <period>
+            <startDate>2025-04-01</startDate>
+            <endDate>2025-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-741">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+        </entity>
+        <period>
+            <startDate>2025-07-01</startDate>
+            <endDate>2025-09-30</endDate>
+        </period>
+    </context>
+    <context id="c-742">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+        </entity>
+        <period>
+            <startDate>2025-10-01</startDate>
+            <endDate>2025-12-31</endDate>
+        </period>
+    </context>
+    <context id="c-743">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-03-31</endDate>
+        </period>
+    </context>
+    <context id="c-744">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+        </entity>
+        <period>
+            <startDate>2024-04-01</startDate>
+            <endDate>2024-06-30</endDate>
+        </period>
+    </context>
+    <context id="c-745">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+        </entity>
+        <period>
+            <startDate>2024-07-01</startDate>
+            <endDate>2024-09-30</endDate>
+        </period>
+    </context>
+    <context id="c-746">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0001300514</identifier>
+        </entity>
+        <period>
+            <startDate>2024-10-01</startDate>
+            <endDate>2024-12-31</endDate>
+        </period>
+    </context>
+    <unit id="usd">
+        <measure>iso4217:USD</measure>
+    </unit>
+    <us-gaap:Revenues contextRef="c-6" decimals="-6" id="f-142" unitRef="usd">9789000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-7" decimals="-6" id="f-143" unitRef="usd">8303000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-8" decimals="-6" id="f-144" unitRef="usd">7522000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-9" decimals="-6" id="f-145" unitRef="usd">1422000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-10" decimals="-6" id="f-146" unitRef="usd">1274000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-11" decimals="-6" id="f-147" unitRef="usd">1204000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-12" decimals="-6" id="f-148" unitRef="usd">644000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-13" decimals="-6" id="f-149" unitRef="usd">607000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-14" decimals="-6" id="f-150" unitRef="usd">584000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-15" decimals="-6" id="f-151" unitRef="usd">801000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-16" decimals="-6" id="f-152" unitRef="usd">755000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-17" decimals="-6" id="f-153" unitRef="usd">767000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-18" decimals="-6" id="f-154" unitRef="usd">361000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-19" decimals="-6" id="f-155" unitRef="usd">359000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-20" decimals="-6" id="f-156" unitRef="usd">295000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-1" decimals="-6" id="f-157" unitRef="usd">13017000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-21" decimals="-6" id="f-158" unitRef="usd">11298000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-22" decimals="-6" id="f-159" unitRef="usd">10372000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-506" decimals="-6" id="f-1811" unitRef="usd">5000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-507" decimals="-6" id="f-1812" unitRef="usd">4000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-508" decimals="-6" id="f-1813" unitRef="usd">2000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-515" decimals="-6" id="f-1820" unitRef="usd">42000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-516" decimals="-6" id="f-1821" unitRef="usd">36000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-517" decimals="-6" id="f-1822" unitRef="usd">21000000</us-gaap:Revenues>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-523" decimals="-6" id="f-1835" unitRef="usd">2146000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-524" decimals="-6" id="f-1836" unitRef="usd">1946000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-525" decimals="-6" id="f-1837" unitRef="usd">657000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-526" decimals="-6" id="f-1838" unitRef="usd">569000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-527" decimals="-6" id="f-1839" unitRef="usd">265000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-528" decimals="-6" id="f-1840" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-529" decimals="-6" id="f-1841" unitRef="usd">5583000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-530" decimals="-6" id="f-1842" unitRef="usd">4206000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-531" decimals="-6" id="f-1843" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-6" decimals="-6" id="f-1844" unitRef="usd">9789000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-532" decimals="-6" id="f-1845" unitRef="usd">208000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-533" decimals="-6" id="f-1846" unitRef="usd">375000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-534" decimals="-6" id="f-1847" unitRef="usd">137000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-535" decimals="-6" id="f-1848" unitRef="usd">115000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-536" decimals="-6" id="f-1849" unitRef="usd">18000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-537" decimals="-6" id="f-1850" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-538" decimals="-6" id="f-1851" unitRef="usd">853000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-539" decimals="-6" id="f-1852" unitRef="usd">569000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-540" decimals="-6" id="f-1853" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-9" decimals="-6" id="f-1854" unitRef="usd">1422000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-541" decimals="-6" id="f-1855" unitRef="usd">64000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-542" decimals="-6" id="f-1856" unitRef="usd">116000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-543" decimals="-6" id="f-1857" unitRef="usd">52000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-544" decimals="-6" id="f-1858" unitRef="usd">29000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-545" decimals="-6" id="f-1859" unitRef="usd">9000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-546" decimals="-6" id="f-1860" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-547" decimals="-6" id="f-1861" unitRef="usd">270000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-548" decimals="-6" id="f-1862" unitRef="usd">374000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-549" decimals="-6" id="f-1863" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-12" decimals="-6" id="f-1864" unitRef="usd">644000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:Revenues contextRef="c-550" decimals="-6" id="f-1865" unitRef="usd">254000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-551" decimals="-6" id="f-1866" unitRef="usd">92000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-552" decimals="-6" id="f-1867" unitRef="usd">19000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-553" decimals="-6" id="f-1868" unitRef="usd">155000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-554" decimals="-6" id="f-1869" unitRef="usd">1000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-555" decimals="-6" id="f-1870" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-556" decimals="-6" id="f-1871" unitRef="usd">521000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-557" decimals="-6" id="f-1872" unitRef="usd">280000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-558" decimals="-6" id="f-1873" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-15" decimals="-6" id="f-1874" unitRef="usd">801000000</us-gaap:Revenues>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-559" decimals="-6" id="f-1875" unitRef="usd">64000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-560" decimals="-6" id="f-1876" unitRef="usd">27000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-561" decimals="-6" id="f-1877" unitRef="usd">7000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-562" decimals="-6" id="f-1878" unitRef="usd">4000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-563" decimals="-6" id="f-1879" unitRef="usd">1000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-564" decimals="-6" id="f-1880" unitRef="usd">103000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-565" decimals="-6" id="f-1881" unitRef="usd">206000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-566" decimals="-6" id="f-1882" unitRef="usd">155000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-567" decimals="-6" id="f-1883" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-18" decimals="-6" id="f-1884" unitRef="usd">361000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:Revenues contextRef="c-568" decimals="-6" id="f-1885" unitRef="usd">2736000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-569" decimals="-6" id="f-1886" unitRef="usd">2556000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-570" decimals="-6" id="f-1887" unitRef="usd">872000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-571" decimals="-6" id="f-1888" unitRef="usd">872000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-572" decimals="-6" id="f-1889" unitRef="usd">294000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-573" decimals="-6" id="f-1890" unitRef="usd">103000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-187" decimals="-6" id="f-1891" unitRef="usd">7433000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-574" decimals="-6" id="f-1892" unitRef="usd">5584000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-575" decimals="-6" id="f-1893" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-1" decimals="-6" id="f-1894" unitRef="usd">13017000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-576" decimals="-6" id="f-1895" unitRef="usd">-9000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-577" decimals="-6" id="f-1896" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-578" decimals="-6" id="f-1897" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-579" decimals="-6" id="f-1898" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-580" decimals="-6" id="f-1899" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-581" decimals="-6" id="f-1900" unitRef="usd">-28000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-582" decimals="-6" id="f-1901" unitRef="usd">-37000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-583" decimals="-6" id="f-1902" unitRef="usd">-6000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-584" decimals="-6" id="f-1903" unitRef="usd">-293000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-585" decimals="-6" id="f-1904" unitRef="usd">-336000000</us-gaap:Revenues>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-586" decimals="-6" id="f-1979" unitRef="usd">2282000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-587" decimals="-6" id="f-1980" unitRef="usd">1462000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-588" decimals="-6" id="f-1981" unitRef="usd">740000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-589" decimals="-6" id="f-1982" unitRef="usd">572000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-590" decimals="-6" id="f-1983" unitRef="usd">290000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-591" decimals="-6" id="f-1984" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-592" decimals="-6" id="f-1985" unitRef="usd">5346000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-593" decimals="-6" id="f-1986" unitRef="usd">2957000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-594" decimals="-6" id="f-1987" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-7" decimals="-6" id="f-1988" unitRef="usd">8303000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-595" decimals="-6" id="f-1989" unitRef="usd">210000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-596" decimals="-6" id="f-1990" unitRef="usd">302000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-597" decimals="-6" id="f-1991" unitRef="usd">137000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-598" decimals="-6" id="f-1992" unitRef="usd">107000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-599" decimals="-6" id="f-1993" unitRef="usd">18000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-600" decimals="-6" id="f-1994" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-601" decimals="-6" id="f-1995" unitRef="usd">774000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-602" decimals="-6" id="f-1996" unitRef="usd">500000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-603" decimals="-6" id="f-1997" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-10" decimals="-6" id="f-1998" unitRef="usd">1274000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-604" decimals="-6" id="f-1999" unitRef="usd">64000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-605" decimals="-6" id="f-2000" unitRef="usd">92000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-606" decimals="-6" id="f-2001" unitRef="usd">62000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-607" decimals="-6" id="f-2002" unitRef="usd">31000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-608" decimals="-6" id="f-2003" unitRef="usd">11000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-609" decimals="-6" id="f-2004" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-610" decimals="-6" id="f-2005" unitRef="usd">260000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-611" decimals="-6" id="f-2006" unitRef="usd">347000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-612" decimals="-6" id="f-2007" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-13" decimals="-6" id="f-2008" unitRef="usd">607000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:Revenues contextRef="c-613" decimals="-6" id="f-2009" unitRef="usd">230000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-614" decimals="-6" id="f-2010" unitRef="usd">77000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-615" decimals="-6" id="f-2011" unitRef="usd">27000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-616" decimals="-6" id="f-2012" unitRef="usd">158000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-617" decimals="-6" id="f-2013" unitRef="usd">1000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-618" decimals="-6" id="f-2014" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-619" decimals="-6" id="f-2015" unitRef="usd">493000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-620" decimals="-6" id="f-2016" unitRef="usd">262000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-621" decimals="-6" id="f-2017" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-16" decimals="-6" id="f-2018" unitRef="usd">755000000</us-gaap:Revenues>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-622" decimals="-6" id="f-2019" unitRef="usd">38000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-623" decimals="-6" id="f-2020" unitRef="usd">51000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-624" decimals="-6" id="f-2021" unitRef="usd">7000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-625" decimals="-6" id="f-2022" unitRef="usd">4000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-626" decimals="-6" id="f-2023" unitRef="usd">2000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-627" decimals="-6" id="f-2024" unitRef="usd">98000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-628" decimals="-6" id="f-2025" unitRef="usd">200000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-629" decimals="-6" id="f-2026" unitRef="usd">159000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-630" decimals="-6" id="f-2027" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-19" decimals="-6" id="f-2028" unitRef="usd">359000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:Revenues contextRef="c-631" decimals="-6" id="f-2029" unitRef="usd">2824000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-632" decimals="-6" id="f-2030" unitRef="usd">1984000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-633" decimals="-6" id="f-2031" unitRef="usd">973000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-634" decimals="-6" id="f-2032" unitRef="usd">872000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-635" decimals="-6" id="f-2033" unitRef="usd">322000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-636" decimals="-6" id="f-2034" unitRef="usd">98000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-168" decimals="-6" id="f-2035" unitRef="usd">7073000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-637" decimals="-6" id="f-2036" unitRef="usd">4225000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-638" decimals="-6" id="f-2037" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-21" decimals="-6" id="f-2038" unitRef="usd">11298000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-639" decimals="-6" id="f-2039" unitRef="usd">-7000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-640" decimals="-6" id="f-2040" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-641" decimals="-6" id="f-2041" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-642" decimals="-6" id="f-2042" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-643" decimals="-6" id="f-2043" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-644" decimals="-6" id="f-2044" unitRef="usd">-27000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-645" decimals="-6" id="f-2045" unitRef="usd">-34000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-646" decimals="-6" id="f-2046" unitRef="usd">-5000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-647" decimals="-6" id="f-2047" unitRef="usd">-250000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-648" decimals="-6" id="f-2048" unitRef="usd">-289000000</us-gaap:Revenues>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-649" decimals="-6" id="f-2122" unitRef="usd">2151000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-650" decimals="-6" id="f-2123" unitRef="usd">1283000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-651" decimals="-6" id="f-2124" unitRef="usd">655000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-652" decimals="-6" id="f-2125" unitRef="usd">462000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-653" decimals="-6" id="f-2126" unitRef="usd">290000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-654" decimals="-6" id="f-2127" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-655" decimals="-6" id="f-2128" unitRef="usd">4841000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-656" decimals="-6" id="f-2129" unitRef="usd">2681000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-657" decimals="-6" id="f-2130" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-8" decimals="-6" id="f-2131" unitRef="usd">7522000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-658" decimals="-6" id="f-2132" unitRef="usd">191000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-659" decimals="-6" id="f-2133" unitRef="usd">324000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-660" decimals="-6" id="f-2134" unitRef="usd">135000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-661" decimals="-6" id="f-2135" unitRef="usd">94000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-662" decimals="-6" id="f-2136" unitRef="usd">17000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-663" decimals="-6" id="f-2137" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-664" decimals="-6" id="f-2138" unitRef="usd">761000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-665" decimals="-6" id="f-2139" unitRef="usd">443000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-666" decimals="-6" id="f-2140" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-11" decimals="-6" id="f-2141" unitRef="usd">1204000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-667" decimals="-6" id="f-2142" unitRef="usd">63000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-668" decimals="-6" id="f-2143" unitRef="usd">86000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-669" decimals="-6" id="f-2144" unitRef="usd">49000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-670" decimals="-6" id="f-2145" unitRef="usd">30000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-671" decimals="-6" id="f-2146" unitRef="usd">12000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-672" decimals="-6" id="f-2147" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-673" decimals="-6" id="f-2148" unitRef="usd">240000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-674" decimals="-6" id="f-2149" unitRef="usd">344000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-675" decimals="-6" id="f-2150" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-14" decimals="-6" id="f-2151" unitRef="usd">584000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:Revenues contextRef="c-676" decimals="-6" id="f-2152" unitRef="usd">227000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-677" decimals="-6" id="f-2153" unitRef="usd">66000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-678" decimals="-6" id="f-2154" unitRef="usd">32000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-679" decimals="-6" id="f-2155" unitRef="usd">187000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-680" decimals="-6" id="f-2156" unitRef="usd">1000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-681" decimals="-6" id="f-2157" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-682" decimals="-6" id="f-2158" unitRef="usd">513000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-683" decimals="-6" id="f-2159" unitRef="usd">254000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-684" decimals="-6" id="f-2160" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-17" decimals="-6" id="f-2161" unitRef="usd">767000000</us-gaap:Revenues>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-685" decimals="-6" id="f-2162" unitRef="usd">43000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-686" decimals="-6" id="f-2163" unitRef="usd">33000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-687" decimals="-6" id="f-2164" unitRef="usd">8000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-688" decimals="-6" id="f-2165" unitRef="usd">6000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-689" decimals="-6" id="f-2166" unitRef="usd">2000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-690" decimals="-6" id="f-2167" unitRef="usd">80000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-691" decimals="-6" id="f-2168" unitRef="usd">172000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-692" decimals="-6" id="f-2169" unitRef="usd">123000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-693" decimals="-6" id="f-2170" unitRef="usd">0</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax contextRef="c-20" decimals="-6" id="f-2171" unitRef="usd">295000000</us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax>
+    <us-gaap:Revenues contextRef="c-694" decimals="-6" id="f-2172" unitRef="usd">2675000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-695" decimals="-6" id="f-2173" unitRef="usd">1792000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-173" decimals="-6" id="f-2174" unitRef="usd">879000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-696" decimals="-6" id="f-2175" unitRef="usd">779000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-697" decimals="-6" id="f-2176" unitRef="usd">322000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-698" decimals="-6" id="f-2177" unitRef="usd">80000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-172" decimals="-6" id="f-2178" unitRef="usd">6527000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-699" decimals="-6" id="f-2179" unitRef="usd">3845000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-700" decimals="-6" id="f-2180" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-22" decimals="-6" id="f-2181" unitRef="usd">10372000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-701" decimals="-6" id="f-2182" unitRef="usd">-7000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-702" decimals="-6" id="f-2183" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-703" decimals="-6" id="f-2184" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-704" decimals="-6" id="f-2185" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-705" decimals="-6" id="f-2186" unitRef="usd">0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-706" decimals="-6" id="f-2187" unitRef="usd">-25000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-707" decimals="-6" id="f-2188" unitRef="usd">-32000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-708" decimals="-6" id="f-2189" unitRef="usd">-4000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-709" decimals="-6" id="f-2190" unitRef="usd">-224000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-710" decimals="-6" id="f-2191" unitRef="usd">-260000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-739" decimals="-6" id="f-2368" unitRef="usd">2862000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-740" decimals="-6" id="f-2369" unitRef="usd">3175000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-741" decimals="-6" id="f-2370" unitRef="usd">3331000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-742" decimals="-6" id="f-2371" unitRef="usd">3649000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-1" decimals="-6" id="f-2372" unitRef="usd">13017000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-743" decimals="-6" id="f-2398" unitRef="usd">2959000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-744" decimals="-6" id="f-2399" unitRef="usd">2761000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-745" decimals="-6" id="f-2400" unitRef="usd">2682000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-746" decimals="-6" id="f-2401" unitRef="usd">2896000000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-21" decimals="-6" id="f-2402" unitRef="usd">11298000000</us-gaap:Revenues>
+    </xbrl>

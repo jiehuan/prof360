@@ -1,0 +1,246 @@
+{
+ "cik": "0000789570",
+ "entityType": "operating",
+ "sic": "7011",
+ "sicDescription": "Hotels & Motels",
+ "ownerOrg": "05 Real Estate & Construction",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "MGM Resorts International",
+ "tickers": [
+  "MGM"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "880215232",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "3600 LAS VEGAS BLVD S.",
+   "street2": null,
+   "city": "LAS VEGAS",
+   "stateOrCountry": "NV",
+   "zipCode": "89109",
+   "stateOrCountryDescription": "NV",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "3600 LAS VEGAS BLVD S",
+   "street2": null,
+   "city": "LAS VEGAS",
+   "stateOrCountry": "NV",
+   "zipCode": "89109",
+   "stateOrCountryDescription": "NV",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "702-693-7120",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "MGM MIRAGE",
+   "from": "2000-10-16T04:00:00.000Z",
+   "to": "2010-05-19T04:00:00.000Z"
+  },
+  {
+   "name": "MGM GRAND INC",
+   "from": "1994-03-11T05:00:00.000Z",
+   "to": "2000-05-19T04:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000789570-26-000099",
+    "0000789570-26-000098",
+    "0000789570-26-000097",
+    "0000789570-26-000096",
+    "0000789570-26-000095",
+    "0000789570-26-000076",
+    "0000789570-26-000035",
+    "0000789570-26-000018",
+    "0000789570-25-000074"
+   ],
+   "filingDate": [
+    "2026-10-08",
+    "2026-10-08",
+    "2026-10-08",
+    "2026-10-08",
+    "2026-10-08",
+    "2026-07-29",
+    "2026-04-29",
+    "2026-02-11",
+    "2025-10-29"
+   ],
+   "reportDate": [
+    "2026-10-07",
+    "2026-10-07",
+    "2026-10-07",
+    "2026-10-07",
+    "2026-10-07",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-09T02:46:12.000Z",
+    "2026-10-09T02:44:07.000Z",
+    "2026-10-09T02:40:47.000Z",
+    "2026-10-09T02:38:15.000Z",
+    "2026-10-09T02:36:26.000Z",
+    "2026-07-30T00:19:48.000Z",
+    "2026-04-30T00:19:18.000Z",
+    "2026-02-12T02:16:07.000Z",
+    "2025-10-30T00:18:55.000Z"
+   ],
+   "act": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "001-10362",
+    "001-10362",
+    "001-10362",
+    "001-10362"
+   ],
+   "filmNumber": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "261217849",
+    "26916403",
+    "26620937",
+    "251430237"
+   ],
+   "items": [
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "4",
+    "4",
+    "4",
+    "4",
+    "4",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    8676,
+    8702,
+    9407,
+    8684,
+    8659,
+    9733425,
+    6800563,
+    16904276,
+    8124635
+   ],
+   "isXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "xslF345X06/form4.xml",
+    "mgm-20260630.htm",
+    "mgm-20260331.htm",
+    "mgm-20251231.htm",
+    "mgm-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

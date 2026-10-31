@@ -25,10 +25,12 @@ from uw_pipeline.enrich.llm import DailyBudget, LLMConfig, load_llm_config
 from uw_pipeline.enrich.package import load_insights_config
 from uw_pipeline.enrich.sources import load_source_labels
 from uw_pipeline.enrich.text_metrics import load_text_config
+from uw_pipeline.jobs.run_clinical import run_clinical_stage
 from uw_pipeline.jobs.run_company import TaskResult, run_company_stage
 from uw_pipeline.jobs.run_documents import run_documents_stage
 from uw_pipeline.jobs.run_dq import run_dq_stage
 from uw_pipeline.jobs.run_governance import run_governance_stage
+from uw_pipeline.jobs.run_industry import run_industry_stage
 from uw_pipeline.jobs.run_insights import run_insights_stage
 from uw_pipeline.jobs.run_legal import run_legal_stage
 from uw_pipeline.jobs.run_market import run_market_stage
@@ -172,7 +174,7 @@ class StageRunner:
     def _mdna_history(self, cfg: CompanyConfig, group_code: str) -> tuple[int, int]:
         """Years of 10-Ks and quarters of 10-Qs whose MD&A the documents stage keeps for this
         company's text-metric history (D-069)."""
-        group = self.industry.groups[group_code]
+        group = self.industry.group_of(group_code, cfg)
         metrics = self.registry.for_company(cfg.ticker, group).metrics
         has_text = any(m.kind == "text" and m.display and m.extraction for m in metrics)
         return self.industry.mdna_history(group, has_text)
@@ -213,6 +215,12 @@ class StageRunner:
             return lambda c: run_governance_stage(c, self.llm, self.storage, e)
         if stage == "legal":
             return lambda c: run_legal_stage(c, self.llm, self.storage, e)
+        if stage == "clinical":
+            return lambda c: run_clinical_stage(c, self.llm, self.storage, e)
+        if stage == "industry":
+            return lambda c: run_industry_stage(
+                c, self.llm, reg, ind, e, lambda cs: run_compute_stage(cs, reg, ind, e)
+            )
         if stage == "signals":
             return lambda c: run_signals_stage(
                 c, self.sec, self.signal_rules, e, llm=self.llm, industry=ind,

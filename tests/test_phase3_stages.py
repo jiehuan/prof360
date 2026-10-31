@@ -114,7 +114,12 @@ def env(make_sec_client):
             )
         )
     docs = {
-        "0000000042-26-000001": {"acme-10k.htm": TEN_K.encode(), "acme-10k_htm.xml": INSTANCE},
+        "0000000042-26-000001": {
+            "acme-10k.htm": TEN_K.encode(),
+            "acme-10k_htm.xml": INSTANCE,
+            # A short MD&A: the stage looks for an annual report exhibit (D-060); there is none.
+            "0000000042-26-000001-index.html": b"<table class='tableFile'></table>",
+        },
         "0000000042-26-000002": {"acme-10ka.htm": b"<p>Part III amendment</p>"},
         "0000000042-26-000003": {"acme-10q.htm": TEN_Q.encode()},
         "0000000042-26-000004": {"acme-502.htm": EIGHT_K_502.encode()},

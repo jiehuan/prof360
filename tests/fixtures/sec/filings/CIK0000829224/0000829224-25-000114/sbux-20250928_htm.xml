@@ -1,0 +1,564 @@
+<?xml version='1.0' encoding='utf-8'?>
+<xbrl xmlns="http://www.xbrl.org/2003/instance" xmlns:us-gaap="http://fasb.org/us-gaap/2025" xmlns:xbrldi="http://xbrl.org/2006/xbrldi" xml:lang="en-US">
+    <context id="c-1">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+        </entity>
+        <period>
+            <startDate>2024-09-30</startDate>
+            <endDate>2025-09-28</endDate>
+        </period>
+    </context>
+    <context id="c-4">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:CompanyOperatedStoresMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-09-30</startDate>
+            <endDate>2025-09-28</endDate>
+        </period>
+    </context>
+    <context id="c-5">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:CompanyOperatedStoresMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-10-02</startDate>
+            <endDate>2024-09-29</endDate>
+        </period>
+    </context>
+    <context id="c-6">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:CompanyOperatedStoresMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2022-10-03</startDate>
+            <endDate>2023-10-01</endDate>
+        </period>
+    </context>
+    <context id="c-7">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:LicensedStoresMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-09-30</startDate>
+            <endDate>2025-09-28</endDate>
+        </period>
+    </context>
+    <context id="c-8">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:LicensedStoresMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-10-02</startDate>
+            <endDate>2024-09-29</endDate>
+        </period>
+    </context>
+    <context id="c-9">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:LicensedStoresMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2022-10-03</startDate>
+            <endDate>2023-10-01</endDate>
+        </period>
+    </context>
+    <context id="c-10">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-09-30</startDate>
+            <endDate>2025-09-28</endDate>
+        </period>
+    </context>
+    <context id="c-11">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-10-02</startDate>
+            <endDate>2024-09-29</endDate>
+        </period>
+    </context>
+    <context id="c-12">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">us-gaap:ProductAndServiceOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2022-10-03</startDate>
+            <endDate>2023-10-01</endDate>
+        </period>
+    </context>
+    <context id="c-13">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+        </entity>
+        <period>
+            <startDate>2023-10-02</startDate>
+            <endDate>2024-09-29</endDate>
+        </period>
+    </context>
+    <context id="c-14">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+        </entity>
+        <period>
+            <startDate>2022-10-03</startDate>
+            <endDate>2023-10-01</endDate>
+        </period>
+    </context>
+    <context id="c-581">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">sbux:ChannelDevelopmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-09-30</startDate>
+            <endDate>2025-09-28</endDate>
+        </period>
+    </context>
+    <context id="c-582">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:BeverageMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-09-30</startDate>
+            <endDate>2025-09-28</endDate>
+        </period>
+    </context>
+    <context id="c-584">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:BeverageMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-10-02</startDate>
+            <endDate>2024-09-29</endDate>
+        </period>
+    </context>
+    <context id="c-586">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:BeverageMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2022-10-03</startDate>
+            <endDate>2023-10-01</endDate>
+        </period>
+    </context>
+    <context id="c-588">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:FoodMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-09-30</startDate>
+            <endDate>2025-09-28</endDate>
+        </period>
+    </context>
+    <context id="c-590">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:FoodMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-10-02</startDate>
+            <endDate>2024-09-29</endDate>
+        </period>
+    </context>
+    <context id="c-592">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:FoodMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2022-10-03</startDate>
+            <endDate>2023-10-01</endDate>
+        </period>
+    </context>
+    <context id="c-594">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:OtherProductsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-09-30</startDate>
+            <endDate>2025-09-28</endDate>
+        </period>
+    </context>
+    <context id="c-596">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:OtherProductsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-10-02</startDate>
+            <endDate>2024-09-29</endDate>
+        </period>
+    </context>
+    <context id="c-598">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ProductOrServiceAxis">sbux:OtherProductsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2022-10-03</startDate>
+            <endDate>2023-10-01</endDate>
+        </period>
+    </context>
+    <context id="c-603">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-09-30</startDate>
+            <endDate>2025-09-28</endDate>
+        </period>
+    </context>
+    <context id="c-604">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-10-02</startDate>
+            <endDate>2024-09-29</endDate>
+        </period>
+    </context>
+    <context id="c-605">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:US</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2022-10-03</startDate>
+            <endDate>2023-10-01</endDate>
+        </period>
+    </context>
+    <context id="c-606">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:CN</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-09-30</startDate>
+            <endDate>2025-09-28</endDate>
+        </period>
+    </context>
+    <context id="c-607">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:CN</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-10-02</startDate>
+            <endDate>2024-09-29</endDate>
+        </period>
+    </context>
+    <context id="c-608">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">country:CN</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2022-10-03</startDate>
+            <endDate>2023-10-01</endDate>
+        </period>
+    </context>
+    <context id="c-609">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">us-gaap:NonUsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-09-30</startDate>
+            <endDate>2025-09-28</endDate>
+        </period>
+    </context>
+    <context id="c-610">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">us-gaap:NonUsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-10-02</startDate>
+            <endDate>2024-09-29</endDate>
+        </period>
+    </context>
+    <context id="c-611">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:StatementGeographicalAxis">us-gaap:NonUsMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2022-10-03</startDate>
+            <endDate>2023-10-01</endDate>
+        </period>
+    </context>
+    <context id="c-621">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">sbux:NorthAmericaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-09-30</startDate>
+            <endDate>2025-09-28</endDate>
+        </period>
+    </context>
+    <context id="c-622">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">sbux:InternationalSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-09-30</startDate>
+            <endDate>2025-09-28</endDate>
+        </period>
+    </context>
+    <context id="c-623">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2024-09-30</startDate>
+            <endDate>2025-09-28</endDate>
+        </period>
+    </context>
+    <context id="c-624">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">sbux:NorthAmericaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-10-02</startDate>
+            <endDate>2024-09-29</endDate>
+        </period>
+    </context>
+    <context id="c-625">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">sbux:InternationalSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-10-02</startDate>
+            <endDate>2024-09-29</endDate>
+        </period>
+    </context>
+    <context id="c-626">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">sbux:ChannelDevelopmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-10-02</startDate>
+            <endDate>2024-09-29</endDate>
+        </period>
+    </context>
+    <context id="c-627">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2023-10-02</startDate>
+            <endDate>2024-09-29</endDate>
+        </period>
+    </context>
+    <context id="c-628">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">sbux:NorthAmericaSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2022-10-03</startDate>
+            <endDate>2023-10-01</endDate>
+        </period>
+    </context>
+    <context id="c-629">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">sbux:InternationalSegmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2022-10-03</startDate>
+            <endDate>2023-10-01</endDate>
+        </period>
+    </context>
+    <context id="c-630">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">sbux:ChannelDevelopmentMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2022-10-03</startDate>
+            <endDate>2023-10-01</endDate>
+        </period>
+    </context>
+    <context id="c-631">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000829224</identifier>
+            <segment>
+                <xbrldi:explicitMember dimension="srt:ConsolidationItemsAxis">us-gaap:OperatingSegmentsMember</xbrldi:explicitMember>
+                <xbrldi:explicitMember dimension="us-gaap:StatementBusinessSegmentsAxis">us-gaap:CorporateAndOtherMember</xbrldi:explicitMember>
+            </segment>
+        </entity>
+        <period>
+            <startDate>2022-10-03</startDate>
+            <endDate>2023-10-01</endDate>
+        </period>
+    </context>
+    <unit id="usd">
+        <measure>iso4217:USD</measure>
+    </unit>
+    <us-gaap:Revenues contextRef="c-4" decimals="-5" id="f-51" unitRef="usd">30744800000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-5" decimals="-5" id="f-52" unitRef="usd">29765900000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-6" decimals="-5" id="f-53" unitRef="usd">29462300000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-7" decimals="-5" id="f-54" unitRef="usd">4350400000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-8" decimals="-5" id="f-55" unitRef="usd">4505100000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-9" decimals="-5" id="f-56" unitRef="usd">4512700000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-10" decimals="-5" id="f-57" unitRef="usd">2089200000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-11" decimals="-5" id="f-58" unitRef="usd">1905200000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-12" decimals="-5" id="f-59" unitRef="usd">2000600000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-1" decimals="-5" id="f-60" unitRef="usd">37184400000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-13" decimals="-5" id="f-61" unitRef="usd">36176200000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-14" decimals="-5" id="f-62" unitRef="usd">35975600000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-582" decimals="-5" id="f-1779" unitRef="usd">22539900000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-584" decimals="-5" id="f-1781" unitRef="usd">21883900000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-586" decimals="-5" id="f-1783" unitRef="usd">21684800000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-588" decimals="-5" id="f-1785" unitRef="usd">7049900000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-590" decimals="-5" id="f-1787" unitRef="usd">6749200000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-592" decimals="-5" id="f-1789" unitRef="usd">6585100000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-594" decimals="-5" id="f-1791" unitRef="usd">7594600000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-596" decimals="-5" id="f-1793" unitRef="usd">7543100000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-598" decimals="-5" id="f-1795" unitRef="usd">7705700000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-1" decimals="-5" id="f-1797" unitRef="usd">37184400000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-13" decimals="-5" id="f-1799" unitRef="usd">36176200000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-14" decimals="-5" id="f-1801" unitRef="usd">35975600000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-603" decimals="-5" id="f-1804" unitRef="usd">27124700000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-604" decimals="-5" id="f-1805" unitRef="usd">26707400000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-605" decimals="-5" id="f-1806" unitRef="usd">26398300000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-606" decimals="-5" id="f-1807" unitRef="usd">3160800000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-607" decimals="-5" id="f-1808" unitRef="usd">3008200000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-608" decimals="-5" id="f-1809" unitRef="usd">3081500000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-609" decimals="-5" id="f-1810" unitRef="usd">6898900000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-610" decimals="-5" id="f-1811" unitRef="usd">6460600000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-611" decimals="-5" id="f-1812" unitRef="usd">6495800000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-1" decimals="-5" id="f-1813" unitRef="usd">37184400000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-13" decimals="-5" id="f-1814" unitRef="usd">36176200000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-14" decimals="-5" id="f-1815" unitRef="usd">35975600000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-621" decimals="-5" id="f-1829" unitRef="usd">27373100000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-622" decimals="-5" id="f-1830" unitRef="usd">7819900000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-581" decimals="-5" id="f-1831" unitRef="usd">1871700000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-623" decimals="-5" id="f-1832" unitRef="usd">119700000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-1" decimals="-5" id="f-1833" unitRef="usd">37184400000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-624" decimals="-5" id="f-1882" unitRef="usd">27009500000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-625" decimals="-5" id="f-1883" unitRef="usd">7338900000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-626" decimals="-5" id="f-1884" unitRef="usd">1769800000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-627" decimals="-5" id="f-1885" unitRef="usd">58000000.0</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-13" decimals="-5" id="f-1886" unitRef="usd">36176200000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-628" decimals="-5" id="f-1930" unitRef="usd">26569600000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-629" decimals="-5" id="f-1931" unitRef="usd">7487600000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-630" decimals="-5" id="f-1932" unitRef="usd">1893800000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-631" decimals="-5" id="f-1933" unitRef="usd">24600000</us-gaap:Revenues>
+    <us-gaap:Revenues contextRef="c-14" decimals="-5" id="f-1934" unitRef="usd">35975600000</us-gaap:Revenues>
+    </xbrl>

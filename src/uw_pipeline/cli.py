@@ -14,7 +14,12 @@ import typer
 from sqlalchemy import Connection, Engine, func, select
 
 from uw_pipeline.clients.db import app_engine, ensure_schema, pipeline_engine
-from uw_pipeline.compute.coverage import company_coverage, load_notes, render_markdown
+from uw_pipeline.compute.coverage import (
+    company_coverage,
+    history_start,
+    load_notes,
+    render_markdown,
+)
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import (
     CompanyConfig,
@@ -32,6 +37,7 @@ from uw_pipeline.schema import company, dq_finding, metric_value, pipeline_run, 
 from uw_pipeline.schema_app import app_metadata
 from uw_pipeline.settings import Settings
 from uw_pipeline.signals.rules import load_signal_rules
+from uw_pipeline.universe import load_universe_config
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 log = logging.getLogger("uw_pipeline")
@@ -48,6 +54,8 @@ class Stage(StrEnum):
     textmetrics = "textmetrics"
     governance = "governance"
     legal = "legal"
+    clinical = "clinical"
+    industry = "industry"
     signals = "signals"
     insights = "insights"
     metricdetail = "metricdetail"
@@ -58,9 +66,9 @@ class Stage(StrEnum):
 
 # Default order for manual runs (scheduled jobs list their stages in config/jobs.yaml).
 STAGE_ORDER = [
-    Stage.company, Stage.facts, Stage.compute, Stage.market, Stage.documents,
+    Stage.company, Stage.facts, Stage.compute, Stage.market, Stage.documents, Stage.industry,
     Stage.transcripts, Stage.news, Stage.scores, Stage.textmetrics, Stage.governance,
-    Stage.legal, Stage.signals,
+    Stage.legal, Stage.clinical, Stage.signals,
     Stage.insights,
     Stage.metricdetail, Stage.publish, Stage.dq,
 ]  # fmt: skip
@@ -245,15 +253,16 @@ def coverage_report(
     with engine.connect() as conn:
         for cfg in selected:
             row = company_row(conn, cfg)
-            creg = registry.for_company(cfg.ticker, industry.groups[row["industry_group"]])
+            creg = registry.for_company(cfg.ticker, industry.group_of(row["industry_group"], cfg))
             values = [
                 dict(r)
                 for r in conn.execute(
                     select(metric_value).where(metric_value.c.company_id == row["company_id"])
                 ).mappings()
             ]
-            mine = notes.for_company(cfg.ticker, row["industry_group"])
-            reports.append(company_coverage(cfg.ticker, creg.metrics, values, mine))
+            mine = notes.for_company(cfg.ticker, row["industry_group"], cfg.traits)
+            since = history_start(conn, row["company_id"])
+            reports.append(company_coverage(cfg.ticker, creg.metrics, values, mine, since))
     today = datetime.now(UTC).date().isoformat()
     out = settings.data_dir / "reports" / f"coverage-{today}.md"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -471,6 +480,8 @@ def config_check() -> None:
     """Validate config/ the way a run does, and list the company and industry settings."""
     try:
         companies, industry, _, rules = _load_all(_config_dir())
+        # Read only by scripts/build_universe.py, but checked here too (D-055).
+        load_universe_config(_config_dir()).check(industry)
         load_logo_config(_config_dir()).check_companies(companies)
         _check_logos(companies)
     except ValueError as exc:  # pydantic ValidationError is a ValueError

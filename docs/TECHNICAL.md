@@ -52,8 +52,9 @@ swap them for fakes.
 |---|---|
 | `cli.py` | Typer CLI: `run`, `runs`, `dq-report`, `coverage-report`, `audit-insights`, `review` (list / approve / reject), `init-db` |
 | `settings.py` | Settings from environment / `.env` (pydantic-settings), §13 |
-| `config.py` | Loads companies and industry groups (traits merged into each group's metric sets) |
-| `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing), `alphavantage.py` (quota, key masking), `llm.py` (client interface), `securegpt.py` (Azure OpenAI gateway), `openai_chat.py` (OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py`, `logos.py` (Wikidata, Commons, Wikipedia, favicons; used only by `scripts/fetch_logos.py`, D-067) |
+| `config.py` | Loads companies and industry groups (traits merged into each group's metric sets; SIC ranges must not overlap, D-055) |
+| `universe.py` | Company universe and development sample for `scripts/build_universe.py` (Phase 17, D-055): scope rule, revenue for ranking, the largest companies per group |
+| `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing; exchange ticker list and XBRL frames for the universe), `alphavantage.py` (quota, key masking), `llm.py` (client interface), `securegpt.py` (Azure OpenAI gateway), `openai_chat.py` (OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py`, `logos.py` (Wikidata, Commons, Wikipedia, favicons; used only by `scripts/fetch_logos.py`, D-067) |
 | `extract/` | Company metadata, filing lists from submissions; `logos.py`: where `scripts/fetch_logos.py` finds a logo (D-067) |
 | `logos.py` | Logo files under `config/logos/`: type and size checks, data URIs that `publish` writes to `Company.logo` (D-067) |
 | `normalize/` | XBRL facts, fiscal periods (restatement basis), HTML to text, table grids (`table_grid.py`), section splitting, news normalisation |
@@ -85,6 +86,8 @@ flowchart LR
   documents --> signals
   documents --> governance
   documents --> legal
+  documents --> clinical
+  documents --> industry
   signals --> insights
   textmetrics --> insights
   insights --> metricdetail
@@ -99,13 +102,15 @@ flowchart LR
 | facts | `run_xbrl` | XBRL facts for the tags in the registry, from companyfacts plus filing instances for recent or dimensional facts (D-013, D-014), and pay versus performance from the latest two proxy statements (D-042) | `xbrl_fact`, `ingest_state` | SEC |
 | compute | `run_xbrl` | Metrics per period from `config/metrics.yaml`; Q4 = FY − 9M (USD series only); N/M handling; reads the stored market cap for Altman Z (D-019, D-050) | `metric_definition`, `metric_value` | – |
 | market | `run_market` | Daily adjusted prices (company and SPY) and earnings estimates; market cap, 90-day volatility, 52-week drawdown, EPS surprise at the quarter ends (D-050) | `market_daily`, `earnings_report`, `metric_value` (MARKET) | AV |
-| documents | `run_documents` | Registers 10-K/10-Q/8-K; downloads and splits text documents and EX-99.1 releases (D-023…D-026); keeps the MD&A of older 10-Ks (5 years) and 10-Qs (8 quarters) for companies with text metrics (D-069); downloads the latest proxy (DEF 14A, D-045); Schedule 13Ds about the company; parses Form 4s into insider trades and quarterly insider metrics (D-050) | `source_document`, `filing_section`, `section_chunk`, `insider_transaction`, `metric_value` (FORM4) | SEC |
+| documents | `run_documents` | Registers 10-K/10-Q/8-K; downloads and splits text documents and EX-99.1 releases (D-023…D-026); keeps the MD&A of older 10-Ks (5 years) and 10-Qs (8 quarters) for companies with text metrics (D-069); a 10-K wrapper's annual report (Exhibit 13) becomes the filing's PRIMARY document (D-060); downloads the latest proxy (DEF 14A, D-045); Schedule 13Ds about the company; parses Form 4s into insider trades and quarterly insider metrics (D-050) | `source_document`, `filing_section`, `section_chunk`, `insider_transaction`, `metric_value` (FORM4) | SEC |
 | transcripts | `run_transcripts` | Last 4 fiscal quarters of earnings-call transcripts (D-030) | `source_document`, sections, chunks | AV |
 | news | `run_news` | 30-day news, mention filter, 3-tier de-duplication, LLM relevance verdict (D-029, D-037) | `news_item`, `activity` | AV, LLM |
 | scores | `run_scores` | News risk scores per activity; transcript tone and risk flags (D-037) | `news_risk_score`, `transcript_tone`, `transcript_flag` | LLM |
 | textmetrics | `run_text_metrics` | Figures from MD&A and releases (NIM, LCR, …); table metrics read by cell (RevPAR, occupancy, ADR, AUM, VaR, international revenue, average interest-earning assets, capacity utilization) and the loan book; values XBRL covers (capital ratios, release figures) only cross-checked; identity gate (D-022, D-032, D-042, D-044) | `metric_value` (LLM_EXTRACTED, PRELIMINARY), `loan_portfolio_*`, `release_check` | LLM |
 | governance | `run_governance` | Board composition, auditor fees, dual-class shares and CEO start year from the latest proxy, both models, facts kept only when quoted and agreed (D-045, D-050) | `board_composition` | LLM |
 | legal | `run_legal` | Litigation and regulatory matters from the latest 10-K and later 10-Qs, both models, matched across filings; new matters to review (D-050) | `legal_matter` | LLM |
+| industry | `run_industry` | For a company whose SIC code maps to no group: both models choose an existing group from the 10-K business section; agreed or reviewed (type INDUSTRY); the company's metrics are recomputed (D-059) | `industry_choice` | LLM |
+| clinical | `run_clinical` | Pipeline of companies with the `clinical_stage` trait: candidates, phase, next milestone and its timing from the latest 10-K and later 10-Qs, both models agreeing; an insight input, not published (D-058) | `clinical_program` | LLM |
 | signals | `run_signals` | 8-K, keyword, auditor, metric, threshold, board, 13D, market, insider and legal signals; LLM vote on judgment topics (D-027, D-028, D-045, D-049, D-050) | `signal`, `signal_vote` | LLM |
 | insights | `run_insights` | Activity summaries, behavioral, strategic & risk, key insights, follow-up questions (D-033), key takeaways (D-053) | `insight*`, `followup_question*`, `activity` | LLM |
 | metricdetail | `run_metric_detail` | Methodology and sources by rules; underwriting relevance by LLM (D-036), without item ids in the text (D-068) | `metric_detail`, `metric_source`, `metric_insight` | LLM |
@@ -128,14 +133,14 @@ FAILED / SKIPPED. Run states: SUCCEEDED, PARTIAL, FAILED, RUNNING.
 | Heartbeat | A background thread refreshes `heartbeat_at` while a task runs | `heartbeat_minutes: 5` |
 | Resume | A dead run (stale heartbeat) is resumed only by the same job with the same stages and companies, started less than `resume_within_hours` ago; finished tasks are kept | `resume_within_hours: 12` |
 | Abandon | Older or different dead runs are closed (FAILED, `"abandoned": true`) and the new run starts fresh | – |
-| Parallel | A stage's companies run in threads (D-050); on SQLite always one at a time (single writer). LLM calls share per-model RPM / TPM limits (§8) | `parallel: {insights: 4, ...}` |
+| Parallel | A stage's companies run in threads (D-050). On a SQLite file only the LLM stages run in parallel: they open each company's connection with `enrich/llm.short_transactions`, so `cached_call` commits before and after every model call and no write lock is held while waiting (D-052, D-061); other stages run one at a time (single writer). Within a company, independent model calls (insights' behavioral and strategic syntheses, textmetrics' document reads) are asked `company_calls` at a time by `enrich/llm.prefetch` before the sequential code, which finds them in the cache (D-062). LLM calls share per-model RPM / TPM limits (§8) | `parallel: {insights: 4, ...}` |
 
 **Jobs** (`config/jobs.yaml`) and OpenShift CronJobs (`deploy/openshift/cronjobs.yaml`, time zone
 America/New_York, `concurrencyPolicy: Forbid`):
 
 | Job | Schedule (ET) | Stages |
 |---|---|---|
-| `nightly` | 23:30 | company, facts, compute, market, documents, transcripts, scores, textmetrics, governance, legal, signals, insights, metricdetail, publish, dq |
+| `nightly` | 23:30 | company, facts, compute, market, documents, industry, transcripts, scores, textmetrics, governance, legal, clinical, signals, insights, metricdetail, publish, dq |
 | `morning` | 05:30 | same as nightly (catch-up) |
 | `news` | 03:00, 09:00, 15:00, 21:00 | news, scores, publish |
 
@@ -171,6 +176,8 @@ SUCCEEDED run can have Errors; the summary then points to `uw-pipeline dq-report
 | Governance | `board_composition` |
 | Market and insiders | `market_daily`, `earnings_report` (by symbol), `insider_transaction` (Form 4 lines) |
 | Litigation | `legal_matter` |
+| Industry choice | `industry_choice` (LLM-chosen group for companies outside every group, D-059) |
+| Clinical pipeline | `clinical_program` (current programs of clinical-stage companies, D-058) |
 
 Conventions:
 
@@ -209,13 +216,14 @@ versioned with the code.
 
 | File | Controls |
 |---|---|
-| `companies.yaml` | Companies: pinned CIK, display ticker, former tickers, `history_start`, `news_aliases`, `av_symbols`, `industry` (D-049), `predecessor_ciks` (D-052) |
-| `company_overrides/*.yaml` | Company metrics and `sections:` rules (JPM, MAR) |
-| `industry_groups.yaml` | SIC → industry group, metric sets, `traits`, `trait_metric_sets`, `common_metric_sets` (governance), `is_financial`, `mdna_history_years`, `exclude_metrics` / `exclude_signals` / `signal_params` (D-049) |
-| `metrics.yaml` | Metric definitions, formulas (`x_py` = a year earlier), text and table extraction specs (`table:` column, scope, excluded rows, `dual_check`), `kind: external` (market and Form 4 metrics, D-050), `insight_input`, `metric_sets`, `hidden_metric_sets` (computed, not shown, D-054) |
+| `companies.yaml` | Companies: pinned CIK, display ticker, former tickers, `history_start`, `news_aliases`, `av_symbols`, `industry` (D-049), `predecessor_ciks` (D-052), company `traits` such as `clinical_stage` (D-058) |
+| `company_overrides/*.yaml` | Company metrics and `sections:` rules (JPM, MAR; bank MD&A rules D-060) |
+| `industry_groups.yaml` | SIC → industry group, metric sets, `traits`, `trait_metric_sets`, `trait_exclude_metrics` (D-058), `common_metric_sets` (governance), `is_financial`, `mdna_history_years`, `exclude_metrics` / `exclude_signals` / `signal_params` (D-049) |
+| `metrics.yaml` | Metric definitions, formulas (`x_py` = a year earlier, `x_ttm` = the last four quarters, D-058), text and table extraction specs (`table:` column, scope, excluded rows, `dual_check`), `kind: external` (market and Form 4 metrics, D-050), `insight_input`, `metric_sets`, `hidden_metric_sets` (computed, not shown, D-054) |
 | `concept_map.yaml` | Concept → candidate XBRL tags (with dimensions) |
+| `universe.yaml` | Sample review for `scripts/build_universe.py` only: `industry` for registrants whose SIC misleads, `sample_skip` (D-055) |
 | `logos.yaml`, `logos/` | Company logo files (`<TICKER>.png`, published as data URIs) and where `scripts/fetch_logos.py` looks for them: Wikidata item, article, file or website corrections (D-067) |
-| `coverage_notes.yaml` | Reason for every metric gap `coverage-report` shows: per company, or per industry group under `groups:` (`"*"` = every company, D-052) |
+| `coverage_notes.yaml` | Reason for every metric gap `coverage-report` shows: per company, per industry group under `groups:` (`"*"` = every company, D-052), or per company trait under `traits:` (D-063). The target is counted from a company's first own filing (`compute/coverage.history_start`) |
 | `signal_rules.yaml` | 8-K item mapping, keyword and role rules, board rules, metric `thresholds`, `industries` per rule (D-049), `fetch_body_items`; `ownership_forms` (13D), `market`, `insiders`, `legal` (D-050) |
 | `text_extraction.yaml` | Text-metric chunk budget, effort, loan portfolio settings |
 | `insights.yaml` | Insight tasks, package limits, `news_materiality` gate |
@@ -320,7 +328,9 @@ so data moves between backends without rewriting the database.
 
 Key layout: `{source}/{endpoint}/{id}/{YYYY-MM-DD}.json` (one file per resource per UTC day,
 D-004); scheduled jobs add a timestamp; filing documents and published transcripts are immutable
-and cached without a date.
+and cached without a date. The universe build lands `sec/company_tickers_exchange/`,
+`sec/frames/{taxonomy}/{tag}/{unit}/{period}/` and one summary line per registrant in
+`sec/universe/{date}.jsonl` instead of ~6,000 submissions responses (D-055).
 
 ## 10. Databases
 
@@ -472,6 +482,7 @@ scripts/test_mssql.sh --all               # whole suite on SQL Server 2022 in Do
 | Change | Steps |
 |---|---|
 | Add a company | `config/companies.yaml` (pinned CIK); run; fill gaps in `coverage_notes.yaml` (OPERATIONS §2) |
+| Find companies to add, or review the universe | `scripts/build_universe.py [--sample N]`: scope, groups, coverage, the N largest per group (D-055) |
 | Add or change a metric | `config/metrics.yaml` and the group's metric set; never per run (OPERATIONS §3) |
 | Change a prompt | New `_v<N+1>.md`, bump the version in config, rerun golden companies, `export_golden.py`, review the diff (OPERATIONS §6) |
 | Change grounding | Bump `GROUNDING_VERSION` |

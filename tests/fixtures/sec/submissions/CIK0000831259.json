@@ -1,0 +1,241 @@
+{
+ "cik": "0000831259",
+ "entityType": "operating",
+ "sic": "1000",
+ "sicDescription": "Metal Mining",
+ "ownerOrg": "01 Energy & Transportation",
+ "insiderTransactionForOwnerExists": 1,
+ "insiderTransactionForIssuerExists": 1,
+ "name": "FREEPORT-MCMORAN INC",
+ "tickers": [
+  "FCX"
+ ],
+ "exchanges": [
+  "NYSE"
+ ],
+ "ein": "742480931",
+ "lei": null,
+ "description": "",
+ "website": "",
+ "investorWebsite": "",
+ "category": "Large accelerated filer",
+ "fiscalYearEnd": "1231",
+ "stateOfIncorporation": "DE",
+ "stateOfIncorporationDescription": "DE",
+ "addresses": {
+  "mailing": {
+   "street1": "4340 E. COTTON CENTER BLVD.",
+   "street2": "SUITE 110",
+   "city": "PHOENIX",
+   "stateOrCountry": "AZ",
+   "zipCode": "85040",
+   "stateOrCountryDescription": "AZ",
+   "isForeignLocation": 0,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  },
+  "business": {
+   "street1": "4340 E. COTTON CENTER BLVD.",
+   "street2": "SUITE 110",
+   "city": "PHOENIX",
+   "stateOrCountry": "AZ",
+   "zipCode": "85040",
+   "stateOrCountryDescription": "AZ",
+   "isForeignLocation": null,
+   "foreignStateTerritory": null,
+   "country": null,
+   "countryCode": null
+  }
+ },
+ "phone": "6023668100",
+ "flags": "",
+ "formerNames": [
+  {
+   "name": "FREEPORT MCMORAN COPPER & GOLD INC",
+   "from": "1994-01-12T00:00:00.000Z",
+   "to": "2014-07-02T00:00:00.000Z"
+  }
+ ],
+ "filings": {
+  "recent": {
+   "accessionNumber": [
+    "0000831259-26-000043",
+    "0001214659-26-012436",
+    "0001214659-26-012435",
+    "0000831259-26-000041",
+    "0000831259-26-000038",
+    "0000831259-26-000036",
+    "0000831259-26-000025",
+    "0000831259-26-000012",
+    "0000831259-25-000050"
+   ],
+   "filingDate": [
+    "2026-10-02",
+    "2026-10-01",
+    "2026-10-01",
+    "2026-09-24",
+    "2026-09-08",
+    "2026-08-06",
+    "2026-05-08",
+    "2026-02-13",
+    "2025-11-06"
+   ],
+   "reportDate": [
+    "2026-10-02",
+    "2026-10-01",
+    "2026-10-01",
+    "",
+    "2026-09-01",
+    "2026-06-30",
+    "2026-03-31",
+    "2025-12-31",
+    "2025-09-30"
+   ],
+   "acceptanceDateTime": [
+    "2026-10-02T12:35:06.000Z",
+    "2026-10-01T21:15:28.000Z",
+    "2026-10-01T21:15:17.000Z",
+    "2026-09-24T20:32:21.000Z",
+    "2026-09-08T21:18:34.000Z",
+    "2026-08-06T21:17:11.000Z",
+    "2026-05-08T21:11:31.000Z",
+    "2026-02-13T19:44:37.000Z",
+    "2025-11-06T21:36:11.000Z"
+   ],
+   "act": [
+    "34",
+    "",
+    "",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34",
+    "34"
+   ],
+   "form": [
+    "8-K",
+    "4",
+    "4",
+    "SD",
+    "8-K",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ],
+   "fileNumber": [
+    "001-11307-01",
+    "",
+    "",
+    "001-11307-01",
+    "001-11307-01",
+    "001-11307-01",
+    "001-11307-01",
+    "001-11307-01",
+    "001-11307-01"
+   ],
+   "filmNumber": [
+    "261433531",
+    "",
+    "",
+    "261405139",
+    "261365889",
+    "261250441",
+    "26959690",
+    "26631535",
+    "251459060"
+   ],
+   "items": [
+    "2.02,7.01,9.01",
+    "",
+    "",
+    "",
+    "8.01",
+    "",
+    "",
+    "",
+    ""
+   ],
+   "core_type": [
+    "XBRL",
+    "4",
+    "4",
+    "SD",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL",
+    "XBRL"
+   ],
+   "size": [
+    1053871,
+    5425,
+    6175,
+    511481,
+    143375,
+    13090974,
+    10161691,
+    39634160,
+    12362641
+   ],
+   "isXBRL": [
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isInlineXBRL": [
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "isXBRLNumeric": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    null,
+    null
+   ],
+   "primaryDocument": [
+    "fcx-20261002.htm",
+    "xslF345X06/marketforms-74072.xml",
+    "xslF345X06/marketforms-74070.xml",
+    "formsd2025.htm",
+    "fcx-20260901.htm",
+    "fcx-20260630.htm",
+    "fcx-20260331.htm",
+    "fcx-20251231.htm",
+    "fcx-20250930.htm"
+   ],
+   "primaryDocDescription": [
+    "8-K",
+    "PRIMARY DOCUMENT",
+    "PRIMARY DOCUMENT",
+    "SD",
+    "8-K",
+    "10-Q",
+    "10-Q",
+    "10-K",
+    "10-Q"
+   ]
+  },
+  "files": []
+ }
+}

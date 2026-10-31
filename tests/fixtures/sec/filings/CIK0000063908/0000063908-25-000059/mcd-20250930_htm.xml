@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='utf-8'?>
+<xbrl xmlns="http://www.xbrl.org/2003/instance" xmlns:mcd="http://www.mcdonalds.com/20250930" xml:lang="en-US">
+    <context id="c-1">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000063908</identifier>
+        </entity>
+        <period>
+            <startDate>2025-01-01</startDate>
+            <endDate>2025-09-30</endDate>
+        </period>
+    </context>
+    <context id="c-4">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000063908</identifier>
+        </entity>
+        <period>
+            <startDate>2025-07-01</startDate>
+            <endDate>2025-09-30</endDate>
+        </period>
+    </context>
+    <context id="c-5">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000063908</identifier>
+        </entity>
+        <period>
+            <startDate>2024-07-01</startDate>
+            <endDate>2024-09-30</endDate>
+        </period>
+    </context>
+    <context id="c-6">
+        <entity>
+            <identifier scheme="http://www.sec.gov/CIK">0000063908</identifier>
+        </entity>
+        <period>
+            <startDate>2024-01-01</startDate>
+            <endDate>2024-09-30</endDate>
+        </period>
+    </context>
+    <unit id="usd">
+        <measure>iso4217:USD</measure>
+    </unit>
+    <mcd:Revenuesfromfranchisedrestaurants contextRef="c-4" decimals="-6" id="f-117" unitRef="usd">4363000000</mcd:Revenuesfromfranchisedrestaurants>
+    <mcd:Revenuesfromfranchisedrestaurants contextRef="c-5" decimals="-6" id="f-118" unitRef="usd">4094000000</mcd:Revenuesfromfranchisedrestaurants>
+    <mcd:Revenuesfromfranchisedrestaurants contextRef="c-1" decimals="-6" id="f-119" unitRef="usd">12238000000</mcd:Revenuesfromfranchisedrestaurants>
+    <mcd:Revenuesfromfranchisedrestaurants contextRef="c-6" decimals="-6" id="f-120" unitRef="usd">11756000000</mcd:Revenuesfromfranchisedrestaurants>
+    <mcd:Revenuesfromfranchisedrestaurants contextRef="c-4" decimals="-6" id="f-736" unitRef="usd">4363000000</mcd:Revenuesfromfranchisedrestaurants>
+    <mcd:Revenuesfromfranchisedrestaurants contextRef="c-5" decimals="-6" id="f-737" unitRef="usd">4094000000</mcd:Revenuesfromfranchisedrestaurants>
+    <mcd:Revenuesfromfranchisedrestaurants contextRef="c-1" decimals="-6" id="f-738" unitRef="usd">12238000000</mcd:Revenuesfromfranchisedrestaurants>
+    <mcd:Revenuesfromfranchisedrestaurants contextRef="c-6" decimals="-6" id="f-739" unitRef="usd">11756000000</mcd:Revenuesfromfranchisedrestaurants>
+    <mcd:Revenuesfromfranchisedrestaurants contextRef="c-4" decimals="-6" id="f-883" unitRef="usd">4363000000</mcd:Revenuesfromfranchisedrestaurants>
+    <mcd:Revenuesfromfranchisedrestaurants contextRef="c-5" decimals="-6" id="f-884" unitRef="usd">4094000000</mcd:Revenuesfromfranchisedrestaurants>
+    <mcd:Revenuesfromfranchisedrestaurants contextRef="c-1" decimals="-6" id="f-921" unitRef="usd">12238000000</mcd:Revenuesfromfranchisedrestaurants>
+    <mcd:Revenuesfromfranchisedrestaurants contextRef="c-6" decimals="-6" id="f-922" unitRef="usd">11756000000</mcd:Revenuesfromfranchisedrestaurants>
+    </xbrl>

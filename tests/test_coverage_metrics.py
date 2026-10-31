@@ -172,3 +172,85 @@ def test_a_ratio_over_a_text_metric_gets_the_text_target() -> None:
     assert share[1].target(share[0]) == (0, 4)
     revenue = next((m, c) for m, c in cov.metrics if m.code == "revenue")
     assert revenue[1].target(revenue[0]) == (5, 8)
+
+
+def test_trait_notes_sit_between_group_and_company(tmp_path) -> None:
+    # Phase 17e: clinical-stage companies share gaps (no revenue, no debt) with no other PHARMA
+    # company; a trait note covers them, a company note still wins.
+    from uw_pipeline.compute.coverage import load_notes
+
+    (tmp_path / "coverage_notes.yaml").write_text(
+        "groups:\n"
+        "  PHARMA:\n"
+        "    revenue: group note\n"
+        "traits:\n"
+        "  clinical_stage:\n"
+        "    revenue: No product revenue before approval.\n"
+        "    total_debt: No borrowings.\n"
+        "VKTX:\n"
+        "  total_debt: company note\n"
+    )
+    notes = load_notes(tmp_path)
+    assert notes.for_company("PFE", "PHARMA")["revenue"] == "group note"
+    vktx = notes.for_company("VKTX", "PHARMA", ["clinical_stage"])
+    assert vktx["revenue"].startswith("No product revenue") and vktx["total_debt"] == "company note"
+
+
+def _history_db(facts: list[tuple[str, str | None, str, str, str]]):
+    """facts: (tag, start, end, form, accession) of one company, all filed in accession order."""
+    from sqlalchemy import create_engine, insert
+
+    from uw_pipeline.schema import company, metadata, xbrl_fact
+
+    engine = create_engine("sqlite://")
+    metadata.create_all(engine)
+    with engine.begin() as c:
+        c.execute(insert(company).values(
+            company_id=1, cik="1", ticker="DOLE", name="Dole", legal_name="DOLE PLC",
+            industry_group="AGRICULTURE",
+            is_financial=False, is_active=True, source_url="u", source_hash="h", raw_path="p",
+            last_refreshed_at=datetime(2026, 10, 22)))  # fmt: skip
+        c.execute(insert(xbrl_fact), [
+            {"fact_key": str(i), "company_id": 1, "taxonomy": "us-gaap", "tag": tag, "dims": "",
+             "unit": "USD", "val": 1.0, "start_date": start, "end_date": end, "form": form,
+             "accession_no": accn, "filed_at": f"2026-0{int(accn[-1])}-01",
+             "source": "companyfacts"}
+            for i, (tag, start, end, form, accn) in enumerate(facts)
+        ])  # fmt: skip
+    return engine
+
+
+def test_history_starts_at_the_first_own_filing() -> None:
+    """Phase 17e: Dole's first 10-K (FY2025, filed March 2026) holds balance sheets at
+    2024-12-31 and 2025-12-31 (the equity statement's opening balance goes back to 2022), its
+    first 10-Q is Q1 2026: the target is two fiscal years and two quarters."""
+    from uw_pipeline.compute.coverage import company_coverage, history_start
+    from uw_pipeline.compute.registry import MetricDef
+
+    engine = _history_db([
+        ("Assets", None, "2024-12-31", "10-K", "a-3"),
+        ("Assets", None, "2025-12-31", "10-K", "a-3"),
+        ("StockholdersEquity", None, "2022-12-31", "10-K", "a-3"),
+        ("Revenues", "2023-01-01", "2023-12-31", "10-K", "a-3"),
+        ("Revenues", "2026-01-01", "2026-03-31", "10-Q", "a-5"),
+        ("Revenues", "2025-01-01", "2025-03-31", "10-Q", "a-5"),
+    ])  # fmt: skip
+    with engine.connect() as c:
+        since = history_start(c, 1)
+    assert since is not None and (since.fy_from, since.q_from) == ("2024-12-31", "2026-03-31")
+
+    def row(pt, fy, fq, end):
+        return {"metric_code": "revenue", "period_type": pt, "fiscal_year": fy,
+                "fiscal_quarter": fq, "period_end": end, "value": 1.0, "value_status": "OK",
+                "derivation": "REPORTED", "source_tags": "{}"}  # fmt: skip
+
+    rows = [row("FY", y, 0, f"{y}-12-31") for y in (2023, 2024, 2025)] + [
+        row("Q", 2025, 1, "2025-03-31"), row("Q", 2026, 1, "2026-03-31"),
+        row("Q", 2026, 2, "2026-06-30")]  # fmt: skip
+    revenue = MetricDef(code="revenue", display_name="Revenue", section="s", unit="USD",
+                        formula="revenue")  # fmt: skip
+    [(m, c)] = company_coverage("DOLE", [revenue], rows, {}, since).metrics
+    assert c.target(m) == (2, 2) and c.status(m) == "OK"
+    # Without the history start: five years and eight quarters, a gap.
+    [(m, c)] = company_coverage("DOLE", [revenue], rows, {}).metrics
+    assert c.target(m) == (5, 8) and c.status(m) == "UNEXPLAINED"

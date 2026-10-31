@@ -16,12 +16,14 @@ from datetime import datetime
 
 from sqlalchemy import Connection, func, select
 
+from uw_pipeline.enrich.industry_choice import review_key as industry_review_key
 from uw_pipeline.enrich.legal import review_key
 from uw_pipeline.enrich.sources import filing_index_url
 from uw_pipeline.load.upsert import upsert
 from uw_pipeline.schema import (
     company,
     dq_finding,
+    industry_choice,
     legal_matter,
     review_decision,
     signal,
@@ -37,7 +39,7 @@ class ReviewError(Exception):
 
 @dataclass(frozen=True)
 class Item:
-    item_type: str  # SIGNAL | IDENTITY | MATTER
+    item_type: str  # SIGNAL | IDENTITY | MATTER | INDUSTRY (D-059)
     item_key: str
     company_id: int
     ticker: str
@@ -101,6 +103,21 @@ def pending(conn: Connection) -> list[Item]:
         items.append(Item("MATTER", key, r["company_id"], r["ticker"],
                           f"{r['first_disclosed']} {r['matter_type']}: {r['name']}", "NEW",
                           r["quote"][:400], link))  # fmt: skip
+    for r in conn.execute(
+        select(industry_choice, company.c.ticker, company.c.sic_code, company.c.sic_description)
+        .join(company, company.c.company_id == industry_choice.c.company_id)
+        .where(industry_choice.c.status == "DISPUTED")
+        .order_by(company.c.ticker)
+    ).mappings().all():  # fmt: skip
+        key = industry_review_key(r["company_id"])
+        if ("INDUSTRY", key) in decided:
+            continue
+        sic = f"SIC {r['sic_code']} {r['sic_description'] or ''}".strip()
+        title = (f"industry {r['group_code']} (models: {r['extractor_group']} / "
+                 f"{r['tiebreaker_group']}); {sic}")  # fmt: skip
+        items.append(Item("INDUSTRY", key, r["company_id"], r["ticker"], title, "DISPUTED",
+                          f"{r['reason']} \"{r['quote'][:300]}\"",
+                          "10-K Item 1 (business)"))  # fmt: skip
     return items
 
 

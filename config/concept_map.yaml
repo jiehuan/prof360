@@ -18,6 +18,9 @@ concepts:
       - us-gaap:Revenues
       - us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
       - us-gaap:SalesRevenueNet
+      # Phase 17: revenue including excise and gaming taxes is some filers' only total (Valero,
+      # Wynn Resorts since 2019).
+      - us-gaap:RevenueFromContractWithCustomerIncludingAssessedTax
     by_group:
       # Banks report "total net revenue" (net of interest expense). us-gaap:Revenues means
       # something different for JPM and stops in 2025, so mixing the two would distort growth.
@@ -57,11 +60,17 @@ concepts:
     tags:
       - us-gaap:CashAndCashEquivalentsAtCarryingValue
       - us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents
+      # D-071: cash alone, where no cash-and-equivalents line is tagged (SLB since 2016 shows
+      # cash and short-term investments separately).
+      - us-gaap:Cash
   short_term_investments:   # Phase 15c: liquidity beside cash (marketable securities)
     tags:
       - us-gaap:ShortTermInvestments
       - us-gaap:MarketableSecuritiesCurrent
       - us-gaap:OtherShortTermInvestments
+      # Phase 17c (D-058): biotechs often tag their marketable securities this way.
+      - us-gaap:AvailableForSaleSecuritiesDebtSecuritiesCurrent
+      - us-gaap:HeldToMaturitySecuritiesCurrent
   current_assets:
     tags: [us-gaap:AssetsCurrent]
   current_liabilities:
@@ -86,6 +95,25 @@ concepts:
     tags: [us-gaap:LongTermDebtCurrent]
   short_term_borrowings:
     tags: [us-gaap:ShortTermBorrowings, us-gaap:CommercialPaper]
+  # D-071: notes payable as their own family (ILMN since 2023: "Notes Payable, Noncurrent" and
+  # "Notes Payable, Current", no LongTermDebt tags).
+  notes_noncurrent: {tags: [us-gaap:LongTermNotesPayable]}
+  notes_current: {tags: [us-gaap:NotesPayableCurrent]}
+  # Convertible notes as their own family (Rubrik since 2025: "Convertible Notes Payable,
+  # Noncurrent", no other debt tag).
+  convertible_noncurrent: {tags: [us-gaap:ConvertibleLongTermNotesPayable]}
+  convertible_current: {tags: [us-gaap:ConvertibleNotesPayableCurrent]}
+  # Phase 17e: total debt presented as notes payable (D.R. Horton, PulteGroup, Omnicom).
+  notes_payable: {tags: [us-gaap:NotesPayable]}
+  # Phase 17e: long-term debt as presented on a balance sheet with no current / non-current
+  # split. Only for these groups (and company_overrides): elsewhere a period without the
+  # non-current tag would get the total including current maturities, mixing two measures.
+  ltd_unclassified:
+    tags: []
+    by_group:
+      HOMEBUILDERS: [us-gaap:NotesPayable, us-gaap:LongTermDebt]
+      REIT: [us-gaap:LongTermDebt]
+      REAL_ESTATE_OPERATING: [us-gaap:LongTermDebt]
   # Finance lease liabilities, added only to the LongTermDebt family, which excludes them
   # (the ...AndCapitalLeaseObligations family already includes them). Decisions D-046.
   finance_lease_liabilities:
@@ -211,3 +239,33 @@ concepts:
            us-gaap:PensionAndOtherPostretirementAndPostemploymentBenefitPlansLiabilitiesNoncurrent,
            us-gaap:DefinedBenefitPensionPlanLiabilitiesNoncurrent]
   regulatory_assets: {tags: [us-gaap:RegulatoryAssetsNoncurrent]}
+  # Industry modules (Phase 17, D-055).
+  env_accrual: {tags: [us-gaap:AccrualForEnvironmentalLossContingencies]}
+  env_accrual_current: {tags: [us-gaap:AccruedEnvironmentalLossContingenciesCurrent]}
+  env_accrual_noncurrent: {tags: [us-gaap:AccruedEnvironmentalLossContingenciesNoncurrent]}
+  aro: {tags: [us-gaap:AssetRetirementObligation]}
+  aro_current: {tags: [us-gaap:AssetRetirementObligationCurrent]}
+  aro_noncurrent: {tags: [us-gaap:AssetRetirementObligationsNoncurrent]}
+  homebuilding_inventory: {tags: [us-gaap:InventoryOperativeBuilders, us-gaap:InventoryRealEstate]}
+  homes_under_construction: {tags: [us-gaap:InventoryHomesUnderConstruction]}
+  land_development: {tags: [us-gaap:InventoryRealEstateLandAndLandDevelopmentCosts]}
+  land_held: {tags: [us-gaap:InventoryLandHeldForDevelopmentAndSale]}
+  inventory_writedown: {tags: [us-gaap:InventoryWriteDown]}
+  # Hospitals tag salaries and benefits; restaurants restaurant-level labor.
+  labor_expense: {tags: [us-gaap:LaborAndRelatedExpense, us-gaap:CostDirectLabor]}
+  casino_revenue:
+    tags:
+      - tag: us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
+        dims: {srt:ProductOrServiceAxis: us-gaap:CasinoMember}
+      - tag: us-gaap:Revenues
+        dims: {srt:ProductOrServiceAxis: us-gaap:CasinoMember}
+      - tag: us-gaap:RevenueFromContractWithCustomerIncludingAssessedTax
+        dims: {srt:ProductOrServiceAxis: us-gaap:CasinoMember}
+  franchise_revenue:
+    tags:
+      - tag: us-gaap:Revenues
+        dims: {us-gaap:FranchisorDisclosureAxis: us-gaap:FranchisedUnitsMember}
+      - tag: us-gaap:RevenueFromContractWithCustomerExcludingAssessedTax
+        dims: {us-gaap:FranchisorDisclosureAxis: us-gaap:FranchisedUnitsMember}
+  # Clinical-stage companies (Phase 17c, D-058).
+  operating_expenses: {tags: [us-gaap:OperatingExpenses, us-gaap:CostsAndExpenses]}

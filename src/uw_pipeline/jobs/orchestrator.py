@@ -60,6 +60,12 @@ DEPENDS: dict[str, tuple[str, ...]] = {
     "governance": ("documents",),
     # Litigation and regulatory matters (Phase 15e); like governance, signals do not wait.
     "legal": ("documents",),
+    # Pipeline facts of clinical-stage companies (Phase 17c, D-058); insights read them when
+    # present.
+    "clinical": ("documents",),
+    # Industry group for companies outside every group, chosen by the LLM from the 10-K's
+    # business section (Phase 17g, D-059); it recomputes the company's metrics itself.
+    "industry": ("documents",),
     "signals": ("compute", "documents"),
     "insights": ("signals", "textmetrics"),
     "metricdetail": ("compute", "insights"),
@@ -77,9 +83,13 @@ class JobSpec(BaseModel):
     refresh_sec: bool = False
 
 
-# Stages that keep no transaction open while waiting for the model (short transactions, D-052):
-# on a SQLite file they too run companies in parallel, each write holding the lock briefly.
-SHORT_TRANSACTION_STAGES = frozenset({"insights", "metricdetail"})
+# Stages that keep no transaction open while waiting for the model (short transactions, D-052,
+# D-061): on a SQLite file they too run companies in parallel, each write holding the lock
+# briefly.
+SHORT_TRANSACTION_STAGES = frozenset({
+    "textmetrics", "governance", "legal", "clinical", "industry", "signals", "scores", "news",
+    "insights", "metricdetail",
+})  # fmt: skip
 
 
 class JobsConfig(BaseModel):

@@ -96,6 +96,24 @@ def test_unknown_metric_in_set_rejected() -> None:
         Registry.model_validate({"concepts": {}, "metrics": [], "metric_sets": {"S": ["nope"]}})
 
 
+def test_instance_concepts_only_for_companies_whose_metrics_use_them() -> None:
+    """Phase 17: casino revenue is a dimensional fact read from each filing's XBRL instance;
+    a software company must not read instances for it."""
+    reg = load_registry(CONFIG_DIR)
+    ind = load_industry_config(CONFIG_DIR)
+
+    def instance_concepts(ticker: str, group: str) -> set[str]:
+        creg = reg.for_company(ticker, ind.groups[group])
+        return {code for code, tags in creg.concepts.items()
+                if any(t.needs_instance and t.taxonomy != "ecd" for t in tags)}  # fmt: skip
+
+    assert instance_concepts("MSFT", "SOFTWARE_INTERNET") == set()
+    assert "casino_revenue" in instance_concepts("MGM", "LEISURE_GAMING")
+    assert instance_concepts("MCD", "RESTAURANTS") == {"franchise_revenue"}  # its own tag
+    # Concepts read from companyfacts stay for every company (other stages read their facts).
+    assert "labor_expense" in reg.for_company("MSFT", ind.groups["SOFTWARE_INTERNET"]).concepts
+
+
 def test_every_displayed_metric_has_a_subtitle(reg) -> None:
     # The grey line under the metric's title (metrics.subtitle): an explanation, not the unit.
     tickers = ["", *reg.overrides]
