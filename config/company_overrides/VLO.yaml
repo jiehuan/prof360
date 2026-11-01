@@ -1,0 +1,12 @@
+# Valero: us-gaap:DebtLongtermAndShorttermCombinedAmount is its debt without finance lease
+# obligations (FY2025: 8,261M of 10,619M), below the balance sheet's non-current debt and
+# finance lease obligations alone. The reported total is the balance sheet's (10-K only);
+# quarters add the current portion to the non-current amount (D-073). Its us-gaap:LongTermDebt
+# leaves out finance leases too, so it is not read as debt including current maturities.
+concepts:
+  debt_total_reported:
+    tags:
+      - us-gaap:DebtAndCapitalLeaseObligations
+      - us-gaap:LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities
+  ltd_total:
+    tags: []
