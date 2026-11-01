@@ -1,5 +1,7 @@
 # Park Hotels & Resorts (a lodging REIT) presents an unclassified balance sheet: debt is one
-# line, tagged us-gaap:LongTermDebt (Phase 17e).
+# line (Phase 17e), tagged us-gaap:DebtAndCapitalLeaseObligations, net of issuance costs.
+# us-gaap:LongTermDebt is the gross amount from the debt note, above the reported total
+# (D-073).
 concepts:
   ltd_unclassified:
-    tags: [us-gaap:LongTermDebt]
+    tags: [us-gaap:DebtAndCapitalLeaseObligations]
