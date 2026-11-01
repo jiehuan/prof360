@@ -1690,3 +1690,48 @@ LLM runs until the end, then one comparison.
 - 2026-10-31: convertible notes as a debt family too (`ConvertibleLongTermNotesPayable`, "Convertible
   Notes Payable, Noncurrent", with `ConvertibleNotesPayableCurrent`): Rubrik's $1.13B notes since
   2025; also NOW, RVMD, VKTX, only where no earlier family has a value.
+
+**D-073 Debt: order of the families and four companies' tags (2026-11-01).**
+- The first nightly over the 277 companies (runs 150-152) reported `long_term_debt` above
+  `total_debt` for LH, PHM, PK and VLO (dq `debt_completeness`, 19 Errors). Four causes:
+  - Labcorp: in quarters whose current portion of long-term debt is untagged, the D-071 notes
+    pair ($0.4-4.9M of notes payable) came before the non-current-only fallback, so 10 quarters
+    of 2022-2025 had total debt in the millions instead of about $5B. D-071's "only filling
+    periods that had no value" did not hold for it. The notes pair now comes after the
+    long-term-debt fallbacks; ILMN, OMC, AMGN and LRN, which have no non-current long-term debt
+    in those periods, are unchanged. The convertible pair stays where it is (NOW 2019, TSLA 2013:
+    the pair includes the current part).
+  - Valero: `DebtLongtermAndShorttermCombinedAmount` is its debt without finance leases (FY2025
+    8,261M of 10,619M), and so is its `LongTermDebt`. `config/company_overrides/VLO.yaml` keeps
+    the balance sheet's total (10-K) as the reported total and leaves `ltd_total` out.
+  - New general formula after `ltd_total`: `ltdcl_noncurrent + debt_current`, the balance
+    sheet's non-current debt and finance lease obligations with all current debt. It replaces
+    the non-current-only fallback in 557 company-periods of 25 companies (e.g. XOM Q2 2026
+    32.2B -> 42.4B, Boeing Q3 2019 20.3B -> 24.7B, IBM 2011 24.1B -> 30.2B, Adobe 2014
+    0.9B -> 1.5B), each closer to the reported total debt.
+  - PulteGroup: its 10-K `LongTermDebt` is a 31-44M item beside 1.6B of notes payable;
+    `PHM.yaml` leaves `ltd_total` out.
+  - Park Hotels: `PK.yaml` reads its unclassified debt from the balance-sheet line
+    (`DebtAndCapitalLeaseObligations`, net of issuance costs) instead of the gross
+    `LongTermDebt` of the debt note (3,838M vs 3,856M). The 10-K balance sheet shows "Debt
+    3,838"; the Phase 17e golden value (3,856) had been taken from the debt note and is
+    corrected in `tests/test_phase17_golden.py`.
+- Recomputed on a copy of the release database: 1,255 values changed (total debt and
+  debt-to-equity of the companies above, PK's long-term debt; the rest are text-metric ratios
+  updated after run 150's compute). `long_term_debt` > `total_debt` no longer occurs for LH,
+  PHM, PK and VLO; the other companies with older such periods are as before. Tests in
+  `tests/test_debt_families.py`.
+
+**D-074 Preliminary revenue from earnings releases: net revenues, not "revenues and other
+income" (2026-11-01).**
+- Of the 44 `release_vs_xbrl` Errors of run 152, 16 are definitional: Raymond James's release
+  shows total revenues and net revenues (after interest expense), and the model read total
+  revenues (12-14% above the XBRL net revenues every quarter); Marathon Petroleum's shows
+  "Total revenues and other income" (1-3% above). Preliminary values are shown until the 10-Q
+  arrives, so these were also on the wrong basis there.
+- `config/text_extraction.yaml` `preliminary.revenue` now asks for net revenues where the table
+  shows them, and for the revenue line above other income, equity-method income and gains. The
+  definition is part of the input, so the next `textmetrics` reads every release again.
+- The other 28 are left as they are: later restatements (DRVN, SPGI, BTSG), attributable vs
+  total net income or rounding (GEV, MDLN, SW, DOW, CI, BFH, ILMN; mostly 1-4%) and PRU, SSRM,
+  CBRE. The value shown is the XBRL one; dq keeps reporting them for 180 days.

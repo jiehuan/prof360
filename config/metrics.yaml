@@ -334,13 +334,18 @@ metrics:
       # long-term debt including current maturities plus short-term borrowings (TSLA).
       - ltd_noncurrent + debt_current + finance_lease_liabilities
       - ltd_total + short_term_borrowings + finance_lease_liabilities
-      # D-071: the notes payable family (ILMN) and the convertible notes family (RBRK).
-      - notes_noncurrent + notes_current + short_term_borrowings + finance_lease_liabilities
+      # D-073: debt and finance leases less current portion, with the current portion tagged
+      # as all current debt (Valero).
+      - ltdcl_noncurrent + debt_current
+      # D-071: the convertible notes family (RBRK).
       - convertible_noncurrent + convertible_current + short_term_borrowings
       # Non-current only, used when the family has no current sibling. Understates debt;
       # dq_rules.yaml debt_completeness reports it.
       - ltdcl_noncurrent + short_term_borrowings
       - ltd_noncurrent + short_term_borrowings + finance_lease_liabilities
+      # D-071: the notes payable family (ILMN). After the long-term debt family (D-073): a
+      # company with long-term debt may tag a small note as notes payable (Labcorp, $1-5M).
+      - notes_noncurrent + notes_current + short_term_borrowings + finance_lease_liabilities
       # Phase 17e: debt presented as notes payable (homebuilders, Omnicom).
       - notes_payable + short_term_borrowings
       # Convertible notes with no current portion tagged (RBRK); understates like the

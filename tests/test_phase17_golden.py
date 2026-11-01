@@ -179,9 +179,10 @@ def test_clinical_stage_xenon_q2_2026_latest_quarter_burn(make_sec_client) -> No
 
 @pytest.mark.usefixtures("sec_routes")
 def test_unclassified_debt_park_hotels_fy2025(make_sec_client) -> None:
-    """PK 10-K FY2025 (Phase 17e): debt is one line on an unclassified balance sheet,
-    LongTermDebt 3,856 (company_overrides/PK.yaml)."""
-    _check(make_sec_client, "PK", FY25, {"long_term_debt": 3_856e6})
+    """PK 10-K FY2025 (Phase 17e): debt is one line on an unclassified balance sheet, "Debt"
+    3,838 (DebtAndCapitalLeaseObligations; company_overrides/PK.yaml). Until D-073 this read
+    LongTermDebt 3,856, the gross amount of the debt note."""
+    _check(make_sec_client, "PK", FY25, {"long_term_debt": 3_838e6})
 
 
 @pytest.mark.usefixtures("sec_routes")
