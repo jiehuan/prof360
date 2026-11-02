@@ -1758,3 +1758,8 @@ income" (2026-11-01).**
   example lists the new credential keys and defaults to direct. Deployment configuration stays
   in the operator's existing manifest; this change adds no CronJob or schedule.
 - SecureGPT's existing client and token behavior are not refactored in this change.
+- Release handoff: prod is regenerated from a selected development source and a source-only
+  `scripts/prod.patch` (recent source: `release-takeaways`). Before the next generated release,
+  a maintainer must port the common feature to that source, preserve any intentional prod-only
+  differences in the reviewed patch, and verify the generated tree. This feature PR documents
+  those pending actions; it does not claim source synchronization or a production release.

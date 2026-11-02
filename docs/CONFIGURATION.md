@@ -229,5 +229,5 @@ MSFT:                        # one company; wins over its traits' and group's no
 
 `config check` also validates the structure of `alphavantage.yaml`, when present, without
 credentials or HTTP requests. Missing files preserve legacy direct defaults. Selected APIM
-environment/credential preflight happens lazily at AV client creation (and in the deployment
-guard); see [Alpha Vantage configuration](ALPHAVANTAGE_APIM.zh-CN.md).
+environment/credential preflight happens lazily at AV client creation; this change does not
+add a deployment startup guard. See [Alpha Vantage configuration](ALPHAVANTAGE_APIM.zh-CN.md).

@@ -126,3 +126,21 @@ apim、ENV 设为你定义的环境名。若整目录挂载 `CONFIG_DIR`，需�
 此变更不新增 CronJob 或修改调度。正式使用前在内网确认端点/认证方式，再用已有
 `run --job` 做小范围联调。
 官方 `scripts/alphavantage_demo.py` 仍显式使用 direct 和公共 demo key，不读取 APIM 凭证。
+
+## 6. 维护者发布交接
+
+`prod` 是从选定开发源分支加 `scripts/prod.patch` 生成的独立历史分支，近期源分支是
+`release-takeaways`。只合并到 prod 的功能不会自动回流源分支；下一次生成 prod 时，
+如果源分支和补丁都没有保留这些修改，就可能丢失功能或发生冲突。
+
+维护者需在下一次生成 prod 前完成：
+
+1. 将 D-075 的通用功能移植到实际发版源分支，按该分支的客户端构建逻辑解决差异。
+2. 如确有 prod 专属修改，在源分支针对同一发版源刷新并审阅 `scripts/prod.patch`。
+   发布脚本和补丁只保留在源分支；不将独立历史分支直接整体合并，也不把这些工具加进 prod。
+3. 在发布临时工作目录中重新生成并检查 prod，确认 AV Settings、配置、OAuth 组件、
+   StageRunner 接入、部署示例、文档和测试均保留，运行既有代码与测试检查。
+
+这是交给维护者的待办，本 PR 没有执行源分支回流、补丁刷新或正式发版。
+本次只改访问与认证方式，不需要重新导出 SQL、golden 或数据库/Logo 压缩包。
+更完整的说明见[技术文档的发布交接](TECHNICAL.md#source-to-prod-handoff)。

@@ -3,10 +3,14 @@
 For engineers who run, deploy or change the pipeline. As of 2026-10-14 (Phases 1–9 and 11–14
 done; Phase 10 planned, on hold). Related documents:
 
+2026-11-03 update: Alpha Vantage direct/APIM transport, OAuth configuration and source-to-prod
+release handoff are documented below (D-075).
+
 | Document | Holds |
 |---|---|
 | `docs/PLAN.md` | Plan of record, phase checklists, open questions |
-| `docs/decisions.md` | Every design decision with its reason (D-001 … D-046), cited below as D-xxx |
+| `docs/decisions.md` | Every design decision with its reason (D-001 … D-075), cited below as D-xxx |
+| `docs/ALPHAVANTAGE_APIM.zh-CN.md` | Alpha Vantage direct/APIM setup, OAuth wire formats and deployment credentials |
 | `docs/OPERATIONS.md` | Day-to-day operations, troubleshooting (Chinese) |
 | `docs/schema-contract.md` | Application tables as the BFF reads them |
 | `CONTRIBUTING.md` | Commands and coding conventions |
@@ -46,12 +50,20 @@ flowchart LR
 All external calls go through `src/uw_pipeline/clients/` (HTTP, LLM, database, storage), so tests
 swap them for fakes.
 
+Alpha Vantage uses the official query endpoint in `direct` mode, or a configured corporate
+gateway in `apim` mode. Both send the AV API key as `apikey`; APIM additionally sends a Bearer
+token obtained using client credentials and `Ocp-Apim-Subscription-Key`. Authentication failure
+does not switch routes. Raw cache keys, public source URLs and AV JSON parsing remain the same.
+
 ## 3. Code layout (`src/uw_pipeline/`)
 
 | Package / module | Responsibility |
 |---|---|
 | `cli.py` | Typer CLI: `run`, `runs`, `dq-report`, `coverage-report`, `audit-insights`, `review` (list / approve / reject), `init-db` |
 | `settings.py` | Settings from environment / `.env` (pydantic-settings), §13 |
+| `__main__.py` | Module CLI entry point: `python -m uw_pipeline` calls the same Typer app |
+| `clients/alphavantage.py` | Direct/APIM configuration, lazy client factory, AV rate/quota limits, raw cache and credential-safe failures (D-075) |
+| `clients/oauth.py` | In-process client-credentials token cache, early renewal, bounded token retries and explicit token request formats (D-075) |
 | `config.py` | Loads companies and industry groups (traits merged into each group's metric sets; SIC ranges must not overlap, D-055) |
 | `universe.py` | Company universe and development sample for `scripts/build_universe.py` (Phase 17, D-055): scope rule, revenue for ranking, the largest companies per group |
 | `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing; exchange ticker list and XBRL frames for the universe), `alphavantage.py` (quota, key masking), `llm.py` (client interface), `securegpt.py` (Azure OpenAI gateway), `openai_chat.py` (OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py`, `logos.py` (Wikidata, Commons, Wikipedia, favicons; used only by `scripts/fetch_logos.py`, D-067) |
@@ -231,6 +243,7 @@ versioned with the code.
 | `scores.yaml` | News and transcript risk scoring |
 | `llm.yaml` | Provider profiles (models, effort, token limits, prices, `rate_limits`, `task_max_tokens`), signal topics, `max_input_chars` |
 | `securegpt.yaml` | Gateway and token URLs per environment, API version, deployments |
+| `alphavantage.yaml` | Direct query URL; APIM query/token URLs, scope, token authentication method and subscription-key-on-token setting per environment; timeout/retry limits (D-075) |
 | `azure.yaml` | Azure SQL server, database, schemas, ODBC driver, certificate check; ADLS account, container, root; Databricks secret scope and key names per environment (D-057; placeholders) |
 | `app_publish.yaml` | Metric categories, RiskTypes regex rules, confidence rules, trend and loan metrics |
 | `source_labels.yaml` | Readable names for sections and concepts |
@@ -416,11 +429,30 @@ because the service echoes the key.
 | `ADLS_CLIENT_ID`, `ADLS_CLIENT_SECRET` | – | ADLS service principal; same fallback |
 | `LLM_PROVIDER` | `securegpt` | Model profile in `config/llm.yaml` |
 | `SECUREGPT_CLIENT_ID`, `SECUREGPT_CLIENT_SECRET`, `SECUREGPT_SUBSCRIPTION_KEY`, `SECUREGPT_ENV` | – | SecureGPT gateway |
-| `ALPHAVANTAGE_API_KEY` | – | Alpha Vantage |
+| `ALPHAVANTAGE_API_KEY` | – | Required for AV stages in both direct and APIM modes |
+| `ALPHAVANTAGE_MODE` | `direct` | `direct` or `apim`; never automatically falls back |
+| `ALPHAVANTAGE_ENV` | `apim.default_env` in `alphavantage.yaml` | Selects an APIM environment; unused in direct mode |
+| `ALPHAVANTAGE_CLIENT_ID`, `ALPHAVANTAGE_CLIENT_SECRET`, `ALPHAVANTAGE_SUBSCRIPTION_KEY` | – | All three additionally required in APIM mode; independent of SecureGPT credentials |
 | `LLM_DAILY_BUDGET` | 25 | New LLM spend per day in the profile's currency; 0 = unlimited |
 | `ALPHAVANTAGE_CALLS_PER_MINUTE`, `ALPHAVANTAGE_DAILY_QUOTA` | 5, 25 | Paid plan: 75 and 0 (unlimited) |
 | `LLM_ENABLED` | true | `false` runs rules only |
 | `LOG_FORMAT` | text | `json`: one object per line with run, job, ticker and stage |
+
+AV credentials are checked lazily when an AV client is created, so SEC-only runs do not require
+them. `config check` validates YAML structure offline, without checking live credentials or
+requesting tokens. Missing `alphavantage.yaml` preserves legacy direct defaults; APIM requires
+a configured environment without placeholder endpoints/scope. The existing OpenShift Secret
+example lists all four AV credential keys and defaults to direct; operators inject real values
+through their existing manifest/Secret, and mount the non-secret YAML separately.
+
+`ClientCredentialsTokenProvider` supports `client_secret_post`, `client_secret_basic` and
+`gateway_headers`; `subscription_key_on_token` controls whether token acquisition also sends
+the subscription key (default true). APIM data requests always send it. Tokens require a
+positive `expires_in`, stay in process only, and renew 10% before expiry (at most 120 seconds).
+A data fetch refreshes/replays at most once after HTTP 401; 403 is not an expiry retry. Cache
+hits request no token and consume no data quota; every attempted data request, including
+transport failures and 401 replays, consumes the AV quota, while token requests do not.
+See the [APIM setup guide](ALPHAVANTAGE_APIM.zh-CN.md) for wire formats and examples.
 
 ## 14. Build and deployment
 
@@ -437,10 +469,31 @@ because the service echoes the key.
   ADLS read/write) and `scripts/securegpt_smoke.py` (each model once, `reasoning_effort`
   support).
 
+### Source-to-prod handoff
+
+The `prod` branch has independent history and is generated from a selected development source
+plus `scripts/prod.patch`; recent releases selected `release-takeaways`. The source branch
+contains the release tooling and patch; these files are deliberately omitted from the prod
+tree. See the [source branch tooling](https://github.com/jiehuan/prof360/tree/release-takeaways/scripts).
+
+A feature merged only into prod is not automatically preserved by the next generated release:
+the release process replaces the prod file tree with the selected source and reapplies the
+patch. Before that next release, a maintainer must port the feature to the actual release source
+(adapting client construction to that branch), or deliberately carry any prod-only differences
+in a reviewed patch refreshed against that same source. Do not merge the independent branch
+histories blindly or add the source-only patch/tooling to prod.
+
+For D-075, confirm that the generated tree retains AV settings, `alphavantage.yaml`, the OAuth
+component, lazy client construction, deployment examples, documentation and tests. Run the
+existing release checks in the temporary worktree and review the source/prod diff before
+publishing. This source synchronization/rebuild is a maintainer handoff, not an action already
+performed by the feature PR. No schema, golden-output or database-archive refresh is needed
+for this transport-only change.
+
 ## 15. Testing
 
 ```bash
-.venv/bin/pytest -q                       # 298 passed, 4 skipped (SQL Server only), 2026-10-14
+PYTHONPATH=src .venv/bin/pytest -q         # 597 passed, 4 SQL Server skips; Python 3.11, 2026-11-03
 .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy   # mypy strict
 scripts/test_mssql.sh --all               # whole suite on SQL Server 2022 in Docker: 302 passed
 .venv/bin/python scripts/stability_check.py --faults MAR   # timeout / rate limit / bad output fail closed

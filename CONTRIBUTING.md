@@ -52,6 +52,8 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
 - Secrets come only from environment variables, or on Databricks from the secret scope whose key
   names are in `config/azure.yaml` (D-057). Never put them in code, logs or fixtures.
 - After finishing a checklist item, tick its box in `docs/PLAN.md`.
+- Runtime/client configuration changes must update `.env.example`, the deployment Secret
+  example, configuration/operations/technical docs, and the relevant offline tests.
 - All external calls (HTTP, LLM, DB) go through `src/uw_pipeline/clients/` so tests can swap them.
 - Companies are identified by pinned CIK in `config/companies.yaml`; tickers are display-only.
 - Metric lists per industry group are curated in `config/metrics.yaml` (metric_sets) and
@@ -74,4 +76,10 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
   The free plan has ~25 calls/day; stages stop cleanly at the quota and resume next run.
 - Signal and section rules live in `config/signal_rules.yaml` and `company_overrides/*.yaml`
   (`sections:`); every false positive found becomes a test case in `tests/test_signals.py`.
+
+When contributing to the generated `prod` branch, include a maintainer handoff for porting the
+feature to the actual release source and preserving any intentional source/prod patch differences.
+The [technical release handoff](docs/TECHNICAL.md#source-to-prod-handoff) explains why a prod-only
+merge can be lost on the next generated release. Mark source synchronization as pending until
+the maintainer has completed and verified it.
 

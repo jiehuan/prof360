@@ -436,6 +436,7 @@ uw-pipeline dq-report --run-id <id>
 ### Phase 4 — Alpha Vantage
 - [x] `clients/alphavantage.py`：按订阅档限速、重试、缓存（含每日额度计数、错误消息中 key 脱敏）
 - [x] direct/APIM 切换、client credentials token 缓存与更新、subscription key、配置和部署参考（2026-11-03，D-075；离线测试完成，真实内网联调待凭证和端点就绪）
+- [ ] D-075 发布交接：维护者将通用修改回流实际发版源分支，审阅必要的 prod 补丁差异，并在临时工作目录重新生成/验证 prod；[交接说明](TECHNICAL.md#source-to-prod-handoff)已补齐，回流与正式发版尚未执行。
 - [x] 新闻增量拉取、相关性过滤、去重 → `activity`（摘要字段留空，Phase 5 填）：三层去重见 decisions D-029；NEWS_SENTIMENT 需付费 key，真实数据验收待定
 - [x] 电话会议纪要拉取（最近 4 个季度）→ `source_document`（TRANSCRIPT）（D-030）
 - [ ] ~~AV 财报与 XBRL 交叉校验 → DQ 报告~~ 暂不做（用户决定，D-031）
