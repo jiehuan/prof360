@@ -10,16 +10,28 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import threading
 from collections.abc import Callable
 from datetime import UTC, date, datetime
+from pathlib import Path
 from typing import Any
 
 import httpx
+import yaml
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, ValidationError, field_validator
 from tenacity import Retrying, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter
 from tenacity.wait import wait_base
 
+from uw_pipeline.clients.oauth import (
+    ClientCredentialsConfig,
+    ClientCredentialsTokenProvider,
+    OAuthError,
+    https_endpoint,
+)
 from uw_pipeline.clients.ratelimit import TokenBucket
 from uw_pipeline.clients.storage import Storage
+from uw_pipeline.settings import Settings
+from uw_pipeline.yaml_load import safe_load
 
 log = logging.getLogger(__name__)
 
@@ -28,6 +40,10 @@ AV_URL = "https://www.alphavantage.co/query"
 
 class AlphaVantageError(Exception):
     pass
+
+
+class AlphaVantageSetupError(AlphaVantageError, ValueError):
+    """Missing credentials or invalid route configuration, reported without values."""
 
 
 class PremiumRequiredError(AlphaVantageError):
@@ -42,11 +58,112 @@ class TransientError(AlphaVantageError):
     pass
 
 
+class DirectConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    query_url: str = AV_URL
+
+    _query_endpoint = field_validator("query_url")(https_endpoint)
+
+
+class AlphaVantageGatewayEnv(DirectConfig):
+    query_url: str
+    oauth: ClientCredentialsConfig
+
+
+class APIMConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    default_env: str = "dv"
+    environments: dict[str, AlphaVantageGatewayEnv] = Field(default_factory=dict)
+
+
+class AlphaVantageConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    direct: DirectConfig = Field(default_factory=DirectConfig)
+    apim: APIMConfig = Field(default_factory=APIMConfig)
+    timeout_sec: float = Field(default=60, gt=0, allow_inf_nan=False)
+    max_attempts: int = Field(default=3, ge=1)
+
+
+def load_alphavantage_config(config_dir: Path) -> AlphaVantageConfig:
+    path = config_dir / "alphavantage.yaml"
+    if not path.exists():
+        return AlphaVantageConfig()  # older config mounts still support direct
+    try:
+        return AlphaVantageConfig.model_validate(safe_load(path.read_text(encoding="utf-8")))
+    except ValidationError as exc:
+        fields = sorted({".".join(str(p) for p in e["loc"]) for e in exc.errors()})
+        raise AlphaVantageSetupError(
+            "invalid config/alphavantage.yaml fields: " + ", ".join(fields)
+        ) from None
+    except (OSError, UnicodeError, yaml.YAMLError):
+        raise AlphaVantageSetupError("cannot read config/alphavantage.yaml") from None
+
+
+def validate_alphavantage_settings(
+    settings: Settings, cfg: AlphaVantageConfig
+) -> AlphaVantageGatewayEnv | None:
+    """Offline credential/selected-route preflight, shared with the deployment guard."""
+    required: dict[str, str | SecretStr | None] = {
+        "ALPHAVANTAGE_API_KEY": settings.alphavantage_api_key
+    }
+    if settings.alphavantage_mode == "apim":
+        required.update(
+            ALPHAVANTAGE_CLIENT_ID=settings.alphavantage_client_id,
+            ALPHAVANTAGE_CLIENT_SECRET=settings.alphavantage_client_secret,
+            ALPHAVANTAGE_SUBSCRIPTION_KEY=settings.alphavantage_subscription_key,
+        )
+    missing = []
+    for name, value in required.items():
+        plain = value.get_secret_value() if isinstance(value, SecretStr) else value
+        if not plain or not plain.strip() or "REPLACE_WITH_" in plain:
+            missing.append(name)
+    if missing:
+        raise AlphaVantageSetupError("missing Alpha Vantage credentials: " + ", ".join(missing))
+    if settings.alphavantage_mode == "direct":
+        return None
+    env = cfg.apim.environments.get(settings.alphavantage_env or cfg.apim.default_env)
+    if env is None:
+        raise AlphaVantageSetupError("ALPHAVANTAGE_ENV is not in config/alphavantage.yaml")
+    if any(
+        "REPLACE_WITH_" in value or ".invalid" in value
+        for value in (env.query_url, env.oauth.token_url, env.oauth.scope)
+    ):
+        raise AlphaVantageSetupError("selected Alpha Vantage APIM environment has placeholders")
+    return env
+
+
+def make_alphavantage_client(settings: Settings, storage: Storage) -> AlphaVantageClient:
+    cfg = load_alphavantage_config(settings.config_dir)
+    env = validate_alphavantage_settings(settings, cfg)
+    assert settings.alphavantage_api_key is not None  # checked above
+    http = httpx.Client(timeout=cfg.timeout_sec)
+    oauth = None
+    if env is not None:
+        assert settings.alphavantage_client_id is not None
+        assert settings.alphavantage_client_secret is not None
+        assert settings.alphavantage_subscription_key is not None
+        oauth = ClientCredentialsTokenProvider(
+            env.oauth,
+            client_id=settings.alphavantage_client_id,
+            client_secret=settings.alphavantage_client_secret.get_secret_value(),
+            subscription_key=settings.alphavantage_subscription_key.get_secret_value(),
+            http=http,
+            max_attempts=cfg.max_attempts,
+        )
+    return AlphaVantageClient(
+        settings.alphavantage_api_key.get_secret_value(), storage,
+        query_url=env.query_url if env is not None else cfg.direct.query_url,
+        oauth=oauth, http=http, max_attempts=cfg.max_attempts,
+        rate_limiter=TokenBucket(rate=settings.alphavantage_calls_per_minute / 60),
+        daily_quota=settings.alphavantage_daily_quota or None,
+    )  # fmt: skip
+
+
 def _utc_today() -> date:
     return datetime.now(UTC).date()
 
 
-def classify(payload: Any, secret: str = "") -> None:
+def classify(payload: Any, secret: str = "", *, secrets: tuple[str, ...] = ()) -> None:
     """Raise if an HTTP-200 body is an Alpha Vantage error message.
 
     Alpha Vantage echoes the API key in some messages ("We have detected your API key as ..."),
@@ -56,7 +173,9 @@ def classify(payload: Any, secret: str = "") -> None:
     msg = payload.get("Information") or payload.get("Note") or payload.get("Error Message")
     if msg is None or len(payload) > 1:
         return
-    msg = str(msg).replace(secret, "***") if secret else str(msg)
+    msg = str(msg)
+    for value in sorted({secret, *secrets} - {""}, key=len, reverse=True):
+        msg = msg.replace(value, "***")
     low = msg.lower()
     # Rate-limit messages also mention premium plans, so check them first.
     if "rate limit" in low or "requests per day" in low or "call frequency" in low:
@@ -72,6 +191,8 @@ class AlphaVantageClient:
         api_key: str,
         storage: Storage,
         *,
+        query_url: str = AV_URL,
+        oauth: ClientCredentialsTokenProvider | None = None,
         rate_limiter: TokenBucket | None = None,
         daily_quota: int | None = 25,
         http: httpx.Client | None = None,
@@ -79,7 +200,10 @@ class AlphaVantageClient:
         wait: wait_base | None = None,
         today: Callable[[], date] = _utc_today,
     ) -> None:
+        if not api_key.strip():
+            raise AlphaVantageSetupError("ALPHAVANTAGE_API_KEY must not be blank")
         self._key = api_key
+        self._url, self._oauth = https_endpoint(query_url), oauth
         self._storage = storage
         self._limiter = rate_limiter or TokenBucket(rate=5 / 60)
         self._quota = daily_quota
@@ -87,6 +211,7 @@ class AlphaVantageClient:
         self._max_attempts = max_attempts
         self._wait = wait or wait_exponential_jitter(initial=2, max=60)
         self._today = today
+        self._request_lock = threading.Lock()
 
     def close(self) -> None:
         self._http.close()
@@ -114,20 +239,38 @@ class AlphaVantageClient:
             self._quota_key(), json.dumps({"calls": self.calls_today() + 1}).encode()
         )
 
-    # -- transport -----------------------------------------------------------------------------
-
-    def _get_once(self, params: dict[str, str]) -> bytes:
+    def _check_quota(self) -> None:
         if self._quota is not None and self.calls_today() >= self._quota:
             raise QuotaExhaustedError(f"daily quota of {self._quota} Alpha Vantage calls used")
+
+    # -- transport -----------------------------------------------------------------------------
+
+    def _get_once(self, params: dict[str, str]) -> httpx.Response:
+        # Serialize quota accounting within this client, also when server-DB workers share it.
+        with self._request_lock:
+            return self._request_once(params)
+
+    def _request_once(self, params: dict[str, str]) -> httpx.Response:
+        self._check_quota()
         self._limiter.acquire()
-        response = self._http.get(AV_URL, params={**params, "apikey": self._key})
+        try:
+            headers = self._oauth.headers() if self._oauth is not None else {}
+        except OAuthError as exc:
+            raise AlphaVantageError(str(exc)) from None
+        # Count attempted data calls conservatively, including transport failures and 401s.
         self._count_call()
+        try:
+            response = self._http.get(
+                self._url,
+                params={**params, "apikey": self._key},
+                headers=headers,
+                follow_redirects=False,
+            )
+        except httpx.TransportError as exc:
+            raise TransientError(f"Alpha Vantage request failed ({type(exc).__name__})") from None
         if response.status_code == 429 or response.status_code >= 500:
             raise TransientError(f"HTTP {response.status_code}")
-        if response.status_code >= 400:
-            # Not raise_for_status(): its message contains the request URL, and with it the key.
-            raise AlphaVantageError(f"Alpha Vantage returned HTTP {response.status_code}")
-        return response.content
+        return response
 
     def fetch(
         self,
@@ -147,9 +290,42 @@ class AlphaVantageClient:
             retry=retry_if_exception_type((httpx.TransportError, TransientError)),
             reraise=True,
         )
-        data: bytes = retrying(self._get_once, params)
-        payload = json.loads(data)
-        classify(payload, self._key)  # errors aren't landed, so they're retried next run
+        response = retrying(self._get_once, params)
+        if response.status_code == 401 and self._oauth is not None:
+            # Only one renewal/replay per fetch, even if data requests have transient retries.
+            self._check_quota()
+            try:
+                self._oauth.get_token(force=True)
+            except OAuthError as exc:
+                raise AlphaVantageError(str(exc)) from None
+            response = retrying(self._get_once, params)
+        if not 200 <= response.status_code < 300:
+            # raise_for_status() includes the URL (and API key); gateway bodies may echo tokens.
+            raise AlphaVantageError(f"Alpha Vantage returned HTTP {response.status_code}")
+        data = response.content
+        try:
+            payload = json.loads(data)
+        except (ValueError, UnicodeError):
+            raise AlphaVantageError("Alpha Vantage returned invalid JSON") from None
+        secrets = self._oauth.sensitive_values if self._oauth is not None else ()
+        classify(payload, self._key, secrets=secrets)
+        if isinstance(payload, dict) and "error" in payload:
+            raise AlphaVantageError("Alpha Vantage returned an error response")
+        # A misconfigured gateway can return a successful echo/debug response. Refuse to land
+        # it rather than altering raw evidence or persisting credentials in the raw cache.
+        serialized = json.dumps(payload, ensure_ascii=False)
+        private_key = self._key if self._key != "demo" else ""
+        # Short identifiers also occur in normal financial prose; match them only as entire
+        # JSON strings. For real long credentials, also detect echoes embedded in longer text.
+        if any(
+            value
+            and (
+                json.dumps(value, ensure_ascii=False) in serialized
+                or (len(value) >= 8 and json.dumps(value, ensure_ascii=False)[1:-1] in serialized)
+            )
+            for value in (private_key, *secrets)
+        ):
+            raise AlphaVantageError("Alpha Vantage response contains credentials")
         if keep is None or keep(payload):
             self._storage.write_bytes(key, data)
         return payload
@@ -199,7 +375,10 @@ class AlphaVantageClient:
 
 def public_url(params: dict[str, str]) -> str:
     """Request URL for lineage, without the API key."""
-    return str(httpx.URL(AV_URL, params=params))
+    private = {"apikey", "access_token", "client_id", "client_secret",
+               "ocp-apim-subscription-key", "authorization"}  # fmt: skip
+    public = {k: v for k, v in params.items() if k.lower() not in private}
+    return str(httpx.URL(AV_URL, params=public))
 
 
 def content_hash(payload: Any) -> str:

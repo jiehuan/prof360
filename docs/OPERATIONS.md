@@ -131,6 +131,9 @@
 
 ## 10c. 市场、内部人、诉讼、并行（Phase 15，D-050）
 
+- Alpha Vantage 接入：默认 `ALPHAVANTAGE_MODE=direct`；内网可设 `apim`，在 AV API key
+  之外增加独立的 client ID/secret 与 subscription key，地址和 scope 配置在
+  `config/alphavantage.yaml`。详见 [APIM 接入说明](ALPHAVANTAGE_APIM.zh-CN.md)（D-075）。
 - 市场数据：`market` 阶段（在 compute 之后）用 Alpha Vantage 付费 key（`TIME_SERIES_DAILY_ADJUSTED` 全量和 `EARNINGS`），每家每天 2 次，另加 SPY；配额用完干净停止，下次运行续上。市值 = 季末收盘价 × 封面的流通股数（dei，期末后 120 天内），没有时用稀释加权股数。Altman Z 在 compute 里用上次 market 运行存下的市值，所以新公司第一次运行时 Altman Z 晚一次出现。
 - Form 4：在 documents 阶段，只取原件（4/A 不取，避免重复计算）。公司作为其他发行人的大股东提交的 Form 4（例如 JPM）只登记、不解析。集中卖出信号每段一条；之后 90 天内出现股价大跌或业绩不及预期后的下跌，升为 Warning。
 - 13D：EDGAR 的列表里也有公司自己就其他发行人提交的 13D，只保留 index headers 里 SUBJECT COMPANY 是本公司的。

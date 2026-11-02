@@ -29,6 +29,7 @@ code. Decisions D-016 and D-049 explain the design.
 
 | I want to | File | What to write |
 |---|---|---|
+| Route Alpha Vantage through APIM | `alphavantage.yaml` | HTTPS query/token endpoints, scope and token authentication method; mode/credentials are environment variables ([guide](ALPHAVANTAGE_APIM.zh-CN.md), D-075) |
 | Add a company | `companies.yaml` | `ticker`, `cik` (pinned; the ticker is only for display), `display_name`, `news_aliases`; candidates from `scripts/build_universe.py --sample N` (D-055) |
 | Put a company in an industry, whatever its SIC code | `companies.yaml` | `industry: GROUP` and `industry_reason: "..."` (required) |
 | Mark a company clinical-stage (pre-revenue life sciences) | `companies.yaml` | `traits: [clinical_stage]`: adds cash runway, R&D / operating expenses and the `clinical` stage; drops the product metrics (`trait_exclude_metrics`); candidates from `scripts/build_universe.py --clinical N` (D-058) |
@@ -225,3 +226,8 @@ MSFT:                        # one company; wins over its traits' and group's no
 - Every metric gap that `coverage-report` shows needs a note in `coverage_notes.yaml`.
 - Golden test values come from the filing itself.
 - No secrets in `config/`: credentials come from environment variables only.
+
+`config check` also validates the structure of `alphavantage.yaml`, when present, without
+credentials or HTTP requests. Missing files preserve legacy direct defaults. Selected APIM
+environment/credential preflight happens lazily at AV client creation (and in the deployment
+guard); see [Alpha Vantage configuration](ALPHAVANTAGE_APIM.zh-CN.md).

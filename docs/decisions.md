@@ -1735,3 +1735,26 @@ income" (2026-11-01).**
 - The other 28 are left as they are: later restatements (DRVN, SPGI, BTSG), attributable vs
   total net income or rounding (GEV, MDLN, SW, DOW, CI, BFH, ILMN; mostly 1-4%) and PRU, SSRM,
   CBRE. The value shown is the XBRL one; dq keeps reporting them for 180 days.
+
+**D-075 Alpha Vantage direct / APIM transport (2026-11-03).**
+- User-approved design: `ALPHAVANTAGE_MODE=direct|apim` (default direct). Both modes require
+  `ALPHAVANTAGE_API_KEY` as the `apikey` query parameter. APIM additionally requires its own
+  client ID, client secret and `Ocp-Apim-Subscription-Key`; it never falls back to direct.
+- Credentials and mode/environment selection live in Settings/environment variables. New
+  `config/alphavantage.yaml` holds query/token URLs, scope, token authentication method,
+  timeout and retry limit. Existing rate/quota environment variables stay authoritative.
+  A missing YAML keeps legacy direct defaults; APIM requires a configured environment.
+- Token authentication explicitly selects standard `client_secret_post` / `client_secret_basic`
+  or corporate `gateway_headers`. Whether the subscription key is also sent to the token
+  endpoint is configurable; default true, matching the existing corporate gateway convention.
+  This avoids assuming that client credentials alone specifies a token request's wire format.
+- Tokens are cached only in process, renewed before expiry, and forcibly renewed at most once
+  per business fetch after HTTP 401. Cache hits require no token request. Token requests have
+  their own bounded retries and do not consume the AV data quota; every data request attempt
+  does. Responses, errors and lineage must not persist credentials. Public source URLs and raw
+  cache keys remain independent of the selected route; APIM must preserve the AV JSON contract.
+- Configuration checks are offline and credential-free. Credential/selected-environment checks
+  are lazy for AV stages, so SEC-only runs remain supported. The existing OpenShift Secret
+  example lists the new credential keys and defaults to direct. Deployment configuration stays
+  in the operator's existing manifest; this change adds no CronJob or schedule.
+- SecureGPT's existing client and token behavior are not refactored in this change.

@@ -1,0 +1,20 @@
+# Mode and credentials are environment variables; never put credentials in this file.
+# Missing file preserves legacy direct defaults. APIM must transparently proxy AV query/JSON.
+direct:
+  query_url: https://www.alphavantage.co/query
+
+apim:
+  default_env: dv
+  environments:
+    dv:
+      query_url: https://REPLACE_WITH_AV_APIM_HOST/REPLACE_WITH_AV_QUERY_PATH
+      oauth:
+        token_url: https://REPLACE_WITH_AV_TOKEN_HOST/REPLACE_WITH_AV_TOKEN_PATH
+        scope: REPLACE_WITH_AV_SCOPE
+        # client_secret_post | client_secret_basic | gateway_headers
+        token_auth_method: client_secret_post
+        # Set false if the token endpoint must not receive the APIM subscription key.
+        subscription_key_on_token: true
+
+timeout_sec: 60
+max_attempts: 3

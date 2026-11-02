@@ -13,6 +13,7 @@ from typing import Annotated, Any
 import typer
 from sqlalchemy import Connection, Engine, func, select
 
+from uw_pipeline.clients.alphavantage import load_alphavantage_config
 from uw_pipeline.clients.db import app_engine, ensure_schema, pipeline_engine
 from uw_pipeline.compute.coverage import (
     company_coverage,
@@ -483,6 +484,8 @@ def config_check() -> None:
         # Read only by scripts/build_universe.py, but checked here too (D-055).
         load_universe_config(_config_dir()).check(industry)
         load_logo_config(_config_dir()).check_companies(companies)
+        # Structural validation only: no credentials or token requests required.
+        load_alphavantage_config(_config_dir())
         _check_logos(companies)
     except ValueError as exc:  # pydantic ValidationError is a ValueError
         typer.echo(f"INVALID: {exc}", err=True)
