@@ -23,8 +23,8 @@ preliminary:
     exact figure in the income statement table, not a rounded figure from the text. For banks:
     total net revenue on a reported (not managed or fully taxable-equivalent) basis. Where the
     table shows net revenues (total revenues less interest expense, as broker-dealers report
-    them): net revenues. Not a total that adds other income, equity-method income or gains to
-    revenue ("Total revenues and other income"): the revenue line above those items.
+    them): net revenues. Each release read also gets the 10-Q/10-K figure of its prior-year
+    quarter, which decides the line (D-076).
   net_income: >-
     Net income attributable to the company (GAAP, as reported) for the fiscal quarter the
     release announces: the income statement line "Net income attributable to <company>", or
