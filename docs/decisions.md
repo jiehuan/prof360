@@ -1735,3 +1735,51 @@ income" (2026-11-01).**
 - The other 28 are left as they are: later restatements (DRVN, SPGI, BTSG), attributable vs
   total net income or rounding (GEV, MDLN, SW, DOW, CI, BFH, ILMN; mostly 1-4%) and PRU, SSRM,
   CBRE. The value shown is the XBRL one; dq keeps reporting them for 180 days.
+
+**D-075 sync_sql_objects copies named BFF tables with their rows (2026-11-03).**
+- Need: `pp` lacked `UserNotificationRead`, which two of the BFF's notification functions read,
+  and the user wanted dv's rows there too. The environments cannot reach each other, and
+  `copy_sqlite_to_azure` never touches `User*` tables (they are the BFF's, not in the
+  pipeline's SQLite file).
+- Options: (a) create the table from `deploy/sql/bff_notifications.sql` and paste generated
+  INSERT statements by hand; (b) a `tables` option in `sync_sql_objects`, the notebook that
+  already moves the BFF's functions and procedures from `dv` to `pp` through a file; (c) a
+  new notebook. Chosen: (b), one file and two runs for the whole BFF set.
+- Rules: only tables named in `tables` are exported, with their columns, defaults, identity,
+  primary key and rows (at most 200,000 a table). The import creates a missing table (not its
+  foreign keys, indexes or triggers) and inserts the rows whose primary key is not in the
+  target, ids included; rows already there are never updated or deleted, so the target's own
+  user data wins and a rerun inserts nothing. Dates and times travel as ISO text (all digits,
+  offsets kept), binary as hex. The pipeline's tables keep going through
+  `copy_sqlite_to_azure`.
+- Caveat for user tables: a `UserId` means the same person only if both environments share
+  their users; check before copying user state.
+
+**D-076 Earnings releases read on the XBRL basis: the prior-year quarter as anchor
+(2026-11-03).**
+- Run 154 (the first nightly after D-074): D-074 fixed 20 `release_vs_xbrl` Errors (MPC, RJF,
+  DOW, SW) and caused 13 (CVX 8, XOM 5). Its rule "not a total that adds other income" is right
+  for Marathon Petroleum, whose XBRL revenue is "Sales and other operating revenue", and wrong
+  for Chevron and Exxon, whose XBRL revenue is "Total revenues and other income". Which line is
+  revenue depends on the company's own tagging, so no wording fits all. It mattered on the page:
+  CVX's Q3 2026 preliminary revenue (no 10-Q yet) was 65,237M, the narrower line, beside Q2's
+  XBRL 70,055M. Run 154 also had 9 other new mismatches (PGR 4, PRU 2, UPS, J, AA).
+- Options: (a) company overrides of the definition (MPC one way, CVX and XOM the other);
+  (b) give the extractor the figure the company's 10-Q/10-K reports for the quarter a year
+  before the one the release announces, which every release shows as its comparative, and ask
+  for the line showing it; (c) b plus a gate. Chosen: (c).
+  - Anchor: for each release, the XBRL quarter whose end is nearest 395 days before the filing
+    date (within 60 days), per preliminary metric (revenue, net income, operating income). Only
+    that quarter: the anchor does not change when the announced quarter's own 10-Q arrives, so
+    a release is read again only when that older figure is revised. D-074's sentence about other
+    income is removed from `config/text_extraction.yaml`; the broker-dealer net revenues one
+    stays for companies without an anchor (new filers).
+  - Gate: a release whose figure for a period XBRL covers disagrees with XBRL (the check dq
+    reports as `release_vs_xbrl`) gives no PRELIMINARY value for that metric: its new quarter is
+    on the same wrong line, a month (Progressive's monthly releases) or another basis. The page
+    then shows nothing for that quarter until the 10-Q, rather than a figure on another basis.
+- Evaluated on a copy of the database after run 154, `textmetrics` for the 11 companies
+  involved (89 model calls): mismatches 23 -> 1 (DOW Q4 2025 net income -1,543M vs -1,534M,
+  0.6%); CVX's Q3 2026 preliminary revenue 65,237M -> 67,798M (total revenues and other income,
+  the XBRL basis); MPC, RJF, SW, UPS unchanged and agreeing. The anchor is part of the input, so
+  the next `textmetrics` reads every release again (about $2-4).
