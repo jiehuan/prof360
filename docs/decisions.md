@@ -1813,3 +1813,32 @@ income" (2026-11-01).**
   `copy_sqlite_to_azure`.
 - Caveat for user tables: a `UserId` means the same person only if both environments share
   their users; check before copying user state.
+
+**D-076 Earnings releases read on the XBRL basis: the prior-year quarter as anchor
+(2026-11-03).**
+- Run 154 (the first nightly after D-074): D-074 fixed 20 `release_vs_xbrl` Errors (MPC, RJF,
+  DOW, SW) and caused 13 (CVX 8, XOM 5). Its rule "not a total that adds other income" is right
+  for Marathon Petroleum, whose XBRL revenue is "Sales and other operating revenue", and wrong
+  for Chevron and Exxon, whose XBRL revenue is "Total revenues and other income". Which line is
+  revenue depends on the company's own tagging, so no wording fits all. It mattered on the page:
+  CVX's Q3 2026 preliminary revenue (no 10-Q yet) was 65,237M, the narrower line, beside Q2's
+  XBRL 70,055M. Run 154 also had 9 other new mismatches (PGR 4, PRU 2, UPS, J, AA).
+- Options: (a) company overrides of the definition (MPC one way, CVX and XOM the other);
+  (b) give the extractor the figure the company's 10-Q/10-K reports for the quarter a year
+  before the one the release announces, which every release shows as its comparative, and ask
+  for the line showing it; (c) b plus a gate. Chosen: (c).
+  - Anchor: for each release, the XBRL quarter whose end is nearest 395 days before the filing
+    date (within 60 days), per preliminary metric (revenue, net income, operating income). Only
+    that quarter: the anchor does not change when the announced quarter's own 10-Q arrives, so
+    a release is read again only when that older figure is revised. D-074's sentence about other
+    income is removed from `config/text_extraction.yaml`; the broker-dealer net revenues one
+    stays for companies without an anchor (new filers).
+  - Gate: a release whose figure for a period XBRL covers disagrees with XBRL (the check dq
+    reports as `release_vs_xbrl`) gives no PRELIMINARY value for that metric: its new quarter is
+    on the same wrong line, a month (Progressive's monthly releases) or another basis. The page
+    then shows nothing for that quarter until the 10-Q, rather than a figure on another basis.
+- Evaluated on a copy of the database after run 154, `textmetrics` for the 11 companies
+  involved (89 model calls): mismatches 23 -> 1 (DOW Q4 2025 net income -1,543M vs -1,534M,
+  0.6%); CVX's Q3 2026 preliminary revenue 65,237M -> 67,798M (total revenues and other income,
+  the XBRL basis); MPC, RJF, SW, UPS unchanged and agreeing. The anchor is part of the input, so
+  the next `textmetrics` reads every release again (about $2-4).
