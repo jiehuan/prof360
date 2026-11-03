@@ -1794,3 +1794,22 @@ income" (2026-11-01).**
 - The other 28 are left as they are: later restatements (DRVN, SPGI, BTSG), attributable vs
   total net income or rounding (GEV, MDLN, SW, DOW, CI, BFH, ILMN; mostly 1-4%) and PRU, SSRM,
   CBRE. The value shown is the XBRL one; dq keeps reporting them for 180 days.
+
+**D-075 sync_sql_objects copies named BFF tables with their rows (2026-11-03).**
+- Need: `pp` lacked `UserNotificationRead`, which two of the BFF's notification functions read,
+  and the user wanted dv's rows there too. The environments cannot reach each other, and
+  `copy_sqlite_to_azure` never touches `User*` tables (they are the BFF's, not in the
+  pipeline's SQLite file).
+- Options: (a) create the table from `deploy/sql/bff_notifications.sql` and paste generated
+  INSERT statements by hand; (b) a `tables` option in `sync_sql_objects`, the notebook that
+  already moves the BFF's functions and procedures from `dv` to `pp` through a file; (c) a
+  new notebook. Chosen: (b), one file and two runs for the whole BFF set.
+- Rules: only tables named in `tables` are exported, with their columns, defaults, identity,
+  primary key and rows (at most 200,000 a table). The import creates a missing table (not its
+  foreign keys, indexes or triggers) and inserts the rows whose primary key is not in the
+  target, ids included; rows already there are never updated or deleted, so the target's own
+  user data wins and a rerun inserts nothing. Dates and times travel as ISO text (all digits,
+  offsets kept), binary as hex. The pipeline's tables keep going through
+  `copy_sqlite_to_azure`.
+- Caveat for user tables: a `UserId` means the same person only if both environments share
+  their users; check before copying user state.
