@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from sqlalchemy import Connection, DateTime, String, Table, text
+from sqlalchemy import Connection, DateTime, Float, Numeric, String, Table, text
 from sqlalchemy.dialects import sqlite
 from sqlalchemy.sql.compiler import IdentifierPreparer
 
@@ -94,7 +94,9 @@ def build_merge_sql(
 def _input_sizes(table: Table, cols: Sequence[str]) -> list[Any]:
     """Parameter types for the staging insert. pyodbc cannot describe the parameters of a
     #temp table, so fast_executemany would size each one from the first row: a longer string
-    later fails ("String data, right truncation") and datetimes lose their microseconds."""
+    later fails ("String data, right truncation") and datetimes lose their microseconds.
+    A float sent to a DECIMAL column without a size goes as text that SQL Server cannot read
+    for 0.03-0.09 (error 8114, "varchar to numeric"), so DECIMAL columns get their own size."""
     import pyodbc  # SQL Server only
 
     sizes: list[Any] = []
@@ -104,8 +106,13 @@ def _input_sizes(table: Table, cols: Sequence[str]) -> list[Any]:
             sizes.append((pyodbc.SQL_WVARCHAR, t.length or 0, 0))  # 0: NVARCHAR(max)
         elif isinstance(t, DateTime):
             sizes.append((pyodbc.SQL_TYPE_TIMESTAMP, 27, 7))  # DATETIME2(7) precision
+        elif isinstance(t, Numeric) and not isinstance(t, Float):
+            if t.precision is None:
+                sizes.append((pyodbc.SQL_DOUBLE, 0, 0))  # the server rounds to the column
+            else:
+                sizes.append((pyodbc.SQL_DECIMAL, t.precision, t.scale or 0))
         else:
-            sizes.append(None)  # numbers, booleans, dates: pyodbc's own binding is exact
+            sizes.append(None)  # FLOAT, integers, booleans, dates: pyodbc's binding is exact
     return sizes
 
 

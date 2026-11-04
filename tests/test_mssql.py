@@ -95,6 +95,27 @@ def test_merge_upsert_insert_missing_and_large_key_delete(pipe: Engine) -> None:
         assert c.execute(select(func.count()).select_from(metric_value)).scalar_one() == 100
 
 
+def test_merge_into_decimal_columns_takes_every_two_place_score() -> None:
+    """Run 132 (Azure): JPM publish failed on NewsRiskScore, "Error converting data type
+    varchar to numeric" (8114). pyodbc's fast executemany sent 0.03-0.09 into DECIMAL(5,2) as
+    text SQL Server could not read."""
+    from decimal import Decimal
+
+    from sqlalchemy import Column, Float, Integer, MetaData, Numeric, Table
+
+    md = MetaData()
+    probe = Table("decimal_probe", md, Column("id", Integer, primary_key=True, autoincrement=False),
+                  Column("score", Numeric(5, 2)), Column("raw", Float))  # fmt: skip
+    engine = _fresh("uwt_app", md)
+    values = [round(i / 100, 2) for i in range(101)] + [None, 0, 1]
+    rows = [{"id": i, "score": v, "raw": v} for i, v in enumerate(values)]
+    with engine.begin() as c:
+        upsert(c, probe, rows, key_cols=["id"])
+    with engine.connect() as c:
+        got = dict(c.execute(select(probe.c.id, probe.c.score)).all())
+    assert got == {i: None if v is None else Decimal(f"{v:.2f}") for i, v in enumerate(values)}
+
+
 def test_insights_metric_detail_publish_and_dq(pipe: Engine, app: Engine) -> None:
     """The main LLM and publish stages on SQL Server, with the unit tests' data and fake LLM."""
     from tests.conftest import CONFIG_DIR
