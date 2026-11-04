@@ -1842,3 +1842,17 @@ income" (2026-11-01).**
   0.6%); CVX's Q3 2026 preliminary revenue 65,237M -> 67,798M (total revenues and other income,
   the XBRL basis); MPC, RJF, SW, UPS unchanged and agreeing. The anchor is part of the input, so
   the next `textmetrics` reads every release again (about $2-4).
+
+**D-077 News is fetched in the nightly and morning jobs; no separate news job (2026-11-03).**
+- The `news` job (news, scores, publish every 6 hours, D-034) was waiting for a premium Alpha
+  Vantage key. The key has been in place since Phase 17, but the job was never scheduled where
+  the pipeline runs (by hand, nightly), so the last news was fetched on 2026-10-18 for the 107
+  companies of the time, and the 170 companies added in Phase 17 had none: their Recent
+  Activities were empty, and the others' would have emptied by mid-November (30-day window).
+- Options: (a) schedule the `news` job; (b) add the `news` stage to nightly and morning and
+  drop the job. Chosen (user decision): (b). One job to run, and insights of the same run read
+  the day's news (the `news` job's results reached insights only at the next nightly). Cost:
+  one Alpha Vantage call per company (premium: 75 a minute) and about $1-3 of LLM a night
+  (2026-10-18: about $1.2 for 107 companies, most articles new).
+- `config/jobs.yaml` (`news` before `scores` in both jobs; the `news` job removed) and
+  `deploy/openshift/cronjobs.yaml` (the `uw-news` CronJob removed).

@@ -46,7 +46,11 @@ def tasks(engine, run_id):
 
 def test_jobs_config_is_valid() -> None:
     cfg = load_jobs_config(CONFIG_DIR)
-    assert {"nightly", "morning", "news"} <= cfg.jobs.keys()
+    assert {"nightly", "morning"} <= cfg.jobs.keys()
+    # D-077: news is fetched in both jobs, before the scores and insights that read it.
+    for name in ("nightly", "morning"):
+        stages = cfg.jobs[name].stages
+        assert stages.index("news") < stages.index("scores") < stages.index("insights")
 
 
 def test_success_and_stage_major_order(engine) -> None:
@@ -105,7 +109,7 @@ def test_live_run_blocks_a_second_start(engine) -> None:
         orch.start("nightly", STAGES, ["A"])
     # One run at a time across jobs (D-041): they share stages and tables.
     with pytest.raises(RunInProgressError):
-        orch.start("news", ["news"], ["A"])
+        orch.start("morning", ["news"], ["A"])
 
 
 def test_resume_after_crash_runs_only_unfinished_tasks(engine) -> None:
