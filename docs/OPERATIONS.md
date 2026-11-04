@@ -11,7 +11,7 @@
 | `uw-pipeline runs` | 列出最近的运行，以及最近一次里失败或被跳过的任务和原因。每次运行旁边显示数据质量结果：`dq={'Error': 1, 'Warning': 3}`；没跑 dq 阶段的显示 `dq=not run`。运行成功不代表质量通过：dq 查出 Error 时任务仍是 SUCCEEDED，详情看 `dq-report` |
 | `uw-pipeline dq-report` | 生成数据质量报告，写到 `data/reports/dq-run<id>.md` |
 | `uw-pipeline coverage-report` | 生成 XBRL 指标覆盖率报告，并列出没有说明原因的缺口 |
-| `uw-pipeline run --stage publish` | 把当前结果写进应用库（nightly、morning、news 三个 job 末尾都会跑） |
+| `uw-pipeline run --stage publish` | 把当前结果写进应用库（nightly、morning 两个 job 末尾都会跑） |
 | `uw-pipeline audit-insights` | 抽样检查 LLM 洞察：引用的原文能否找到、来源是否都有标题、追问问题是否都有来源、贷款行能否在原文找到、非 FI 公司是否混入了 FI 数据 |
 
 **运行状态**：`pipeline_run.status` 有以下几种取值：
@@ -25,7 +25,7 @@
 
 **续跑**：进程或 pod 被杀之后，再次启动同一个 job（阶段和公司都相同）会自动接着跑，前提是上一次运行的心跳已经超过 30 分钟，并且它开始不到 12 小时（`stale_after_minutes`、`resume_within_hours`，在 `config/jobs.yaml`）。更早的、或者阶段和公司不同的中断运行会被关闭（FAILED，`stats_json` 里有 `abandoned`），新运行从头开始。运行期间每 5 分钟刷新一次心跳（`heartbeat_minutes`），所以耗时很长的任务不会被误判为已死。
 
-**运行锁**：只要有任何 job 正在运行（心跳仍然新鲜），新的启动就会以退出码 2 退出。不同的 job 也一样：例如 nightly 运行时到点的 news 会跳过这一轮，因为两者写同一批表。
+**运行锁**：只要有任何 job 正在运行（心跳仍然新鲜），新的启动就会以退出码 2 退出。不同的 job 也一样：例如 nightly 还没跑完时到点的 morning 会跳过这一轮，因为两者写同一批表。新闻（`news` 阶段）在 nightly 和 morning 里抓取，没有单独的 job（D-077）。
 
 **费用**：每次运行的 LLM token 用量和估算费用记录在 `pipeline_run.stats_json` 中，`runs` 命令也会显示。
 
@@ -171,7 +171,7 @@
 | 日志里出现 `LLM unavailable` | 凭证、环境或部署名有问题（SecureGPT：检查 `SECUREGPT_*` 和 `config/securegpt.yaml`，先跑 smoke test）。此时 signals 会退回纯规则，textmetrics 和 insights 会失败 |
 | 某家公司的阶段长时间没有日志 | 本地运行时先看电脑是否睡眠过（`pmset -g log | grep Sleep`）：睡眠会冻结进程、断开连接，计时也暂停。长时间运行用 `caffeinate -i uw-pipeline run ...`。否则多半是一次 LLM 请求没有返回：Claude 一次调用最长 `ANTHROPIC_TIMEOUT_SEC`（默认 600 秒，含重试），之后这一项失败、运行继续，下次运行重新请求 |
 | 运行一直显示 RUNNING | 进程已经死了。30 分钟后再次启动同一个 job 就会续跑（12 小时之内）；也可以等下一次 CronJob。超过 12 小时的会被关闭，新运行从头开始 |
-| 退出码 2 | 有运行正在进行（任何 job，运行锁），无需处理；被挡住的 news 会在下一个时间点运行 |
+| 退出码 2 | 有运行正在进行（任何 job，运行锁），无需处理；被挡住的 job 会在下一个时间点运行 |
 | DQ 报出 `quarters_vs_year` 错误 | 通常是公司在新申报里重述了前期数据，新旧口径混在一起（例如 LUV 2025 年的 capex，见 D-035）。要核对原始文件；等下一份 10-K 入库后，口径通常会恢复一致 |
 | DQ 报出 `quarter_jump` | 先在申报文件里核实，常见原因是一次性的减值或计提。如果是单位错误，修正 concept 映射 |
 | `coverage-report` 列出 UNEXPLAINED | 要么修正 tag 映射，要么在 `coverage_notes.yaml` 里写明原因 |
