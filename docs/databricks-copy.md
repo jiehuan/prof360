@@ -183,17 +183,25 @@ so the notebook runs twice, once in each workspace, with a file in between:
    notebook can write, by default `/dbfs/FileStore/professional360/sql_objects.json`
    (or a Unity Catalog volume, `/Volumes/...`). It writes that file (every function and
    procedure in dependency order, with the tables each reads) and the same name with `.sql`.
-   `only` limits it to a comma-separated list of names. Download the JSON file (FileStore:
+   `only` limits it to a comma-separated list of names. `tables` (comma-separated) adds BFF
+   tables with their rows, e.g. `UserNotificationRead` (D-075): columns, defaults, identity and
+   primary key, and every row; the `.sql` file has the functions and procedures only. Download the JSON file (FileStore:
    `https://<workspace>/files/professional360/sql_objects.json`; a volume: Catalog Explorer).
 2. **Upload** it in the `pp` workspace (to FileStore or a volume).
 3. **Import, dry run, in the `pp` workspace:** `action = import`, `env = pp`, `file` = the
    uploaded path, `mode = dry_run`. Lists each object as `new`, `changed` or `kind changed`
    (e.g. inline in the file, multi-statement here), in the order they will be created: a
    function before the functions and procedures that call it. Objects only in `pp` are listed
-   and left as they are. `PROBLEM` lines name tables the objects read that `pp` lacks: create
-   them first (e.g. `UserNotificationRead` with `deploy/sql/bff_notifications.sql` in
-   `run_sql_script`), or those objects fail.
-4. **Import, apply:** `mode = apply`. Runs each definition as `CREATE OR ALTER`; an object of
+   and left as they are. Each table of the file is listed first: `create` (missing in `pp`)
+   or `exists`, with the rows to insert, those whose primary key is not in `pp` yet. `PROBLEM`
+   lines name tables the objects read that neither `pp` nor the file has: export them with
+   `tables`, or create them first (e.g. `UserNotificationRead` with
+   `deploy/sql/bff_notifications.sql` in `run_sql_script`), or those objects fail.
+4. **Import, apply:** `mode = apply`. The tables first: a missing one is created (columns,
+   defaults, identity, primary key; not its foreign keys, indexes or triggers), then the
+   file's rows whose key is not there are inserted, ids included. Rows already in `pp` are
+   never changed or deleted, so a rerun inserts nothing. Then it runs each definition as
+   `CREATE OR ALTER`; an object of
    another kind is dropped first (error 2010 otherwise). A second pass retries what failed. The
    last line must read `done: N of N objects equal to the file`; a failure is printed with its
    error and stops the notebook. Rerunning changes nothing once the two are equal.
@@ -203,8 +211,8 @@ The `.sql` file is the same as a plain script (a drop of another kind of object,
 without the comparison and the table check.
 
 The schema defaults to `app_schema` in azure.yaml for each environment (widget `schema`); if
-the two differ, the import renames it in the definitions. Only definitions are copied: no
-tables, data or permissions (`GRANT EXECUTE` for the BFF's identity is set per environment). The
+the two differ, the import renames it in the definitions. Only definitions are copied, and
+the tables named in `tables`: no other table or data, no permissions (`GRANT EXECUTE` for the BFF's identity is set per environment). The
 service principal needs `VIEW DEFINITION` in `dv`, and `CREATE FUNCTION`, `CREATE PROCEDURE` and
 `ALTER` on the schema in `pp`.
 
@@ -258,6 +266,16 @@ principal login. Run the dry runs first.
   the two objects needing the table; after creating it, apply finished (34 of 34 equal, the
   multi-statement one now inline, the extra one kept); a further run changed nothing. The
   exported `.sql` run with sqlcmd on a fresh stand-in (twice) gave the same 34 objects.
+- **`sync_sql_objects` with `tables` (2026-11-03):** export of `UserNotificationRead` (4 rows:
+  milliseconds, a quote and an accent in a key) and a test table (identity from 100 by 5,
+  computed column, default, NVARCHAR(MAX) of 5,000 Chinese characters, DECIMAL, DATETIME2(7),
+  DATETIMEOFFSET +08:00, VARBINARY, UNIQUEIDENTIFIER, a float of 1e-5, NULLs) with two
+  functions reading the first. Import into a stand-in without the first table and with the
+  second holding a row of the same key (different value) and a row of its own: the dry run
+  listed create + 4 rows and 2 of 3 rows to insert; apply created the table (clustered
+  primary key), inserted 4 and 2 rows and created both functions; every copied value equal to
+  the source to the last digit and offset, the two target rows unchanged, the next identity
+  905 (after the target's 900). A further run inserted 0 rows and changed nothing.
 - **`copy_sqlite_to_azure` safety (2026-10-29):** after a load of `app.db` (24 tables, row
   counts match): `clear_target` with a row in a BFF-style table referencing `Company` refused
   and changed nothing; with a trigger failing the delete of a late table it rolled back

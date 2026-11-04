@@ -1,6 +1,6 @@
 # Alpha Vantage：direct / APIM 配置
 
-2026-11-03，D-075。默认 `direct` 保持官方接口调用；设置 `ALPHAVANTAGE_MODE=apim`
+2026-11-03，D-077。默认 `direct` 保持官方接口调用；设置 `ALPHAVANTAGE_MODE=apim`
 后改走公司 APIM，认证失败不会自动切回 direct。APIM 必须透传 Alpha Vantage 的查询参数
 并返回兼容的原始 JSON；market、news、transcripts 的解析和公开来源链接不变。
 
@@ -135,7 +135,7 @@ apim、ENV 设为你定义的环境名。若整目录挂载 `CONFIG_DIR`，需�
 
 维护者需在下一次生成 prod 前完成：
 
-1. 将 D-075 的通用功能移植到实际发版源分支，按该分支的客户端构建逻辑解决差异。
+1. 将 D-077 的通用功能移植到实际发版源分支，按该分支的客户端构建逻辑解决差异。
 2. 如确有 prod 专属修改，在源分支针对同一发版源刷新并审阅 `scripts/prod.patch`。
    发布脚本和补丁只保留在源分支；不将独立历史分支直接整体合并，也不把这些工具加进 prod。
 3. 在发布临时工作目录中重新生成并检查 prod，确认 AV Settings、配置、OAuth 组件、

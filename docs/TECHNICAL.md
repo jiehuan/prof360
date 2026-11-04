@@ -4,12 +4,12 @@ For engineers who run, deploy or change the pipeline. As of 2026-10-14 (Phases 1
 done; Phase 10 planned, on hold). Related documents:
 
 2026-11-03 update: Alpha Vantage direct/APIM transport, OAuth configuration and source-to-prod
-release handoff are documented below (D-075).
+release handoff are documented below (D-077).
 
 | Document | Holds |
 |---|---|
 | `docs/PLAN.md` | Plan of record, phase checklists, open questions |
-| `docs/decisions.md` | Every design decision with its reason (D-001 … D-075), cited below as D-xxx |
+| `docs/decisions.md` | Every design decision with its reason (D-001 … D-077), cited below as D-xxx |
 | `docs/ALPHAVANTAGE_APIM.zh-CN.md` | Alpha Vantage direct/APIM setup, OAuth wire formats and deployment credentials |
 | `docs/OPERATIONS.md` | Day-to-day operations, troubleshooting (Chinese) |
 | `docs/schema-contract.md` | Application tables as the BFF reads them |
@@ -62,8 +62,8 @@ does not switch routes. Raw cache keys, public source URLs and AV JSON parsing r
 | `cli.py` | Typer CLI: `run`, `runs`, `dq-report`, `coverage-report`, `audit-insights`, `review` (list / approve / reject), `init-db` |
 | `settings.py` | Settings from environment / `.env` (pydantic-settings), §13 |
 | `__main__.py` | Module CLI entry point: `python -m uw_pipeline` calls the same Typer app |
-| `clients/alphavantage.py` | Direct/APIM configuration, lazy client factory, AV rate/quota limits, raw cache and credential-safe failures (D-075) |
-| `clients/oauth.py` | In-process client-credentials token cache, early renewal, bounded token retries and explicit token request formats (D-075) |
+| `clients/alphavantage.py` | Direct/APIM configuration, lazy client factory, AV rate/quota limits, raw cache and credential-safe failures (D-077) |
+| `clients/oauth.py` | In-process client-credentials token cache, early renewal, bounded token retries and explicit token request formats (D-077) |
 | `config.py` | Loads companies and industry groups (traits merged into each group's metric sets; SIC ranges must not overlap, D-055) |
 | `universe.py` | Company universe and development sample for `scripts/build_universe.py` (Phase 17, D-055): scope rule, revenue for ranking, the largest companies per group |
 | `clients/` | `sec.py` (EDGAR, 8 req/s token bucket, raw landing; exchange ticker list and XBRL frames for the universe), `alphavantage.py` (quota, key masking), `llm.py` (client interface), `securegpt.py` (Azure OpenAI gateway), `openai_chat.py` (OpenAI response handling), `db.py` (engines, Azure SQL URL, schemas), `storage.py` (local / ADLS), `ratelimit.py`, `logos.py` (Wikidata, Commons, Wikipedia, favicons; used only by `scripts/fetch_logos.py`, D-067) |
@@ -118,7 +118,7 @@ flowchart LR
 | transcripts | `run_transcripts` | Last 4 fiscal quarters of earnings-call transcripts (D-030) | `source_document`, sections, chunks | AV |
 | news | `run_news` | 30-day news, mention filter, 3-tier de-duplication, LLM relevance verdict (D-029, D-037) | `news_item`, `activity` | AV, LLM |
 | scores | `run_scores` | News risk scores per activity; transcript tone and risk flags (D-037) | `news_risk_score`, `transcript_tone`, `transcript_flag` | LLM |
-| textmetrics | `run_text_metrics` | Figures from MD&A and releases (NIM, LCR, …); table metrics read by cell (RevPAR, occupancy, ADR, AUM, VaR, international revenue, average interest-earning assets, capacity utilization) and the loan book; values XBRL covers (capital ratios, release figures) only cross-checked; identity gate (D-022, D-032, D-042, D-044) | `metric_value` (LLM_EXTRACTED, PRELIMINARY), `loan_portfolio_*`, `release_check` | LLM |
+| textmetrics | `run_text_metrics` | Figures from MD&A and releases (NIM, LCR, …); table metrics read by cell (RevPAR, occupancy, ADR, AUM, VaR, international revenue, average interest-earning assets, capacity utilization) and the loan book; values XBRL covers (capital ratios, release figures) only cross-checked; a release is read with its prior-year quarter's XBRL figure as anchor, and one whose comparatives disagree with XBRL gives no preliminary value (D-076); identity gate (D-022, D-032, D-042, D-044) | `metric_value` (LLM_EXTRACTED, PRELIMINARY), `loan_portfolio_*`, `release_check` | LLM |
 | governance | `run_governance` | Board composition, auditor fees, dual-class shares and CEO start year from the latest proxy, both models, facts kept only when quoted and agreed (D-045, D-050) | `board_composition` | LLM |
 | legal | `run_legal` | Litigation and regulatory matters from the latest 10-K and later 10-Qs, both models, matched across filings; new matters to review (D-050) | `legal_matter` | LLM |
 | industry | `run_industry` | For a company whose SIC code maps to no group: both models choose an existing group from the 10-K business section; agreed or reviewed (type INDUSTRY); the company's metrics are recomputed (D-059) | `industry_choice` | LLM |
@@ -243,7 +243,7 @@ versioned with the code.
 | `scores.yaml` | News and transcript risk scoring |
 | `llm.yaml` | Provider profiles (models, effort, token limits, prices, `rate_limits`, `task_max_tokens`), signal topics, `max_input_chars` |
 | `securegpt.yaml` | Gateway and token URLs per environment, API version, deployments |
-| `alphavantage.yaml` | Direct query URL; APIM query/token URLs, scope, token authentication method and subscription-key-on-token setting per environment; timeout/retry limits (D-075) |
+| `alphavantage.yaml` | Direct query URL; APIM query/token URLs, scope, token authentication method and subscription-key-on-token setting per environment; timeout/retry limits (D-077) |
 | `azure.yaml` | Azure SQL server, database, schemas, ODBC driver, certificate check; ADLS account, container, root; Databricks secret scope and key names per environment (D-057; placeholders) |
 | `app_publish.yaml` | Metric categories, RiskTypes regex rules, confidence rules, trend and loan metrics |
 | `source_labels.yaml` | Readable names for sections and concepts |
@@ -483,7 +483,7 @@ patch. Before that next release, a maintainer must port the feature to the actua
 in a reviewed patch refreshed against that same source. Do not merge the independent branch
 histories blindly or add the source-only patch/tooling to prod.
 
-For D-075, confirm that the generated tree retains AV settings, `alphavantage.yaml`, the OAuth
+For D-077, confirm that the generated tree retains AV settings, `alphavantage.yaml`, the OAuth
 component, lazy client construction, deployment examples, documentation and tests. Run the
 existing release checks in the temporary worktree and review the source/prod diff before
 publishing. This source synchronization/rebuild is a maintainer handoff, not an action already
@@ -493,7 +493,7 @@ for this transport-only change.
 ## 15. Testing
 
 ```bash
-PYTHONPATH=src .venv/bin/pytest -q         # 597 passed, 4 SQL Server skips; Python 3.11, 2026-11-03
+PYTHONPATH=src .venv/bin/pytest -q         # 600 passed, 4 SQL Server skips; Python 3.11, 2026-11-04
 .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy   # mypy strict
 scripts/test_mssql.sh --all               # whole suite on SQL Server 2022 in Docker: 302 passed
 .venv/bin/python scripts/stability_check.py --faults MAR   # timeout / rate limit / bad output fail closed

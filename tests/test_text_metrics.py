@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
 import pytest
 from sqlalchemy import create_engine, insert, select
@@ -21,7 +21,7 @@ from uw_pipeline.enrich.text_metrics import (
     select_chunks,
     to_metric_value,
 )
-from uw_pipeline.jobs.run_text_metrics import run_text_metrics_stage
+from uw_pipeline.jobs.run_text_metrics import release_anchor, run_text_metrics_stage
 from uw_pipeline.normalize.periods import FiscalCalendar
 from uw_pipeline.schema import company, metadata, metric_value, release_check, source_document
 
@@ -217,6 +217,84 @@ def test_stage_writes_preliminary_and_crosschecks(tmp_path) -> None:
         assert c.execute(select(release_check)).all() == []
         q3 = c.execute(select(metric_value).where(metric_value.c.fiscal_year == 2025)).one()
     assert q3.value is None and q3.derivation == "REPORTED"
+
+
+def _release_run(tmp_path, prior: float):
+    """The Marriott release of 2026-11-04 with XBRL Q3 2025 revenue `prior`: stored rows and
+    the extractor's prompts."""
+    engine = create_engine("sqlite://")
+    metadata.create_all(engine)
+    storage = LocalStorage(tmp_path)
+    storage.write_bytes("ex991.htm", RELEASE)
+    with engine.begin() as c:
+        c.execute(insert(company).values(
+            company_id=1, cik="0001048286", ticker="MAR", name="Marriott", legal_name="MARRIOTT",
+            industry_group="HOTELS", is_financial=False, is_active=True, fiscal_year_end="1231",
+            source_url="u", source_hash="h", raw_path="p", last_refreshed_at=NOW))  # fmt: skip
+        c.execute(insert(source_document).values(
+            company_id=1, source_type="SEC_FILING", form_type="8-K", doc_role="EX-99.1",
+            accession_no="acc-1", doc_name="ex991.htm", filed_at="2026-11-04", url="u",
+            content_hash="h", raw_path="ex991.htm"))  # fmt: skip
+        c.execute(insert(metric_value).values(
+            company_id=1, metric_code="revenue", period_type="Q", fiscal_year=2025,
+            fiscal_quarter=3, period_end="2025-09-30", value=prior, value_status="OK",
+            unit="USD", derivation="REPORTED", formula="f", source_tags="{}",
+            source_accn="x", computed_at=NOW))  # fmt: skip
+    prompts: list[str] = []
+
+    def answer(model, user):
+        if "Metrics to read" in user:
+            return {"values": []}
+        prompts.append(user)
+        return {"values": [
+            {"metric_code": "revenue", "value": v, "unit": "usd", "scale": "millions",
+             "period_start": start, "period_end": end, "period": "quarter",
+             "evidence": "Total revenues 7,300 6,489"}
+            for v, start, end in (("7,300", "2026-07-01", "2026-09-30"),
+                                  ("6,489", "2025-07-01", "2025-09-30"))
+        ]}  # fmt: skip
+
+    res = run_text_metrics_stage([CompanyConfig(ticker="MAR", cik=1048286)], REG, IND,
+                                 load_text_config(CONFIG_DIR), (FakeLLM(answer),
+                                 load_llm_config(CONFIG_DIR)), storage, engine,
+                                 now=lambda: NOW)  # fmt: skip
+    assert res[0].ok, res
+    with engine.connect() as c:
+        rows = {(r.fiscal_year, r.fiscal_quarter): r.derivation
+                for r in c.execute(select(metric_value))}  # fmt: skip
+        checks = [(r.fiscal_year, r.agrees) for r in c.execute(select(release_check))]
+    return rows, prompts, checks
+
+
+def test_release_read_is_anchored_on_the_prior_year_quarter(tmp_path) -> None:
+    """D-076: the extractor is told the 10-Q figure of the quarter a year before the one the
+    release announces, which picks the line on the XBRL basis."""
+    rows, prompts, checks = _release_run(tmp_path, 6.489e9)
+    assert rows == {(2025, 3): "REPORTED", (2026, 3): "PRELIMINARY"}
+    assert checks == [(2025, True)]
+    assert any("reports 6,489 million for the quarter ended 2025-09-30" in p for p in prompts)
+
+
+def test_release_off_the_xbrl_basis_gives_no_preliminary_value(tmp_path) -> None:
+    """D-076: Chevron's release read as "Sales and other operating revenues" while XBRL has
+    "Total revenues and other income": its prior-year figure disagrees, so the new quarter's
+    figure (on the same wrong line) is not shown; the mismatch is still recorded for dq."""
+    rows, _, checks = _release_run(tmp_path, 6.75e9)
+    assert rows == {(2025, 3): "REPORTED"}
+    assert checks == [(2025, False)]
+
+
+def test_release_anchor_picks_the_year_ago_quarter() -> None:
+    quarters = [(date(2024, 12, 31), 52.226e9), (date(2025, 3, 31), 47.61e9),
+                (date(2025, 12, 31), 46.873e9)]  # fmt: skip
+    # A fourth-quarter release filed in late January: the quarter of December a year earlier.
+    assert "52,226 million for the quarter ended 2024-12-31" in release_anchor(
+        quarters, "2026-01-30"
+    )
+    # A small company: one decimal.
+    assert "12.3 million" in release_anchor([(date(2025, 6, 30), 12.34e6)], "2026-08-05")
+    # Nothing a year before (a new filer): no anchor.
+    assert release_anchor(quarters[2:], "2026-04-28") == ""
 
 
 LOAN_TABLE = "Consumer credit portfolio (in millions) Residential real estate 300,664"

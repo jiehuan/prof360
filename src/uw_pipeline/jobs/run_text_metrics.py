@@ -22,7 +22,7 @@ import json
 import logging
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from pydantic import BaseModel, ValidationError
@@ -107,6 +107,8 @@ class Stats:
     dual_dropped: int = 0
     conflicts: int = 0
     preliminary: int = 0
+    # Preliminary values not stored: their release's prior-period figures disagree with XBRL.
+    preliminary_dropped: int = 0
     crosscheck_ok: int = 0
     crosscheck_mismatch: int = 0
     loan_segments: int = 0
@@ -359,6 +361,47 @@ def _xbrl_values(
     return {(c, p, fy, fq): v for c, p, fy, fq, v in rows}
 
 
+def _quarter_values(
+    conn: Connection, company_id: int, codes: Sequence[str]
+) -> dict[str, list[tuple[date, float]]]:
+    """Rule-derived quarterly values of `codes` by metric: (period end, value), for anchors."""
+    rows = conn.execute(
+        select(metric_value.c.metric_code, metric_value.c.period_end, metric_value.c.value)
+        .where(metric_value.c.company_id == company_id, metric_value.c.period_type == "Q",
+               metric_value.c.metric_code.in_(list(codes)),
+               metric_value.c.derivation.in_(RULE_DERIVATIONS),
+               metric_value.c.value.is_not(None))
+    )  # fmt: skip
+    out: dict[str, list[tuple[date, float]]] = {}
+    for code, end, value in rows:
+        out.setdefault(code, []).append((date.fromisoformat(str(end)[:10]), float(value)))
+    return out
+
+
+def release_anchor(quarters: Sequence[tuple[date, float]], filed_at: str) -> str:
+    """The figure the company reported in its 10-Q / 10-K for the quarter a year before the
+    one a release announces, which the release shows as its prior-year comparative (D-076):
+    it names the line on the XBRL value's basis ("Total revenues and other income" at Chevron,
+    "Sales and other operating revenue" at Marathon Petroleum). Empty when there is none.
+    Only that quarter: an anchor does not change when the announced quarter's own 10-Q
+    arrives, so a release is not read again for it."""
+    filed = date.fromisoformat(filed_at[:10])
+    target = filed - timedelta(days=395)  # announced quarter ~1 month before filing, less a year
+    near = [(abs((end - target).days), end, v) for end, v in quarters]
+    near = [n for n in near if n[0] <= 60]
+    if not near:
+        return ""
+    _, end, value = min(near)
+    millions = value / 1e6
+    shown = f"{millions:,.0f}" if abs(millions) >= 100 else f"{millions:,.1f}"
+    return (
+        f" The company's 10-Q/10-K reports {shown} million for the quarter ended "
+        f"{end.isoformat()}; the release shows that quarter as the prior-year comparative. Use "
+        "the line that shows this figure for that quarter (or nearly, if since revised), even "
+        "where its label differs from the description above."
+    )
+
+
 def process_company(
     cfg: CompanyConfig,
     registry: Registry,
@@ -391,6 +434,7 @@ def process_company(
     stats = Stats()
     ex = Extractor(client, llm, text_cfg, conn, now)
     company = row["legal_name"]
+    quarters = _quarter_values(conn, company_id, list(prelim)) if prelim else {}
 
     docs = _mdna_docs(conn, company_id, text_cfg.sections) if text_metrics else []
     if text_cfg.earnings_release:
@@ -414,7 +458,10 @@ def process_company(
             wanted = {c: m.extraction.definition for c, m in quote_metrics.items() if m.extraction}
             groups = [m.extraction.keywords for m in quote_metrics.values() if m.extraction]
             if doc.doc_role == "EX-99.1":
-                wanted |= prelim
+                wanted |= {
+                    c: d + release_anchor(quarters.get(c, []), doc.filed_at)
+                    for c, d in prelim.items()
+                }
                 groups.append(PRELIMINARY_KEYWORDS)
             if not wanted:
                 continue
@@ -462,6 +509,15 @@ def process_company(
         chosen[slot] = (doc, c)
 
     xbrl = _xbrl_values(conn, company_id)
+    # A release whose figures for periods XBRL covers disagree with it read another line (or
+    # a month, or another basis): its figure for the new quarter is not shown (D-076).
+    off_basis = {
+        (doc.doc_id, c.metric_code)
+        for doc, c in found
+        if c.metric_code in prelim and doc.doc_role == "EX-99.1"
+        and (reported := xbrl.get((c.metric_code, *c.key))) is not None
+        and not matches_release(reported, c)
+    }  # fmt: skip
     out: list[dict[str, Any]] = []
     checks: list[dict[str, Any]] = []
     for (code, key), (doc, c) in chosen.items():
@@ -490,6 +546,9 @@ def process_company(
                     )
                 continue
             if doc.doc_role == "EX-99.1":
+                if (doc.doc_id, code) in off_basis:
+                    stats.preliminary_dropped += 1
+                    continue
                 derivation = "PRELIMINARY"
                 stats.preliminary += 1
         stats.extracted += 1
