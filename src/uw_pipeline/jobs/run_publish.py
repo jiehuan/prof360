@@ -235,28 +235,39 @@ class Publisher:
         self.sic_id = sic_id
 
     def _metric(self, code: str, name: str, section: str, subtitle: str | None,
-                description: str | None, formula: str | None) -> int:  # fmt: skip
+                description: str | None, formula: str | None,
+                card: tuple[int, str] | None = None) -> int:  # fmt: skip
         cat = self.cfg.metric_categories.get(section, section)
         cat_id = self._lookup(metric_category, section, {"categoryName": cat})
         return self.w.put(metrics, code, {
             "metric_name": name, "metric_category_Id": cat_id, "subtitle": subtitle,
             "description": description, "Formula": formula,
+            "parentMetricId": card[0] if card else None, "cardView": card[1] if card else None,
         })  # fmt: skip
 
     def metrics(self) -> None:
-        for m in self.defs.values():
-            if not m.display:
-                continue
+        shown = [m for m in self.defs.values() if m.display]
+        cards = {m.code for m in shown}
+        # A view of another metric's card (D-078) goes after that card, which it points to. If
+        # the card is not shown for this company, the view is a card of its own.
+        views = {m.code for m in shown if m.view_of and m.view_of.of in cards}
+        for m in sorted(shown, key=lambda m: m.code in views):
             formula = " ".join(definition_lines(m, self.names))[:500] or None
-            self.metric_ids[m.code] = self._metric(m.code, m.display_name, m.section,
-                                                   m.subtitle, m.description, formula)  # fmt: skip
-            if self.sic_id is not None:
+            card = None
+            if m.code in views and m.view_of:
+                card = (self.metric_ids[m.view_of.of], m.view_of.view)
+            self.metric_ids[m.code] = self._metric(
+                m.code, m.card_title or m.display_name, m.section, m.subtitle, m.description,
+                formula, card,
+            )  # fmt: skip
+            if self.sic_id is not None and m.code not in views:
                 pref = {"metric_id": self.metric_ids[m.code], "SIC_Id": self.sic_id}
                 self._lookup(SIC_Preferences, f"{self.row['sic_code']}:{m.code}", pref)
-        if self.sic_id is not None and self.hidden:
-            # Hidden metrics leave the SIC's metric list too (only these: another industry may
-            # show the others for the same SIC code).
-            keys = [f"{self.row['sic_code']}:{c}" for c in sorted(self.hidden)]
+        # Hidden metrics leave the SIC's metric list too (only these: another industry may show
+        # the others for the same SIC code), and so do views of a card, which is offered alone.
+        gone = self.hidden | views
+        if self.sic_id is not None and gone:
+            keys = [f"{self.row['sic_code']}:{c}" for c in sorted(gone)]
             self.stats.add("SIC_Preferences_removed", self.w.drop(SIC_Preferences, keys))
         if self.row["is_financial"]:
             lm = self.cfg.loan_portfolio_metric

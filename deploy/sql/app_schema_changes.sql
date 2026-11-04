@@ -132,6 +132,14 @@ IF COL_LENGTH(N'dbo_professional360.TranscriptToneAnalysis', N'Quarter') IS NULL
     ALTER TABLE dbo_professional360.[TranscriptToneAnalysis] ADD [Quarter] NVARCHAR(10) NULL;
 GO
 
+-- metrics
+IF COL_LENGTH(N'dbo_professional360.metrics', N'parentMetricId') IS NULL
+    ALTER TABLE dbo_professional360.metrics ADD [parentMetricId] INTEGER NULL;
+GO
+IF COL_LENGTH(N'dbo_professional360.metrics', N'cardView') IS NULL
+    ALTER TABLE dbo_professional360.metrics ADD [cardView] NVARCHAR(20) NULL;
+GO
+
 -- Company (widened)
 IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'dbo_professional360.Company') AND name = N'logo' AND max_length <> -1)
     ALTER TABLE dbo_professional360.[Company] ALTER COLUMN logo NVARCHAR(max) NULL;

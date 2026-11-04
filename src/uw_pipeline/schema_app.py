@@ -67,6 +67,10 @@ metrics = Table(
     Column("subtitle", Unicode(200)),
     Column("description", Unicode(1000)),
     Column("Formula", Unicode(500)),
+    # D-078: a metric shown as a view of another metric's card (not a card of its own): that
+    # card's metric_id, and the button showing it (QoQ). NULL for a card.
+    Column("parentMetricId", Integer),
+    Column("cardView", Unicode(20)),
 )  # fmt: skip
 
 SIC_Preferences = Table(

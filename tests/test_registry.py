@@ -96,6 +96,36 @@ def test_unknown_metric_in_set_rejected() -> None:
         Registry.model_validate({"concepts": {}, "metrics": [], "metric_sets": {"S": ["nope"]}})
 
 
+def test_a_view_must_name_another_card() -> None:
+    """D-078: a metric shown as a view of another metric's card names a metric that is a card."""
+    rev = {"code": "revenue", "display_name": "Revenue", "section": "financial", "unit": "USD",
+           "formula": "revenue"}  # fmt: skip
+    concepts = {"revenue": {"tags": ["us-gaap:Revenues"]}}
+    view = {
+        "code": "growth_q",
+        "display_name": "Growth (QoQ)",
+        "section": "financial",
+        "unit": "fraction",
+        "kind": "growth",
+        "base": "revenue",
+        "compare": "prior_quarter",
+    }
+    for target in ("nonexistent", "growth_q"):
+        with pytest.raises(ValidationError, match="view_of"):
+            Registry(
+                concepts=concepts, metrics=[rev, view | {"view_of": {"of": target, "view": "QoQ"}}]
+            )
+    reg = Registry(
+        concepts=concepts, metrics=[rev, view | {"view_of": {"of": "revenue", "view": "QoQ"}}]
+    )
+    assert reg.metrics[1].view_of and reg.metrics[1].view_of.of == "revenue"
+    # The configured case: Revenue Growth (QoQ) is the QoQ button of the Revenue Growth card.
+    real = {m.code: m for m in load_registry(CONFIG_DIR).metrics}
+    assert real["revenue_growth_qoq"].view_of.of == "revenue_growth_yoy"
+    assert real["revenue_growth_yoy"].card_title == "Revenue Growth"
+    assert real["revenue_growth_yoy"].display_name == "Revenue Growth (YoY)"  # LLM inputs as before
+
+
 def test_instance_concepts_only_for_companies_whose_metrics_use_them() -> None:
     """Phase 17: casino revenue is a dimensional fact read from each filing's XBRL instance;
     a software company must not read instances for it."""

@@ -125,9 +125,21 @@ class TextExtraction(BaseModel):
     table: TableSpec | None = None  # read from tables by cell coordinates instead of quotes
 
 
+class CardView(BaseModel):
+    """A metric shown as a view of another metric's card rather than as a card of its own
+    (D-078): the card's QoQ button shows revenue_growth_qoq on the Revenue Growth card."""
+
+    of: str  # the code of the metric whose card this is
+    view: str = Field(max_length=20)  # the button that shows it, e.g. QoQ
+
+
 class MetricDef(BaseModel):
     code: str
     display_name: str
+    # The card's title in the app when it differs from display_name (D-078). display_name is
+    # part of the LLM inputs (insights, metric detail), so renaming it would make every
+    # company's insights be written again.
+    card_title: str | None = Field(default=None, max_length=120)
     # The grey line under the title on the card and in Select Metrics (Company.metrics.subtitle):
     # a short plain-language explanation, required for displayed metrics.
     subtitle: str | None = Field(default=None, max_length=90)
@@ -159,6 +171,7 @@ class MetricDef(BaseModel):
     insight_input: bool = False  # not displayed, but part of the insight input (e.g. CEO pay)
     company_specific: bool = False
     extraction: TextExtraction | None = None
+    view_of: CardView | None = None
 
     @field_validator("formula", mode="before")
     @classmethod
@@ -244,6 +257,14 @@ class Registry(BaseModel):
         unknown_sets = set(self.hidden_metric_sets) - self.metric_sets.keys()
         if unknown_sets:
             raise ValueError(f"hidden_metric_sets: unknown metric sets {sorted(unknown_sets)}")
+        by_code = {m.code: m for m in self.metrics}
+        for m in self.metrics:
+            if m.view_of is None:
+                continue
+            card = by_code.get(m.view_of.of)
+            if card is None or card.view_of is not None or card.code == m.code:
+                raise ValueError(f"metric {m.code}: view_of.of must name another metric shown as "
+                                 f"a card, not {m.view_of.of!r}")  # fmt: skip
         return self
 
     def _catalog(self, ticker: str) -> list[MetricDef]:

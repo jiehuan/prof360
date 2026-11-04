@@ -109,6 +109,8 @@ CREATE TABLE dbo_professional360.metrics (
 	subtitle NVARCHAR(200) NULL, 
 	description NVARCHAR(1000) NULL, 
 	[Formula] NVARCHAR(500) NULL, 
+	[parentMetricId] INTEGER NULL, 
+	[cardView] NVARCHAR(20) NULL, 
 	PRIMARY KEY (metric_id), 
 	FOREIGN KEY([metric_category_Id]) REFERENCES dbo_professional360.metric_category ([metric_category_Id])
 );

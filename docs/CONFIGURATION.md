@@ -108,7 +108,9 @@ groups:
 | `external` | none: written by another stage (market data, Form 4); listing it in a set shows it | market_cap, insider_net_sales |
 
 Other fields: `description`, `period_types: [Q, FY]`, `display: false` (computed but hidden),
-`insight_input: true` (hidden but used in insights). The header of `metrics.yaml` describes
+`insight_input: true` (hidden but used in insights), `card_title` (the app card's title when it
+differs from `display_name`, which the LLM inputs use), `view_of: {of: <card metric>, view: QoQ}`
+(shown as a button of another metric's card, not as a card of its own; D-078). The header of `metrics.yaml` describes
 every field; existing metrics there are the best examples. A text metric's `definition` should
 be precise: the LLM reads it, and every value must be quoted from the filing and pass the
 period and unit checks.

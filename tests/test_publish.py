@@ -13,6 +13,7 @@ from uw_pipeline.config import CompanyConfig, load_industry_config
 from uw_pipeline.enrich.sources import load_source_labels
 from uw_pipeline.jobs.run_publish import load_publish_config, run_publish_stage
 from uw_pipeline.schema import (
+    company,
     followup_question,
     signal,
     source_document,
@@ -28,6 +29,7 @@ from uw_pipeline.schema_app import (
     KeyTakeaways,
     MatrixData,
     RiskTypes,
+    SIC_Preferences,
     StrategicRisk,
     TranscriptRiskFlag,
     app_metadata,
@@ -118,6 +120,43 @@ def test_publish_maps_objects_and_links() -> None:
     assert [t["Ordinal"] for t in tk] == [1, 2] and all(t["isActive"] for t in tk)
     assert tk[0]["Takeaway"].startswith("Debt of $16.9B")
     assert len(risks) == 3 and not any(t == "TAKEAWAY" for t, *_ in links)
+
+
+def test_revenue_growth_is_one_card_with_a_qoq_view() -> None:
+    """D-078: Revenue Growth (QoQ) is published as the QoQ view of the Revenue Growth card, not
+    offered as a card of its own (not in the industry's default metric list)."""
+    engine, app, _ = _env()
+    with engine.begin() as c:  # the industry's default metric list is kept per SIC code
+        c.execute(update(company).values(sic_code="7011", sic_description="Hotels & Motels"))
+    # Published before the merge: two cards, both in the industry's default list.
+    reg = load_registry(CONFIG_DIR)
+    before = reg.model_copy(update={"metrics": [
+        m.model_copy(update={"view_of": None, "card_title": None}) for m in reg.metrics
+    ]})  # fmt: skip
+    res = run_publish_stage([CompanyConfig(ticker="MAR", cik=1048286)], before,
+                            load_industry_config(CONFIG_DIR), PCFG, load_source_labels(CONFIG_DIR),
+                            engine, app, now=lambda: ti.NOW)  # fmt: skip
+    assert res[0].ok, res
+    with app.connect() as c:
+        old = {r.metric_name: r.metric_id for r in c.execute(select(metrics))}
+        assert old["Revenue Growth (QoQ)"] in {
+            r.metric_id for r in c.execute(select(SIC_Preferences))
+        }
+    _publish(engine, app)
+    with app.connect() as c:
+        rows = {r.metric_name: r for r in c.execute(select(metrics))}
+        prefs = {r.metric_id for r in c.execute(select(SIC_Preferences))}
+    card, qoq = rows["Revenue Growth"], rows["Revenue Growth (QoQ)"]
+    # The same ids as before (users' choices and links keep pointing at them); the YoY metric
+    # now carries the card's title.
+    assert (card.metric_id, qoq.metric_id) == (
+        old["Revenue Growth (YoY)"],
+        old["Revenue Growth (QoQ)"],
+    )
+    assert "Revenue Growth (YoY)" not in rows
+    assert (card.parentMetricId, card.cardView) == (None, None)
+    assert (qoq.parentMetricId, qoq.cardView) == (card.metric_id, "QoQ")
+    assert card.metric_id in prefs and qoq.metric_id not in prefs
 
 
 def test_republish_is_idempotent_and_new_versions_retire_old_rows() -> None:

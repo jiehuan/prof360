@@ -231,6 +231,8 @@ metrics:
     formula:
       - revenue
       - bank_net_revenue
+  # D-078: one Revenue Growth card in the app; its QoQ button shows revenue_growth_qoq, its YoY
+  # and 5Ys buttons revenue_growth_yoy (quarters, years). Both are computed and published.
   - code: revenue_growth_qoq
     display_name: Revenue Growth (QoQ)
     subtitle: "Change in revenue from the previous quarter"
@@ -240,9 +242,11 @@ metrics:
     base: revenue
     compare: prior_quarter
     period_types: [Q]
+    view_of: {of: revenue_growth_yoy, view: QoQ}
   - code: revenue_growth_yoy
     display_name: Revenue Growth (YoY)
-    subtitle: "Change in revenue from the same period a year earlier"
+    card_title: Revenue Growth
+    subtitle: "Change in revenue vs the previous quarter (QoQ) or a year earlier (YoY)"
     section: financial
     unit: fraction
     kind: growth

@@ -157,6 +157,27 @@ Canopy Growth（CGC）用加元申报，它的金额类指标在 `MatrixData.uni
 不要把所有金额都写死成 `$`。比例、百分比、天数等单位不变。CGC 的市值仍是美元（按美股股价算），
 所以市值卡片的 `unit` 是 `USD`。
 
+### A10. Revenue Growth 合并成一张卡（2026-11-03，D-078）
+原来的 "Revenue Growth (QoQ)" 和 "Revenue Growth (YoY)" 两张卡合并成一张 **"Revenue Growth"**，
+用卡片上的 QoQ / YoY / 5Ys 按钮切换，和其他指标卡的按钮一致。
+
+- **指标 id 不变**：卡片用原来 YoY 的指标 id，标题改成 "Revenue Growth"；原来 QoQ 的指标变成这张卡的
+  QoQ 视图，id 也不变。
+- `metrics` 表加了两列：`parentMetricId`（这个指标是哪张卡的视图）和 `cardView`（按钮名，`QoQ`）。
+  普通的卡这两列都是 null。
+- **指标接口**（`udf_GetCompanyMetric`）多返回三个字段：
+  - `views`：这张卡的其他视图，没有时为 null。Revenue Growth 卡是
+    `[{"view": "QoQ", "metricId": …, "title": "Revenue Growth (QoQ)", "subtitle": …, "quarterly": [...]}]`，
+    `quarterly` 的格式和卡片本身的 `quarterly` 完全一样（最近 8 个季度，从旧到新）。
+  - `parentMetricId`、`cardView`：用视图的 id 调接口时有值，前端应改用 `parentMetricId` 那张卡。
+- **按钮取数**：QoQ → `views` 里 `view = "QoQ"` 那项的 `quarterly`；YoY → 卡片自己的 `quarterly`；
+  5Ys → 卡片自己的 `annual`。其他卡没有 `views`，照旧。
+- **指标选择**：Select Metrics 的可选列表、用户的选择和导出里都不再出现 "Revenue Growth (QoQ)"。
+  以前选过它的用户会自动看到 Revenue Growth 卡，不需要迁移数据。
+
+**需要前端做的**：卡片的 QoQ 按钮在有 `views` 时读 `views` 里的 QoQ 序列。上线前这张卡在 QoQ 模式下
+显示的是 YoY 的季度数据（旧逻辑），所以前后端最好同一天上线。
+
 ## B. 字段对齐
 
 ### B1. 来源只给一个，但数据有多个

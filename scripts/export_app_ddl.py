@@ -40,6 +40,7 @@ ADDED_COLUMNS = {
     "NewsRiskScore": ["ActivityId"],
     "TranscriptRiskFlag": ["Category"],
     "TranscriptToneAnalysis": ["CompanyId", "Quarter"],
+    "metrics": ["parentMetricId", "cardView"],  # D-078: views of a card (Revenue Growth QoQ)
 }
 # Columns made longer after they were first deployed: Company.logo holds a data URI (D-067).
 WIDENED_COLUMNS = {"Company": ["logo"]}

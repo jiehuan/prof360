@@ -1856,3 +1856,30 @@ income" (2026-11-01).**
   (2026-10-18: about $1.2 for 107 companies, most articles new).
 - `config/jobs.yaml` (`news` before `scores` in both jobs; the `news` job removed) and
   `deploy/openshift/cronjobs.yaml` (the `uw-news` CronJob removed).
+
+**D-078 One Revenue Growth card: QoQ as a view of the card (2026-11-03).**
+- The app showed Revenue Growth (QoQ) and Revenue Growth (YoY) as two cards, each with QoQ, YoY
+  and 5Ys buttons that meant little for a growth rate. User decision (planned 2026-10-30, started
+  2026-11-03): one "Revenue Growth" card whose QoQ button shows the quarter-on-quarter series.
+- Options: (a) front end only, pairing the two cards by name; (b) mark the relation in the data
+  and let the functions return it. Chosen: (b), so pickers, defaults and exports agree and any
+  later pair (fee income QoQ, say) needs only config.
+- Config: `view_of: {of: revenue_growth_yoy, view: QoQ}` on revenue_growth_qoq; `card_title:
+  Revenue Growth` and a new subtitle on revenue_growth_yoy. `display_name` is unchanged: it is
+  part of the insight and metric-detail inputs, and renaming it would rewrite every company's
+  insights. The registry rejects a view of an unknown metric or of another view.
+- App tables: `metrics.parentMetricId`, `metrics.cardView` (nullable; `app_schema_changes.sql`,
+  no foreign key). Publish writes them, keeps the metric ids (users' choices and item links stay
+  valid) and takes views out of `SIC_Preferences`. A view whose card is not shown for a company
+  stays a card of its own.
+- BFF functions (`bff_functions.sql`, also alone in `bff_metric_views.sql`): the company's metric
+  choices leave views out; a user's choice or industry default that names a view counts as its
+  card (users who picked Revenue Growth (QoQ) see Revenue Growth, no data migration);
+  `udf_GetCompanyMetric` returns `views` (each view's last 8 quarters, the card's own format),
+  and `parentMetricId` / `cardView` for a view.
+- Tested on SQL Server 2022: pickers, a user who chose QoQ only, a user who chose QoQ and debt,
+  the default list still holding QoQ (from before), the preferences export, the card's views
+  (8 quarters, NM kept as null) and a view's own row; the standalone file reapplied cleanly.
+- Front end (`frontend-api-review.md` A10): the QoQ button reads `views`. Until it does, the card
+  shows the YoY quarters in QoQ mode, so both should go live together. Azure order:
+  `app_schema_changes.sql`, then `bff_metric_views.sql`, then the data (sync).
