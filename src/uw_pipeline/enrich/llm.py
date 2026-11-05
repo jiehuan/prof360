@@ -222,12 +222,14 @@ class Request:
 
 def prefetch(
     conn: Connection, client: LLMClient, requests: Sequence[Request], *, now: datetime,
-    workers: int,
+    workers: int, commit: bool = False,
 ) -> int:  # fmt: skip
     """Ask the model for the requests not answered yet, `workers` at a time, and store the
     answers in `llm_call`, where the `cached_call`s that follow find them (D-062). Only the model
     calls run in threads; the database is used on this thread. A failed call is not stored: the
-    call that follows asks again and records the error. Returns the answers stored."""
+    call that follows asks again and records the error. Returns the answers stored.
+    `commit`: the caller works in short transactions, as for `cached_call` (a connection from
+    `short_transactions` counts too); its pending writes are committed before the calls."""
     todo: dict[str, tuple[Request, str, str, str]] = {}
     for r in requests:
         system, user, version, key = _prepared(r.spec, r.task, r.prompt_version, r.system,
@@ -248,7 +250,9 @@ def prefetch(
         except BudgetExceededError:
             return 0  # the calls that follow report it
     caps: dict[str, int] = getattr(client, "task_max_tokens", None) or {}
-    commit = bool(conn.info.get(SHORT_TRANSACTIONS))
+    # insights and metricdetail pass `commit` (their TaskRunner): without it their pending
+    # writes held SQLite's write lock through the calls and other workers timed out (run 158).
+    commit = commit or bool(conn.info.get(SHORT_TRANSACTIONS))
     if commit:
         conn.commit()  # nothing stays locked while the calls run
 
