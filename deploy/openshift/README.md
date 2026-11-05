@@ -5,6 +5,13 @@ Placeholders to replace (`grep -rn PLACEHOLDER deploy/`):
 - `PLACEHOLDER_IMAGE`: Artifactory image path; Harness sets the tag
 - labels and secret names, to match the team's conventions
 
+Alpha Vantage defaults to `ALPHAVANTAGE_MODE=direct`. To use APIM, set the mode to `apim`,
+inject the API key plus the three `ALPHAVANTAGE_CLIENT_ID/CLIENT_SECRET/SUBSCRIPTION_KEY`
+credentials listed in `secret.example.yaml`, and configure/mount `config/alphavantage.yaml`.
+`ALPHAVANTAGE_ENV` selects its environment profile. Mode/environment are non-secret and may
+live in your ConfigMap; credential values belong in your Secret or private Helm values.
+See [Alpha Vantage APIM setup](../../docs/ALPHAVANTAGE_APIM.zh-CN.md).
+
 Apply order:
 ```
 oc apply -f pvc.yaml

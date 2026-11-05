@@ -11,7 +11,11 @@ from typing import Any
 
 from sqlalchemy import Engine, func, select
 
-from uw_pipeline.clients.alphavantage import AlphaVantageClient
+from uw_pipeline.clients.alphavantage import (
+    AlphaVantageClient,
+    AlphaVantageSetupError,
+    make_alphavantage_client,
+)
 from uw_pipeline.clients.db import app_engine, ensure_schema
 from uw_pipeline.clients.llm import ClaudeClient, LLMClient
 from uw_pipeline.clients.llm_limits import LimitedClient
@@ -100,18 +104,13 @@ class StageRunner:
         return self._sec
 
     @property
-    def av(self) -> AlphaVantageClient | None:
+    def av(self) -> AlphaVantageClient:
         with self._lock:
             return self._av_client()
 
-    def _av_client(self) -> AlphaVantageClient | None:
-        s = self.settings
-        if self._av is None and s.alphavantage_api_key is not None:
-            self._av = AlphaVantageClient(
-                s.alphavantage_api_key.get_secret_value(), self.storage,
-                rate_limiter=TokenBucket(rate=s.alphavantage_calls_per_minute / 60),
-                daily_quota=s.alphavantage_daily_quota or None,
-            )  # fmt: skip
+    def _av_client(self) -> AlphaVantageClient:
+        if self._av is None:
+            self._av = make_alphavantage_client(self.settings, self.storage)
             self._av_calls_at_start = self._av.calls_today()
         return self._av
 
@@ -280,9 +279,10 @@ class StageRunner:
         raise ValueError(f"unknown stage {stage}")
 
     def _av_stage(self, stage: str, companies: list[CompanyConfig]) -> list[TaskResult]:
-        av = self.av
-        if av is None:
-            return [TaskResult(c.ticker, stage, ok=False, detail="ALPHAVANTAGE_API_KEY not set")
+        try:
+            av = self.av
+        except AlphaVantageSetupError as exc:
+            return [TaskResult(c.ticker, stage, ok=False, detail=str(exc))
                     for c in companies]  # fmt: skip
         if stage == "transcripts":
             return run_transcripts_stage(companies, av, self.engine)
