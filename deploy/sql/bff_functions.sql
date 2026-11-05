@@ -461,9 +461,15 @@ AS RETURN (
             AS priorityOrder,
         CAST(CASE WHEN UF.FollowUpQuestionId IS NULL THEN 0 ELSE 1 END AS BIT) AS isFlagged,
         Q.sources,
+        S.readableSources,
         dbo_professional360.udf_GetItemRelationsJson(Q.CompanyId, N'FOLLOWUP', Q.FollowUpQuestionId)
             AS relations
     FROM dbo_professional360.FollowUpQuestions Q
+    OUTER APPLY (
+        SELECT STRING_AGG(CAST(JSON_VALUE(J.[value], '$.title') AS NVARCHAR(MAX)), N' | ')
+                   WITHIN GROUP (ORDER BY CAST(J.[key] AS INT)) AS readableSources
+        FROM OPENJSON(Q.sources) J
+    ) S
     LEFT JOIN dbo_professional360.UserFlaggedFollowupQuestions UF
       ON UF.FollowUpQuestionId = Q.FollowUpQuestionId AND UF.UserId = @UserId
     WHERE Q.CompanyId = @CompanyId AND Q.isActive = 1
