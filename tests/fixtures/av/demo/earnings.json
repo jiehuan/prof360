@@ -1,0 +1,29 @@
+{
+  "symbol": "IBM",
+  "annualEarnings": [
+    {
+      "fiscalDateEnding": "2026-09-30",
+      "reportedEPS": "7.79"
+    }
+  ],
+  "quarterlyEarnings": [
+    {
+      "fiscalDateEnding": "2026-09-30",
+      "reportedDate": "2026-10-21",
+      "reportedEPS": "2.95",
+      "estimatedEPS": "2.88",
+      "surprise": "0.07",
+      "surprisePercentage": "2.4306",
+      "reportTime": "post-market"
+    },
+    {
+      "fiscalDateEnding": "2026-06-30",
+      "reportedDate": "2026-07-22",
+      "reportedEPS": "2.93",
+      "estimatedEPS": "2.93",
+      "surprise": "0",
+      "surprisePercentage": "0",
+      "reportTime": "post-market"
+    }
+  ]
+}
