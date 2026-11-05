@@ -51,6 +51,19 @@ def test_jobs_config_is_valid() -> None:
     for name in ("nightly", "morning"):
         stages = cfg.jobs[name].stages
         assert stages.index("news") < stages.index("scores") < stages.index("insights")
+    # D-081: Azure SQL takes the full worker counts; a SQLite file is capped.
+    azure, local = cfg.parallel_for("mssql"), cfg.parallel_for("sqlite")
+    assert (azure["insights"], azure["metricdetail"]) == (8, 6)
+    assert (local["insights"], local["metricdetail"]) == (4, 4)
+    assert local["news"] == azure["news"] == 3
+
+
+def test_sqlite_cap_of_an_unknown_stage_is_rejected(tmp_path) -> None:
+    (tmp_path / "jobs.yaml").write_text(
+        "jobs: {nightly: {stages: [company]}}\nsqlite_parallel: {insight: 2}\n"
+    )
+    with pytest.raises(ValueError, match="sqlite_parallel: unknown stages"):
+        load_jobs_config(tmp_path)
 
 
 def test_success_and_stage_major_order(engine) -> None:
