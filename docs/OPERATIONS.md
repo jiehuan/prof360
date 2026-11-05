@@ -90,7 +90,7 @@
 ## 8. 应用库、新闻和评分（Phase 9，D-037）
 
 - `publish` 阶段把管线结果写进应用库（`APP_DATABASE_URL`，dev 是 `data/app.db`）。管线不写用户相关的表。重跑只写有变化的行。
-- 公司 logo（D-067）：`config/logos/<TICKER>.png`（或 .jpg/.gif/.webp，不超过 200 KB，宽约 250 px），`publish` 转成 data URI 写进 `Company.logo`。管线运行时不联网取 logo。新增公司时：在能访问 Wikipedia 的网络上运行 `python scripts/fetch_logos.py`（只取没有文件的公司），打开 `data/reports/logos.html` 看一遍再提交；取不到或取错的，手工放一个文件，并在 `config/logos/SOURCES.yaml` 记 `source: manual` 和来源。取错的也可以在 `config/logos.yaml` 指定 Wikidata 条目、Wikipedia 文章或网站，再 `--ticker XXX` 重取。
+- 公司 logo（D-067）：`config/logos/<TICKER>.png`（或 .jpg/.gif/.webp，不超过 200 KB，宽约 250 px），`publish` 转成 data URI 写进 `Company.logo`。管线运行时不联网取 logo。新增公司时：在能访问 Wikipedia 的网络上运行 `python scripts/fetch_logos.py`（只取没有文件的公司），打开 `data/reports/logos.html` 看一遍再提交；取不到或取错的，手工放一个文件，并在 `config/logos/SOURCES.yaml` 记 `source: manual` 和来源。取错的也可以在 `config/logos.yaml` 指定 Wikidata 条目、Wikipedia 文章或网站，再 `--ticker XXX` 重取。还没进 `companies.yaml` 的 S&P 500 成员列在 `config/logos.yaml` 的 `extra_companies`（D-083），logo 已经备好；公司加进 `companies.yaml` 后这里的条目自动忽略，logo 文件直接可用。注意：维基百科上新改名或新分拆的公司常常还是旧 logo（如 Chesapeake → Expand），看对照页时要留意。
 - 应用库的映射规则（指标分类、风险类型、confidence）在 `config/app_publish.yaml`。如果 `RiskTypes` 里出现 "Other"，在 `risk_types` 里加一条规则即可，重新 publish 不需要 LLM。
 - 新闻相关性：公司别名在 `config/companies.yaml` 的 `news_aliases`；排除规则和 LLM 判断在 `config/news.yaml`。新闻阶段的 `pruned` 是按当前规则删掉的旧文章数。
 - 风险评分在 `scores` 阶段（`config/scores.yaml`）。只有重要新闻进入洞察输入，阈值在 `config/insights.yaml` 的 `news_materiality`；阈值调低会让洞察更常重新生成（每家公司每次约 $0.9）。

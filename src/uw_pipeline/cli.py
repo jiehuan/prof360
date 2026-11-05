@@ -463,9 +463,10 @@ def _load_all(config_dir: Path) -> tuple[Any, Any, Any, Any]:
     return companies, industry, registry, rules
 
 
-def _check_logos(companies: list[CompanyConfig]) -> None:
-    """Logo files (D-067): named by a configured ticker, and publishable."""
-    tickers = {c.ticker for c in companies}
+def _check_logos(companies: list[CompanyConfig], extra: frozenset[str] = frozenset()) -> None:
+    """Logo files (D-067): named by a configured ticker (companies.yaml, or logos.yaml's
+    extra_companies, D-083), and publishable."""
+    tickers = {c.ticker for c in companies} | set(extra)
     problems = []
     for ticker, path in logo_files(_config_dir()).items():
         err = check_logo(path) if ticker in tickers else "no company with that ticker"
@@ -482,8 +483,9 @@ def config_check() -> None:
         companies, industry, _, rules = _load_all(_config_dir())
         # Read only by scripts/build_universe.py, but checked here too (D-055).
         load_universe_config(_config_dir()).check(industry)
-        load_logo_config(_config_dir()).check_companies(companies)
-        _check_logos(companies)
+        lcfg = load_logo_config(_config_dir())
+        lcfg.check_companies(companies)
+        _check_logos(companies, frozenset(e.ticker for e in lcfg.extras(companies)))
     except ValueError as exc:  # pydantic ValidationError is a ValueError
         typer.echo(f"INVALID: {exc}", err=True)
         raise typer.Exit(code=1) from exc

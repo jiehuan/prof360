@@ -1907,3 +1907,21 @@ income" (2026-11-01).**
   (fails on the old code). Azure SQL was not affected the same way (row locks), but the
   pending writes there also stayed open through the calls.
 
+**D-083 Logos ready for the whole S&P 500 (2026-11-05).**
+- User request: logos for every S&P 500 company, ahead of adding them to the pipeline. 192 of
+  the 498 constituents (by CIK; Wikipedia's "List of S&P 500 companies", 2026-11-05) were
+  already in companies.yaml, all with logos; 306 were not.
+- Options: (a) add the 306 to companies.yaml (every stage would then run for them); (b) list
+  them for logos only. Chosen: (b). `config/logos.yaml` `extra_companies` (ticker, CIK, name,
+  the list's article); `fetch_logos.py` fetches them like configured companies, with the
+  article as a hint when Wikidata names none; `config check` accepts their files. An entry is
+  ignored once its CIK or ticker is in companies.yaml, so adding a company needs no change
+  here. Publish is unchanged: it reads only published companies' logos.
+- Result: 299 fetched (293 Wikipedia infobox, 5 Wikidata, 1 favicon; Xcel after a 502
+  retry), every one checked on a contact sheet. Seven by hand from company websites (SOURCES.yaml
+  `source: manual`): Lumentum and Insulet (no logo found), and five where Wikipedia still
+  showed another name or the parent: Expand Energy (Chesapeake), Revvity (PerkinElmer),
+  Tapestry (Coach), FedEx Freight (FedEx), Vylor (Corteva). White logos made for dark headers
+  were recoloured (Tapestry black, Vylor near-black, FedEx Freight FedEx purple, Lumentum the
+  dark gray its site names). config/logos/ is now 583 files, 5 MB.
+

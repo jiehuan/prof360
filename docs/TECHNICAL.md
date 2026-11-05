@@ -222,7 +222,7 @@ versioned with the code.
 | `metrics.yaml` | Metric definitions, formulas (`x_py` = a year earlier, `x_ttm` = the last four quarters, D-058), text and table extraction specs (`table:` column, scope, excluded rows, `dual_check`), `kind: external` (market and Form 4 metrics, D-050), `insight_input`, `metric_sets`, `hidden_metric_sets` (computed, not shown, D-054) |
 | `concept_map.yaml` | Concept → candidate XBRL tags (with dimensions) |
 | `universe.yaml` | Sample review for `scripts/build_universe.py` only: `industry` for registrants whose SIC misleads, `sample_skip` (D-055) |
-| `logos.yaml`, `logos/` | Company logo files (`<TICKER>.png`, published as data URIs) and where `scripts/fetch_logos.py` looks for them: Wikidata item, article, file or website corrections (D-067) |
+| `logos.yaml`, `logos/` | Company logo files (`<TICKER>.png`, published as data URIs) and where `scripts/fetch_logos.py` looks for them: Wikidata item, article, file or website corrections (D-067); `extra_companies`: S&P 500 members outside companies.yaml whose logos are kept ready (D-083) |
 | `coverage_notes.yaml` | Reason for every metric gap `coverage-report` shows: per company, per industry group under `groups:` (`"*"` = every company, D-052), or per company trait under `traits:` (D-063). The target is counted from a company's first own filing (`compute/coverage.history_start`) |
 | `signal_rules.yaml` | 8-K item mapping, keyword and role rules, board rules, metric `thresholds`, `industries` per rule (D-049), `fetch_body_items`; `ownership_forms` (13D), `market`, `insiders`, `legal` (D-050) |
 | `text_extraction.yaml` | Text-metric chunk budget, effort, loan portfolio settings |

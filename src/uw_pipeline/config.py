@@ -241,6 +241,21 @@ class LogoOverride(BaseModel):
     website: str | None = Field(default=None, pattern=r"^https?://")  # favicon source
 
 
+class ExtraCompany(BaseModel):
+    """A company outside companies.yaml whose logo is kept ready (D-083), e.g. an S&P 500
+    member not yet in the pipeline. Logo files are named by ticker like the others."""
+
+    ticker: str
+    cik: int
+    name: str
+    article: str | None = None  # English Wikipedia article, used when Wikidata names none
+
+    @field_validator("ticker")
+    @classmethod
+    def _upper(cls, v: str) -> str:
+        return v.strip().upper()
+
+
 class LogoConfig(BaseModel):
     """Where scripts/fetch_logos.py looks for logos (the pipeline itself never fetches them)."""
 
@@ -248,9 +263,27 @@ class LogoConfig(BaseModel):
     favicon_size: int = 128
     min_favicon_px: int = 32
     overrides: dict[str, LogoOverride] = Field(default_factory=dict)
+    extra_companies: list[ExtraCompany] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _unique_extras(self) -> LogoConfig:
+        for key in ("ticker", "cik"):
+            seen = [getattr(e, key) for e in self.extra_companies]
+            dup = sorted({str(v) for v in seen if seen.count(v) > 1})
+            if dup:
+                raise ValueError(f"logos.yaml: extra_companies repeat {key} {dup}")
+        return self
+
+    def extras(self, companies: list[CompanyConfig]) -> list[ExtraCompany]:
+        """Extra companies not (yet) in companies.yaml: once a company is added there, its
+        entry here is ignored and companies.yaml wins."""
+        ciks = {c.cik for c in companies}
+        tickers = {c.ticker for c in companies}
+        return [e for e in self.extra_companies if e.cik not in ciks and e.ticker not in tickers]
 
     def check_companies(self, companies: list[CompanyConfig]) -> None:
-        unknown = sorted(set(self.overrides) - {c.ticker for c in companies})
+        known = {c.ticker for c in companies} | {e.ticker for e in self.extras(companies)}
+        unknown = sorted(set(self.overrides) - known)
         if unknown:
             raise ValueError(f"logos.yaml: overrides for unknown tickers {unknown}")
 
