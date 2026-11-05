@@ -4,6 +4,10 @@ Each pipeline object has a stable key (e.g. "0000019617:nim:FY:2025:0"). `pipeli
 remembers which app row it became, so reruns update that row instead of inserting a new one,
 and rows whose content is unchanged (same hash) are not written at all. Plain INSERT/UPDATE
 statements, so this works on SQLite (dev) and SQL Server alike.
+
+A writer's company map (keys under its `scope`) is read once per table and kept current as rows
+are written (D-084): on Azure SQL every statement is a network round trip, and a lookup per row
+was about 2,400 of the 2,900 statements a company's publish made.
 """
 
 from __future__ import annotations
@@ -35,9 +39,37 @@ class AppWriter:
         self.written = 0
         self.unchanged = 0
         self._existing: dict[tuple[str, bool], set[int]] = {}  # app ids present, loaded once
+        # The map per (table, scoped): pipeline key -> (app id, row hash), read once. Scoped:
+        # this company's keys. Not scoped: shared dimension rows (Company, metrics, categories;
+        # each entity at most a few hundred rows), read whole.
+        self._map: dict[tuple[str, bool], dict[str, tuple[int, str]]] = {}
+
+    def _scoped(self, key: str) -> bool:
+        return bool(self.scope) and key.startswith(self.scope)
+
+    def _known(self, table: Table, key: str) -> tuple[int, str] | None:
+        """The app id and row hash `key` was published with, if any."""
+        cache = (table.name, self._scoped(key))
+        if cache not in self._map:
+            q = select(pmap.c.pipeline_key, pmap.c.app_id, pmap.c.row_hash).where(
+                pmap.c.entity == table.name
+            )
+            if cache[1]:
+                q = q.where(pmap.c.pipeline_key.startswith(self.scope, autoescape=True))
+            self._map[cache] = {k: (int(a), h) for k, a, h in self.conn.execute(q)}
+        return self._map[cache].get(key)
+
+    def _remember(self, table: Table, key: str, entry: tuple[int, str] | None) -> None:
+        known = self._map.get((table.name, self._scoped(key)))
+        if known is None:
+            return
+        if entry is None:
+            known.pop(key, None)
+        else:
+            known[key] = entry
 
     def _exists(self, table: Table, app_id: int, key: str) -> bool:
-        scoped = bool(self.scope) and key.startswith(self.scope)
+        scoped = self._scoped(key)
         cache = (table.name, scoped)
         if cache not in self._existing:
             ids = select(_pk(table))
@@ -51,43 +83,41 @@ class AppWriter:
         return app_id in self._existing[cache]
 
     def lookup(self, table: Table, key: str) -> int | None:
-        return self.conn.execute(
-            select(pmap.c.app_id).where(pmap.c.entity == table.name, pmap.c.pipeline_key == key)
-        ).scalar()
+        known = self._known(table, key)
+        return None if known is None else known[0]
 
     def put(self, table: Table, key: str, values: Mapping[str, Any]) -> int:
         """Insert or update the row for `key`; return its app id."""
         h = _hash(values)
-        known = self.conn.execute(
-            select(pmap.c.app_id, pmap.c.row_hash)
-            .where(pmap.c.entity == table.name, pmap.c.pipeline_key == key)
-        ).first()  # fmt: skip
+        known = self._known(table, key)
         pk = _pk(table)
         if known is not None:
-            if known.row_hash == h and self._exists(table, int(known.app_id), key):
+            known_id, known_hash = known
+            if known_hash == h and self._exists(table, known_id, key):
                 self.unchanged += 1
-                return int(known.app_id)
-            res = self.conn.execute(update(table).where(pk == known.app_id).values(**values))
+                return known_id
+            res = self.conn.execute(update(table).where(pk == known_id).values(**values))
             if res.rowcount:
                 self.conn.execute(
                     update(pmap)
                     .where(pmap.c.entity == table.name, pmap.c.pipeline_key == key)
                     .values(row_hash=h, published_at=self.now)
                 )
+                self._remember(table, key, (known_id, h))
                 self.written += 1
-                return int(known.app_id)
+                return known_id
             # The app row was removed outside the pipeline: insert it again.
             self.conn.execute(
                 delete(pmap).where(pmap.c.entity == table.name, pmap.c.pipeline_key == key)
             )
+            self._remember(table, key, None)
         new = self.conn.execute(insert(table).values(**values)).inserted_primary_key
         assert new is not None
         app_id = int(new[0])
-        self._existing.setdefault(
-            (table.name, bool(self.scope) and key.startswith(self.scope)), set()
-        ).add(app_id)
+        self._existing.setdefault((table.name, self._scoped(key)), set()).add(app_id)
         self.conn.execute(insert(pmap).values(entity=table.name, pipeline_key=key, app_id=app_id,
                                               row_hash=h, published_at=self.now))  # fmt: skip
+        self._remember(table, key, (app_id, h))
         self.written += 1
         return app_id
 
@@ -131,6 +161,8 @@ class AppWriter:
                     and_(pmap.c.entity == table.name, pmap.c.pipeline_key.in_(keys[i : i + 500]))
                 )
             )
+        for k in keys:
+            self._remember(table, k, None)
         return len(stale)
 
     def deactivate_except(self, table: Table, prefix: str, keep: Iterable[str]) -> int:
@@ -161,4 +193,6 @@ class AppWriter:
                 .where(pmap.c.entity == table.name, pmap.c.pipeline_key.in_(keys[i : i + 500]))
                 .values(row_hash="")
             )  # fmt: skip
+        for k, a in stale.items():
+            self._remember(table, k, (a, ""))
         return changed

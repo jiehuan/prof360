@@ -332,18 +332,20 @@ class Publisher:
 
     # -- insights ----------------------------------------------------------------------------
 
-    def _sources(self, insight_id: int) -> list[dict[str, Any]]:
-        out: list[dict[str, Any]] = []
-        for t, u, d in self.src.execute(
-            select(insight_evidence.c.source_title, insight_evidence.c.source_url,
-                   insight_evidence.c.source_date)
-            .where(insight_evidence.c.insight_id == insight_id,
-                   insight_evidence.c.source_title.is_not(None))
-            .order_by(insight_evidence.c.evidence_id)
-        ):  # fmt: skip
-            item = {"title": t, "url": u, "date": d}
-            if item not in out:
-                out.append(item)
+    def _all_sources(self, insight_ids: list[int]) -> dict[int, list[dict[str, Any]]]:
+        """Each insight's distinct sources in evidence order; one read per 500 insights."""
+        out: dict[int, list[dict[str, Any]]] = {}
+        ie = insight_evidence.c
+        for i in range(0, len(insight_ids), 500):
+            for iid, t, u, d in self.src.execute(
+                select(ie.insight_id, ie.source_title, ie.source_url, ie.source_date)
+                .where(ie.insight_id.in_(insight_ids[i : i + 500]), ie.source_title.is_not(None))
+                .order_by(ie.insight_id, ie.evidence_id)
+            ):  # fmt: skip
+                items = out.setdefault(iid, [])
+                item = {"title": t, "url": u, "date": d}
+                if item not in items:
+                    items.append(item)
         return out
 
     def _insight_confidence(self, sources: list[dict[str, Any]]) -> float | None:
@@ -364,6 +366,7 @@ class Publisher:
         ).mappings().all()  # fmt: skip
         out: dict[int, tuple[str, int]] = {}
         keep_k, keep_r, keep_t = [], [], []
+        all_sources = self._all_sources([r["insight_id"] for r in rows])
         for r in rows:
             key = f"{self.p}{r['insight_id']}"
             if r["kind"] == "TAKEAWAY":  # bullets only: no sources, no links (ItemLink)
@@ -374,7 +377,7 @@ class Publisher:
                 })  # fmt: skip
                 keep_t.append(key)
                 continue
-            sources = self._sources(r["insight_id"])
+            sources = all_sources.get(r["insight_id"], [])
             first_url = next((s["url"] for s in sources if s["url"]), None)
             if r["kind"] == "KEY":
                 type_id = self._lookup(KeyInsightsTypes, r["insight_type"] or "Info",
@@ -419,16 +422,20 @@ class Publisher:
             .order_by(followup_question.c.ordinal)
         ).mappings().all()  # fmt: skip
         out, keep = {}, []
+        fqs = followup_question_source.c
+        ids = [q["question_id"] for q in rows]
+        by_question: dict[int, list[dict[str, Any]]] = {}
+        for i in range(0, len(ids), 500):
+            for s in self.src.execute(
+                select(fqs.question_id, fqs.title, fqs.url, fqs.source_date)
+                .where(fqs.question_id.in_(ids[i : i + 500]))
+                .order_by(fqs.question_id, fqs.ordinal)
+            ):  # fmt: skip
+                by_question.setdefault(s.question_id, []).append(
+                    {"title": s.title, "url": s.url, "date": s.source_date})  # fmt: skip
         for q in rows:
             key = f"{self.p}{q['question_id']}"
-            sources = [
-                {"title": s.title, "url": s.url, "date": s.source_date}
-                for s in self.src.execute(
-                    select(followup_question_source)
-                    .where(followup_question_source.c.question_id == q["question_id"])
-                    .order_by(followup_question_source.c.ordinal)
-                )
-            ]  # fmt: skip
+            sources = by_question.get(q["question_id"], [])
             out[q["question_id"]] = self.w.put(FollowUpQuestions, key, {
                 "CompanyId": self.app_company, "category": q["category"], "title": q["question"],
                 "summary": q["summary"], "followingRisk": q["following_risk"],
@@ -496,21 +503,22 @@ class Publisher:
             select(metric_value).where(metric_value.c.company_id == self.company_id)
         ).mappings():
             values.setdefault(r["metric_code"], []).append(dict(r))
+        ms = metric_source.c
+        metric_sources: dict[str, list[dict[str, Any]]] = {}
+        for s in self.src.execute(
+            select(ms.metric_code, ms.title, ms.url, ms.filed_at)
+            .where(ms.company_id == self.company_id)
+            .order_by(ms.metric_code, desc(ms.period_type))
+        ):  # fmt: skip
+            metric_sources.setdefault(s.metric_code, []).append(
+                {"title": s.title, "url": s.url, "date": s.filed_at})  # fmt: skip
         keep = []
         for code, d in details.items():
             mid = self.metric_ids.get(code)
             if mid is None:
                 continue
             m = self.defs[code]
-            sources = [
-                {"title": s.title, "url": s.url, "date": s.filed_at}
-                for s in self.src.execute(
-                    select(metric_source)
-                    .where(metric_source.c.company_id == self.company_id,
-                           metric_source.c.metric_code == code)
-                    .order_by(desc(metric_source.c.period_type))
-                )
-            ]  # fmt: skip
+            sources = metric_sources.get(code, [])
             points = [
                 value_point(r, m.unit, self.labels.derivations.get(r["derivation"],
                                                                   r["derivation"]))
@@ -649,17 +657,22 @@ class Publisher:
     def news(self) -> None:
         c = self.cfg.confidence.activity
         keep_a: list[str] = []
+        ni = news_item.c
+        by_activity: dict[int, list[Any]] = {}  # the first 10 articles of each activity
+        for row in self.src.execute(
+            select(ni.activity_id, ni.source, ni.title, ni.url, ni.published_at)
+            .where(ni.company_id == self.company_id)
+            .order_by(ni.activity_id, ni.published_at, ni.news_id)
+        ):  # fmt: skip
+            got = by_activity.setdefault(row.activity_id, [])
+            if len(got) < 10:
+                got.append(tuple(row)[1:])
         for a in (
             self.src.execute(select(activity).where(activity.c.company_id == self.company_id))
             .mappings()
             .all()
         ):
-            articles = self.src.execute(
-                select(news_item.c.source, news_item.c.title, news_item.c.url,
-                       news_item.c.published_at)
-                .where(news_item.c.activity_id == a["activity_id"])
-                .order_by(news_item.c.published_at).limit(10)
-            ).all()  # fmt: skip
+            articles = by_activity.get(a["activity_id"], [])
             sources = [{"title": f"{s or 'News'}: {t}", "url": u, "date": f"{p:%Y-%m-%d}"}
                        for s, t, u, p in articles] or [
                 {"title": f"{a['source_name']}: {a['title']}", "url": a["url"],
@@ -720,11 +733,23 @@ class Publisher:
                 "overallRiskScore": r["overall"], "rationale": r["rationale"],
                 "modelVersion": f"{r['model']}/{r['prompt_version']}", "createdAt": r["created_at"],
             })  # fmt: skip
+        # One current score per article: drop rows of earlier runs. Read once, delete in batches
+        # (D-084: a statement per article was a round trip each on Azure SQL).
         nrs = NewsRiskScore.c
-        for row in out:  # one current score per article: drop rows of earlier runs
-            dst.execute(
-                NewsRiskScore.delete().where(nrs.NewsId == row["NewsId"], nrs.runId != row["runId"])
-            )
+        current = {row["NewsId"]: row["runId"] for row in out}
+        ids = list(current)
+        stale: dict[int, list[int]] = {}  # current run -> articles with rows of other runs
+        for i in range(0, len(ids), 500):
+            for news_id, run in dst.execute(
+                select(nrs.NewsId, nrs.runId).where(nrs.NewsId.in_(ids[i : i + 500]))
+            ):
+                if run != current[news_id]:
+                    stale.setdefault(current[news_id], []).append(news_id)
+        for run, news_ids in stale.items():
+            news_ids = sorted(set(news_ids))
+            for i in range(0, len(news_ids), 500):
+                dst.execute(NewsRiskScore.delete().where(
+                    nrs.NewsId.in_(news_ids[i : i + 500]), nrs.runId != run))  # fmt: skip
         upsert(dst, NewsRiskScore, out, key_cols=["NewsId", "runId"])
         self.stats.add("NewsRiskScore", len(out))
 

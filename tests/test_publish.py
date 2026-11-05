@@ -13,8 +13,11 @@ from uw_pipeline.config import CompanyConfig, load_industry_config
 from uw_pipeline.enrich.sources import load_source_labels
 from uw_pipeline.jobs.run_publish import load_publish_config, run_publish_stage
 from uw_pipeline.schema import (
+    activity,
     company,
     followup_question,
+    news_item,
+    news_risk_score,
     signal,
     source_document,
     transcript_flag,
@@ -28,6 +31,7 @@ from uw_pipeline.schema_app import (
     KeyInsights,
     KeyTakeaways,
     MatrixData,
+    NewsRiskScore,
     RiskTypes,
     SIC_Preferences,
     StrategicRisk,
@@ -263,3 +267,57 @@ def test_transcript_flags_are_rewritten_only_when_they_change() -> None:
         c.execute(delete(transcript_tone))
     _publish(engine, app)
     assert flags() == []
+
+
+def _news(engine, n: int) -> None:
+    """n scored articles, one activity each (the publish stage's news inputs)."""
+    with engine.begin() as c:
+        for i in range(1, n + 1):
+            c.execute(insert(activity).values(
+                activity_id=100 + i, company_id=1, title=f"a{i}", published_at=ti.NOW,
+                source_name="s", url=f"https://n/{i}", url_hash=f"h{i}", source_count=1,
+                first_seen_at=ti.NOW, updated_at=ti.NOW))  # fmt: skip
+            c.execute(insert(news_item).values(
+                company_id=1, activity_id=100 + i, url_hash=f"h{i}", url=f"https://n/{i}",
+                title=f"a{i}", published_at=ti.NOW, relevance=0.9, dedup_method="FIRST",
+                raw_path="r", fetched_at=ti.NOW))  # fmt: skip
+            c.execute(insert(news_risk_score).values(
+                activity_id=100 + i, company_id=1, litigation=0.1, regulatory=0.1,
+                financial_distress=0.1, governance=0.1, operational=0.1, overall=0.1,
+                rationale="r", model="m", prompt_version="v1", input_hash="i", run_id=5,
+                created_at=ti.NOW))  # fmt: skip
+
+
+def test_republish_reads_the_company_map_once_per_table() -> None:
+    """D-084: on Azure SQL each statement is a round trip. An unchanged republish reads the
+    company's publish map once per table, not once per row, however many rows there are."""
+    engine, app, _ = _env()
+    _news(engine, 30)
+    _publish(engine, app)
+    statements: list[str] = []
+
+    @event.listens_for(app, "before_cursor_execute")
+    def _record(conn, cursor, statement, *args) -> None:
+        statements.append(" ".join(statement.split()))
+
+    assert "0 written" in _publish(engine, app)
+    per_key = [s for s in statements if "pipeline_publish_map.pipeline_key = ?" in s]
+    assert per_key == []
+    # Only the scores' upsert of all 30 articles at once (on SQL Server: stage, MERGE, drop).
+    writes = [s for s in statements if not s.startswith("SELECT")]
+    assert 1 <= len(writes) <= 4 and all("NewsRiskScore" in s for s in writes), writes
+    assert len(statements) < 60, len(statements)
+
+
+def test_news_scores_of_earlier_runs_are_replaced() -> None:
+    engine, app, _ = _env()
+    _news(engine, 3)
+    _publish(engine, app)
+    assert _count(app, NewsRiskScore, NewsRiskScore.c.runId == 5) == 3
+    with engine.begin() as c:  # two articles rescored in run 6
+        c.execute(update(news_risk_score).where(news_risk_score.c.activity_id.in_([101, 102]))
+                  .values(run_id=6, overall=0.7))  # fmt: skip
+    _publish(engine, app)
+    with app.connect() as c:
+        rows = sorted(c.execute(select(NewsRiskScore.c.runId, NewsRiskScore.c.overallRiskScore)))
+    assert [(r, float(s)) for r, s in rows] == [(5, 0.1), (6, 0.7), (6, 0.7)]
