@@ -135,3 +135,39 @@ def test_textmetrics_reads_together_with_the_same_result(tmp_path) -> None:
     (one, peak1, calls1), (three, peak3, calls3) = results[1], results[3]
     assert one == three and len(one["metric_value"]) == 3
     assert (peak1, peak3, calls1) == (1, 3, calls3)
+
+
+def test_runner_prefetch_commits_pending_writes_before_the_calls(tmp_path) -> None:
+    """Run 158: insights wrote activity summaries, then prefetched its syntheses without
+    committing; the write lock stayed held through the calls and the other workers' writes
+    timed out ("database is locked"). The TaskRunner's `commit` now reaches prefetch."""
+    import sqlite3
+
+    from sqlalchemy import insert
+
+    from uw_pipeline.enrich.insights import TaskRunner
+
+    db = tmp_path / "uw.db"
+    engine = create_engine(f"sqlite:///{db}")
+    metadata.create_all(engine)
+    locked: list[bool] = []
+
+    def answer(model, user):
+        probe = sqlite3.connect(db, timeout=0.2, isolation_level=None)
+        try:
+            probe.execute("BEGIN IMMEDIATE")
+            probe.execute("ROLLBACK")
+            locked.append(False)
+        except sqlite3.OperationalError:
+            locked.append(True)
+        finally:
+            probe.close()
+        return {"n": 1}
+
+    with engine.connect() as c:
+        c.execute(insert(llm_call).values(input_hash="pending", task="t", prompt_version="v",
+                                          model="m", created_at=NOW))  # fmt: skip
+        runner = TaskRunner(FakeLLM(answer), c, lambda: NOW, "", commit=True)
+        assert runner.prefetch([_req("a"), _req("b")], workers=2) == 2
+        c.commit()
+    assert locked == [False, False]
