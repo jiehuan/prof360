@@ -1,6 +1,7 @@
 """Fill config/logos/ with company logos from Wikimedia (D-067).
 
     python scripts/fetch_logos.py                 # active companies without a logo file
+                                                  # (and logos.yaml's extra_companies, D-083)
     python scripts/fetch_logos.py --ticker MAR    # fetch again, replacing the file
     python scripts/fetch_logos.py --all           # every active company again, except logos
                                                   # added by hand (source: manual)
@@ -43,6 +44,10 @@ def main() -> None:
     lcfg = load_logo_config(cfg_dir)
     companies = [c for c in load_companies(cfg_dir) if c.active]
     lcfg.check_companies(companies)
+    # Companies outside companies.yaml whose logos are kept ready (D-083)
+    extras = lcfg.extras(companies)
+    hints = {e.ticker: e.article for e in extras}
+    companies += [CompanyConfig(ticker=e.ticker, cik=e.cik, display_name=e.name) for e in extras]
     have = logo_files(cfg_dir)
     wanted = {t.upper() for t in args.ticker}
     sources_path = folder / SOURCES
@@ -57,7 +62,7 @@ def main() -> None:
     try:
         for c in todo:
             try:
-                logo = find_logo(c, client, lcfg, today)
+                logo = find_logo(c, client, lcfg, today, hints.get(c.ticker))
             except Exception as exc:  # one company's failure does not stop the others
                 print(f"{c.ticker:6} error: {exc}")
                 missing.append(c.ticker)

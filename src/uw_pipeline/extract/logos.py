@@ -32,12 +32,15 @@ class Logo:
     wikidata_id: str | None
 
 
-def find_logo(cfg: CompanyConfig, client: LogoClient, lcfg: LogoConfig, today: date) -> Logo:
+def find_logo(cfg: CompanyConfig, client: LogoClient, lcfg: LogoConfig, today: date,
+              article_hint: str | None = None) -> Logo:  # fmt: skip
+    """`article_hint`: an English Wikipedia article to read when neither the override nor the
+    Wikidata item names one (extra companies carry their index list's link, D-083)."""
     override = lcfg.overrides.get(cfg.ticker) or LogoOverride()
     ciks = [f"{c:010d}" for c in [cfg.cik, *cfg.predecessor_ciks] if c is not None]
     found = _choose(client.sparql(_query(ciks, override.wikidata)), ciks, today)
     qid = found.qid
-    article = override.wikipedia or found.article
+    article = override.wikipedia or found.article or article_hint
     if article and not override.logo_file:
         # 1. the logo in the English Wikipedia article's infobox: kept current (Wikidata's is
         # sometimes a former name's or another unit's), and non-free logos are only there
