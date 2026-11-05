@@ -61,7 +61,7 @@ overrides:
   HGV: {wikidata: Q13636126}
   HPQ: {wikipedia: "HP Inc."}   # item's article: Hewlett-Packard (1979 logo)
   INGM: {wikidata: Q324616}
-  LRN: {website: "https://www.stride.com"}   # item's site: k12.com (old name)
+  LRN: {website: "https://www.stridelearning.com"}   # item's site: k12.com (old name); stride.com does not resolve
   LULU: {wikidata: Q6702957}
   MAN: {wikidata: Q1472539}
   MDLN: {wikidata: Q6807236}

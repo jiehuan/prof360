@@ -110,6 +110,12 @@ ANET:
   url: https://commons.wikimedia.org/wiki/File:Arista-networks-logo.svg
   wikidata: Q2861324
   fetched: '2026-10-26'
+ANNX:
+  source: manual
+  url: https://annexonbio.com/wp-content/themes/annexonbio/images/logo-main.svg
+  wikidata: Q61934465
+  fetched: '2026-11-05'
+  note: company website; SVG rendered to PNG, white made transparent, 250 px wide
 APO:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Apollo_Global_Management_logo.svg
@@ -440,6 +446,12 @@ DMC:
   url: https://commons.wikimedia.org/wiki/File:Fresh_Del_Monte_logo.svg
   wikidata: Q3211367
   fetched: '2026-10-26'
+DNLI:
+  source: manual
+  url: https://www.denalitherapeutics.com/wp-content/uploads/2025/06/denali-logo.svg
+  wikidata: Q50037774
+  fetched: '2026-11-05'
+  note: company website; SVG rendered to PNG, white made transparent, 250 px wide
 DOLE:
   source: wikipedia
   url: https://en.wikipedia.org/wiki/File:Dole_Foods_Logo_Green_Leaf.svg
@@ -740,6 +752,12 @@ LRCX:
   url: https://commons.wikimedia.org/wiki/File:Lam_Research_logo.svg
   wikidata: Q1342041
   fetched: '2026-10-26'
+LRN:
+  source: manual
+  url: https://www.stridelearning.com/wp-content/themes/stridelearning-wp/assets/img/stride-logo.png
+  wikidata: Q6324302
+  fetched: '2026-11-05'
+  note: company website, 250 px wide
 LULU:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Lululemon_Athletica_logo.svg
@@ -1266,6 +1284,12 @@ USB:
   url: https://commons.wikimedia.org/wiki/File:US_Bancorp_logo_2023_color.svg
   wikidata: Q739084
   fetched: '2026-10-26'
+UWMC:
+  source: manual
+  url: https://images.contentstack.io/v3/assets/blt5816d0187d3ad42c/bltd4fd7fc02a563366/690a70e2dcc3413ac6a5e0f8/uwm-logo.svg
+  wikidata: Q106024170
+  fetched: '2026-11-05'
+  note: company website; SVG rendered to PNG, white made transparent, 250 px wide
 V:
   source: wikipedia
   url: https://commons.wikimedia.org/wiki/File:Visa_Inc._logo_(2021%E2%80%93present).svg
