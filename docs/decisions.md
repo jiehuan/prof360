@@ -1909,7 +1909,7 @@ income" (2026-11-01).**
 
 **D-081 More insights and metric-detail workers on Azure SQL; SQLite capped (2026-11-05).**
 - With 1.5M tokens per minute (D-080), the synthesis model is no longer the limit at 4 workers.
-  Sizing from run 156 (Claude token counts; the GPT ones are similar or fewer): a re-synthesized
+  Sizing from run 156 (development-model token counts; the GPT ones are similar or fewer): a re-synthesized
   company uses about 170K tokens; one worker has at most 3 calls in flight (`company_calls`),
   reserving up to about 200K (strategic risk's input plus 32K max_tokens, and two smaller
   calls). 1.5M covers about 7 workers' reservations at once, and 8 workers at about 3 minutes
