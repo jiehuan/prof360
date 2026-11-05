@@ -104,7 +104,8 @@ class TaskRunner:
                        model.model_validate)  # fmt: skip
 
     def prefetch(self, requests: Sequence[Request], workers: int) -> int:
-        return prefetch(self.conn, self.client, requests, now=self.now(), workers=workers)
+        return prefetch(self.conn, self.client, requests, now=self.now(), workers=workers,
+                        commit=self.commit)  # fmt: skip
 
     def run(
         self,

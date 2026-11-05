@@ -1835,3 +1835,16 @@ income" (2026-11-01).**
   `sqlite_parallel` caps both at 4 there; `JobsConfig.parallel_for(dialect)` applies it and
   rejects unknown stages like `parallel`.
 
+**D-082 Prefetch commits the insights and metric-detail writes before its calls (2026-11-05).**
+- Run 158 (local, SQLite) stopped in insights: workers' writes failed with "database is
+  locked" after the 60-second wait, and finally the orchestrator's own task update did, which
+  ended the process. Cause: insights and metricdetail open a plain connection and pass
+  `commit=True` to their TaskRunner; `prefetch` (D-062) only looked at the
+  `short_transactions` flag, so it did not commit the activity summaries just written before
+  asking for the behavioral and strategic syntheses. The write lock stayed held for the length
+  of those calls (a minute or more).
+- Fix: `prefetch(..., commit=)`, passed by `TaskRunner.prefetch`; the flag still counts. Test:
+  the runner's prefetch with a pending write leaves the lock free while the model answers
+  (fails on the old code). Azure SQL was not affected the same way (row locks), but the
+  pending writes there also stayed open through the calls.
+
