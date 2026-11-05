@@ -14,6 +14,7 @@
 | `LoanPortfolio` 增加 PeriodEnd, PctOfBook, Nonaccrual, NonaccrualRatio；`LoanTypes` 增加 ParentSegment | 贷款类别、上一年末对比、不良率 |
 | `FollowUpQuestions` 增加 Priority, isActive；`KeyInsights` 增加 isActive | 版本化：新版本是新行，旧行 isActive = 0，用户的 flag 不会指向换了内容的问题 |
 | 所有 sources 类列存 `[{title, url, date}]`，不是纯 URL 列表 | 弹窗要显示可读标题；`KeyInsights.link` 是第一个 URL |
+| `udf_GetCompanyFollowUpQuestions` 增加 readableSources（2026-11-05，BFF 团队的改动） | Follow-up 弹窗显示来源标题：`sources` 中各条的 title 按存储顺序用 ` \| ` 连接，没有来源时为 null；`deploy/sql/bff_followups.sql`（也在 `bff_functions.sql`） |
 | `MatrixData.accession`、`filed_date`、`context_or_dimension` 存 JSON 列表 | 图里是 list 类型 |
 | `metrics` 增加 parentMetricId, cardView（2026-11-03，D-078） | 一张卡的其他视图：Revenue Growth (QoQ) 是 Revenue Growth 卡的 QoQ 视图（parentMetricId = 卡的 metric_id，cardView = `QoQ`），不单独成卡，不在 SIC_Preferences；`udf_GetCompanyMetric` 的 `views` 返回它的季度序列，`deploy/sql/bff_metric_views.sql` |
 | 新表 `KeyTakeaways`（CompanyId, Ordinal, Takeaway, UpdatedDate, isActive）（2026-10-20，D-053） | 公司页 Key Insights 上方的 Key Takeaway 框：2–3 条对专业责任险最重要的要点，不显示链接；BFF 经 `udf_GetCompanyKeyInsightsSummary`（`keyInsights/summary`）读取，`deploy/sql/bff_key_takeaways.sql` |
