@@ -1,0 +1,97 @@
+{
+  "items": "2",
+  "sentiment_score_definition": "x <= -0.35: Bearish; -0.35 < x <= -0.15: Somewhat-Bearish; -0.15 < x < 0.15: Neutral; 0.15 <= x < 0.35: Somewhat_Bullish; x >= 0.35: Bullish",
+  "relevance_score_definition": "0 < x <= 1, with a higher score indicating higher relevance.",
+  "feed": [
+    {
+      "title": "5 Apple Stories: Peter Thiel, iPhone Duo, Nvidia and MacBook Buzz - Apple (NASDAQ:AAPL)",
+      "url": "https://www.benzinga.com/markets/tech/26/10/62579579/apple-weekend-top-stories-iphone-duo-nvidia-thiel",
+      "time_published": "20261025T110008",
+      "authors": [
+        "Mohd Haider"
+      ],
+      "summary": "This article covers five key stories surrounding Apple Inc. (NASDAQ: AAPL), highlighting investor Peter Thiel's critique of Apple's innovation post-Steve Jobs, and Gene Munster's optimistic projections for the iPhone Duo. It also discusses Apple's nearing market capitalization of Nvidia, speculation around a touchscreen MacBook Pro, and Bank of America's continued 'Buy' rating for Apple due to strong iPhone Duo demand.",
+      "banner_image": "https://cdn.benzinga.com/cdn-cgi/image/width=3840,format=auto,quality=85/files/images/story/2025/07/24/article-header-background-image.png",
+      "source": "Benzinga",
+      "category_within_source": "General",
+      "source_domain": "Benzinga",
+      "topics": [
+        {
+          "topic": "technology",
+          "relevance_score": "0.911782"
+        },
+        {
+          "topic": "financial_markets",
+          "relevance_score": "0.829711"
+        },
+        {
+          "topic": "earnings",
+          "relevance_score": "0.644072"
+        }
+      ],
+      "overall_sentiment_score": 0.013538,
+      "overall_sentiment_label": "Neutral",
+      "ticker_sentiment": [
+        {
+          "ticker": "AAPL",
+          "relevance_score": "1.000000",
+          "ticker_sentiment_score": "0.283819",
+          "ticker_sentiment_label": "Somewhat-Bullish"
+        },
+        {
+          "ticker": "NVDA",
+          "relevance_score": "0.637118",
+          "ticker_sentiment_score": "-0.295071",
+          "ticker_sentiment_label": "Somewhat-Bearish"
+        }
+      ]
+    },
+    {
+      "title": "Skyworks Solutions, Inc. $SWKS Position Lessened by Robeco Institutional Asset Management B.V.",
+      "url": "https://www.marketbeat.com/instant-alerts/filing-skyworks-solutions-inc-swks-position-lessened-by-robeco-institutional-asset-management-bv-2026-10-25/",
+      "time_published": "20261025T103733",
+      "authors": [
+        "MarketBeat"
+      ],
+      "summary": "Robeco Institutional Asset Management B.V. reduced its stake in Skyworks Solutions, Inc. by 14.2% in the third quarter of 2026, selling 15,965 shares but still holding 96,729 shares valued at $8.27 million. Despite mixed analyst sentiment (five Buy, seventeen Hold, two Sell ratings, with a consensus \"Hold\" and $80.53 target price), Skyworks exceeded earnings and revenue estimates for the quarter. The company reported $1.08 EPS and $934.8 million in revenue, though revenue saw a 3.1% year-over-year decline.",
+      "banner_image": "https://www.marketbeat.com/logos/skyworks-solutions-inc-logo-1200x675.png?v=20240202075224",
+      "source": "MarketBeat",
+      "category_within_source": "General",
+      "source_domain": "MarketBeat",
+      "topics": [
+        {
+          "topic": "earnings",
+          "relevance_score": "0.909635"
+        },
+        {
+          "topic": "financial_markets",
+          "relevance_score": "0.802014"
+        },
+        {
+          "topic": "technology",
+          "relevance_score": "0.725272"
+        },
+        {
+          "topic": "finance",
+          "relevance_score": "0.616774"
+        }
+      ],
+      "overall_sentiment_score": -0.082535,
+      "overall_sentiment_label": "Neutral",
+      "ticker_sentiment": [
+        {
+          "ticker": "SWKS",
+          "relevance_score": "1.000000",
+          "ticker_sentiment_score": "0.026385",
+          "ticker_sentiment_label": "Neutral"
+        },
+        {
+          "ticker": "AAPL",
+          "relevance_score": "0.605374",
+          "ticker_sentiment_score": "-0.105426",
+          "ticker_sentiment_label": "Neutral"
+        }
+      ]
+    }
+  ]
+}

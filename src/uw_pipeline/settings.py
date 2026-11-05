@@ -49,6 +49,11 @@ class Settings(BaseSettings):
     adls_client_secret: SecretStr | None = None
 
     alphavantage_api_key: SecretStr | None = None
+    alphavantage_mode: Literal["direct", "apim"] = "direct"
+    alphavantage_env: str | None = None  # default from config/alphavantage.yaml
+    alphavantage_client_id: str | None = None
+    alphavantage_client_secret: SecretStr | None = None
+    alphavantage_subscription_key: SecretStr | None = None
     # Free plan: 25 calls/day. Premium (75 calls/min): set the rate to 75 and the quota to 0.
     alphavantage_calls_per_minute: float = Field(default=5, gt=0)
     alphavantage_daily_quota: int = Field(default=25, ge=0)  # 0 = unlimited

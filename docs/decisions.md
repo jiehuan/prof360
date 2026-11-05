@@ -1898,3 +1898,34 @@ income" (2026-11-01).**
   documents for all 277 (run 168): no failures, 17 statements a company instead of about 510.
   Tests: a documents rerun reads the documents in one statement and writes none; sections
   rewritten together (shorter, dropped, repeated); SQLite and SQL Server.
+
+**D-085 Alpha Vantage direct / APIM transport (2026-11-03; ported 2026-11-05).**
+- User-approved design: `ALPHAVANTAGE_MODE=direct|apim` (default direct). Both modes require
+  `ALPHAVANTAGE_API_KEY` as the `apikey` query parameter. APIM additionally requires its own
+  client ID, client secret and `Ocp-Apim-Subscription-Key`; it never falls back to direct.
+- Credentials and mode/environment selection live in Settings/environment variables. New
+  `config/alphavantage.yaml` holds query/token URLs, scope, token authentication method,
+  timeout and retry limit. Existing rate/quota environment variables stay authoritative.
+  A missing YAML keeps legacy direct defaults; APIM requires a configured environment.
+- Token authentication explicitly selects standard `client_secret_post` / `client_secret_basic`
+  or corporate `gateway_headers`. Whether the subscription key is also sent to the token
+  endpoint is configurable; default true, matching the existing corporate gateway convention.
+  This avoids assuming that client credentials alone specifies a token request's wire format.
+- Tokens are cached only in process, renewed before expiry, and forcibly renewed at most once
+  per business fetch after HTTP 401. Cache hits require no token request. Token requests have
+  their own bounded retries and do not consume the AV data quota; every data request attempt
+  does. Responses, errors and lineage must not persist credentials. Public source URLs and raw
+  cache keys remain independent of the selected route; APIM must preserve the AV JSON contract.
+- Configuration checks are offline and credential-free. Credential/selected-environment checks
+  are lazy for AV stages, so SEC-only runs remain supported. The existing OpenShift Secret
+  example lists the new credential keys and defaults to direct. Deployment configuration stays
+  in the operator's existing manifest; this change adds no CronJob or schedule.
+- SecureGPT's existing client and token behavior are not refactored in this change.
+- Contributed as PR 11 against prod (generated from `release-takeaways`, so a prod-only merge
+  would be lost at the next release) and numbered D-077 there, which was already taken; ported
+  to `release-takeaways` on 2026-11-05 and renumbered. One change in the port: the PR held a
+  lock around the whole data request, which would have made the news stage serial again
+  (D-079, 89 -> 22 minutes). As in D-079, only the quota check and the call count are locked;
+  requests run in parallel and share the token (the token provider has its own lock). The PR's
+  CONTRIBUTING.md notes (a prod-only file, from `scripts/prod.patch`) were about this pending
+  port and were left out.
