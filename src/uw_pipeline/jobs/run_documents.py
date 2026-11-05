@@ -26,7 +26,7 @@ from collections.abc import Callable, Sequence
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
-from sqlalchemy import Connection, Engine, and_, delete, select, update
+from sqlalchemy import Connection, Engine, and_, delete, or_, select, update
 
 from uw_pipeline.clients.sec import SecClient, archive_folder_url
 from uw_pipeline.compute.insiders import insider_metrics
@@ -98,62 +98,92 @@ def _doc_id(conn: Connection, accn: str, name: str) -> tuple[int, str | None]:
     return int(row.doc_id), row.content_hash
 
 
+class _Docs:
+    """A company's documents, (accession, file name) -> (doc id, content hash), read once and
+    kept current (D-084: a lookup per document was a round trip each on Azure SQL). A document
+    registered under another company is looked up on its own."""
+
+    def __init__(self, conn: Connection, company_id: int) -> None:
+        self.conn, self.company_id = conn, company_id
+        self._rows: dict[tuple[str, str], tuple[int, str | None]] | None = None
+
+    def get(self, accn: str, name: str) -> tuple[int, str | None]:
+        if self._rows is None:
+            d = source_document.c
+            self._rows = {(a, n): (int(i), h) for i, a, n, h in self.conn.execute(
+                select(d.doc_id, d.accession_no, d.doc_name, d.content_hash)
+                .where(d.company_id == self.company_id))}  # fmt: skip
+        if (accn, name) not in self._rows:
+            self._rows[accn, name] = _doc_id(self.conn, accn, name)
+        return self._rows[accn, name]
+
+    def set_hash(self, accn: str, name: str, doc_id: int, content_hash: str) -> None:
+        if self._rows is not None:
+            self._rows[accn, name] = (doc_id, content_hash)
+
+    def register(self, rows: list[dict[str, Any]]) -> None:
+        """Register documents not registered yet (one statement for all of them)."""
+        insert_missing(conn=self.conn, table=source_document, rows=rows,
+                       key_cols=["accession_no", "doc_name"])  # fmt: skip
+        if self._rows is not None and any(
+            (r["accession_no"], r["doc_name"]) not in self._rows for r in rows
+        ):
+            self._rows = None  # new rows: read again on the next lookup
+
+
 def _store_sections(conn: Connection, doc_id: int, sections: list[Section]) -> None:
-    for sec in sections:
-        upsert(
-            conn,
-            filing_section,
-            [
-                {
-                    "doc_id": doc_id,
-                    "section_code": sec.code,
-                    "start_offset": sec.start,
-                    "char_count": len(sec.text),
-                    "text": sec.text,
-                    "text_hash": hashlib.sha256(sec.text.encode()).hexdigest(),
-                }
-            ],
-            key_cols=["doc_id", "section_code"],
-        )
-        section_id = conn.execute(
-            select(filing_section.c.section_id).where(
-                and_(filing_section.c.doc_id == doc_id, filing_section.c.section_code == sec.code)
-            )
-        ).scalar_one()
-        chunks = chunk(sec.text)
-        upsert(
-            conn,
-            section_chunk,
-            [
-                {
-                    "section_id": section_id,
-                    "chunk_index": c.index,
-                    "start_offset": c.start,
-                    "end_offset": c.end,
-                    "text": c.text,
-                }
-                for c in chunks
-            ],
-            key_cols=["section_id", "chunk_index"],
-        )
-        conn.execute(
-            delete(section_chunk).where(
-                section_chunk.c.section_id == section_id,
-                section_chunk.c.chunk_index >= len(chunks),
+    """A document's sections and their chunks, written together (a few statements per
+    document, not per section). A later section with the same code wins."""
+    by_code = {sec.code: sec for sec in sections}
+    upsert(
+        conn,
+        filing_section,
+        [
+            {
+                "doc_id": doc_id,
+                "section_code": sec.code,
+                "start_offset": sec.start,
+                "char_count": len(sec.text),
+                "text": sec.text,
+                "text_hash": hashlib.sha256(sec.text.encode()).hexdigest(),
+            }
+            for sec in by_code.values()
+        ],
+        key_cols=["doc_id", "section_code"],
+    )
+    ids = {
+        code: int(sid)
+        for code, sid in conn.execute(
+            select(filing_section.c.section_code, filing_section.c.section_id).where(
+                filing_section.c.doc_id == doc_id
             )
         )
+    }
+    chunks = {code: chunk(sec.text) for code, sec in by_code.items()}
+    upsert(
+        conn,
+        section_chunk,
+        [
+            {
+                "section_id": ids[code],
+                "chunk_index": c.index,
+                "start_offset": c.start,
+                "end_offset": c.end,
+                "text": c.text,
+            }
+            for code, cs in chunks.items()
+            for c in cs
+        ],
+        key_cols=["section_id", "chunk_index"],
+    )
+    sc = section_chunk.c
+    past_end = [and_(sc.section_id == ids[code], sc.chunk_index >= len(cs))
+                for code, cs in chunks.items()]  # fmt: skip
+    if past_end:  # chunks past each section's new end
+        conn.execute(delete(section_chunk).where(or_(*past_end)))
     # Sections the new split no longer finds (e.g. after a `sections:` override fixed a false
     # match) go too, or their old text would keep feeding signals and insights.
-    stale = (
-        conn.execute(
-            select(filing_section.c.section_id).where(
-                filing_section.c.doc_id == doc_id,
-                filing_section.c.section_code.not_in([s.code for s in sections]),
-            )
-        )
-        .scalars()
-        .all()
-    )
+    stale = [sid for code, sid in ids.items() if code not in by_code]
     if stale:
         conn.execute(delete(section_chunk).where(section_chunk.c.section_id.in_(stale)))
         conn.execute(delete(filing_section).where(filing_section.c.section_id.in_(stale)))
@@ -168,9 +198,10 @@ def _download(
     *,
     force: bool,
     now: datetime,
+    docs: _Docs | None = None,
 ) -> tuple[int, bytes | None]:
     """Fetch a document (cached by accession). Returns (doc_id, bytes or None if unchanged)."""
-    doc_id, known_hash = _doc_id(conn, accn, name)
+    doc_id, known_hash = docs.get(accn, name) if docs else _doc_id(conn, accn, name)
     raw = sec.filing_document(cik, accn, name)
     if not force and known_hash == raw.content_hash:
         return doc_id, None
@@ -179,6 +210,8 @@ def _download(
         .where(source_document.c.doc_id == doc_id)
         .values(content_hash=raw.content_hash, raw_path=raw.raw_path, fetched_at=now)
     )
+    if docs:
+        docs.set_hash(accn, name, doc_id, raw.content_hash)
     data: bytes = raw.payload
     return doc_id, data
 
@@ -186,6 +219,7 @@ def _download(
 def _filing_sections(
     conn: Connection, sec: SecClient, company_id: int, cik: str, f: Filing, doc_id: int,
     text: str, section_rules: dict[str, tuple[str, str]], *, now: datetime,
+    docs: _Docs | None = None,
 ) -> tuple[int, list[Section]]:  # fmt: skip
     """A 10-K's or 10-Q's sections and the document they belong to. A 10-K whose MD&A only
     refers to the annual report filed as Exhibit 13 (D-060): the annual report becomes the
@@ -201,12 +235,15 @@ def _filing_sections(
     name = exhibit_by_type(index_page, "EX-13", numbered=True)
     if name is None:
         return doc_id, sections
-    insert_missing(conn, source_document, [_doc_row(company_id, cik, f, name, "PRIMARY")],
-                   key_cols=["accession_no", "doc_name"])  # fmt: skip
+    row = _doc_row(company_id, cik, f, name, "PRIMARY")
+    if docs:
+        docs.register([row])
+    else:
+        insert_missing(conn, source_document, [row], key_cols=["accession_no", "doc_name"])
     conn.execute(update(source_document).where(source_document.c.doc_id == doc_id)
                  .values(doc_role=WRAPPER_ROLE))  # fmt: skip
     _store_sections(conn, doc_id, [])
-    report_id, data = _download(conn, sec, cik, f.accn, name, force=True, now=now)
+    report_id, data = _download(conn, sec, cik, f.accn, name, force=True, now=now, docs=docs)
     report = html_to_text(data or b"")
     found = _split(report, f.form, section_rules)
     codes = {s.code for s in found}
@@ -244,11 +281,12 @@ def process_company(
     row = company_row(conn, cfg)
     stats: Counter[str] = Counter()
     kept_ownership: set[str] = set()
+    docs = _Docs(conn, row["company_id"])
     # The company's own filings, then its predecessor registrants' (Phase 16: after a
     # holding-company reorganization the latest 10-K and proxy are the predecessor's).
     for cik in cfg.registrant_ciks(row["cik"]):
         stats.update(_process_registrant(
-            cfg, sec, registry, rules, conn, row["company_id"], cik, kept_ownership,
+            cfg, sec, registry, rules, conn, docs, row["company_id"], cik, kept_ownership,
             today=today, text_lookback_days=text_lookback_days,
             event_lookback_days=event_lookback_days, force=force, now=now,
             history_years=history_years, history_quarters=history_quarters,
@@ -259,7 +297,8 @@ def process_company(
 
 def _process_registrant(
     cfg: CompanyConfig, sec: SecClient, registry: Registry, rules: SignalRules,
-    conn: Connection, company_id: int, cik: str, kept_ownership: set[str], *, today: date,
+    conn: Connection, docs: _Docs, company_id: int, cik: str, kept_ownership: set[str], *,
+    today: date,
     text_lookback_days: int, event_lookback_days: int, force: bool, now: datetime,
     history_years: int, history_quarters: int,
 ) -> dict[str, int]:  # fmt: skip
@@ -270,12 +309,7 @@ def _process_registrant(
     if cfg.history_start:  # successor-only companies (decisions D-012)
         filings = [f for f in filings if f.filed >= cfg.history_start.isoformat()]
 
-    insert_missing(
-        conn,
-        source_document,
-        [_doc_row(company_id, cik, f, f.primary_doc, "PRIMARY") for f in filings],
-        key_cols=["accession_no", "doc_name"],
-    )
+    docs.register([_doc_row(company_id, cik, f, f.primary_doc, "PRIMARY") for f in filings])
     stats = {"registered": len(filings), "downloaded": 0, "sections": 0, "missing_sections": 0}
     section_rules = {c: (r.start, r.end) for c, r in registry.section_rules(cfg.ticker).items()}
     body_items = set(rules.fetch_body_items)
@@ -283,13 +317,15 @@ def _process_registrant(
     for f in filings:
         items = {i.strip() for i in f.items.split(",") if i.strip()}
         if f.form in TEXT_FORMS and f.filed >= since_text:
-            doc_id, data = _download(conn, sec, cik, f.accn, f.primary_doc, force=force, now=now)
+            doc_id, data = _download(conn, sec, cik, f.accn, f.primary_doc, force=force, now=now,
+                                     docs=docs)  # fmt: skip
             if data is None:
                 continue
             stats["downloaded"] += 1
             doc_id, sections = _filing_sections(
-                conn, sec, company_id, cik, f, doc_id, html_to_text(data), section_rules, now=now
-            )
+                conn, sec, company_id, cik, f, doc_id, html_to_text(data), section_rules, now=now,
+                docs=docs,
+            )  # fmt: skip
             _store_sections(conn, doc_id, sections)
             stats["sections"] += len(sections)
             found = {s.code for s in sections}
@@ -299,7 +335,8 @@ def _process_registrant(
                 log.warning("%s %s %s: sections not found: %s",
                             cfg.ticker, f.form, f.accn, missing)  # fmt: skip
         elif f.form == "8-K" and items & body_items:
-            doc_id, data = _download(conn, sec, cik, f.accn, f.primary_doc, force=force, now=now)
+            doc_id, data = _download(conn, sec, cik, f.accn, f.primary_doc, force=force, now=now,
+                                     docs=docs)  # fmt: skip
             if data is not None:
                 stats["downloaded"] += 1
                 sections = split_8k_items(html_to_text(data))
@@ -312,13 +349,8 @@ def _process_registrant(
             if name is None:
                 log.warning("%s 8-K %s: Item 2.02 without an EX-99.1 file", cfg.ticker, f.accn)
                 continue
-            insert_missing(
-                conn,
-                source_document,
-                [_doc_row(company_id, cik, f, name, "EX-99.1")],
-                key_cols=["accession_no", "doc_name"],
-            )
-            _, data = _download(conn, sec, cik, f.accn, name, force=force, now=now)
+            docs.register([_doc_row(company_id, cik, f, name, "EX-99.1")])
+            _, data = _download(conn, sec, cik, f.accn, name, force=force, now=now, docs=docs)
             if data is not None:
                 stats["downloaded"] += 1
     # The latest proxy statement, for board composition (governance stage, D-045). Registered
@@ -326,19 +358,16 @@ def _process_registrant(
     proxies = filings_since(sec, cik, subs, since_events, PROXY_FORMS, force=force)
     if proxies:
         p = proxies[-1]
-        insert_missing(conn, source_document,
-                       [_doc_row(company_id, cik, p, p.primary_doc, "PRIMARY")],
-                       key_cols=["accession_no", "doc_name"])  # fmt: skip
-        _, data = _download(conn, sec, cik, p.accn, p.primary_doc, force=force, now=now)
+        docs.register([_doc_row(company_id, cik, p, p.primary_doc, "PRIMARY")])
+        _, data = _download(conn, sec, cik, p.accn, p.primary_doc, force=force, now=now,
+                            docs=docs)  # fmt: skip
         stats["proxy"] = 1 if data is not None else 0
     # Schedule 13D others filed about this company (activist stakes, Phase 15d): registered
     # from the submissions list only; the signal needs the form and the date, not the text.
     listed = filings_since(sec, cik, subs, since_events, tuple(rules.ownership_forms),
                            force=force) if rules.ownership_forms else []  # fmt: skip
     ownership = [f for f in listed if _about_company(sec, cik, f.accn)]
-    insert_missing(conn, source_document,
-                   [_doc_row(company_id, cik, f, f.primary_doc, "PRIMARY") for f in ownership],
-                   key_cols=["accession_no", "doc_name"])  # fmt: skip
+    docs.register([_doc_row(company_id, cik, f, f.primary_doc, "PRIMARY") for f in ownership])
     kept_ownership |= {f.accn for f in ownership}
     stats["ownership"] = len(ownership)
     # Form 4s as far back as the insider-cluster rule looks (Phase 15b), at least the event window.
@@ -346,10 +375,11 @@ def _process_registrant(
     since_form4 = min(since_events, today - timedelta(days=cluster.lookback_days)) if cluster \
         else since_events  # fmt: skip
     stats["form4"], stats["insider_values"] = _insiders(
-        conn, sec, cfg, company_id, cik, subs, since_form4, force=force, now=now)  # fmt: skip
+        conn, docs, sec, cfg, company_id, cik, subs, since_form4, force=force,
+        now=now)  # fmt: skip
     if history_years or history_quarters:
         stats["history_10k"], stats["history_10q"] = _mdna_history(
-            conn, sec, cfg, company_id, cik, subs,
+            conn, docs, sec, cfg, company_id, cik, subs,
             {"10-K": today - timedelta(days=366 * history_years),
              "10-Q": today - timedelta(days=92 * history_quarters)},
             since_text, section_rules, force=force, now=now,
@@ -383,19 +413,22 @@ def _about_company(sec: SecClient, cik: str, accn: str) -> bool:
 
 
 def _insiders(
-    conn: Connection, sec: SecClient, cfg: CompanyConfig, company_id: int, cik: str,
-    subs: dict[str, Any], since: date, *, force: bool, now: datetime,
+    conn: Connection, docs: _Docs, sec: SecClient, cfg: CompanyConfig, company_id: int,
+    cik: str, subs: dict[str, Any], since: date, *, force: bool, now: datetime,
 ) -> tuple[int, int]:  # fmt: skip
     """Insiders' Form 4s (Phase 15b): registered, downloaded once and parsed into
     insider_transaction, then the quarterly insider metrics (derivation FORM4, owned here).
     Amendments (4/A) are left out so a line is never counted twice; Form 4s about another
     issuer are registered (so they are not fetched again) but not parsed into rows."""
     filings = filings_since(sec, cik, subs, since, ("4",), force=force)
+    names = {f.accn: f.primary_doc.rsplit("/", 1)[-1] for f in filings}  # the raw XML, not
+    # the XSL-rendered view; all registered in one statement, rows written once (D-084)
+    docs.register([_doc_row(company_id, cik, f, names[f.accn], "PRIMARY") for f in filings])
+    foreign: list[str] = []
+    lines: list[dict[str, Any]] = []
     for f in filings:
-        name = f.primary_doc.rsplit("/", 1)[-1]  # the raw XML, not the XSL-rendered view
-        insert_missing(conn, source_document, [_doc_row(company_id, cik, f, name, "PRIMARY")],
-                       key_cols=["accession_no", "doc_name"])  # fmt: skip
-        doc_id, data = _download(conn, sec, cik, f.accn, name, force=force, now=now)
+        name = names[f.accn]
+        doc_id, data = _download(conn, sec, cik, f.accn, name, force=force, now=now, docs=docs)
         if data is None:
             continue  # unchanged: already parsed
         try:
@@ -406,17 +439,20 @@ def _insiders(
         if parsed["issuer_cik"] != int(cik):
             # Filed by the company as an owner of another issuer (e.g. JPMorgan as a 10%
             # holder): not about this company's insiders.
-            conn.execute(delete(insider_transaction).where(
-                insider_transaction.c.accession_no == f.accn))  # fmt: skip
+            foreign.append(f.accn)
             continue
         owner = parsed["owner"]
-        upsert(conn, insider_transaction, [{
+        lines += [{
             "accession_no": f.accn, "company_id": company_id, "doc_id": doc_id,
             "filed_at": f.filed, "owner_cik": owner["cik"], "owner_name": owner["name"],
             "is_director": owner["is_director"], "is_officer": owner["is_officer"],
             "officer_title": owner["officer_title"], "is_ten_percent": owner["is_ten_percent"],
             "updated_at": now, **t,
-        } for t in parsed["transactions"]], key_cols=["accession_no", "line"])  # fmt: skip
+        } for t in parsed["transactions"]]  # fmt: skip
+    for i in range(0, len(foreign), 500):
+        conn.execute(delete(insider_transaction).where(
+            insider_transaction.c.accession_no.in_(foreign[i : i + 500])))  # fmt: skip
+    upsert(conn, insider_transaction, lines, key_cols=["accession_no", "line"])
     rows = [dict(r) for r in conn.execute(select(insider_transaction).where(
         insider_transaction.c.company_id == company_id)).mappings()]  # fmt: skip
     values = insider_metrics(rows, fiscal_periods(conn, company_id), since.isoformat())
@@ -445,6 +481,7 @@ def _insiders(
 
 def _mdna_history(
     conn: Connection,
+    docs: _Docs,
     sec: SecClient,
     cfg: CompanyConfig,
     company_id: int,
@@ -465,20 +502,17 @@ def _mdna_history(
         if since[f.form].isoformat() <= f.filed < since_text
         and (cfg.history_start is None or f.filed >= cfg.history_start.isoformat())
     ]  # fmt: skip
-    insert_missing(
-        conn,
-        source_document,
-        [_doc_row(company_id, cik, f, f.primary_doc, "PRIMARY") for f in older],
-        key_cols=["accession_no", "doc_name"],
-    )
+    docs.register([_doc_row(company_id, cik, f, f.primary_doc, "PRIMARY") for f in older])
     done: Counter[str] = Counter()
     for f in older:
-        doc_id, data = _download(conn, sec, cik, f.accn, f.primary_doc, force=force, now=now)
+        doc_id, data = _download(conn, sec, cik, f.accn, f.primary_doc, force=force, now=now,
+                                 docs=docs)  # fmt: skip
         if data is None:
             continue
         doc_id, sections = _filing_sections(
-            conn, sec, company_id, cik, f, doc_id, html_to_text(data), section_rules, now=now
-        )
+            conn, sec, company_id, cik, f, doc_id, html_to_text(data), section_rules, now=now,
+            docs=docs,
+        )  # fmt: skip
         mdna = [s for s in sections if s.code == HISTORY_SECTIONS[f.form]]
         if not mdna:
             log.warning("%s %s %s: MD&A not found", cfg.ticker, f.form, f.accn)

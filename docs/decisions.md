@@ -1866,3 +1866,35 @@ income" (2026-11-01).**
   were recoloured (Tapestry black, Vylor near-black, FedEx Freight FedEx purple, Lumentum the
   dark gray its site names). config/logos/ is now 583 files, 5 MB.
 
+
+**D-084 Publish and documents read a company's rows once, not per row (2026-11-05).**
+- On Azure SQL every statement is a network round trip. Counted on MAR, JPM and AAPL (runs
+  161–162): publish sent about 2,900 statements per company to the app database, 2,400 of them
+  one `pipeline_publish_map` lookup per row, and about 145 deletes of earlier-run news scores,
+  one per article. 277 companies: about 800,000 statements, 40 minutes at 3 ms a round trip,
+  2.2 hours at 10 ms. compute (6 statements a company) and facts (3) are already bulk.
+- Options: (a) keep the pipeline database on the pod's disk (SQLite) and only the app
+  database on Azure; (b) fewer statements in publish. (a) leaves publish as it is (the app
+  database is on Azure either way), lowers the LLM stages' parallelism (`sqlite_parallel`),
+  needs block storage for SQLite and takes the run records off Azure. Chosen: (b) first.
+- `AppWriter` reads the map once per table: the company's keys (its `scope`), or, for keys
+  outside it (Company, metrics, categories, at most a few hundred rows each), the whole entity;
+  kept current as rows are inserted, updated, deleted and retired. The news scores of earlier
+  runs: one read, then deletes in batches of 500.
+- Result (MAR, JPM, AAPL, run 163): 8,671 app statements -> 223, publish output unchanged (0
+  written). Tests: an unchanged republish makes no per-key lookups and writes only the scores'
+  upsert; scores of earlier runs replaced (SQLite and SQL Server).
+- Then documents and publish's reads of the pipeline database. documents: the company's
+  documents (accession, file -> id, content hash) read once and kept current, a document of
+  another company looked up on its own; Form 4s registered in one statement; a filing's
+  sections and chunks written together (a few statements per document, not per section; on
+  SQL Server each upsert is about five); insider lines in one upsert. publish: insight
+  evidence, question sources, metric sources and news articles read once per company;
+  `SourceResolver` reads the company's documents and its XBRL filings (form, filed date) once.
+- Result, steady state (MAR, JPM, AAPL, runs 164-165): documents 1,534 statements -> 51,
+  publish's pipeline reads 1,143 -> 96. All 277 companies: publish with the old code (run 166),
+  then the new (run 167): 0 rows written, so the output is the same; 84 statements a company
+  (55 app, 29 pipeline) instead of about 3,280; 9.5 -> 6.1 minutes even on local SQLite.
+  documents for all 277 (run 168): no failures, 17 statements a company instead of about 510.
+  Tests: a documents rerun reads the documents in one statement and writes none; sections
+  rewritten together (shorter, dropped, repeated); SQLite and SQL Server.
