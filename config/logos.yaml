@@ -61,7 +61,7 @@ overrides:
   HGV: {wikidata: Q13636126}
   HPQ: {wikipedia: "HP Inc."}   # item's article: Hewlett-Packard (1979 logo)
   INGM: {wikidata: Q324616}
-  LRN: {website: "https://www.stride.com"}   # item's site: k12.com (old name)
+  LRN: {website: "https://www.stridelearning.com"}   # item's site: k12.com (old name); stride.com does not resolve
   LULU: {wikidata: Q6702957}
   MAN: {wikidata: Q1472539}
   MDLN: {wikidata: Q6807236}
@@ -91,3 +91,315 @@ overrides:
   WBD: {wikipedia: "Warner Bros. Discovery"}  # item's article: Discovery, Inc.
   XE: {wikipedia: "X-energy", website: "https://x-energy.com"}  # client portfolio (2026-10-30): no Wikidata item by CIK
   YUMC: {wikidata: Q30645592}
+
+# Companies outside companies.yaml whose logos are kept ready (D-083): S&P 500 members from
+# Wikipedia's "List of S&P 500 companies" (2026-11-05), one per CIK; `article` is the list's
+# link, read when Wikidata names no article. An entry is ignored once its CIK is in
+# companies.yaml.
+extra_companies:
+  - {ticker: "A", cik: 1090872, name: "Agilent Technologies", article: "Agilent Technologies"}
+  - {ticker: "ABNB", cik: 1559720, name: "Airbnb", article: "Airbnb"}
+  - {ticker: "ACGL", cik: 947484, name: "Arch Capital Group", article: "Arch Capital Group"}
+  - {ticker: "ADI", cik: 6281, name: "Analog Devices", article: "Analog Devices"}
+  - {ticker: "ADP", cik: 8670, name: "Automatic Data Processing", article: "ADP (company)"}
+  - {ticker: "ADSK", cik: 769397, name: "Autodesk", article: "Autodesk"}
+  - {ticker: "AEE", cik: 1002910, name: "Ameren", article: "Ameren"}
+  - {ticker: "AEP", cik: 4904, name: "American Electric Power", article: "American Electric Power"}
+  - {ticker: "AES", cik: 874761, name: "AES Corporation", article: "AES Corporation"}
+  - {ticker: "AFL", cik: 4977, name: "Aflac", article: "Aflac"}
+  - {ticker: "AIG", cik: 5272, name: "American International Group", article: "American International Group"}
+  - {ticker: "AIZ", cik: 1267238, name: "Assurant", article: "Assurant"}
+  - {ticker: "AJG", cik: 354190, name: "Arthur J. Gallagher & Co.", article: "Arthur J. Gallagher & Co."}
+  - {ticker: "AKAM", cik: 1086222, name: "Akamai Technologies", article: "Akamai Technologies"}
+  - {ticker: "ALB", cik: 915913, name: "Albemarle Corporation", article: "Albemarle Corporation"}
+  - {ticker: "ALGN", cik: 1097149, name: "Align Technology", article: "Align Technology"}
+  - {ticker: "ALLE", cik: 1579241, name: "Allegion", article: "Allegion"}
+  - {ticker: "AMCR", cik: 1748790, name: "Amcor", article: "Amcor"}
+  - {ticker: "AMP", cik: 820027, name: "Ameriprise Financial", article: "Ameriprise Financial"}
+  - {ticker: "AON", cik: 315293, name: "Aon plc", article: "Aon (company)"}
+  - {ticker: "AOS", cik: 91142, name: "A. O. Smith", article: "A. O. Smith"}
+  - {ticker: "APA", cik: 1841666, name: "APA Corporation", article: "APA Corporation"}
+  - {ticker: "APD", cik: 2969, name: "Air Products", article: "Air Products"}
+  - {ticker: "APH", cik: 820313, name: "Amphenol", article: "Amphenol"}
+  - {ticker: "APP", cik: 1751008, name: "AppLovin", article: "AppLovin"}
+  - {ticker: "APTV", cik: 1521332, name: "Aptiv", article: "Aptiv"}
+  - {ticker: "ARE", cik: 1035443, name: "Alexandria Real Estate Equities", article: "Alexandria Real Estate Equities"}
+  - {ticker: "ARES", cik: 1176948, name: "Ares Management", article: "Ares Management"}
+  - {ticker: "ATO", cik: 731802, name: "Atmos Energy", article: "Atmos Energy"}
+  - {ticker: "AVY", cik: 8818, name: "Avery Dennison", article: "Avery Dennison"}
+  - {ticker: "AWK", cik: 1410636, name: "American Water Works", article: "American Water Works"}
+  - {ticker: "AXON", cik: 1069183, name: "Axon Enterprise", article: "Axon Enterprise"}
+  - {ticker: "AZO", cik: 866787, name: "AutoZone", article: "AutoZone"}
+  - {ticker: "BALL", cik: 9389, name: "Ball Corporation", article: "Ball Corporation"}
+  - {ticker: "BAX", cik: 10456, name: "Baxter International", article: "Baxter International"}
+  - {ticker: "BBY", cik: 764478, name: "Best Buy", article: "Best Buy"}
+  - {ticker: "BDX", cik: 10795, name: "Becton Dickinson", article: "BD (company)"}
+  - {ticker: "BE", cik: 1664703, name: "Bloom Energy", article: "Bloom Energy"}
+  - {ticker: "BEN", cik: 38777, name: "Franklin Resources", article: "Franklin Templeton Investments"}
+  - {ticker: "BF.B", cik: 14693, name: "Brown–Forman", article: "Brown–Forman"}
+  - {ticker: "BIIB", cik: 875045, name: "Biogen", article: "Biogen"}
+  - {ticker: "BR", cik: 1383312, name: "Broadridge Financial Solutions", article: "Broadridge Financial Solutions"}
+  - {ticker: "BSX", cik: 885725, name: "Boston Scientific", article: "Boston Scientific"}
+  - {ticker: "BX", cik: 1393818, name: "Blackstone Inc.", article: "Blackstone Inc."}
+  - {ticker: "BXP", cik: 1037540, name: "BXP, Inc.", article: "BXP, Inc."}
+  - {ticker: "CARR", cik: 1783180, name: "Carrier Global", article: "Carrier Global"}
+  - {ticker: "CASY", cik: 726958, name: "Casey's", article: "Casey's"}
+  - {ticker: "CB", cik: 896159, name: "Chubb Limited", article: "Chubb Limited"}
+  - {ticker: "CCI", cik: 1051470, name: "Crown Castle", article: "Crown Castle"}
+  - {ticker: "CDNS", cik: 813672, name: "Cadence Design Systems", article: "Cadence Design Systems"}
+  - {ticker: "CDW", cik: 1402057, name: "CDW Corporation", article: "CDW"}
+  - {ticker: "CF", cik: 1324404, name: "CF Industries", article: "CF Industries"}
+  - {ticker: "CFG", cik: 759944, name: "Citizens Financial Group", article: "Citizens Financial Group"}
+  - {ticker: "CHD", cik: 313927, name: "Church & Dwight", article: "Church & Dwight"}
+  - {ticker: "CIEN", cik: 936395, name: "Ciena", article: "Ciena"}
+  - {ticker: "CINF", cik: 20286, name: "Cincinnati Financial", article: "Cincinnati Financial"}
+  - {ticker: "CL", cik: 21665, name: "Colgate-Palmolive", article: "Colgate-Palmolive"}
+  - {ticker: "CLX", cik: 21076, name: "Clorox", article: "Clorox"}
+  - {ticker: "CME", cik: 1156375, name: "CME Group", article: "CME Group"}
+  - {ticker: "CMS", cik: 811156, name: "CMS Energy", article: "CMS Energy"}
+  - {ticker: "CNP", cik: 1130310, name: "CenterPoint Energy", article: "CenterPoint Energy"}
+  - {ticker: "COIN", cik: 1679788, name: "Coinbase", article: "Coinbase"}
+  - {ticker: "COO", cik: 711404, name: "Cooper Companies (The)", article: "The Cooper Companies"}
+  - {ticker: "CPAY", cik: 1175454, name: "Corpay", article: "Corpay"}
+  - {ticker: "CPRT", cik: 900075, name: "Copart", article: "Copart"}
+  - {ticker: "CPT", cik: 906345, name: "Camden Property Trust", article: "Camden Property Trust"}
+  - {ticker: "CRL", cik: 1100682, name: "Charles River Laboratories", article: "Charles River Laboratories"}
+  - {ticker: "CRWD", cik: 1535527, name: "CrowdStrike", article: "CrowdStrike"}
+  - {ticker: "CSGP", cik: 1057352, name: "CoStar Group", article: "CoStar Group"}
+  - {ticker: "CTAS", cik: 723254, name: "Cintas", article: "Cintas"}
+  - {ticker: "CTSH", cik: 1058290, name: "Cognizant", article: "Cognizant"}
+  - {ticker: "D", cik: 715957, name: "Dominion Energy", article: "Dominion Energy"}
+  - {ticker: "DASH", cik: 1792789, name: "DoorDash", article: "DoorDash"}
+  - {ticker: "DD", cik: 1666700, name: "DuPont", article: "DuPont"}
+  - {ticker: "DDOG", cik: 1561550, name: "Datadog", article: "Datadog"}
+  - {ticker: "DECK", cik: 910521, name: "Deckers Brands", article: "Deckers Brands"}
+  - {ticker: "DG", cik: 29534, name: "Dollar General", article: "Dollar General"}
+  - {ticker: "DGX", cik: 1022079, name: "Quest Diagnostics", article: "Quest Diagnostics"}
+  - {ticker: "DLR", cik: 1297996, name: "Digital Realty", article: "Digital Realty"}
+  - {ticker: "DLTR", cik: 935703, name: "Dollar Tree", article: "Dollar Tree"}
+  - {ticker: "DOC", cik: 765880, name: "Healthpeak Properties", article: "Healthpeak Properties"}
+  - {ticker: "DOV", cik: 29905, name: "Dover Corporation", article: "Dover Corporation"}
+  - {ticker: "DPZ", cik: 1286681, name: "Domino's", article: "Domino's"}
+  - {ticker: "DTE", cik: 936340, name: "DTE Energy", article: "DTE Energy"}
+  - {ticker: "DVN", cik: 1090012, name: "Devon Energy", article: "Devon Energy"}
+  - {ticker: "DXCM", cik: 1093557, name: "Dexcom", article: "Dexcom"}
+  - {ticker: "EBAY", cik: 1065088, name: "eBay Inc.", article: "eBay"}
+  - {ticker: "ECL", cik: 31462, name: "Ecolab", article: "Ecolab"}
+  - {ticker: "ED", cik: 1047862, name: "Consolidated Edison", article: "Consolidated Edison"}
+  - {ticker: "EFX", cik: 33185, name: "Equifax", article: "Equifax"}
+  - {ticker: "EG", cik: 1095073, name: "Everest Group", article: "Everest Group"}
+  - {ticker: "EIX", cik: 827052, name: "Edison International", article: "Edison International"}
+  - {ticker: "EL", cik: 1001250, name: "Estée Lauder Companies (The)", article: "The Estée Lauder Companies"}
+  - {ticker: "EOG", cik: 821189, name: "EOG Resources", article: "EOG Resources"}
+  - {ticker: "EQT", cik: 33213, name: "EQT Corporation", article: "EQT Corporation"}
+  - {ticker: "ERIE", cik: 922621, name: "Erie Indemnity", article: "Erie Insurance Group"}
+  - {ticker: "ES", cik: 72741, name: "Eversource Energy", article: "Eversource Energy"}
+  - {ticker: "ESS", cik: 920522, name: "Essex Property Trust", article: "Essex Property Trust"}
+  - {ticker: "ETN", cik: 1551182, name: "Eaton Corporation", article: "Eaton Corporation"}
+  - {ticker: "ETR", cik: 65984, name: "Entergy", article: "Entergy"}
+  - {ticker: "EVRG", cik: 1711269, name: "Evergy", article: "Evergy"}
+  - {ticker: "EW", cik: 1099800, name: "Edwards Lifesciences", article: "Edwards Lifesciences"}
+  - {ticker: "EXC", cik: 1109357, name: "Exelon", article: "Exelon"}
+  - {ticker: "EXE", cik: 895126, name: "Expand Energy", article: "Expand Energy"}
+  - {ticker: "EXPD", cik: 746515, name: "Expeditors International", article: "Expeditors International"}
+  - {ticker: "EXPE", cik: 1324424, name: "Expedia Group", article: "Expedia Group"}
+  - {ticker: "EXR", cik: 1289490, name: "Extra Space Storage", article: "Extra Space Storage"}
+  - {ticker: "FANG", cik: 1539838, name: "Diamondback Energy", article: "Diamondback Energy"}
+  - {ticker: "FAST", cik: 815556, name: "Fastenal", article: "Fastenal"}
+  - {ticker: "FDS", cik: 1013237, name: "FactSet", article: "FactSet"}
+  - {ticker: "FDXF", cik: 2082247, name: "FedEx Freight", article: "FedEx Freight"}
+  - {ticker: "FE", cik: 1031296, name: "FirstEnergy", article: "FirstEnergy"}
+  - {ticker: "FERG", cik: 2011641, name: "Ferguson Enterprises", article: "Ferguson Enterprises"}
+  - {ticker: "FFIV", cik: 1048695, name: "F5, Inc.", article: "F5, Inc."}
+  - {ticker: "FICO", cik: 814547, name: "Fair Isaac", article: "FICO"}
+  - {ticker: "FITB", cik: 35527, name: "Fifth Third Bancorp", article: "Fifth Third Bancorp"}
+  - {ticker: "FIX", cik: 1035983, name: "Comfort Systems USA", article: "Comfort Systems USA"}
+  - {ticker: "FLEX", cik: 866374, name: "Flex Ltd.", article: "Flex Ltd."}
+  - {ticker: "FOXA", cik: 1754301, name: "Fox Corporation", article: "Fox Corporation"}
+  - {ticker: "FRT", cik: 34903, name: "Federal Realty Investment Trust", article: "Federal Realty Investment Trust"}
+  - {ticker: "FSLR", cik: 1274494, name: "First Solar", article: "First Solar"}
+  - {ticker: "FTNT", cik: 1262039, name: "Fortinet", article: "Fortinet"}
+  - {ticker: "FTV", cik: 1659166, name: "Fortive", article: "Fortive"}
+  - {ticker: "GDDY", cik: 1609711, name: "GoDaddy", article: "GoDaddy"}
+  - {ticker: "GEHC", cik: 1932393, name: "GE HealthCare", article: "GE HealthCare"}
+  - {ticker: "GEN", cik: 849399, name: "Gen Digital", article: "Gen Digital"}
+  - {ticker: "GIS", cik: 40704, name: "General Mills", article: "General Mills"}
+  - {ticker: "GL", cik: 320335, name: "Globe Life", article: "Globe Life"}
+  - {ticker: "GLW", cik: 24741, name: "Corning Inc.", article: "Corning Inc."}
+  - {ticker: "GNRC", cik: 1474735, name: "Generac", article: "Generac"}
+  - {ticker: "GPC", cik: 40987, name: "Genuine Parts Company", article: "Genuine Parts Company"}
+  - {ticker: "GPN", cik: 1123360, name: "Global Payments", article: "Global Payments"}
+  - {ticker: "GRMN", cik: 1121788, name: "Garmin", article: "Garmin"}
+  - {ticker: "GWW", cik: 277135, name: "W. W. Grainger", article: "W. W. Grainger"}
+  - {ticker: "HAL", cik: 45012, name: "Halliburton", article: "Halliburton"}
+  - {ticker: "HAS", cik: 46080, name: "Hasbro", article: "Hasbro"}
+  - {ticker: "HBAN", cik: 49196, name: "Huntington Bancshares", article: "Huntington Bancshares"}
+  - {ticker: "HIG", cik: 874766, name: "Hartford (The)", article: "The Hartford"}
+  - {ticker: "HII", cik: 1501585, name: "Huntington Ingalls Industries", article: "Huntington Ingalls Industries"}
+  - {ticker: "HON", cik: 773840, name: "Honeywell Technologies", article: "Honeywell"}
+  - {ticker: "HONA", cik: 2089271, name: "Honeywell Aerospace", article: "Honeywell Aerospace"}
+  - {ticker: "HOOD", cik: 1783879, name: "Robinhood Markets", article: "Robinhood Markets"}
+  - {ticker: "HRL", cik: 48465, name: "Hormel Foods", article: "Hormel Foods"}
+  - {ticker: "HSIC", cik: 1000228, name: "Henry Schein", article: "Henry Schein"}
+  - {ticker: "HST", cik: 1070750, name: "Host Hotels & Resorts", article: "Host Hotels & Resorts"}
+  - {ticker: "HSY", cik: 47111, name: "Hershey Company (The)", article: "The Hershey Company"}
+  - {ticker: "HUBB", cik: 48898, name: "Hubbell Incorporated", article: "Hubbell Incorporated"}
+  - {ticker: "HUM", cik: 49071, name: "Humana", article: "Humana"}
+  - {ticker: "HWM", cik: 4281, name: "Howmet Aerospace", article: "Howmet Aerospace"}
+  - {ticker: "IBKR", cik: 1381197, name: "Interactive Brokers", article: "Interactive Brokers"}
+  - {ticker: "ICE", cik: 1571949, name: "Intercontinental Exchange", article: "Intercontinental Exchange"}
+  - {ticker: "IDXX", cik: 874716, name: "Idexx Laboratories", article: "Idexx Laboratories"}
+  - {ticker: "IEX", cik: 832101, name: "IDEX Corporation", article: "IDEX Corporation"}
+  - {ticker: "IFF", cik: 51253, name: "International Flavors & Fragrances", article: "International Flavors & Fragrances"}
+  - {ticker: "INCY", cik: 879169, name: "Incyte", article: "Incyte"}
+  - {ticker: "INVH", cik: 1687229, name: "Invitation Homes", article: "Invitation Homes"}
+  - {ticker: "IP", cik: 51434, name: "International Paper", article: "International Paper"}
+  - {ticker: "IQV", cik: 1478242, name: "IQVIA", article: "IQVIA"}
+  - {ticker: "IR", cik: 1699150, name: "Ingersoll Rand", article: "Ingersoll Rand"}
+  - {ticker: "IRM", cik: 1020569, name: "Iron Mountain", article: "Iron Mountain (company)"}
+  - {ticker: "IT", cik: 749251, name: "Gartner", article: "Gartner"}
+  - {ticker: "ITW", cik: 49826, name: "Illinois Tool Works", article: "Illinois Tool Works"}
+  - {ticker: "IVZ", cik: 914208, name: "Invesco", article: "Invesco"}
+  - {ticker: "JBHT", cik: 728535, name: "J.B. Hunt", article: "J.B. Hunt"}
+  - {ticker: "JBL", cik: 898293, name: "Jabil", article: "Jabil"}
+  - {ticker: "JCI", cik: 833444, name: "Johnson Controls", article: "Johnson Controls"}
+  - {ticker: "JKHY", cik: 779152, name: "Jack Henry & Associates", article: "Jack Henry & Associates"}
+  - {ticker: "KDP", cik: 1418135, name: "Keurig Dr Pepper", article: "Keurig Dr Pepper"}
+  - {ticker: "KEY", cik: 91576, name: "KeyCorp", article: "KeyCorp"}
+  - {ticker: "KEYS", cik: 1601046, name: "Keysight Technologies", article: "Keysight Technologies"}
+  - {ticker: "KHC", cik: 1637459, name: "Kraft Heinz", article: "Kraft Heinz"}
+  - {ticker: "KIM", cik: 879101, name: "Kimco Realty", article: "Kimco Realty"}
+  - {ticker: "KKR", cik: 1404912, name: "KKR & Co.", article: "Kohlberg Kravis Roberts"}
+  - {ticker: "KLAC", cik: 319201, name: "KLA Corporation", article: "KLA Corporation"}
+  - {ticker: "KMB", cik: 55785, name: "Kimberly-Clark", article: "Kimberly-Clark"}
+  - {ticker: "KMI", cik: 1506307, name: "Kinder Morgan", article: "Kinder Morgan"}
+  - {ticker: "L", cik: 60086, name: "Loews Corporation", article: "Loews Corporation"}
+  - {ticker: "LDOS", cik: 1336920, name: "Leidos", article: "Leidos"}
+  - {ticker: "LHX", cik: 202058, name: "L3Harris", article: "L3Harris"}
+  - {ticker: "LII", cik: 1069202, name: "Lennox International", article: "Lennox International"}
+  - {ticker: "LITE", cik: 1633978, name: "Lumentum", article: "Lumentum"}
+  - {ticker: "LNT", cik: 352541, name: "Alliant Energy", article: "Alliant Energy"}
+  - {ticker: "MAA", cik: 912595, name: "Mid-America Apartment Communities", article: "Mid-America Apartment Communities"}
+  - {ticker: "MAS", cik: 62996, name: "Masco", article: "Masco"}
+  - {ticker: "MCHP", cik: 827054, name: "Microchip Technology", article: "Microchip Technology"}
+  - {ticker: "MCO", cik: 1059556, name: "Moody's Corporation", article: "Moody's Corporation"}
+  - {ticker: "MKC", cik: 63754, name: "McCormick & Company", article: "McCormick & Company"}
+  - {ticker: "MNST", cik: 865752, name: "Monster Beverage", article: "Monster Beverage"}
+  - {ticker: "MOS", cik: 1285785, name: "Mosaic Company (The)", article: "The Mosaic Company"}
+  - {ticker: "MPWR", cik: 1280452, name: "Monolithic Power Systems", article: "Monolithic Power Systems"}
+  - {ticker: "MRNA", cik: 1682852, name: "Moderna", article: "Moderna"}
+  - {ticker: "MRSH", cik: 62709, name: "Marsh McLennan", article: "Marsh McLennan"}
+  - {ticker: "MRVL", cik: 1835632, name: "Marvell Technology", article: "Marvell Technology"}
+  - {ticker: "MSCI", cik: 1408198, name: "MSCI", article: "MSCI"}
+  - {ticker: "MSI", cik: 68505, name: "Motorola Solutions", article: "Motorola Solutions"}
+  - {ticker: "MTD", cik: 1037646, name: "Mettler Toledo", article: "Mettler Toledo"}
+  - {ticker: "NCLH", cik: 1513761, name: "Norwegian Cruise Line Holdings", article: "Norwegian Cruise Line Holdings"}
+  - {ticker: "NDAQ", cik: 1120193, name: "Nasdaq, Inc.", article: "Nasdaq, Inc."}
+  - {ticker: "NDSN", cik: 72331, name: "Nordson Corporation", article: "Nordson Corporation"}
+  - {ticker: "NI", cik: 1111711, name: "NiSource", article: "NiSource"}
+  - {ticker: "NOC", cik: 1133421, name: "Northrop Grumman", article: "Northrop Grumman"}
+  - {ticker: "NSC", cik: 702165, name: "Norfolk Southern", article: "Norfolk Southern Railway"}
+  - {ticker: "NTAP", cik: 1002047, name: "NetApp", article: "NetApp"}
+  - {ticker: "NTRS", cik: 73124, name: "Northern Trust", article: "Northern Trust"}
+  - {ticker: "NWSA", cik: 1564708, name: "News Corp", article: "News Corp"}
+  - {ticker: "NXPI", cik: 1413447, name: "NXP Semiconductors", article: "NXP Semiconductors"}
+  - {ticker: "O", cik: 726728, name: "Realty Income", article: "Realty Income"}
+  - {ticker: "ODFL", cik: 878927, name: "Old Dominion", article: "Old Dominion Freight Line"}
+  - {ticker: "OKE", cik: 1039684, name: "Oneok", article: "Oneok"}
+  - {ticker: "OKTA", cik: 1660134, name: "Okta, Inc.", article: "Okta, Inc."}
+  - {ticker: "ON", cik: 1097864, name: "ON Semiconductor", article: "onsemi"}
+  - {ticker: "ORLY", cik: 898173, name: "O'Reilly Automotive", article: "O'Reilly Auto Parts"}
+  - {ticker: "OTIS", cik: 1781335, name: "Otis Worldwide", article: "Otis Worldwide"}
+  - {ticker: "OXY", cik: 797468, name: "Occidental Petroleum", article: "Occidental Petroleum"}
+  - {ticker: "P", cik: 1474432, name: "Everpure", article: "Everpure"}
+  - {ticker: "PAYX", cik: 723531, name: "Paychex", article: "Paychex"}
+  - {ticker: "PCG", cik: 1004980, name: "PG&E Corporation", article: "PG&E"}
+  - {ticker: "PEG", cik: 788784, name: "Public Service Enterprise Group", article: "Public Service Enterprise Group"}
+  - {ticker: "PH", cik: 76334, name: "Parker Hannifin", article: "Parker Hannifin"}
+  - {ticker: "PKG", cik: 75677, name: "Packaging Corporation of America", article: "Packaging Corporation of America"}
+  - {ticker: "PNC", cik: 713676, name: "PNC Financial Services", article: "PNC Financial Services"}
+  - {ticker: "PNR", cik: 77360, name: "Pentair", article: "Pentair"}
+  - {ticker: "PNW", cik: 764622, name: "Pinnacle West Capital", article: "Pinnacle West Capital"}
+  - {ticker: "PODD", cik: 1145197, name: "Insulet Corporation", article: "Insulet Corporation"}
+  - {ticker: "PPG", cik: 79879, name: "PPG Industries", article: "PPG Industries"}
+  - {ticker: "PPL", cik: 922224, name: "PPL Corporation", article: "PPL Corporation"}
+  - {ticker: "PSA", cik: 1393311, name: "Public Storage", article: "Public Storage"}
+  - {ticker: "PTC", cik: 857005, name: "PTC Inc.", article: "PTC Inc."}
+  - {ticker: "Q", cik: 2058873, name: "Qnity Electronics", article: "Qnity Electronics"}
+  - {ticker: "RCL", cik: 884887, name: "Royal Caribbean Group", article: "Royal Caribbean Group"}
+  - {ticker: "REG", cik: 910606, name: "Regency Centers", article: "Regency Centers"}
+  - {ticker: "REGN", cik: 872589, name: "Regeneron Pharmaceuticals", article: "Regeneron Pharmaceuticals"}
+  - {ticker: "RF", cik: 1281761, name: "Regions Financial Corporation", article: "Regions Financial Corporation"}
+  - {ticker: "RL", cik: 1037038, name: "Ralph Lauren Corporation", article: "Ralph Lauren Corporation"}
+  - {ticker: "RMD", cik: 943819, name: "ResMed", article: "ResMed"}
+  - {ticker: "ROL", cik: 84839, name: "Rollins, Inc.", article: "Rollins, Inc."}
+  - {ticker: "ROST", cik: 745732, name: "Ross Stores", article: "Ross Stores"}
+  - {ticker: "RSG", cik: 1060391, name: "Republic Services", article: "Republic Services"}
+  - {ticker: "RVTY", cik: 31791, name: "Revvity", article: "Revvity"}
+  - {ticker: "SBAC", cik: 1034054, name: "SBA Communications", article: "SBA Communications"}
+  - {ticker: "SHW", cik: 89800, name: "Sherwin-Williams", article: "Sherwin-Williams"}
+  - {ticker: "SJM", cik: 91419, name: "J.M. Smucker Company (The)", article: "The J.M. Smucker Company"}
+  - {ticker: "SMCI", cik: 1375365, name: "Supermicro", article: "Supermicro"}
+  - {ticker: "SNA", cik: 91440, name: "Snap-on", article: "Snap-on"}
+  - {ticker: "SNPS", cik: 883241, name: "Synopsys", article: "Synopsys"}
+  - {ticker: "SOLV", cik: 1964738, name: "Solventum", article: "Solventum"}
+  - {ticker: "SPG", cik: 1063761, name: "Simon Property Group", article: "Simon Property Group"}
+  - {ticker: "SRE", cik: 1032208, name: "Sempra", article: "Sempra"}
+  - {ticker: "STE", cik: 1757898, name: "Steris", article: "Steris"}
+  - {ticker: "STT", cik: 93751, name: "State Street Corporation", article: "State Street Corporation"}
+  - {ticker: "STX", cik: 1137789, name: "Seagate Technology", article: "Seagate Technology"}
+  - {ticker: "STZ", cik: 16918, name: "Constellation Brands", article: "Constellation Brands"}
+  - {ticker: "SWK", cik: 93556, name: "Stanley Black & Decker", article: "Stanley Black & Decker"}
+  - {ticker: "SWKS", cik: 4127, name: "Skyworks Solutions", article: "Skyworks Solutions"}
+  - {ticker: "SYF", cik: 1601712, name: "Synchrony Financial", article: "Synchrony Financial"}
+  - {ticker: "TDG", cik: 1260221, name: "TransDigm Group", article: "TransDigm Group"}
+  - {ticker: "TDY", cik: 1094285, name: "Teledyne Technologies", article: "Teledyne Technologies"}
+  - {ticker: "TECH", cik: 842023, name: "Bio-Techne", article: "Bio-Techne"}
+  - {ticker: "TEL", cik: 1385157, name: "TE Connectivity", article: "TE Connectivity"}
+  - {ticker: "TER", cik: 97210, name: "Teradyne", article: "Teradyne"}
+  - {ticker: "TFC", cik: 92230, name: "Truist Financial", article: "Truist Financial"}
+  - {ticker: "TJX", cik: 109198, name: "TJX Companies", article: "TJX Companies"}
+  - {ticker: "TKO", cik: 1973266, name: "TKO Group Holdings", article: "TKO Group Holdings"}
+  - {ticker: "TPR", cik: 1116132, name: "Tapestry, Inc.", article: "Tapestry, Inc."}
+  - {ticker: "TRGP", cik: 1389170, name: "Targa Resources", article: "Targa Resources"}
+  - {ticker: "TRMB", cik: 864749, name: "Trimble Inc.", article: "Trimble Inc."}
+  - {ticker: "TROW", cik: 1113169, name: "T. Rowe Price", article: "T. Rowe Price"}
+  - {ticker: "TRV", cik: 86312, name: "Travelers Companies (The)", article: "The Travelers Companies"}
+  - {ticker: "TSCO", cik: 916365, name: "Tractor Supply", article: "Tractor Supply"}
+  - {ticker: "TSN", cik: 100493, name: "Tyson Foods", article: "Tyson Foods"}
+  - {ticker: "TT", cik: 1466258, name: "Trane Technologies", article: "Trane Technologies"}
+  - {ticker: "TTWO", cik: 946581, name: "Take-Two Interactive", article: "Take-Two Interactive"}
+  - {ticker: "TWLO", cik: 1447669, name: "Twilio", article: "Twilio"}
+  - {ticker: "TXT", cik: 217346, name: "Textron", article: "Textron"}
+  - {ticker: "TYL", cik: 860731, name: "Tyler Technologies", article: "Tyler Technologies"}
+  - {ticker: "UDR", cik: 74208, name: "UDR, Inc.", article: "UDR, Inc."}
+  - {ticker: "ULTA", cik: 1403568, name: "Ulta Beauty", article: "Ulta Beauty"}
+  - {ticker: "VEEV", cik: 1393052, name: "Veeva Systems", article: "Veeva Systems"}
+  - {ticker: "VICI", cik: 1705696, name: "Vici Properties", article: "Vici Properties"}
+  - {ticker: "VMRK", cik: 906107, name: "Vivmark Residential", article: "Vivmark Residential"}
+  - {ticker: "VRSK", cik: 1442145, name: "Verisk Analytics", article: "Verisk Analytics"}
+  - {ticker: "VRSN", cik: 1014473, name: "Verisign", article: "Verisign"}
+  - {ticker: "VRT", cik: 1674101, name: "Vertiv", article: "Vertiv"}
+  - {ticker: "VRTX", cik: 875320, name: "Vertex Pharmaceuticals", article: "Vertex Pharmaceuticals"}
+  - {ticker: "VST", cik: 1692819, name: "Vistra Corp", article: "Vistra Corp"}
+  - {ticker: "VTR", cik: 740260, name: "Ventas", article: "Ventas (company)"}
+  - {ticker: "VTRS", cik: 1792044, name: "Viatris", article: "Viatris"}
+  - {ticker: "VYLR", cik: 2128626, name: "Vylor", article: "Vylor"}
+  - {ticker: "WAB", cik: 943452, name: "Wabtec", article: "Wabtec"}
+  - {ticker: "WAT", cik: 1000697, name: "Waters Corporation", article: "Waters Corporation"}
+  - {ticker: "WDAY", cik: 1327811, name: "Workday, Inc.", article: "Workday, Inc."}
+  - {ticker: "WDC", cik: 106040, name: "Western Digital", article: "Western Digital"}
+  - {ticker: "WEC", cik: 783325, name: "WEC Energy Group", article: "WEC Energy Group"}
+  - {ticker: "WM", cik: 823768, name: "Waste Management", article: "Waste Management, Inc."}
+  - {ticker: "WMB", cik: 107263, name: "Williams Companies", article: "Williams Companies"}
+  - {ticker: "WRB", cik: 11544, name: "W. R. Berkley Corporation", article: "W. R. Berkley Corporation"}
+  - {ticker: "WSM", cik: 719955, name: "Williams-Sonoma, Inc.", article: "Williams-Sonoma, Inc."}
+  - {ticker: "WST", cik: 105770, name: "West Pharmaceutical Services", article: "West Pharmaceutical Services"}
+  - {ticker: "WTW", cik: 1140536, name: "Willis Towers Watson", article: "Willis Towers Watson"}
+  - {ticker: "XEL", cik: 72903, name: "Xcel Energy", article: "Xcel Energy"}
+  - {ticker: "XYL", cik: 1524472, name: "Xylem Inc.", article: "Xylem Inc."}
+  - {ticker: "XYZ", cik: 1512673, name: "Block, Inc.", article: "Block, Inc."}
+  - {ticker: "YUM", cik: 1041061, name: "Yum! Brands", article: "Yum! Brands"}
+  - {ticker: "ZBH", cik: 1136869, name: "Zimmer Biomet", article: "Zimmer Biomet"}
+  - {ticker: "ZBRA", cik: 877212, name: "Zebra Technologies", article: "Zebra Technologies"}
+  - {ticker: "ZTS", cik: 1555280, name: "Zoetis", article: "Zoetis"}

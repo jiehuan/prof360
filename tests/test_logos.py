@@ -191,6 +191,37 @@ def test_overrides() -> None:
         LogoOverride(wikidata="77")
 
 
+def test_extra_companies_and_their_article_hint() -> None:
+    """D-083: S&P 500 members outside companies.yaml get logos ready; companies.yaml wins once
+    a company is added, and the index list's article is read when Wikidata names none."""
+    from uw_pipeline.config import ExtraCompany
+
+    lcfg = LogoConfig(
+        extra_companies=[ExtraCompany(ticker="mar", cik=1048286, name="Marriott"),
+                         ExtraCompany(ticker="ZTS", cik=1555280, name="Zoetis")],
+        overrides={"ZTS": LogoOverride(website="https://www.zoetis.com")},
+    )  # fmt: skip
+    assert [e.ticker for e in lcfg.extras([MAR])] == ["ZTS"]  # MAR is in companies.yaml
+    lcfg.check_companies([MAR])  # an override may name an extra company
+    with pytest.raises(ValueError, match="repeat cik"):
+        LogoConfig(extra_companies=[ExtraCompany(ticker="A", cik=1, name="a"),
+                                    ExtraCompany(ticker="B", cik=1, name="b")])  # fmt: skip
+    # No article on the item: the hint's infobox is read.
+    client = FakeClient([row("Q9", cik="0001048286")], "| logo = Hint.svg",
+                        {(ENWIKI_API, "Hint.svg"): png(250, 60)})  # fmt: skip
+    logo = find_logo(MAR, client, LCFG, TODAY, article_hint="Marriott International")  # type: ignore[arg-type]
+    assert logo.source == "wikipedia" and ("wikitext", "Marriott International") in client.calls
+
+
+def test_repo_extra_companies_are_valid() -> None:
+    from uw_pipeline.config import load_companies, load_logo_config
+
+    lcfg = load_logo_config(CONFIG_DIR)
+    companies = load_companies(CONFIG_DIR)
+    lcfg.check_companies(companies)
+    assert len(lcfg.extra_companies) >= 300
+
+
 # -- logo files and publishing ---------------------------------------------------------------
 
 
@@ -212,6 +243,9 @@ def test_logo_files_are_loaded_and_checked(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("CONFIG_DIR", str(config))
     monkeypatch.setenv("SEC_USER_AGENT", TEST_UA)
     monkeypatch.setenv("DATABASE_URL", f"sqlite:///{tmp_path / 'uw.db'}")
+    assert CliRunner().invoke(app, ["config", "check"]).exit_code == 0
+    # An extra company's logo (logos.yaml extra_companies, D-083) is not an unknown ticker.
+    (config / "logos" / "ZTS.png").write_bytes(png(4, 4))
     assert CliRunner().invoke(app, ["config", "check"]).exit_code == 0
     (config / "logos" / "NOPE.png").write_bytes(png(4, 4))  # no such company
     (config / "logos" / "JPM.jpg").write_bytes(png(4, 4))  # PNG content, .jpg name
