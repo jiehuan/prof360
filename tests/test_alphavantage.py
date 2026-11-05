@@ -122,3 +122,29 @@ def test_http_errors_never_carry_the_key(av, status) -> None:
             client.news("MAR", datetime(2026, 9, 1))
     assert KEY not in str(exc.value) and "apikey" not in str(exc.value)
     assert str(status) in str(exc.value)
+
+
+def test_parallel_calls_keep_the_quota_and_the_count(tmp_path) -> None:
+    """D-079: the news stage calls from several threads; the quota is checked and counted as
+    one step, so 8 calls against a quota of 5 send exactly 5."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    client = AlphaVantageClient(
+        KEY, LocalStorage(tmp_path / "raw"), rate_limiter=TokenBucket(rate=1000),
+        daily_quota=5, wait=wait_none(), today=lambda: date(2026, 10, 13),
+    )  # fmt: skip
+
+    def call(q: str) -> str:
+        try:
+            client.transcript("MAR", q)
+            return "ok"
+        except QuotaExhaustedError:
+            return "quota"
+
+    with respx.mock() as router:
+        route = router.get(AV_URL).mock(return_value=httpx.Response(200, json={"transcript": []}))
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            outcomes = list(pool.map(call, [f"20{20 + i}Q1" for i in range(8)]))
+    client.close()
+    assert sorted(outcomes) == ["ok"] * 5 + ["quota"] * 3
+    assert route.call_count == 5 and client.calls_today() == 5

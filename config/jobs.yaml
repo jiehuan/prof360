@@ -30,7 +30,8 @@ max_attempts: 2
 # Phase 15i: companies run in parallel threads within these stages (stage: workers). LLM calls
 # stay under the provider's quota through `rate_limits` in config/llm.yaml. On SQLite (local
 # development) only the LLM stages run in parallel (short transactions, D-052, D-061); the
-# other stages run one company at a time there. News stays serial: Alpha Vantage's quota.
+# other stages run one company at a time there. News runs in parallel too (D-079): its time
+# is the LLM relevance and event reads; Alpha Vantage calls share one 75-per-minute limiter.
 parallel:
   textmetrics: 4
   industry: 4
@@ -38,6 +39,13 @@ parallel:
   legal: 4
   clinical: 4
   signals: 4
+  insights: 8
+  metricdetail: 6
+  scores: 2
+  news: 3
+# Caps on a SQLite file (local development, D-081): one writer, so more threads only add
+# "database is locked" retries. The insights and metric-detail counts above are sized for
+# SecureGPT's 1.5M tokens per minute (D-080) on Azure SQL.
+sqlite_parallel:
   insights: 4
   metricdetail: 4
-  scores: 2

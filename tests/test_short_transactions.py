@@ -7,6 +7,7 @@ tests/fake_llm.py). The news stage is left out: it runs one company at a time (A
 quota) and its writes are checked in test_news.
 """
 
+import copy
 import re
 import sqlite3
 import threading
@@ -18,9 +19,16 @@ from datetime import UTC, datetime
 from typing import Any
 
 import pytest
-from sqlalchemy import Integer, Table, insert, select
+from sqlalchemy import Integer, Table, func, insert, select
 
-from tests import test_clinical, test_governance, test_industry_choice, test_legal, test_scores
+from tests import (
+    test_clinical,
+    test_governance,
+    test_industry_choice,
+    test_legal,
+    test_news,
+    test_scores,
+)
 from tests.conftest import CONFIG_DIR
 from tests.fake_llm import FakeLLM, signals
 from uw_pipeline.clients.db import make_engine
@@ -33,6 +41,7 @@ from uw_pipeline.jobs.run_clinical import run_clinical_stage
 from uw_pipeline.jobs.run_governance import run_governance_stage
 from uw_pipeline.jobs.run_industry import run_industry_stage
 from uw_pipeline.jobs.run_legal import run_legal_stage
+from uw_pipeline.jobs.run_news import load_news_config, run_news_stage
 from uw_pipeline.jobs.run_scores import load_scores_config, run_scores_stage
 from uw_pipeline.jobs.run_signals import run_signals_stage
 from uw_pipeline.jobs.run_text_metrics import run_text_metrics_stage
@@ -43,10 +52,12 @@ from uw_pipeline.schema import (
     company,
     filing_section,
     industry_choice,
+    ingest_state,
     legal_matter,
     llm_call,
     metadata,
     metric_value,
+    news_item,
     news_risk_score,
     section_chunk,
     signal,
@@ -98,6 +109,11 @@ class Case:
     tables: tuple[Table, ...]
     group: str = "RETAIL"
     traits: tuple[str, ...] = ()
+    aliases: tuple[str, ...] = ()
+    # Columns left out of the comparison: ids another table hands out in insert order
+    ignore: frozenset[str] = frozenset()
+    # False where prompts carry such ids (news: N<news_id>): llm_call rows are counted instead
+    same_prompts: bool = True
 
 
 def _seed_governance(c, storage, cid):
@@ -192,6 +208,27 @@ def _seed_signals(c, storage, cid):
         text=WEAKNESS, text_hash="h"))  # fmt: skip
 
 
+class _FakeAV:
+    """test_news's synthetic feed, filed under the asked ticker."""
+
+    def news(self, ticker, time_from, *, force=False):
+        feed = copy.deepcopy(test_news.FEED)
+        for a in feed["feed"]:
+            a["ticker_sentiment"][0]["ticker"] = ticker
+        return feed, f"av/news/{ticker}.json"
+
+
+def _news_answer(model, user):
+    if "id | headline | summary" in user:  # relevance: the breach ruling judged PASSING
+        rows = [ln.split(" | ") for ln in user.splitlines() if ln.startswith("N")]
+        return {"articles": [{"id": r[0], "verdict": "PASSING" if "breach" in r[1] else "SUBJECT"}
+                             for r in rows]}  # fmt: skip
+    lines = [ln for ln in user.splitlines() if " | " in ln and not ln.startswith("id |")]
+    ids = {ln.split(" | ")[3]: ln.split(" | ")[0] for ln in lines}
+    earnings = [i for t, i in ids.items() if "Q2" in t or "forecast" in t]
+    return {"groups": [{"ids": earnings, "event": "Q2 2026 results"}] if len(earnings) > 1 else []}
+
+
 def _llm(llm):
     return (llm, LLM_CFG)
 
@@ -224,6 +261,12 @@ CASES = {
         lambda cs, e, s, llm: run_text_metrics_stage(cs, REG, IND, load_text_config(CONFIG_DIR),
                                                      _llm(llm), s, e, now=lambda: NOW),
         (metric_value,), group="HOTELS"),
+    "news": Case(
+        lambda c, s, cid: None, _news_answer,
+        lambda cs, e, s, llm: run_news_stage(cs, _FakeAV(), e, load_news_config(CONFIG_DIR),
+                                             llm=_llm(llm), now=lambda: NOW),
+        (activity, news_item, ingest_state), aliases=("Marriott",),
+        ignore=frozenset({"activity_id"}), same_prompts=False),
     "signals": Case(
         _seed_signals,
         lambda m, u: signals(findings=[("material_weakness", "identified a material weakness")]),
@@ -233,15 +276,20 @@ CASES = {
 }  # fmt: skip
 
 
-def _snapshot(engine, tables: tuple[Table, ...]) -> dict[str, list[tuple]]:
+def _snapshot(
+    engine, tables: tuple[Table, ...], ignore: frozenset[str] = frozenset(), same_prompts=True
+) -> dict[str, Any]:
     """Each table's rows without surrogate ids (they follow insert order) and timestamps."""
-    out = {}
+    out: dict[str, Any] = {}
     with engine.connect() as c:
-        for t in [*tables, llm_call]:
+        if not same_prompts:
+            out["llm_calls"] = c.execute(select(func.count()).select_from(llm_call)).scalar_one()
+        for t in [*tables, llm_call] if same_prompts else tables:
             pk = list(t.primary_key.columns)
             drop = {col.name for col in pk if len(pk) == 1 and isinstance(col.type, Integer)
                     and col.name not in ("company_id", "doc_id")}  # fmt: skip
             drop |= {"created_at", "updated_at", "detected_at", "first_seen_at", "computed_at"}
+            drop |= ignore
             cols = [col for col in t.columns if col.name not in drop]
             out[t.name] = sorted(tuple(map(repr, r)) for r in c.execute(select(*cols)))
     return out
@@ -255,7 +303,8 @@ def _setup(tmp_path, name: str, case: Case):
         for cid in (1, 2):
             _company(c, cid, case.group, "6795" if case.group == "UNCLASSIFIED" else None)
             case.seed(c, storage, cid)
-    companies = [CompanyConfig(ticker=f"CO{cid}", cik=cid, traits=list(case.traits))
+    companies = [CompanyConfig(ticker=f"CO{cid}", cik=cid, traits=list(case.traits),
+                               news_aliases=list(case.aliases))
                  for cid in (1, 2)]  # fmt: skip
     return engine, storage, companies
 
@@ -291,7 +340,7 @@ def test_parallel_matches_serial(tmp_path, stage) -> None:
     serial = case.run(companies, engine, storage, FakeLLM(slow))
     assert all(r.ok for r in serial), serial
     assert (state["peak"], state["locked"]) == (1, 0)
-    expected = _snapshot(engine, case.tables)
+    expected = _snapshot(engine, case.tables, case.ignore, case.same_prompts)
     assert any(expected[t.name] for t in case.tables), "the stage wrote nothing"
 
     engine, storage, companies = _setup(tmp_path, "parallel", case)
@@ -301,4 +350,4 @@ def test_parallel_matches_serial(tmp_path, stage) -> None:
                                 companies))  # fmt: skip
     assert all(r.ok for r in results), results
     assert (state["peak"], state["locked"]) == (2, 0)
-    assert _snapshot(engine, case.tables) == expected
+    assert _snapshot(engine, case.tables, case.ignore, case.same_prompts) == expected
