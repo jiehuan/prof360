@@ -372,7 +372,9 @@ team's diagram), `app_schema_full.sql` and `pipeline_schema_full.sql`, schema-qu
 - `pipeline_publish_map` maps (entity, pipeline key) → app id plus a content hash. A rerun
   updates the same row; an unchanged row is not written; a row deleted outside the pipeline is
   inserted again. Keys start with the company CIK, and existence checks read only that
-  company's rows.
+  company's rows. The map is read once per table (the company's keys; shared entities such as
+  metrics whole) and kept current in memory, so an unchanged row costs no statement (D-084:
+  each statement is a round trip on Azure SQL).
 - Versioned entities (`KeyInsights`, `StrategicRisk`, `FollowUpQuestions`): changed content is a
   new row and the old one gets `isActive = 0`, so user flags never move to different text.
   Retired rows are not examined again.

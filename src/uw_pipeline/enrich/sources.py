@@ -14,7 +14,7 @@ from typing import Any
 
 import yaml
 from pydantic import BaseModel
-from sqlalchemy import Connection, select
+from sqlalchemy import Connection, func, select
 
 from uw_pipeline.clients.sec import archive_folder_url
 from uw_pipeline.schema import activity, signal, source_document, xbrl_fact
@@ -46,7 +46,9 @@ def filing_index_url(cik: str, accession_no: str) -> str:
 
 
 class SourceResolver:
-    """Titles and links for one company's sources; lookups are cached per instance."""
+    """Titles and links for one company's sources; lookups are cached per instance. The
+    company's documents and the filings of its XBRL facts are read once, on first use (D-084:
+    a statement per lookup was a round trip each on Azure SQL)."""
 
     def __init__(self, conn: Connection, company: dict[str, Any], labels: SourceLabels) -> None:
         self.conn, self.labels = conn, labels
@@ -55,6 +57,27 @@ class SourceResolver:
         self.name: str = company["legal_name"]
         self._docs: dict[int, dict[str, Any] | None] = {}
         self._filings: dict[str, SourceRef] = {}
+        self._roles: dict[tuple[str, str], int] | None = None  # (accession, role) -> doc id
+        self._facts: dict[str, tuple[str, str]] = {}  # accession -> (form, filed date)
+
+    def _load(self) -> dict[tuple[str, str], int]:
+        if self._roles is None:
+            self._roles = {}
+            for row in self.conn.execute(
+                select(source_document).where(source_document.c.company_id == self.company_id)
+                .order_by(source_document.c.doc_id)
+            ).mappings():  # fmt: skip
+                self._docs.setdefault(row["doc_id"], dict(row))
+                self._roles.setdefault((row["accession_no"], row["doc_role"]), row["doc_id"])
+            xf = xbrl_fact.c
+            self._facts = {a: (f, d) for a, f, d in self.conn.execute(
+                select(xf.accession_no, func.min(xf.form), func.min(xf.filed_at))
+                .where(xf.company_id == self.company_id).group_by(xf.accession_no))}  # fmt: skip
+        return self._roles
+
+    def doc_id(self, accession_no: str, role: str) -> int | None:
+        """The company's document of this filing with this role (lowest id if several)."""
+        return self._load().get((accession_no, role))
 
     def section_label(self, code: str | None) -> str | None:
         return None if code is None else self.labels.sections.get(code, code)
@@ -90,24 +113,15 @@ class SourceResolver:
         """The filing an XBRL value came from (its primary document when registered)."""
         if accession_no in self._filings:
             return self._filings[accession_no]
-        d = self.conn.execute(
-            select(source_document.c.doc_id).where(
-                source_document.c.accession_no == accession_no,
-                source_document.c.doc_role == "PRIMARY",
-            )
-        ).scalar()
+        d = self.doc_id(accession_no, "PRIMARY")
         ref: SourceRef | None = self.document(d) if d is not None else None
         if ref is None:
-            fact = self.conn.execute(
-                select(xbrl_fact.c.form, xbrl_fact.c.filed_at)
-                .where(xbrl_fact.c.company_id == self.company_id,
-                       xbrl_fact.c.accession_no == accession_no)
-                .limit(1)
-            ).first()  # fmt: skip
+            fact = self._facts.get(accession_no)
             if fact is not None:
-                title = f"{self.name} {fact.form} filed {fact.filed_at}"
-                ref = SourceRef(title, filing_index_url(self.cik, accession_no), fact.filed_at,
-                                form=fact.form)  # fmt: skip
+                form, filed = fact
+                title = f"{self.name} {form} filed {filed}"
+                ref = SourceRef(title, filing_index_url(self.cik, accession_no), filed,
+                                form=form)  # fmt: skip
             else:
                 ref = SourceRef(f"{self.name} SEC filing {accession_no}",
                                 filing_index_url(self.cik, accession_no), None)  # fmt: skip

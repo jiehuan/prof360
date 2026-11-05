@@ -5,7 +5,7 @@ from datetime import UTC, date, datetime
 import httpx
 import pytest
 import respx
-from sqlalchemy import create_engine, func, insert, select
+from sqlalchemy import create_engine, event, func, insert, select
 
 from tests.conftest import CONFIG_DIR
 from tests.fake_llm import NOTHING, FakeLLM, signals
@@ -280,6 +280,61 @@ def test_resplit_removes_sections_no_longer_found(env) -> None:
                 section_chunk.c.section_id.not_in(select(filing_section.c.section_id)))
         ).scalar_one()  # fmt: skip
     assert codes == ["10K-1A"] and orphans == 0
+
+
+def test_rerun_reads_the_documents_once(env) -> None:
+    """D-084: on Azure SQL each statement is a round trip. A rerun with unchanged documents
+    reads the company's documents in one statement, not one per document, and writes none."""
+    engine, sec, _ = env
+    _run(engine, sec)
+    statements: list[str] = []
+
+    @event.listens_for(engine, "before_cursor_execute")
+    def _record(conn, cursor, statement, *args) -> None:
+        statements.append(" ".join(statement.split()))
+
+    _run(engine, sec)
+    per_doc = [s for s in statements if "source_document.accession_no = ?" in s]
+    assert per_doc == []
+    assert not [s for s in statements if s.startswith("UPDATE source_document")]
+
+
+def test_sections_are_rewritten_together(env) -> None:
+    """Sections and chunks of a document written in one go: a shorter section loses its later
+    chunks, a dropped section goes with its chunks, a repeated code keeps the last text."""
+    engine, sec, _ = env
+    _run(engine, sec)
+    long_text = "Risk factor sentence. " * 2000
+    with engine.begin() as conn:
+        doc_id = conn.execute(
+            select(source_document.c.doc_id).where(source_document.c.form_type == "10-K")
+        ).scalar_one()
+        _store_sections(conn, doc_id, [Section("10K-1A", 0, len(long_text), long_text),
+                                       Section("10K-3", 0, 5, "Legal")])  # fmt: skip
+
+    def state():
+        with engine.connect() as conn:
+            rows = conn.execute(
+                select(filing_section.c.section_code, filing_section.c.text,
+                       func.count(section_chunk.c.chunk_index))
+                .join(section_chunk, section_chunk.c.section_id == filing_section.c.section_id,
+                      isouter=True)
+                .where(filing_section.c.doc_id == doc_id)
+                .group_by(filing_section.c.section_code, filing_section.c.text)
+            ).all()  # fmt: skip
+            orphans = conn.execute(
+                select(func.count()).select_from(section_chunk).where(
+                    section_chunk.c.section_id.not_in(select(filing_section.c.section_id)))
+            ).scalar_one()  # fmt: skip
+        return {code: (text, n) for code, text, n in rows}, orphans
+
+    first, _ = state()
+    assert first["10K-1A"][1] > 1 and first["10K-3"][1] == 1
+    with engine.begin() as conn:
+        _store_sections(conn, doc_id, [Section("10K-1A", 0, 5, "first"),
+                                       Section("10K-1A", 0, 5, "Short")])  # fmt: skip
+    after, orphans = state()
+    assert after == {"10K-1A": ("Short", 1)} and orphans == 0
 
 
 def test_industry_excluding_signals_turns_them_off(env, tmp_path) -> None:

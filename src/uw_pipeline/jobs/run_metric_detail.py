@@ -53,7 +53,6 @@ from uw_pipeline.schema import (
     metric_insight,
     metric_source,
     metric_value,
-    source_document,
 )
 
 log = logging.getLogger(__name__)
@@ -94,12 +93,7 @@ def value_source(
     label = f"{display} {period_label(row)}"
     if row["derivation"] in LLM_DERIVATIONS:
         role = row["formula"].removeprefix("llm:") or "PRIMARY"
-        doc_id = conn.execute(
-            select(source_document.c.doc_id).where(
-                source_document.c.accession_no == row["source_accn"],
-                source_document.c.doc_role == role,
-            )
-        ).scalar()
+        doc_id = resolver.doc_id(row["source_accn"], role)
         if doc_id is not None:
             m = re.search(r"section (\S+)", json.loads(row["source_tags"]).get("document", ""))
             ref = resolver.document(doc_id, m.group(1) if m else None)
