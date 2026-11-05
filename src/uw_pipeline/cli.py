@@ -135,7 +135,7 @@ def run(
         max_attempts=jobs_cfg.max_attempts,
         resume_within=timedelta(hours=jobs_cfg.resume_within_hours),
         heartbeat_every=timedelta(minutes=jobs_cfg.heartbeat_minutes),
-        parallel=jobs_cfg.parallel,
+        parallel=jobs_cfg.parallel_for(engine.dialect.name),
     )
     try:
         run_id, resumed = orch.start(

@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import threading
 from collections.abc import Callable
 from datetime import UTC, date, datetime
 from typing import Any
@@ -87,6 +88,10 @@ class AlphaVantageClient:
         self._max_attempts = max_attempts
         self._wait = wait or wait_exponential_jitter(initial=2, max=60)
         self._today = today
+        # The news stage fetches for several companies at once (D-079): the quota check and
+        # the call count are one step, so parallel calls neither overrun the quota nor lose a
+        # count. The rate limiter is shared and thread-safe on its own.
+        self._quota_lock = threading.Lock()
 
     def close(self) -> None:
         self._http.close()
@@ -117,11 +122,12 @@ class AlphaVantageClient:
     # -- transport -----------------------------------------------------------------------------
 
     def _get_once(self, params: dict[str, str]) -> bytes:
-        if self._quota is not None and self.calls_today() >= self._quota:
-            raise QuotaExhaustedError(f"daily quota of {self._quota} Alpha Vantage calls used")
+        with self._quota_lock:  # counted when sent: a failed call used the quota too
+            if self._quota is not None and self.calls_today() >= self._quota:
+                raise QuotaExhaustedError(f"daily quota of {self._quota} Alpha Vantage calls used")
+            self._count_call()
         self._limiter.acquire()
         response = self._http.get(AV_URL, params={**params, "apikey": self._key})
-        self._count_call()
         if response.status_code == 429 or response.status_code >= 500:
             raise TransientError(f"HTTP {response.status_code}")
         if response.status_code >= 400:

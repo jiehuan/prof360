@@ -1856,3 +1856,41 @@ income" (2026-11-01).**
   (2026-10-18: about $1.2 for 107 companies, most articles new).
 - `config/jobs.yaml` (`news` before `scores` in both jobs; the `news` job removed) and
   `deploy/openshift/cronjobs.yaml` (the `uw-news` CronJob removed).
+
+**D-079 The news stage runs companies in parallel (2026-11-05).**
+- News was kept serial for the free Alpha Vantage plan (5 calls a minute, 25 a day). On the
+  premium key (75 a minute, no daily limit) the stage's 89 minutes in run 156 were almost all
+  LLM relevance and event reads: its 285 Alpha Vantage calls need under 4 minutes at the limit.
+  The stage already used short transactions (D-061), so on a SQLite file too it can run
+  companies together.
+- Options: (a) keep it serial; (b) `parallel: {news: 3}`, like scores. Chosen (user decision):
+  (b). Expected: about 25-45 minutes instead of 89.
+- Every company reads and writes only its own rows (`company_id`), and the threads share one
+  Alpha Vantage client: its rate limiter was already thread-safe; the daily quota check and the
+  call count are now one locked step, counted when the request is sent (a failed request used
+  the quota too). Before, parallel calls could overrun the quota and lose counts.
+- Tests: news joins `test_short_transactions.py` (parallel equals serial, no write lock held
+  while the model answers; prompts carry news ids, so model calls are compared by count) and a
+  threaded quota test in `test_alphavantage.py`.
+
+**D-080 SecureGPT gpt-6 quota: 1.5M tokens per minute per deployment (2026-11-05).**
+- The gateway allows 1.5M TPM for gpt-6 (user, 2026-11-05); D-051 had set 500K while the
+  number was unknown. `rate_limits` of gpt-6-luna and gpt-6-sol in the `securegpt` profile are
+  now 1,500,000 each. A request still reserves its input plus max_tokens (sent as
+  `max_completion_tokens`); requests per minute stay unlimited here until the gateway team
+  gives a number, and 429s are retried and pause the model.
+
+**D-081 More insights and metric-detail workers on Azure SQL; SQLite capped (2026-11-05).**
+- With 1.5M tokens per minute (D-080), the synthesis model is no longer the limit at 4 workers.
+  Sizing from run 156 (Claude token counts; the GPT ones are similar or fewer): a re-synthesized
+  company uses about 170K tokens; one worker has at most 3 calls in flight (`company_calls`),
+  reserving up to about 200K (strategic risk's input plus 32K max_tokens, and two smaller
+  calls). 1.5M covers about 7 workers' reservations at once, and 8 workers at about 3 minutes
+  a company use about 450K a minute after settlement. At 500K the reservations of about 2.5
+  workers filled the quota, so the earlier 4 waited on it. Requests per minute are not a
+  concern (user, 2026-11-05).
+- Chosen (user decision): `parallel` insights 8 and metricdetail 6 (was 4 and 4). On a SQLite
+  file these counts would add "database is locked" retries (run 156 had two at 4), so a new
+  `sqlite_parallel` caps both at 4 there; `JobsConfig.parallel_for(dialect)` applies it and
+  rejects unknown stages like `parallel`.
+

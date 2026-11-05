@@ -100,6 +100,15 @@ class JobsConfig(BaseModel):
     heartbeat_minutes: int = 5
     # Phase 15i: companies run in parallel threads within these stages (stage -> workers).
     parallel: dict[str, int] = {}
+    # Lower worker counts on a SQLite file (one writer: more threads mean "database is
+    # locked"); `parallel` applies on Azure SQL (D-081).
+    sqlite_parallel: dict[str, int] = {}
+
+    def parallel_for(self, dialect: str) -> dict[str, int]:
+        """Workers per stage on this database: `parallel`, capped by `sqlite_parallel`."""
+        if dialect != "sqlite":
+            return dict(self.parallel)
+        return {st: min(n, self.sqlite_parallel.get(st, n)) for st, n in self.parallel.items()}
 
 
 def load_jobs_config(config_dir: Path) -> JobsConfig:
@@ -109,9 +118,10 @@ def load_jobs_config(config_dir: Path) -> JobsConfig:
         unknown = set(job.stages) - DEPENDS.keys()
         if unknown:
             raise ValueError(f"job {name}: unknown stages {sorted(unknown)}")
-    unknown = set(cfg.parallel) - DEPENDS.keys()
-    if unknown:
-        raise ValueError(f"parallel: unknown stages {sorted(unknown)}")
+    for key in ("parallel", "sqlite_parallel"):
+        unknown = set(getattr(cfg, key)) - DEPENDS.keys()
+        if unknown:
+            raise ValueError(f"{key}: unknown stages {sorted(unknown)}")
     return cfg
 
 
