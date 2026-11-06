@@ -2018,3 +2018,24 @@ income" (2026-11-01).**
   earlier years, read from interest paid before, are no longer shown. Q4 2025 is NM
   (operating loss).
 - Other issuers on interest paid with a captive finance arm (e.g. CAT) may need the same check.
+
+**D-088 Metric chat in the BFF, grounded in pipeline context (2026-11-06; planned, PLAN Phase 19).**
+- Need: a user cannot tell why a metric looks wrong (GM's interest coverage read 0.44x until
+  D-087). A chat in the metric popup should explain how a value was computed and from which
+  filing and tag, and let the user report a value that looks wrong.
+- Where it runs. Options: (a) a chat service in this repo, deployed as its own pod, with the
+  BFF proxying; (b) in the BFF (Python FastAPI, already running on OpenShift), with the
+  pipeline supplying the context, prompt and checks. Chosen: (b), one pod fewer to run.
+- How the BFF gets the code. Options: (a) pip from this repo (needs repo access from the BFF's
+  image build); (b) a wheel in an internal package index; (c) a folder copied into the BFF's
+  code. Chosen: (c). `packages/uw_metric_chat/` (pydantic and httpx only) is exported with a
+  version, source commit and checksums; the BFF replaces the folder to upgrade and never edits
+  it. The BFF has no SecureGPT client, so the folder includes an async one.
+- The prompt lives in the database (`ChatPrompt`, written by publish), so a prompt change needs
+  no BFF release; the folder refuses a prompt newer than it supports.
+- Grounding: the model may use only the context of one company and metric, cites data-point
+  ids, and every number in an answer must match a cited data point; otherwise the BFF answers
+  "can't confirm". The context holds structured data only, no filing text.
+- Model: SecureGPT gpt-6-luna by default, sol selectable, decided by an offline evaluation.
+  English only. Every turn is logged (`UserMetricChat`); reports go to `MetricIssueReport` and
+  into `uw-pipeline review`.
