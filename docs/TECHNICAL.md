@@ -9,7 +9,7 @@ how prod is generated from the release source, are documented below.
 | Document | Holds |
 |---|---|
 | `docs/PLAN.md` | Plan of record, phase checklists, open questions |
-| `docs/decisions.md` | Every design decision with its reason (D-001 … D-086), cited below as D-xxx |
+| `docs/decisions.md` | Every design decision with its reason (D-001 … D-087), cited below as D-xxx |
 | `docs/ALPHAVANTAGE_APIM.zh-CN.md` | Alpha Vantage direct/APIM setup, OAuth wire formats and deployment credentials |
 | `docs/OPERATIONS.md` | Day-to-day operations, troubleshooting (Chinese) |
 | `docs/schema-contract.md` | Application tables as the BFF reads them |

@@ -2030,3 +2030,18 @@ income" (2026-11-01).**
 - Rules: a table in `empty_tables` is created when missing and otherwise left as it is (no
   column or key check, nothing inserted). It may lack a primary key, since no rows are matched.
   A table may not be in both widgets.
+
+**D-087 GM's interest expense: automotive interest only (2026-11-05).**
+- GM's interest coverage read 0.44x for FY2025 (2,909M operating income / 6,631M). GM tags its
+  interest expense only by business (`gm:BusinessGroupAxis`), so the default tags fell back to
+  cash interest paid, most of it GM Financial's (6,492M). GM Financial's interest is an
+  operating cost, already deducted from operating income, so it was counted twice.
+- Options: (a) automotive interest only (`us-gaap:InterestExpenseNonoperating` on
+  `gm:AutomotiveMember`, the income statement's "Automotive interest expense": 727M, 4.0x);
+  (b) all interest, with GM Financial's added back to the numerator ((2,909 + 6,492) / 7,219 =
+  1.3x), which needs a GM-only formula; (c) leave it. Chosen: (a), the industrial company's
+  own debt service, as GM reports it, through a company override (like MAR's fee revenue).
+- Effect: FY2022–FY2025 and the quarters since Q2 2023 come from each filing's XBRL instance;
+  earlier years, read from interest paid before, are no longer shown. Q4 2025 is NM
+  (operating loss).
+- Other issuers on interest paid with a captive finance arm (e.g. CAT) may need the same check.
