@@ -185,7 +185,11 @@ so the notebook runs twice, once in each workspace, with a file in between:
    procedure in dependency order, with the tables each reads) and the same name with `.sql`.
    `only` limits it to a comma-separated list of names. `tables` (comma-separated) adds BFF
    tables with their rows, e.g. `UserNotificationRead` (D-075): columns, defaults, identity and
-   primary key, and every row; the `.sql` file has the functions and procedures only. Download the JSON file (FileStore:
+   primary key, and every row. `empty_tables` (comma-separated) adds tables without their rows,
+   the structure only (D-086): for `pr`, whose users are not `dv`'s, list the BFF's user tables
+   there (`UserFavority,UserPinnedCompanies,UserHistory,UserFlaggedFollowupQuestions,`
+   `UserMetricsSelection,UserNotificationRead`, leaving `tables` blank); those `pr` has already
+   are left as they are. The `.sql` file has the functions and procedures only. Download the JSON file (FileStore:
    `https://<workspace>/files/professional360/sql_objects.json`; a volume: Catalog Explorer).
 2. **Upload** it in the `pp` workspace (to FileStore or a volume).
 3. **Import, dry run, in the `pp` workspace:** `action = import`, `env = pp`, `file` = the
@@ -212,7 +216,7 @@ without the comparison and the table check.
 
 The schema defaults to `app_schema` in azure.yaml for each environment (widget `schema`); if
 the two differ, the import renames it in the definitions. Only definitions are copied, and
-the tables named in `tables`: no other table or data, no permissions (`GRANT EXECUTE` for the BFF's identity is set per environment). The
+the tables named in `tables` and `empty_tables`: no other table or data, no permissions (`GRANT EXECUTE` for the BFF's identity is set per environment). The
 service principal needs `VIEW DEFINITION` in `dv`, and `CREATE FUNCTION`, `CREATE PROCEDURE` and
 `ALTER` on the schema in `pp`.
 
@@ -276,6 +280,14 @@ principal login. Run the dry runs first.
   primary key), inserted 4 and 2 rows and created both functions; every copied value equal to
   the source to the last digit and offset, the two target rows unchanged, the next identity
   905 (after the target's 900). A further run inserted 0 rows and changed nothing.
+- **`sync_sql_objects` with `empty_tables` (2026-11-05):** export from a `dv` stand-in of
+  three user tables without rows (a composite key with a `GETUTCDATE()` default, an identity
+  key, one without a primary key), `UserNotificationRead` with its row, and four functions
+  reading them (one through another). Import into a `pr` stand-in holding only
+  `UserNotificationRead` with a row of its own: the dry run listed the three to create with 0
+  rows; apply created them (keys, identity and default as in `dv`, no rows), inserted the one
+  row and created the four functions, which ran; a further run left the tables as they were
+  and changed nothing. A table named in both widgets is refused at export.
 - **`copy_sqlite_to_azure` safety (2026-10-29):** after a load of `app.db` (24 tables, row
   counts match): `clear_target` with a row in a BFF-style table referencing `Company` refused
   and changed nothing; with a trigger failing the delete of a late table it rolled back

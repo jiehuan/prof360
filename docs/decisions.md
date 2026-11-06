@@ -2015,3 +2015,18 @@ income" (2026-11-01).**
   requests run in parallel and share the token (the token provider has its own lock). The PR's
   CONTRIBUTING.md notes (a prod-only file, from `scripts/prod.patch`) were about this pending
   port and were left out.
+
+**D-086 sync_sql_objects copies tables without their rows (2026-11-05).**
+- Need: the import into `pr` created 28 of 34 functions and procedures; six failed because
+  `pr` has none of the BFF's user tables they read (`UserFavority`, `UserHistory`,
+  `UserFlaggedFollowupQuestions`, ...). `pr`'s users are not `dv`'s, so `dv`'s favorites,
+  history and flags must not go with them (D-075's caveat).
+- Options: (a) a `deploy/sql` script with `CREATE TABLE` for each user table, run with
+  `run_sql_script`; the repo only knows their columns from the BFF's notes, not their exact
+  types, defaults and keys; (b) an `empty_tables` widget in `sync_sql_objects`: the same export
+  as `tables` (columns, defaults, identity, primary key read from `dv`) with no rows; (c) export
+  with `tables` and delete the rows in `pr` afterwards. Chosen: (b), exact structure, one run
+  of the notebook, no user data copied.
+- Rules: a table in `empty_tables` is created when missing and otherwise left as it is (no
+  column or key check, nothing inserted). It may lack a primary key, since no rows are matched.
+  A table may not be in both widgets.
