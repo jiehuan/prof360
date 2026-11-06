@@ -6,8 +6,10 @@
 # MAGIC stored procedure of a schema, e.g. `dbo_professional360` from `dv` to `pp`, as they are
 # MAGIC defined in the source database (`sys.sql_modules`), including those the BFF team wrote
 # MAGIC there. Tables named in `tables` (the BFF's own, e.g. `UserNotificationRead`) are copied
-# MAGIC too, with their rows (D-075); no other table or data is touched. One environment cannot
-# MAGIC reach the other, so it goes through a file, in two runs of this notebook:
+# MAGIC too, with their rows (D-075), and those in `empty_tables` without them (D-086: the
+# MAGIC structure only, e.g. the BFF's user tables for `pr`); no other table or data is touched.
+# MAGIC One environment cannot reach the other, so it goes through a file, in two runs of this
+# MAGIC notebook:
 # MAGIC
 # MAGIC 1. **`action = export`** in the source workspace (`env = dv`): writes `file` (JSON, the
 # MAGIC    objects in dependency order with the tables each reads, and the `tables` with their
@@ -48,6 +50,9 @@ dbutils.widgets.text("only", "", "6. Only these objects (blank: all)")
 # Export: comma-separated table names copied with their rows; blank: none. Import: every table
 # in the file.
 dbutils.widgets.text("tables", "", "7. Export: tables with their rows (blank: none)")
+# Export: comma-separated tables copied without their rows (the structure only), e.g. the BFF's
+# user tables for pr, whose users are not dv's (D-086); blank: none.
+dbutils.widgets.text("empty_tables", "", "8. Export: tables without rows (blank: none)")
 
 # COMMAND ----------
 
@@ -60,7 +65,7 @@ from graphlib import CycleError, TopologicalSorter
 from pathlib import Path
 
 W = {k: dbutils.widgets.get(k).strip() for k in (
-    "action", "env", "file", "mode", "schema", "only", "tables")}  # fmt: skip
+    "action", "env", "file", "mode", "schema", "only", "tables", "empty_tables")}  # fmt: skip
 S = azure_sql_settings(W["env"])
 SCHEMA = W["schema"] or S.get("app_schema") or "dbo_professional360"
 engine = sql_engine(S)
@@ -68,6 +73,10 @@ FILE = Path(W["file"])
 assert FILE.suffix == ".json", "file: a .json path, e.g. /dbfs/FileStore/... or /Volumes/..."
 ONLY = {n.strip() for n in W["only"].split(",") if n.strip()}
 TABLES = [n.strip() for n in W["tables"].split(",") if n.strip()]
+EMPTY_TABLES = [n.strip() for n in W["empty_tables"].split(",") if n.strip()]
+assert not {n.lower() for n in TABLES} & {n.lower() for n in EMPTY_TABLES}, (
+    "a table is in both `tables` and `empty_tables`"
+)
 print(f"{W['action']}: {S['server']} / {S['database']} / {SCHEMA} ({W['env']}); file {FILE}")
 
 KINDS = {"FN": "scalar function", "IF": "inline table function",
@@ -198,9 +207,10 @@ def create_table_sql(schema: str, name: str, info: dict) -> str:
         default = f" DEFAULT {c['default_']}" if c["default_"] else ""
         defs.append(f"{q(c['name'])} {c['sql_type']}{ident}{null}{default}")
     pk = info["primary_key"]
-    kind = "CLUSTERED" if pk["clustered"] else "NONCLUSTERED"
-    defs.append(f"CONSTRAINT {q(pk['name'])} PRIMARY KEY {kind} "
-                f"({', '.join(q(c) for c in pk['columns'])})")  # fmt: skip
+    if pk:  # only a table exported without rows may have none
+        kind = "CLUSTERED" if pk["clustered"] else "NONCLUSTERED"
+        defs.append(f"CONSTRAINT {q(pk['name'])} PRIMARY KEY {kind} "
+                    f"({', '.join(q(c) for c in pk['columns'])})")  # fmt: skip
     return f"CREATE TABLE {q(schema)}.{q(name)} (\n    " + ",\n    ".join(defs) + "\n)"
 
 
@@ -347,9 +357,13 @@ if W["action"] == "export":
     # Tables with their rows (D-075): small BFF tables. The pipeline's tables are copied from
     # its SQLite file by copy_sqlite_to_azure instead.
     tables_out = []
-    for name in TABLES:
+    for name in TABLES + EMPTY_TABLES:
         info = table_info(SCHEMA, name)
         assert info, f"no table {SCHEMA}.{name}"
+        if name in EMPTY_TABLES:  # the structure only (D-086)
+            tables_out.append({**info, "name": name, "rows": []})
+            print(f"table {name}: {len(info['columns'])} columns, without rows")
+            continue
         assert info["primary_key"], f"{name} has no primary key (the import matches rows by it)"
         rows = query(engine, f"SELECT {select_columns(info['columns'])} "
                              f"FROM {q(SCHEMA)}.{q(name)}")  # fmt: skip
@@ -407,9 +421,13 @@ table_problems: list[str] = []
 for t in file_tables:
     here = table_info(SCHEMA, t["name"])
     table_plan.append((t, here))
+    pk_cols = t["primary_key"]["columns"] if t["primary_key"] else "none"
     if here is None:
         print(f"table  {t['name']}: create ({len(t['columns'])} columns, primary key "
-              f"{t['primary_key']['columns']}), insert {len(t['rows'])} rows")  # fmt: skip
+              f"{pk_cols}), insert {len(t['rows'])} rows")  # fmt: skip
+        continue
+    if not t["rows"]:
+        print(f"table  {t['name']}: exists; no rows in the file, left as it is")
         continue
     filecols = {c["name"] for c in t["columns"] if c["insertable"]}
     dropped = sorted(filecols - {c["name"] for c in here["columns"]})
@@ -474,7 +492,7 @@ if only_here:
     print(f"only here, not in the file (left as they are): {', '.join(only_here)}")
 if missing:
     print("PROBLEM: tables missing here and not in the file (create them first, or export "
-          "them with `tables`; these objects would fail):")  # fmt: skip
+          "them with `tables` or `empty_tables`; these objects would fail):")  # fmt: skip
     for t, objs in sorted(missing.items()):
         print(f"  {t}: read by {', '.join(sorted(objs))}")
 if W["mode"] != "apply":
@@ -491,6 +509,8 @@ for t, here in table_plan:
     if here is None:
         run_sql(engine, create_table_sql(SCHEMA, t["name"], t))
         print(f"table  {t['name']}: created")
+    if not t["rows"]:
+        continue
     n = insert_rows(t["name"], t, table_info(SCHEMA, t["name"]), apply=True)
     print(f"table  {t['name']}: {n} rows inserted")
 
