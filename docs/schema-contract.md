@@ -174,7 +174,9 @@
 | `filings` | 上下文引用的文件，每个 accession 一条：accession、title、url、form、filed |
 | `data_points` | 回答可以引用的全部数字：id、label、value（原值：金额是元，fraction 0.049 = 4.9%）、unit、status。id 格式 `dp:<期>:<名称>`，同行中位数为 `dp:FY2025:<指标>:peer_median`；id 在各次运行之间稳定 |
 
-问答的回答只能引用 `data_points` 里的 id，回答中的每个数字都要能在被引用的数据点里找到（19.B 的校验）。
+问答的回答只能引用 `data_points` 里的 id，回答中的每个数字都要能在上下文里找到（19.B 的校验，D-091）。
+
+`udf_GetActiveChatPrompt(N'metric_chat')` 返回当前提示词：`promptId, promptVersion, systemText, outputSchema`（JSON schema）, `contextVersions`（如 "1"）, `minPackageVersion`, `updatedAt`。管线每次 publish 写入 `config/metric_chat.yaml` 指定的版本，旧版本保留、`IsActive = 0`。BFF 的用法和字段见 `docs/metric-chat-bff.zh-CN.md`（导出时作为 README 一起交付）。
 
 ## 管线内部表（BFF 不需要读）
 

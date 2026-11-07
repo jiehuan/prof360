@@ -2098,3 +2098,34 @@ income" (2026-11-01).**
   keeps its review decisions on its side), `udf_GetMetricChatContext` and
   `udf_GetActiveChatPrompt`. Tested on SQL Server 2022 (twice, a real GM context read back).
 
+**D-091 The metric chat package and its grounding (2026-11-07, PLAN Phase 19.B).**
+- Package: `uw_metric_chat` in `src/` beside `uw_pipeline`, not `packages/` as PLAN said: the
+  image copies `src` and the wheel lists both, so nothing else changes. pydantic and httpx only,
+  relative imports (the BFF may put the folder anywhere), no pipeline imports (a test checks).
+  The pipeline imports only its `ANSWER_SCHEMA`, published with the prompt. `answer_question`
+  does one turn: version checks, messages (the prompt with the context appended; the last six
+  turns; the question cut to 1,000 characters), the SecureGPT call (async; same protocol as
+  D-039; gateway URLs kept equal to config/securegpt.yaml by a test), the grounding check, and
+  a reply with what to show and the `UserMetricChat` columns. Gateway and model failures give a
+  fixed message with grounding = error; only an incompatible prompt or context raises.
+- Grounding. PLAN: every number must be a cited data point. The user allowed numbers the model
+  computes. A number (read with its unit, within its own rounding) is accepted, in this order,
+  when it is: a cited data point; another data point of the context (the citation is added:
+  models often forget one); a sum, difference, ratio or change of cited values; a number the
+  context's text states (a DQ finding's "-707%"); or a number from the user's question repeated
+  ("the 0.44x you mention"). The last was chosen over showing "can't confirm" for the GM
+  question the feature is for: the user wrote the number, and the turn is logged. Years, period
+  labels, dates, ids, accession numbers, document references and counts up to 10 are not
+  numbers. Anything else shows CANNOT_CONFIRM, with the model's text kept in RawAnswer.
+- Prompt `metric_chat_v1` (version in config/metric_chat.yaml, published to ChatPrompt; older
+  rows IsActive = 0): English, 150 words, only the context, cite every number, simple
+  computations allowed, explain tags in plain words, `possible_issue` for proxies, Warning/Error
+  findings or a value far from the group median; other companies, advice, predictions and
+  instructions in the question are out of scope.
+- Evaluation: 24 cases (tests/fixtures/metric_chat_eval.yaml) through `answer_question`. With
+  the local development model: 24/24 shown, 24/24 as expected (after fixes found by it: dates
+  and exhibit numbers read as numbers, the closest data point when two are within rounding).
+  The SecureGPT comparison of gpt-6-luna and gpt-6-sol needs the work network.
+- Delivery: `scripts/export_metric_chat.py` writes dist/uw_metric_chat-<version>/ with headed
+  files, CHECKSUMS, the Chinese README (docs/metric-chat-bff.zh-CN.md) and the SQL.
+

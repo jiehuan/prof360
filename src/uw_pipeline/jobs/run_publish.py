@@ -21,11 +21,14 @@ from typing import Any
 
 import yaml
 from pydantic import BaseModel, Field
-from sqlalchemy import Connection, Engine, desc, select, true
+from sqlalchemy import Connection, Engine, desc, select, true, update
 
+from uw_metric_chat.prompting import ANSWER_SCHEMA
 from uw_pipeline.compute.registry import MetricDef, Registry
 from uw_pipeline.config import CompanyConfig, IndustryConfig
 from uw_pipeline.enrich.industry_choice import usable_choice
+from uw_pipeline.enrich.llm import PROMPTS_DIR
+from uw_pipeline.enrich.metric_chat_context import CONTEXT_VERSION
 from uw_pipeline.enrich.metric_detail import definition_lines, period_label, shown_rows
 from uw_pipeline.enrich.package import fmt_value
 from uw_pipeline.enrich.sources import SourceLabels, SourceResolver
@@ -60,6 +63,7 @@ from uw_pipeline.schema import (
 )
 from uw_pipeline.schema_app import (
     Activities,
+    ChatPrompt,
     Company,
     CompanyMetricDetail,
     FollowUpQuestions,
@@ -846,6 +850,49 @@ def publish_company(
     return p.stats, w
 
 
+class MetricChatConfig(BaseModel):
+    prompt_version: str
+    min_package_version: str
+    models: list[str]
+
+
+def load_metric_chat_config(config_dir: Path) -> MetricChatConfig:
+    with (config_dir / "metric_chat.yaml").open(encoding="utf-8") as f:
+        return MetricChatConfig.model_validate(yaml.safe_load(f))
+
+
+CHAT_TASK = "metric_chat"
+
+
+def publish_chat_prompt(dst: Connection, mcfg: MetricChatConfig, now: datetime) -> bool:
+    """The metric chat's prompt (D-091): the configured version active, earlier ones kept with
+    IsActive = 0. Unchanged rows are not rewritten; UpdatedAt marks when a row last changed.
+    Returns whether anything was written."""
+    text = (PROMPTS_DIR / f"{mcfg.prompt_version}.md").read_text(encoding="utf-8")
+    w = AppWriter(dst, now)
+    current = {
+        "Task": CHAT_TASK, "PromptVersion": mcfg.prompt_version, "SystemText": text,
+        "OutputSchema": json.dumps(ANSWER_SCHEMA, separators=(",", ":")),
+        "ContextVersions": str(CONTEXT_VERSION), "MinPackageVersion": mcfg.min_package_version,
+        "IsActive": True,
+    }  # fmt: skip
+    rows = {f"{CHAT_TASK}:{mcfg.prompt_version}": current}
+    cp = ChatPrompt.c
+    for r in dst.execute(select(ChatPrompt).where(cp.Task == CHAT_TASK,
+                                                  cp.PromptVersion != mcfg.prompt_version)
+                         ).mappings():  # fmt: skip
+        old = {k: r[k] for k in current} | {"IsActive": False}
+        rows[f"{CHAT_TASK}:{r['PromptVersion']}"] = old
+    written = w.written
+    for key, values in rows.items():
+        before = w.written
+        app_id = w.put(ChatPrompt, key, values)
+        if w.written > before:  # new or changed: stamp it (UpdatedAt is not in the row hash)
+            dst.execute(update(ChatPrompt).where(cp.ChatPromptId == app_id)
+                        .values(UpdatedAt=now))  # fmt: skip
+    return w.written > written
+
+
 def run_publish_stage(
     companies: Sequence[CompanyConfig],
     registry: Registry,
@@ -856,8 +903,16 @@ def run_publish_stage(
     app_engine: Engine,
     *,
     now: Callable[[], datetime] = lambda: datetime.now(UTC),
+    chat: MetricChatConfig | None = None,
 ) -> list[TaskResult]:
     results: list[TaskResult] = []
+    if chat is not None and companies:
+        try:  # one row for every company: written once per stage run
+            with app_engine.begin() as dst:
+                if publish_chat_prompt(dst, chat, now()):
+                    log.info("metric chat prompt %s published", chat.prompt_version)
+        except Exception:
+            log.exception("metric chat prompt %s not published", chat.prompt_version)
     for cfg in companies:
         try:
             with engine.connect() as src, app_engine.begin() as dst:

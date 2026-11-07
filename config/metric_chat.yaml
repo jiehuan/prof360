@@ -1,0 +1,10 @@
+# Metric chat (Phase 19, D-088, D-091). The publish stage writes the active prompt to the app
+# database (ChatPrompt); the BFF's uw_metric_chat package reads it with udf_GetActiveChatPrompt.
+# A new prompt version: add enrich/prompts/metric_chat_v<N>.md and point `prompt_version` at
+# it; the previous row stays in ChatPrompt with IsActive = 0. Raise `min_package_version` when
+# the prompt needs a newer package (the BFF then has to copy in the new folder first).
+prompt_version: metric_chat_v1
+min_package_version: "0.1.0"
+# SecureGPT deployments the evaluation compares (scripts/eval_metric_chat.py); the BFF's
+# default is uw_metric_chat.securegpt.DEFAULT_MODEL.
+models: [gpt-6-luna-2026-09-22, gpt-6-sol-2026-09-22]

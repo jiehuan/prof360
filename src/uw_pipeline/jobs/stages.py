@@ -42,7 +42,11 @@ from uw_pipeline.jobs.run_legal import run_legal_stage
 from uw_pipeline.jobs.run_market import run_market_stage
 from uw_pipeline.jobs.run_metric_detail import run_metric_detail_stage
 from uw_pipeline.jobs.run_news import load_news_config, run_news_stage
-from uw_pipeline.jobs.run_publish import load_publish_config, run_publish_stage
+from uw_pipeline.jobs.run_publish import (
+    load_metric_chat_config,
+    load_publish_config,
+    run_publish_stage,
+)
 from uw_pipeline.jobs.run_scores import load_scores_config, run_scores_stage
 from uw_pipeline.jobs.run_signals import run_signals_stage
 from uw_pipeline.jobs.run_text_metrics import run_text_metrics_stage
@@ -266,6 +270,7 @@ class StageRunner:
                 load_source_labels(s.config_dir),
                 e,
                 self.app_engine,
+                chat=load_metric_chat_config(s.config_dir),
             )
         if stage == "metricdetail":
             return lambda c: run_metric_detail_stage(

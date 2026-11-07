@@ -202,6 +202,7 @@ MSFT:                        # one company; wins over its traits' and group's no
 | `app_publish.yaml` | Metric categories, risk type rules and confidence in the app database |
 | `source_labels.yaml` | Readable names of sections and concepts |
 | `jobs.yaml` | Jobs and the stages each runs; retries, run lock and resume settings |
+| `metric_chat.yaml` | The metric chat's active prompt version, the package version it needs, and the models the evaluation compares (D-091) |
 
 ## 3. What needs a code change
 

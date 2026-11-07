@@ -83,6 +83,13 @@
 4. 用 `git diff tests/golden` 审阅输出的变化，确认之后把 golden 文件一并提交。
 5. 修改了 grounding 规则（`enrich/grounding.py` 或 `enrich/insights.py`）时，要在 `jobs/run_insights.py` 里提升 `GROUNDING_VERSION`。这样已缓存的 LLM 输出会按新规则重新校验，**不会产生 LLM 费用**。
 
+## 6a. 指标问答（Phase 19，D-090、D-091）
+
+- **改提示词**：新建 `src/uw_pipeline/enrich/prompts/metric_chat_v<N+1>.md`，把 `config/metric_chat.yaml` 的 `prompt_version` 改成它；下一次 publish 把新版本写进 `ChatPrompt` 并设为唯一的 IsActive，BFF 不用重新部署。先用 `python scripts/eval_metric_chat.py`（本地开发模型）和 `--provider securegpt`（工作网络）跑评估。
+- **改包**（`src/uw_metric_chat/`：校验规则、客户端、答案格式）：提升 `version.py` 的 `VERSION`；新提示词需要新包时，同时提升 `config/metric_chat.yaml` 的 `min_package_version`，并且**先**让 BFF 换上新文件夹，再发布提示词（旧包遇到新提示词会报 `IncompatibleError`）。
+- **交给 BFF**：commit 之后运行 `python scripts/export_metric_chat.py`，把 `dist/uw_metric_chat-<版本>/` 整个发给 BFF 团队（含中文 README、CHECKSUMS 和 `bff_metric_chat.sql`）。
+- **评估**：题目在 `tests/fixtures/metric_chat_eval.yaml`，报告写到 `data/reports/metric-chat-eval-*.md`；每道题是一次付费调用。
+
 ## 7. 详情弹窗数据（Phase 8，D-036）
 
 - `metricdetail` 阶段排在 `insights` 之后：Methodology 和 Data Sources 由规则生成；每家公司一次 Opus 调用写各指标的 Underwriting Relevance 和关联。输入不变时不调用 LLM。没有 LLM 时规则部分照常运行。

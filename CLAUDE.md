@@ -34,6 +34,8 @@ scripts/test_mssql.sh --all                          # whole test suite on a loc
 .venv/bin/python scripts/export_app_ddl.py           # regenerate deploy/sql/*.sql after schema changes
 .venv/bin/python scripts/fetch_logos.py              # config/logos/ for new companies (open network, D-067)
 .venv/bin/python scripts/compare_models.py --model claude-sonnet-5-5 MAR JPM ENPH  # model A/B
+.venv/bin/python scripts/eval_metric_chat.py         # metric chat eval (--provider securegpt at work)
+.venv/bin/python scripts/export_metric_chat.py       # dist/uw_metric_chat-<ver>/ for the BFF (D-091)
 ```
 
 Architecture, stages, data model and internals: `docs/TECHNICAL.md`.

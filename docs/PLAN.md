@@ -880,7 +880,7 @@ uw-pipeline dq-report --run-id <id>
 
 ---
 
-### Phase 19 — 指标问答（BFF 内的 chatbot，调用 SecureGPT）（2026-11-06 计划；19.A 2026-11-07 完成，D-088、D-090）
+### Phase 19 — 指标问答（BFF 内的 chatbot，调用 SecureGPT）（2026-11-06 计划；19.A、19.B 2026-11-07 完成，SecureGPT 评估待工作网络，D-088、D-090、D-091）
 
 **目标**：用户在指标弹窗里问"这个数怎么算的 / 为什么这么低 / 数据从哪来"，得到只基于本公司本指标数据、每个数字都有出处的英文回答；觉得数不对时可以一键报告，报告进入管线复核。起因：GM 的 interest coverage 曾显示 0.44x（分母误用了含 GM Financial 的支付利息，D-087），网页上的用户无从知道原因。
 
@@ -919,17 +919,18 @@ BFF
 - [x] `schema_app.py`、`scripts/export_app_ddl.py` 重新生成、`docs/schema-contract.md`、测试
 
 #### 19.B `uw_metric_chat` 和评估（管线，约 3–4 天）
-- [ ] `packages/uw_metric_chat/`：只依赖 pydantic 和 httpx，无数据库、无管线代码
+- [x] `uw_metric_chat`（放在 `src/uw_metric_chat/`，与 `uw_pipeline` 并列、互不引用，D-091）：只依赖 pydantic 和 httpx，无数据库、无管线代码；包内相对导入，BFF 放在任何目录都能用；另有 `chat.py` 的 `answer_question`（一次调用完成拼消息、调用、校验）和 `version.py`
   - `models.py`：上下文、答案的 pydantic 模型（FastAPI 可直接用作响应类型）
   - `prompting.py`：`build_messages(prompt, ctx, history, question)`、`ANSWER_SCHEMA`
-  - `grounding.py`：`check_answer(raw, ctx)` → ok / rejected + 原因。规则：引用的 id 都存在；回答里的每个数字（统一 M/B/x/% 后）能在被引用的数据点中找到；不通过时 BFF 回答 "can't confirm"
+  - `grounding.py`：`check_answer(raw, ctx)` → ok / rejected + 原因。规则：引用的 id 都存在；回答里的每个数字（统一 M/B/x/% 后）能在被引用的数据点中找到；不通过时 BFF 回答 "can't confirm"。实际（2026-11-07 用户决定可含模型自己算的结果，D-091）：也接受对被引用数据点的简单计算（和、差、比、变化率）、漏引但存在的数据点（自动补引用）、上下文文字里写明的数字（DQ 发现等）、复述用户问题里的数字
   - `securegpt.py`：`httpx.AsyncClient` 客户端，token 获取 / 过期前刷新 / 401 刷新一次，结构化输出，超时和重试可配；凭证只从 BFF 环境变量读，不进日志
   - 包版本 ↔ 提示词版本兼容检查：数据库里的提示词需要更新的包时报明确错误
-- [ ] 提示词 `enrich/prompts/metric_chat_v1.md`：只答本公司本指标；只用上下文；每个数字带引用；越界、注入类问题拒答；`possible_issue` + `issue_summary`
-- [ ] publish 写入 `ChatPrompt`（版本、system 文本、schema）
-- [ ] `scripts/export_metric_chat.py` → `dist/uw_metric_chat-<版本>/`：每个文件头注明"由 prof360 生成，勿改"、版本和来源提交；附 `CHECKSUMS` 和中文 `README.zh-CN.md`
-- [ ] 单元测试用 `tests/fake_llm.py` 和模拟网关
-- [ ] `scripts/eval_metric_chat.py`（工作网络）：20–30 个问题，如 GM interest coverage 和 Q4 2025 NM、PFE 无营业利润时的 EBIT、MAR fee revenue、越界和注入；gpt-6-luna 与 gpt-6-sol 比较校验通过率、正确率、延迟，定默认模型
+- [x] 提示词 `enrich/prompts/metric_chat_v1.md`：只答本公司本指标；只用上下文；每个数字带引用；越界、注入类问题拒答；`possible_issue` + `issue_summary`
+- [x] publish 写入 `ChatPrompt`（版本、system 文本、schema；版本在 `config/metric_chat.yaml`，旧版本 IsActive = 0）
+- [x] `scripts/export_metric_chat.py` → `dist/uw_metric_chat-<版本>/`：每个文件头注明"由 prof360 生成，勿改"、版本和来源提交；附 `CHECKSUMS` 和中文 `README.zh-CN.md`（源文件 `docs/metric-chat-bff.zh-CN.md`）以及 `bff_metric_chat.sql`
+- [x] 单元测试用假模型和模拟网关（respx），`tests/test_metric_chat.py`
+- [x] `scripts/eval_metric_chat.py`：24 个问题（`tests/fixtures/metric_chat_eval.yaml`），如 GM interest coverage 和 Q4 2025 NM、CAT 的 cash interest paid、MAR fee revenue、越界和注入。本地开发模型（`LLM_PROVIDER`）2026-11-07：24/24 通过校验、24/24 符合预期
+- [ ] 在工作网络用 `--provider securegpt` 比较 gpt-6-luna 与 gpt-6-sol 的校验通过率、正确率、延迟，定默认模型
 
 #### 19.C 用户报告进入复核（管线，约 2 天）
 - [ ] `uw-pipeline review` 增加来源 `MetricIssueReport`（用户点 "This looks wrong"，或回答 `possible_issue = true`）

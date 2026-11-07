@@ -38,7 +38,7 @@ dev = [
 uw-pipeline = "uw_pipeline.cli:app"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/uw_pipeline"]
+packages = ["src/uw_pipeline", "src/uw_metric_chat"]  # the chat package: Phase 19.B, D-091
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -75,7 +75,7 @@ python_version = "3.11"
 strict = true
 plugins = ["pydantic.mypy"]
 mypy_path = "src"
-packages = ["uw_pipeline"]
+packages = ["uw_pipeline", "uw_metric_chat"]
 
 [[tool.mypy.overrides]]
 # Optional dependencies (".[azure]"), imported only for ADLS storage / SQL Server.
