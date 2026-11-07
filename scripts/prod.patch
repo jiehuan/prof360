@@ -1,8 +1,8 @@
 diff --git a/.env.example b/.env.example
-index 779f274cd7a069d9ba9268f3fa141594615e8ea4..be326e64a660abad5c84b192862dd8dcb8a62cb6 100644
+index 7ea3dd02bd629fd55406ad77983c176df3abfe8a..1325f5782e549b9a62e313867e9ccd762f890489 100644
 --- a/.env.example
 +++ b/.env.example
-@@ -20,19 +20,10 @@ ALPHAVANTAGE_API_KEY=
+@@ -20,21 +20,12 @@ ALPHAVANTAGE_API_KEY=
  # ALPHAVANTAGE_SUBSCRIPTION_KEY=
  # ALPHAVANTAGE_CALLS_PER_MINUTE=75   # premium plan
  # ALPHAVANTAGE_DAILY_QUOTA=0         # 0 = unlimited
@@ -23,14 +23,16 @@ index 779f274cd7a069d9ba9268f3fa141594615e8ea4..be326e64a660abad5c84b192862dd8dc
 -# Only with LLM_PROVIDER=runware (account needs at least $5 credit)
 -RUNWARE_API_KEY=
  # LLM_ENABLED=false   # rules only
+ 
+ # Logging (D-089). LOG_FORMAT=json in the image. LOG_LEVEL=DEBUG brings back per-company detail.
 diff --git a/CLAUDE.md b/CONTRIBUTING.md
 similarity index 93%
 rename from CLAUDE.md
 rename to CONTRIBUTING.md
-index f9c88776b9089d9f6f395da651b6aaa17920c1b6..140481ead320445175ad2752ccc30b2c9f44c53a 100644
+index 7505c7f3f81dac7908465d180183d4bee7c79c39..78f9330caa85c6d90075bc64d22d0ea8720cb380 100644
 --- a/CLAUDE.md
 +++ b/CONTRIBUTING.md
-@@ -27,12 +27,10 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
+@@ -28,12 +28,10 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
  .venv/bin/ruff check . && .venv/bin/ruff format --check . && .venv/bin/mypy
  .venv/bin/python scripts/refresh_sec_fixtures.py   # rebuild SEC fixtures from data/raw
  .venv/bin/python scripts/securegpt_smoke.py         # SecureGPT gateway check (work network)
@@ -43,7 +45,7 @@ index f9c88776b9089d9f6f395da651b6aaa17920c1b6..140481ead320445175ad2752ccc30b2c
  ```
  
  Architecture, stages, data model and internals: `docs/TECHNICAL.md`.
-@@ -77,5 +75,3 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
+@@ -78,5 +76,3 @@ Local dev: settings come from env vars / `.env` (see `.env.example`). Raw respon
  - Signal and section rules live in `config/signal_rules.yaml` and `company_overrides/*.yaml`
    (`sections:`); every false positive found becomes a test case in `tests/test_signals.py`.
  
@@ -219,7 +221,7 @@ index 4d79f8682e6a5bf499e3ba15437bb179fbdf0e2b..9691c23db332eb1d5d9abccdfdd9a53d
    ALPHAVANTAGE_MODE: "direct"       # direct | apim; mode/env may also live in a ConfigMap
    ALPHAVANTAGE_ENV: "dv"            # profile in mounted config/alphavantage.yaml
 diff --git a/docs/OPERATIONS.md b/docs/OPERATIONS.md
-index 72362b733d61dff4e5821495be4cb9c4301ba99a..93d1a4f64f6dc84a4cd8012e6649727ae811b8ab 100644
+index 0e0176c2ce4a3b23181eadd01a2d938854fd3cc6..566dfdef82e258eae181e31b6a28d39fc5ec3dee 100644
 --- a/docs/OPERATIONS.md
 +++ b/docs/OPERATIONS.md
 @@ -1,6 +1,6 @@
@@ -230,7 +232,7 @@ index 72362b733d61dff4e5821495be4cb9c4301ba99a..93d1a4f64f6dc84a4cd8012e6649727a
  
  ## 1. 日常运行
  
-@@ -82,7 +82,7 @@
+@@ -85,7 +85,7 @@
  
  ## 7. 详情弹窗数据（Phase 8，D-036）
  
@@ -239,7 +241,7 @@ index 72362b733d61dff4e5821495be4cb9c4301ba99a..93d1a4f64f6dc84a4cd8012e6649727a
  - 章节的可读名称、公式里概念的名称在 `config/source_labels.yaml`。新增章节代码或概念时在这里加一项，否则界面上会直接显示代码。
  - 银行的 5 年历史由 `config/industry_groups.yaml` 的 `mdna_history_years` 控制，只保存旧 10-K 的 MD&A。
  - 贷款组合的口径在 `config/text_extraction.yaml` 的 `loan_portfolio`。只保留两个模型一致、且原文给出余额的类别，不会从百分比反推余额。
-@@ -93,21 +93,15 @@
+@@ -96,21 +96,15 @@
  - 公司 logo（D-067）：`config/logos/<TICKER>.png`（或 .jpg/.gif/.webp，不超过 200 KB，宽约 250 px），`publish` 转成 data URI 写进 `Company.logo`。管线运行时不联网取 logo。新增公司时：在能访问 Wikipedia 的网络上运行 `python scripts/fetch_logos.py`（只取没有文件的公司），打开 `data/reports/logos.html` 看一遍再提交；取不到或取错的，手工放一个文件，并在 `config/logos/SOURCES.yaml` 记 `source: manual` 和来源。取错的也可以在 `config/logos.yaml` 指定 Wikidata 条目、Wikipedia 文章或网站，再 `--ticker XXX` 重取。还没进 `companies.yaml` 的 S&P 500 成员列在 `config/logos.yaml` 的 `extra_companies`（D-083），logo 已经备好；公司加进 `companies.yaml` 后这里的条目自动忽略，logo 文件直接可用。注意：维基百科上新改名或新分拆的公司常常还是旧 logo（如 Chesapeake → Expand），看对照页时要留意。
  - 应用库的映射规则（指标分类、风险类型、confidence）在 `config/app_publish.yaml`。如果 `RiskTypes` 里出现 "Other"，在 `risk_types` 里加一条规则即可，重新 publish 不需要 LLM。
  - 新闻相关性：公司别名在 `config/companies.yaml` 的 `news_aliases`；排除规则和 LLM 判断在 `config/news.yaml`。新闻阶段的 `pruned` 是按当前规则删掉的旧文章数。
@@ -266,7 +268,7 @@ index 72362b733d61dff4e5821495be4cb9c4301ba99a..93d1a4f64f6dc84a4cd8012e6649727a
  
  ## 10. Azure SQL 和 ADLS（D-040）
  
-@@ -154,7 +148,7 @@
+@@ -157,7 +151,7 @@
  - 行业组 24 个，每组的模块指标以 XBRL 为主；文本指标（产品收入占比、医疗赔付率、无保险存款、可比销售额等）从 MD&A 和新闻稿读取，两次读取一致才保存。
  - 财年：季度结束日从公司自己的 10-Q 学习（Costco、PepsiCo 的 12/12/12/16 周）；Alpha Vantage 把这类季度记在月末，业绩匹配允许 25 天误差。
  - 覆盖率：`coverage-report` 每个缺口要有行业组或公司说明。先看是不是整个行业都缺（写 `groups:`），再写公司说明；写之前在 companyfacts 里核对该 tag 确实不存在。同一特性的公司共有的缺口（如临床阶段公司没有收入、没有借款）写在 `traits:` 下（D-063）。新上市、分拆或从 20-F 改报 10-K 的公司，目标从它第一份 10-K / 10-Q 算起，不需要说明。不要为补缺口加通用的 tag 回退：先查回退会不会让别的公司同一指标在不同期间混用两种口径（D-063 的 long_term_debt 教训）。
@@ -275,16 +277,16 @@ index 72362b733d61dff4e5821495be4cb9c4301ba99a..93d1a4f64f6dc84a4cd8012e6649727a
  
  ## 10e. Phase 17：公司范围、样本和行业模块（D-055、D-056、D-058）
  
-@@ -172,7 +166,7 @@
+@@ -175,7 +169,7 @@
  | transcripts 显示 `unavailable` | AV 没有这家公司这一季的记录。改过 ticker 的公司，AV 常把旧数据留在旧代码下：在 `config/companies.yaml` 设置 `av_symbols`（新代码在前，例如 SKYD 是 `[SKYD, PSKY]`），下次运行会按新列表重试，新闻也会重新回补 30 天 |
  | SEC 返回 403/429 | 检查 `SEC_USER_AGENT` 是否包含联系邮箱，限速不要超过 10 次/秒（默认 8）。客户端已经带了重试 |
  | 日志里出现 `LLM unavailable` | 凭证、环境或部署名有问题（SecureGPT：检查 `SECUREGPT_*` 和 `config/securegpt.yaml`，先跑 smoke test）。此时 signals 会退回纯规则，textmetrics 和 insights 会失败 |
--| 某家公司的阶段长时间没有日志 | 本地运行时先看电脑是否睡眠过（`pmset -g log | grep Sleep`）：睡眠会冻结进程、断开连接，计时也暂停。长时间运行用 `caffeinate -i uw-pipeline run ...`。否则多半是一次 LLM 请求没有返回：Claude 一次调用最长 `ANTHROPIC_TIMEOUT_SEC`（默认 600 秒，含重试），之后这一项失败、运行继续，下次运行重新请求 |
-+| 某家公司的阶段长时间没有日志 | 本地运行时先看电脑是否睡眠过（`pmset -g log | grep Sleep`）：睡眠会冻结进程、断开连接，计时也暂停。长时间运行用 `caffeinate -i uw-pipeline run ...`。否则多半是一次 LLM 请求没有返回：超过 `config/securegpt.yaml` 的 `timeout_sec` 后这一项失败、运行继续，下次运行重新请求 |
+-| 某个阶段长时间没有结束（日志里只有 `stage ...: N of N companies to run`，没有 `done`） | 本地运行时先看电脑是否睡眠过（`pmset -g log | grep Sleep`）：睡眠会冻结进程、断开连接，计时也暂停。长时间运行用 `caffeinate -i uw-pipeline run ...`。否则多半是一次 LLM 请求没有返回：Claude 一次调用最长 `ANTHROPIC_TIMEOUT_SEC`（默认 600 秒，含重试），之后这一项失败、运行继续，下次运行重新请求 |
++| 某个阶段长时间没有结束（日志里只有 `stage ...: N of N companies to run`，没有 `done`） | 本地运行时先看电脑是否睡眠过（`pmset -g log | grep Sleep`）：睡眠会冻结进程、断开连接，计时也暂停。长时间运行用 `caffeinate -i uw-pipeline run ...`。否则多半是一次 LLM 请求没有返回：超过 `config/securegpt.yaml` 的 `timeout_sec` 后这一项失败、运行继续，下次运行重新请求 |
  | 运行一直显示 RUNNING | 进程已经死了。30 分钟后再次启动同一个 job 就会续跑（12 小时之内）；也可以等下一次 CronJob。超过 12 小时的会被关闭，新运行从头开始 |
  | 退出码 2 | 有运行正在进行（任何 job，运行锁），无需处理；被挡住的 job 会在下一个时间点运行 |
  | DQ 报出 `quarters_vs_year` 错误 | 通常是公司在新申报里重述了前期数据，新旧口径混在一起（例如 LUV 2025 年的 capex，见 D-035）。要核对原始文件；等下一份 10-K 入库后，口径通常会恢复一致 |
-@@ -188,5 +182,5 @@
+@@ -191,5 +185,5 @@
  ## 12. 密钥和费用
  
  - 密钥只放在 `.env`（本地，已被 git 忽略）或 OpenShift Secret 中，**不要写进代码、日志或测试数据**。Alpha Vantage 的报错消息里会带 key，客户端已经做了脱敏。
@@ -292,7 +294,7 @@ index 72362b733d61dff4e5821495be4cb9c4301ba99a..93d1a4f64f6dc84a4cd8012e6649727a
 +- 提交前检查：用 `git grep --cached` 搜索 SecureGPT 订阅 key 和 Alpha Vantage key 的前几位，应该没有任何结果。
  - LLM 调用会按输入哈希缓存，输入不变时不会再次调用。每晚的费用只来自内容发生变化的公司。可以用 `runs` 查看每次运行的估算费用。
 diff --git a/docs/PLAN.md b/docs/PLAN.md
-index 3596353d75b48802f2367161eef8e38f839693a5..0968bcefd47f3595cc421bee7abaeef8ec47475d 100644
+index f41f612951fe867cdc2e1c2e2ba3dc79e751970e..19e28934d58a42589b4b4517de0270ee1ab11a01 100644
 --- a/docs/PLAN.md
 +++ b/docs/PLAN.md
 @@ -1,6 +1,6 @@
@@ -402,7 +404,7 @@ index 3596353d75b48802f2367161eef8e38f839693a5..0968bcefd47f3595cc421bee7abaeef8
  - 表结构：管线库加一张选择结果表（重新生成 `deploy/sql`）；应用库不改（方案 A）："指标由 AI 选择"的说明写进应用库已有的 `Methodology` 文本，不加字段。
  
  #### 17e 质量关口
-@@ -902,15 +902,15 @@ uw-pipeline dq-report --run-id <id>
+@@ -971,15 +971,15 @@ BFF
  |---|---|---|---|
  | sec | company、facts、documents | SEC 每秒 10 次（所有 pod 共用一个 IP / User-Agent） | 少量 worker + 全局令牌桶（8/秒） |
  | av | news、transcripts | AV 每分钟配额 | 全局令牌桶 |
@@ -421,7 +423,7 @@ index 3596353d75b48802f2367161eef8e38f839693a5..0968bcefd47f3595cc421bee7abaeef8
  
  #### 10.E 必须先改的代码结构
  - **事务缩短**：现在每个阶段把一家公司的网络和 LLM 调用都放在同一个数据库事务里，可能持续几分钟。改成"先读输入（短事务）→ 在事务外调用 SEC / AV / LLM → 一次性写结果（短事务）"。这是并行的前提，也是改动最大的一步。
-@@ -920,13 +920,13 @@ uw-pipeline dq-report --run-id <id>
+@@ -989,13 +989,13 @@ BFF
  - **数据库**：SQLite 无法并发写，必须换 Azure SQL；在拿到权限前用本地 Postgres 开发和压测。
  
  #### 10.F LLM 的 Batch 化（夜间）
@@ -438,7 +440,7 @@ index 3596353d75b48802f2367161eef8e38f839693a5..0968bcefd47f3595cc421bee7abaeef8
  - 结论：23:30 开始，约 03:00 前完成，满足次日早上更新的要求；早上 05:30 的补跑处理失败项和晚到的申报。
  - 首次回补 4,000 家：companyfacts / submissions 用 SEC 批量包，不逐家请求；文件下载约 6 万次请求，约 2 小时；Tier 1 的洞察用 Batch。
  
-@@ -947,7 +947,7 @@ uw-pipeline dq-report --run-id <id>
+@@ -1016,7 +1016,7 @@ BFF
  
  ---
  
@@ -447,7 +449,7 @@ index 3596353d75b48802f2367161eef8e38f839693a5..0968bcefd47f3595cc421bee7abaeef8
  
  - 每个 Phase 开始前先列出要改动的文件和计划，等待确认后再动手
  - 单测不得访问外网；新增外部调用必须同时加 fixture
-@@ -966,8 +966,8 @@ uw-pipeline dq-report --run-id <id>
+@@ -1035,8 +1035,8 @@ BFF
  暂时不用管
  2. Alpha Vantage 订阅档位与限速？
  现在用 free key（存于本地 `.env` 的 `ALPHAVANTAGE_API_KEY`）。之后是75call/min
@@ -459,7 +461,7 @@ index 3596353d75b48802f2367161eef8e38f839693a5..0968bcefd47f3595cc421bee7abaeef8
  每个SIC在yaml里分开计划，可以同一个SIC用同一批metrics
  5. Adjusted EBITDA 展示计算值即可，还是必须用公司公布值？
 diff --git a/docs/TECHNICAL.md b/docs/TECHNICAL.md
-index 8847eff6f142bbb7d565f8702caccdea72108b6c..6ef8ecbf11090f54eafc34dd1438aa1cdebcb2d0 100644
+index 898880d1a224b8c4d76d50d1285ab6b69cf0f868..376f93ddeb50fabc630313ccc924743a478d6e45 100644
 --- a/docs/TECHNICAL.md
 +++ b/docs/TECHNICAL.md
 @@ -13,7 +13,7 @@ how prod is generated from the release source, are documented below.
@@ -546,7 +548,7 @@ index 8847eff6f142bbb7d565f8702caccdea72108b6c..6ef8ecbf11090f54eafc34dd1438aa1c
  | `ALPHAVANTAGE_API_KEY` | – | Required for AV stages in both direct and APIM modes |
  | `ALPHAVANTAGE_MODE` | `direct` | `direct` or `apim`; never automatically falls back |
 diff --git a/docs/decisions.md b/docs/decisions.md
-index 4ac02695c6cd1180bc51787da4e1a775a51506ce..4f5d6a53c04aa13b94b3db33b0252e9f7433079d 100644
+index 5aaca7e148ed67e44ea294e5371efd6b94853c51..58f76b83bca2213c199c713dfa9dfb587e20ec35 100644
 --- a/docs/decisions.md
 +++ b/docs/decisions.md
 @@ -220,7 +220,7 @@ has no exhibit; this is logged.
@@ -1707,16 +1709,18 @@ index 455ae430652d387da6a7ad38883153dc62b6f9f3..724a6f32ade168d4a1419e221c435f3c
              if client is not None:
                  # Per-model RPM / TPM limits shared by parallel workers (Phase 15i).
 diff --git a/src/uw_pipeline/logs.py b/src/uw_pipeline/logs.py
-index 94ecc992bf23093a6fb4759c975b588b5c46bc3d..3d1554d23f5dac2246d03325b0a4ff12ca877c17 100644
+index 192ee76cb19d2624b978c7a453f2e79fcf13c787..80c08f57bbb3b570cc369281cd6af5ae29d41e60 100644
 --- a/src/uw_pipeline/logs.py
 +++ b/src/uw_pipeline/logs.py
-@@ -63,5 +63,5 @@ def setup_logging(*, json_format: bool, verbose: bool = False) -> None:
+@@ -92,7 +92,7 @@ def setup_logging(*, json_format: bool, verbose: bool = False) -> None:
      root = logging.getLogger()
      root.handlers[:] = [handler]
-     root.setLevel(logging.DEBUG if verbose else logging.INFO)
+     root.setLevel(_level(verbose))
 -    for noisy in ("httpx", "httpcore", "anthropic"):
 +    for noisy in ("httpx", "httpcore"):
          logging.getLogger(noisy).setLevel(logging.WARNING)
+ 
+ 
 diff --git a/src/uw_pipeline/settings.py b/src/uw_pipeline/settings.py
 index aad39dd95e4fe1f9158656a2b401839509e97036..7c40a784f7414d65b79879b273acfafb8bb39cb8 100644
 --- a/src/uw_pipeline/settings.py
