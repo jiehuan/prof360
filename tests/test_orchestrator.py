@@ -294,3 +294,22 @@ def test_short_transaction_stages_run_in_parallel_on_a_sqlite_file(tmp_path) -> 
     runner, state = _concurrency_runner("insights")
     assert orch.execute(run_id, runner).status == "SUCCEEDED"
     assert state["peak"]["insights"] == 3 and state["peak"]["facts"] == 1
+
+
+def test_one_log_line_per_stage(engine, caplog) -> None:
+    """D-089: INFO says how each stage went; a stage with failures is a WARNING naming them."""
+    orch = Orchestrator(engine, now=Clock(), max_attempts=1)
+    run_id, _ = orch.start("nightly", ["company", "facts"], ["A", "B", "C"])
+
+    def runner(stage, ticker):
+        return TaskResult(ticker, stage, ok=not (stage == "company" and ticker == "B"))
+
+    with caplog.at_level("INFO", logger="uw_pipeline.jobs.orchestrator"):
+        orch.execute(run_id, runner)
+    lines = [(r.levelname, r.getMessage()) for r in caplog.records]
+    assert lines == [
+        ("INFO", "stage company: 3 of 3 companies to run"),
+        ("WARNING", "stage company done in 0m00s: 2 succeeded, 1 failed (B), 0 skipped"),
+        ("INFO", "stage facts: 3 of 3 companies to run"),
+        ("INFO", "stage facts done in 0m00s: 2 succeeded, 0 failed, 1 skipped (B)"),
+    ]

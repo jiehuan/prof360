@@ -1,0 +1,43 @@
+# Temporary pod for reading run logs and running `uw-pipeline runs` / `dq-report` from the
+# OpenShift web console (D-089). It mounts the pipeline PVC, sleeps 30 minutes, then exits and
+# is deleted a minute later (delete it yourself to finish sooner).
+#
+# Web console: Workloads -> Jobs -> Create Job, paste this file, and replace
+# PLACEHOLDER_NAMESPACE and PLACEHOLDER_IMAGE (copy the `image:` line from the uw-nightly
+# CronJob's YAML). Then Workloads -> Pods -> uw-log-viewer-... -> Terminal:
+#   uw-pipeline logs                 # the latest run (nightly or morning)
+#   uw-pipeline logs --list          # every kept log (30 days)
+#   uw-pipeline logs --run 174 --level warning
+#
+# The PVC is ReadWriteOnce: while this pod runs, a CronJob pod placed on another node waits for
+# the volume. Do not start it close to 23:30 or 05:30 ET; while a run is in progress, open the
+# Terminal of the running uw-nightly / uw-morning pod instead.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: uw-log-viewer                 # deleted a minute after it ends, so the name is free again
+  namespace: PLACEHOLDER_NAMESPACE
+  labels: {app: uw-pipeline, job: uw-log-viewer}
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 1800
+  ttlSecondsAfterFinished: 60
+  template:
+    metadata:
+      labels: {app: uw-pipeline, job: uw-log-viewer}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: uw-pipeline
+          image: PLACEHOLDER_IMAGE:latest
+          command: ["sleep", "1800"]
+          envFrom:
+            - secretRef: {name: uw-pipeline-secrets}   # for `uw-pipeline runs` / `dq-report`
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 512Mi}
+          volumeMounts:
+            - {name: data, mountPath: /data}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: uw-pipeline-data}

@@ -132,7 +132,7 @@ def load_company_facts(
             if not wanted:
                 continue
             if gap:
-                log.info("%s: %s %s not in companyfacts; reading its XBRL instance",
+                log.debug("%s: %s %s not in companyfacts; reading its XBRL instance",
                          cfg.ticker, filing.form, filing.accn)  # fmt: skip
             frame = _instance_facts(sec, reg, filing, wanted)
             if frame is not None:
@@ -220,7 +220,7 @@ def run_facts_stage(
             )  # fmt: skip
             with engine.begin() as conn:
                 if not force and _state_hash(conn, row["company_id"], "xbrl_facts") == digest:
-                    log.info("%s: XBRL inputs unchanged; skipping load", cfg.ticker)
+                    log.debug("%s: XBRL inputs unchanged; skipping load", cfg.ticker)
                     results.append(TaskResult(cfg.ticker, "facts", ok=True, detail="unchanged"))
                     continue
                 rows = _fact_rows(row["cik"], row["company_id"], facts)
@@ -232,7 +232,7 @@ def run_facts_stage(
                       "content_hash": digest, "updated_at": now()}],
                     key_cols=["company_id", "source_key"],
                 )  # fmt: skip
-            log.info("%s: %d XBRL facts loaded", cfg.ticker, len(rows))
+            log.debug("%s: %d XBRL facts loaded", cfg.ticker, len(rows))
             results.append(TaskResult(cfg.ticker, "facts", ok=True, detail=f"{len(rows)} facts"))
         except Exception as exc:
             log.exception("%s: facts stage failed", cfg.ticker)
@@ -292,7 +292,7 @@ def compute_company(
     restated: list[str] = []
     periods = standardize(facts, cal, restated)
     for note in restated:  # held at the basis of their fiscal year (D-046)
-        log.info("restated after its year was reported, year's basis kept: %s", note)
+        log.debug("restated after its year was reported, year's basis kept: %s", note)
     return periods, compute_metrics(periods, creg, stored)
 
 
@@ -419,7 +419,7 @@ def run_compute_stage(
                 if stale:
                     delete_keys(conn, metric_value, keys[1:], stale,
                                 metric_value.c.company_id == row["company_id"])  # fmt: skip
-            log.info("%s: %d metric values (%d stale removed)", cfg.ticker, len(out), len(stale))
+            log.debug("%s: %d metric values (%d stale removed)", cfg.ticker, len(out), len(stale))
             results.append(TaskResult(cfg.ticker, "compute", ok=True, detail=f"{len(out)} values"))
         except Exception as exc:
             log.exception("%s: compute stage failed", cfg.ticker)

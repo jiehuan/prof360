@@ -250,7 +250,7 @@ def _filing_sections(
     shift = len(report) + 1
     kept = [Section(s.code, s.start + shift, s.end + shift, s.text)
             for s in sections if s.code not in codes]  # fmt: skip
-    log.info("%s %s: text from the annual report %s (Exhibit 13)", f.form, f.accn, name)
+    log.debug("%s %s: text from the annual report %s (Exhibit 13)", f.form, f.accn, name)
     return report_id, found + kept
 
 
@@ -549,7 +549,7 @@ def run_documents_stage(
                     event_lookback_days=event_lookback_days, force=force, now=now(),
                     history_years=years, history_quarters=quarters,
                 )  # fmt: skip
-            log.info("%s: documents %s", cfg.ticker, stats)
+            log.debug("%s: documents %s", cfg.ticker, stats)
             detail = ", ".join(f"{k}={v}" for k, v in stats.items())
             results.append(TaskResult(cfg.ticker, "documents", ok=True, detail=detail))
         except Exception as exc:

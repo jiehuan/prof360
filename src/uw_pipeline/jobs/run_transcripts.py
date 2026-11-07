@@ -171,7 +171,7 @@ def run_transcripts_stage(
         try:
             with engine.begin() as conn:
                 stats = process_company(cfg, av, conn, now())
-            log.info("%s: transcripts %s", cfg.ticker, stats)
+            log.debug("%s: transcripts %s", cfg.ticker, stats)
             detail = ", ".join(f"{k}={v}" for k, v in stats.items())
             results.append(TaskResult(cfg.ticker, "transcripts", ok=True, detail=detail))
         except QuotaExhaustedError as exc:

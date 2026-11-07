@@ -298,7 +298,7 @@ class Extractor:
                            if table_spec else None)  # fmt: skip
                 if checked is None or checked.value is None:
                     rejected += 1
-                    log.info("%s %s %s r%s c%s withheld: %s", doc.label, cell.metric_code,
+                    log.debug("%s %s %s r%s c%s withheld: %s", doc.label, cell.metric_code,
                              cell.table, cell.row, cell.col,
                              checked.reason if checked else "not requested")  # fmt: skip
                     continue
@@ -338,7 +338,7 @@ class Extractor:
             for cell in out.segments:
                 row, reason = check_loan(by_id, cell)
                 if row is None:
-                    log.info("%s loan %r %s r%s withheld: %s", doc.label, cell.segment,
+                    log.debug("%s loan %r %s r%s withheld: %s", doc.label, cell.segment,
                              cell.table, cell.row, reason)  # fmt: skip
                 else:
                     rows.append(row)
@@ -911,7 +911,7 @@ def run_text_metrics_stage(
                 )
             for m in stats.mismatches:
                 log.warning("%s: earnings release vs XBRL mismatch: %s", cfg.ticker, m)
-            log.info("%s: textmetrics %s", cfg.ticker,
+            log.debug("%s: textmetrics %s", cfg.ticker,
                      {k: v for k, v in stats.__dict__.items() if k != "mismatches"})  # fmt: skip
             detail = f"{stats.extracted} values, {stats.preliminary} preliminary"
             results.append(TaskResult(cfg.ticker, "textmetrics", ok=True, detail=detail))

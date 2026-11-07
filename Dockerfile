@@ -46,6 +46,7 @@ RUN mkdir -p /data && chgrp -R 0 /app /data && chmod -R g=u /app /data
 
 ENV PYTHONUNBUFFERED=1 \
     LOG_FORMAT=json \
+    LOG_DIR=/data/logs \
     CONFIG_DIR=/app/config \
     DATA_DIR=/data \
     DATABASE_URL=sqlite:////data/uw.db
