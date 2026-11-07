@@ -929,7 +929,7 @@ BFF
 - [ ] publish 写入 `ChatPrompt`（版本、system 文本、schema）
 - [ ] `scripts/export_metric_chat.py` → `dist/uw_metric_chat-<版本>/`：每个文件头注明"由 prof360 生成，勿改"、版本和来源提交；附 `CHECKSUMS` 和中文 `README.zh-CN.md`
 - [ ] 单元测试用 `tests/fake_llm.py` 和模拟网关
-- [ ] `scripts/eval_metric_chat.py`（工作网络）：20–30 个问题，如 GM interest coverage 和 Q4 2025 NM、PFE 无营业利润时的 EBIT、MAR fee revenue、越界和注入；luna 与 sol 比较校验通过率、正确率、延迟，定默认模型
+- [ ] `scripts/eval_metric_chat.py`（工作网络）：20–30 个问题，如 GM interest coverage 和 Q4 2025 NM、PFE 无营业利润时的 EBIT、MAR fee revenue、越界和注入；gpt-6-luna 与 gpt-6-sol 比较校验通过率、正确率、延迟，定默认模型
 
 #### 19.C 用户报告进入复核（管线，约 2 天）
 - [ ] `uw-pipeline review` 增加来源 `MetricIssueReport`（用户点 "This looks wrong"，或回答 `possible_issue = true`）
@@ -941,7 +941,7 @@ BFF
 - [ ] 前端：问答抽屉，三个预设问题；引用可点，定位到弹窗里对应的那一期
 
 **注意**
-- 配额：每问约 3–5k token；与 nightly 共用 SecureGPT 每部署 1.5M TPM（D-080）。nightly 的综合任务用 sol，问答默认 luna。
+- 配额：每问约 3–5k token；与 nightly 共用 SecureGPT 每部署 1.5M TPM（D-080）。nightly 的综合任务用 gpt-6-sol，问答默认 gpt-6-luna。
 - 延迟：第一版不做流式，推理模型约 5–15 秒，前端显示"思考中"。
 - 安全：上下文只放结构化数据，不放文件原文；只按 BFF 传入的公司 id 取数；日志只记 UserId。
 
