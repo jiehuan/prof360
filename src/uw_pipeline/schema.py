@@ -6,6 +6,7 @@ Strings are Unicode (NVARCHAR on SQL Server): filing text has curly quotes and n
 from __future__ import annotations
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     Column,
     DateTime,
@@ -515,6 +516,29 @@ metric_chat_context = Table(
     Column("context_json", UnicodeText, nullable=False),
     Column("context_hash", Unicode(64), nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False),
+)
+
+# Users' reports of a metric value that looks wrong (Phase 19.C, D-092), copied by the publish
+# stage from the BFF's MetricIssueReport (with the chat turn it came from) for `uw-pipeline
+# review`. report_id is the app's ReportId; user_hash stands for the user (distinct reporters
+# are counted, nobody is named). Decisions are review_decision rows (item_type REPORT).
+metric_issue_report = Table(
+    "metric_issue_report",
+    metadata,
+    Column("report_id", Integer, primary_key=True, autoincrement=False),
+    Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False, index=True),
+    Column("metric_code", Unicode(60), nullable=False),
+    Column("period", Unicode(10)),  # FY2025 | 2026Q3, as the chat's data-point ids
+    Column("source", Unicode(10), nullable=False),  # USER | MODEL
+    Column("comment", Unicode(2000)),
+    Column("issue_summary", Unicode(1000)),
+    Column("turn_id", BigInteger),
+    Column("question", Unicode(2000)),
+    Column("answer", UnicodeText),
+    Column("grounding", Unicode(20)),
+    Column("user_hash", Unicode(16), nullable=False),
+    Column("reported_at", DateTime(timezone=True), nullable=False),
+    Column("pulled_at", DateTime(timezone=True), nullable=False),
 )
 
 # Orchestration (Phase 6, decisions D-034). One row per run; one task per (company, stage).

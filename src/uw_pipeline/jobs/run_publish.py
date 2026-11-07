@@ -10,6 +10,7 @@ choices (categories, risk types, confidence rules) are in config/app_publish.yam
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import re
@@ -21,9 +22,10 @@ from typing import Any
 
 import yaml
 from pydantic import BaseModel, Field
-from sqlalchemy import Connection, Engine, desc, select, true, update
+from sqlalchemy import Connection, Engine, desc, func, inspect, select, true, update
 
 from uw_metric_chat.prompting import ANSWER_SCHEMA
+from uw_pipeline.clients.db import table_schema
 from uw_pipeline.compute.registry import MetricDef, Registry
 from uw_pipeline.config import CompanyConfig, IndustryConfig
 from uw_pipeline.enrich.industry_choice import usable_choice
@@ -53,6 +55,7 @@ from uw_pipeline.schema import (
     metric_chat_context,
     metric_detail,
     metric_insight,
+    metric_issue_report,
     metric_source,
     metric_value,
     news_item,
@@ -87,7 +90,9 @@ from uw_pipeline.schema_app import (
     TrendTypes,
     metric_category,
     metrics,
+    pipeline_publish_map,
 )
+from uw_pipeline.schema_bff import MetricIssueReport, UserMetricChat
 
 log = logging.getLogger(__name__)
 
@@ -893,6 +898,49 @@ def publish_chat_prompt(dst: Connection, mcfg: MetricChatConfig, now: datetime) 
     return w.written > written
 
 
+def has_report_tables(app: Connection) -> bool:
+    """Whether the BFF's chat tables exist (bff_metric_chat.sql has been run)."""
+    found = inspect(app).get_table_names(schema=table_schema(app))
+    return {"MetricIssueReport", "UserMetricChat"} <= set(found)
+
+
+def pull_issue_reports(app: Connection, pipe: Connection, row: Mapping[str, Any],
+                       now: datetime) -> int:  # fmt: skip
+    """Copy this company's new MetricIssueReport rows, with their chat turn, into
+    metric_issue_report for `uw-pipeline review` (D-092). Returns how many were added."""
+    pm = pipeline_publish_map.c
+    app_company = app.execute(
+        select(pm.app_id).where(pm.entity == Company.name, pm.pipeline_key == row["cik"])
+    ).scalar_one_or_none()
+    if app_company is None:
+        return 0
+    codes = dict(app.execute(
+        select(pm.app_id, pm.pipeline_key).where(pm.entity == metrics.name)).all())  # fmt: skip
+    last = pipe.execute(
+        select(func.max(metric_issue_report.c.report_id))
+        .where(metric_issue_report.c.company_id == row["company_id"])
+    ).scalar_one_or_none() or 0  # fmt: skip
+    r, t = MetricIssueReport.c, UserMetricChat.c
+    found = app.execute(
+        select(r.ReportId, r.UserId, r.metric_id, r.Source, r.Period, r.Comment,
+               r.IssueSummary, r.TurnId, r.CreatedAt, t.Question, t.Answer, t.Grounding)
+        .outerjoin(UserMetricChat, t.TurnId == r.TurnId)
+        .where(r.CompanyId == app_company, r.ReportId > last)
+        .order_by(r.ReportId)
+    ).all()  # fmt: skip
+    rows = [{
+        "report_id": f.ReportId, "company_id": row["company_id"],
+        "metric_code": codes.get(f.metric_id) or f"app:{f.metric_id}",
+        "period": f.Period, "source": (f.Source or "USER").upper()[:10],
+        "comment": f.Comment, "issue_summary": f.IssueSummary, "turn_id": f.TurnId,
+        "question": f.Question, "answer": f.Answer, "grounding": f.Grounding,
+        "user_hash": hashlib.sha256(f"user:{f.UserId}".encode()).hexdigest()[:16],
+        "reported_at": f.CreatedAt, "pulled_at": now,
+    } for f in found]  # fmt: skip
+    upsert(pipe, metric_issue_report, rows, key_cols=["report_id"])
+    return len(rows)
+
+
 def run_publish_stage(
     companies: Sequence[CompanyConfig],
     registry: Registry,
@@ -906,6 +954,8 @@ def run_publish_stage(
     chat: MetricChatConfig | None = None,
 ) -> list[TaskResult]:
     results: list[TaskResult] = []
+    with app_engine.connect() as app:
+        reports = has_report_tables(app)
     if chat is not None and companies:
         try:  # one row for every company: written once per stage run
             with app_engine.begin() as dst:
@@ -917,6 +967,10 @@ def run_publish_stage(
         try:
             with engine.connect() as src, app_engine.begin() as dst:
                 stats, w = publish_company(cfg, registry, industry, pcfg, labels, src, dst, now())
+            if reports:  # the users' reports of wrong-looking values (D-092)
+                with app_engine.connect() as app, engine.begin() as pipe:
+                    pulled = pull_issue_reports(app, pipe, company_row(pipe, cfg), now())
+                stats.add("issue_reports_pulled", pulled)
             detail = (f"{w.written} written, {w.unchanged} unchanged; "
                       + ", ".join(f"{k}={v}" for k, v in stats.counts.items() if v))  # fmt: skip
             log.debug("%s: publish %s", cfg.ticker, detail)

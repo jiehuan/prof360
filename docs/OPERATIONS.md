@@ -89,6 +89,11 @@
 - **改包**（`src/uw_metric_chat/`：校验规则、客户端、答案格式）：提升 `version.py` 的 `VERSION`；新提示词需要新包时，同时提升 `config/metric_chat.yaml` 的 `min_package_version`，并且**先**让 BFF 换上新文件夹，再发布提示词（旧包遇到新提示词会报 `IncompatibleError`）。
 - **交给 BFF**：commit 之后运行 `python scripts/export_metric_chat.py`，把 `dist/uw_metric_chat-<版本>/` 整个发给 BFF 团队（含中文 README、CHECKSUMS 和 `bff_metric_chat.sql`）。
 - **评估**：题目在 `tests/fixtures/metric_chat_eval.yaml`，报告写到 `data/reports/metric-chat-eval-*.md`；每道题是一次付费调用。
+- **用户报告"值不对"**（D-092）：publish 阶段把新报告拉进管线库，`uw-pipeline review` 里显示为 `R-...`（同一公司、指标、期间一条；`--source user` 只看用户点的，`--source model` 只看问答标记的），附报告内容、当前值、上下文里的疑点和来源文件。处理：
+  1. 打开来源文件核对这一期的值和标签。
+  2. 值没问题：`uw-pipeline review reject R-... --reviewer '姓名' --note '为什么没问题'`。说明经常被问到的，补进 coverage note 或公司覆盖的 `note`，问答以后会引用。
+  3. 值有问题：先写处理方式再批准，`uw-pipeline review approve R-... --reviewer '姓名' --note '怎么修'`；然后修正：标签选错用公司覆盖（`config/company_overrides/<TICKER>.yaml`，写 `note`），候选标签量的不是同一个东西就在 `concept_map.yaml` 标 `proxy`，缺口写 `coverage_notes.yaml`；影响多家或口径变化的在 `docs/decisions.md` 记一条；最后对这家公司重跑 `--stage facts --stage compute --stage metricdetail --stage publish`。
+  4. 批准或拒绝都会对这一组的每份报告记一条决定；之后的新报告会重新进入队列。
 
 ## 7. 详情弹窗数据（Phase 8，D-036）
 
@@ -193,6 +198,7 @@
 | DQ 报出 `metric_identity`（Error） | 存下的值违反了指标关系（例如 CET1 > Tier 1）。核对原始文件；确认后用 `uw-pipeline review` 记下结论 |
 | DQ 报出 `debt_current_portion`（Warning） | 公司没有标注一年内到期的债务，总债务只含长期部分（例如 Macy's）。属于数据缺口，不需要处理 |
 | 日志里出现 `daily LLM budget` | 当天新调用超过 `LLM_DAILY_BUDGET`。未完成的项目第二天会自动补上；需要当天补完时临时调高该变量 |
+| DQ `review_queue` 报出 open reports that the value looks wrong | 有用户或问答报告该指标的值不对、还没复核：运行 `uw-pipeline review`，按上面第 6a 节处理 |
 | DQ 报出 `fallback_denominator` | 比率的分母用了 `concept_map.yaml` 里标为 `proxy` 的标签（目前只有 cash interest paid 代替利息费用）。有自营金融子公司（trait `captive_finance`）的公司是 Warning：要核对分母里是否混进了金融子公司的利息（GM 曾因此显示 0.44x，D-087）；需要时像 GM 一样加公司覆盖，并写 `note`（D-090） |
 | DQ 报出 `source_coverage`（Info） | 洞察只引用了电话会议记录，没有公开链接，属于预期情况 |
 

@@ -118,6 +118,10 @@ IF OBJECT_ID(N'uw_pipeline.metric_source', N'U') IS NOT NULL
     DROP TABLE uw_pipeline.[metric_source];
 GO
 
+IF OBJECT_ID(N'uw_pipeline.metric_issue_report', N'U') IS NOT NULL
+    DROP TABLE uw_pipeline.[metric_issue_report];
+GO
+
 IF OBJECT_ID(N'uw_pipeline.metric_insight', N'U') IS NOT NULL
     DROP TABLE uw_pipeline.[metric_insight];
 GO

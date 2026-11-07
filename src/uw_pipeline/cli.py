@@ -419,7 +419,8 @@ def dq_report(
 review_app = typer.Typer(
     no_args_is_help=False,
     add_completion=False,
-    help="Human review of disputed signals, identity breaks and new legal matters (D-045).",
+    help="Human review of disputed signals, identity breaks, new legal matters (D-045) and "
+    "users' reports of wrong-looking metric values (D-092).",
 )
 app.add_typer(review_app, name="review")
 
@@ -431,15 +432,26 @@ def _review_engine() -> Engine:
     return engine
 
 
+class ReportSource(StrEnum):
+    user = "user"
+    model = "model"
+
+
 @review_app.callback(invoke_without_command=True)
-def review_list(ctx: typer.Context) -> None:
+def review_list(
+    ctx: typer.Context,
+    source: Annotated[
+        ReportSource | None,
+        typer.Option(help="Reports only by users (the button) or by the chat (D-092)"),
+    ] = None,
+) -> None:
     """List the open items, with evidence and source; decide with approve / reject."""
     if ctx.invoked_subcommand is not None:
         return
     from uw_pipeline.jobs.run_review import pending
 
     with _review_engine().connect() as conn:
-        items = pending(conn)
+        items = pending(conn, source.value.upper() if source else None)
     if not items:
         typer.echo("Nothing to review.")
         return
@@ -469,7 +481,8 @@ def review_approve(
     reviewer: Annotated[str, typer.Option(help="Your name; required")],
     note: Annotated[str | None, typer.Option(help="Why")] = None,
 ) -> None:
-    """Keep the item as the pipeline has it."""
+    """Keep the item as the pipeline has it. For a report (R-...): the report is right and the
+    value needs a fix; --note is required and says which."""
     _decide(item_id, "APPROVED", reviewer, note)
 
 
@@ -479,7 +492,8 @@ def review_reject(
     reviewer: Annotated[str, typer.Option(help="Your name; required")],
     note: Annotated[str | None, typer.Option(help="Why")] = None,
 ) -> None:
-    """Reject it: a rejected signal leaves the insight input and the review queue."""
+    """Reject it: a rejected signal leaves the insight input and the review queue; a rejected
+    report means the value is right (--note: why)."""
     _decide(item_id, "REJECTED", reviewer, note)
 
 

@@ -2129,3 +2129,26 @@ income" (2026-11-01).**
 - Delivery: `scripts/export_metric_chat.py` writes dist/uw_metric_chat-<version>/ with headed
   files, CHECKSUMS, the Chinese README (docs/metric-chat-bff.zh-CN.md) and the SQL.
 
+**D-092 Users' reports of a wrong-looking value go to `uw-pipeline review` (2026-11-07, PLAN
+Phase 19.C).**
+- The reports live in the app database (MetricIssueReport, written by the BFF); review reads the
+  pipeline database. Options: (a) review reads the app database directly; (b) publish copies
+  new reports into a pipeline table. Chosen: (b) `metric_issue_report`, so review, dq and the
+  audit trail stay in one database. Publish reads each company's reports with a ReportId above
+  the last one copied, with the chat turn (question, answer, grounding); app ids map back
+  through pipeline_publish_map. The user is kept only as a hash (distinct reporters are
+  counted, nobody is named). Without the BFF's tables (local, an environment before the SQL)
+  nothing is read. `schema_bff.py` holds read-only definitions of the BFF's tables; a test
+  keeps them equal to bff_metric_chat.sql. Reports reach review after the next nightly or
+  morning run.
+- Review: one item (R-...) per company, metric and period, users' reports first, the chat's
+  (possible_issue) after; `--source user|model` filters. The evidence shows the reports, the
+  last question, the value now, and what the chat context flags (proxy or fallback tags,
+  overrides, N/M reason, findings, group median); the source is the period's filing.
+- Decisions: approve = the report is right and the value needs a fix, with a required note
+  saying which; reject = the value is right (note optional). A decision is recorded for every
+  report of the item; a later report opens a new item. The fix itself is made by a person
+  (company override with its note, concept_map proxy, coverage note, a decision entry, then a
+  rerun); the pipeline does not edit config. The dq `review_queue` rule lists open reports
+  per metric.
+

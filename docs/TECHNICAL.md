@@ -9,7 +9,7 @@ how prod is generated from the release source, are documented below.
 | Document | Holds |
 |---|---|
 | `docs/PLAN.md` | Plan of record, phase checklists, open questions |
-| `docs/decisions.md` | Every design decision with its reason (D-001 … D-091), cited below as D-xxx |
+| `docs/decisions.md` | Every design decision with its reason (D-001 … D-092), cited below as D-xxx |
 | `docs/ALPHAVANTAGE_APIM.zh-CN.md` | Alpha Vantage direct/APIM setup, OAuth wire formats and deployment credentials |
 | `docs/OPERATIONS.md` | Day-to-day operations, troubleshooting (Chinese) |
 | `docs/schema-contract.md` | Application tables as the BFF reads them |
@@ -76,7 +76,7 @@ does not switch routes. Raw cache keys, public source URLs and AV JSON parsing r
 | `jobs/` | One module per stage (`run_*.py`), `run_review.py` (human review queue), `stages.py` (stage dispatch), `orchestrator.py` (runs, tasks, lock, resume) |
 | `load/` | `upsert.py` (SQLite / SQL Server upsert, chunked deletes), `app_writer.py` (app ids and versions) |
 | `quality/dq.py`, `quality/identities.py` | Data-quality rules; metric identities (also the textmetrics gate) |
-| `schema.py`, `schema_app.py` | Pipeline tables (42), application tables (26) |
+| `schema.py`, `schema_app.py`, `schema_bff.py` | Pipeline tables (43), application tables (26), and the BFF's chat tables the pipeline only reads (D-092) |
 | `../uw_metric_chat/` | The metric chat package the BFF copies in (D-091): its own package beside `uw_pipeline`, pydantic and httpx only, relative imports. `answer_question` builds the messages (prompt + context), calls SecureGPT (`securegpt.py`, async), and checks every number of the answer against the context (`grounding.py`); `scripts/export_metric_chat.py` exports it, `scripts/eval_metric_chat.py` evaluates it. The pipeline imports only its `ANSWER_SCHEMA` (published with the prompt) |
 | `logs.py`, `frames.py` | JSON logging with run context; pandas helpers |
 
@@ -172,7 +172,7 @@ SUCCEEDED run can have Errors; the summary then points to `uw-pipeline dq-report
 
 ## 6. Data model
 
-### Pipeline database (`schema.py`, 42 tables)
+### Pipeline database (`schema.py`, 43 tables)
 
 | Area | Tables |
 |---|---|
@@ -185,7 +185,7 @@ SUCCEEDED run can have Errors; the summary then points to `uw-pipeline dq-report
 | Insights | `insight`, `insight_evidence`, `insight_link`, `insight_metric`, `followup_question`, `followup_question_insight`, `followup_question_metric`, `followup_question_source` |
 | Metric detail | `metric_detail`, `metric_source`, `metric_insight`, `metric_chat_context` (D-090) |
 | LLM | `llm_call` (cache), `llm_task_stat` (grounding drop rates) |
-| Runs and quality | `pipeline_run`, `pipeline_task`, `dq_finding`, `review_decision` |
+| Runs and quality | `pipeline_run`, `pipeline_task`, `dq_finding`, `review_decision`, `metric_issue_report` (users' reports, D-092) |
 | Governance | `board_composition` |
 | Market and insiders | `market_daily`, `earnings_report` (by symbol), `insider_transaction` (Form 4 lines) |
 | Litigation | `legal_matter` |

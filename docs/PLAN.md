@@ -880,7 +880,7 @@ uw-pipeline dq-report --run-id <id>
 
 ---
 
-### Phase 19 — 指标问答（BFF 内的 chatbot，调用 SecureGPT）（2026-11-06 计划；19.A、19.B 2026-11-07 完成，SecureGPT 评估待工作网络，D-088、D-090、D-091）
+### Phase 19 — 指标问答（BFF 内的 chatbot，调用 SecureGPT）（2026-11-06 计划；19.A–19.C 2026-11-07 完成，SecureGPT 评估待工作网络，D-088、D-090–D-092）
 
 **目标**：用户在指标弹窗里问"这个数怎么算的 / 为什么这么低 / 数据从哪来"，得到只基于本公司本指标数据、每个数字都有出处的英文回答；觉得数不对时可以一键报告，报告进入管线复核。起因：GM 的 interest coverage 曾显示 0.44x（分母误用了含 GM Financial 的支付利息，D-087），网页上的用户无从知道原因。
 
@@ -933,8 +933,8 @@ BFF
 - [ ] 在工作网络用 `--provider securegpt` 比较 gpt-6-luna 与 gpt-6-sol 的校验通过率、正确率、延迟，定默认模型
 
 #### 19.C 用户报告进入复核（管线，约 2 天）
-- [ ] `uw-pipeline review` 增加来源 `MetricIssueReport`（用户点 "This looks wrong"，或回答 `possible_issue = true`）
-- [ ] approve / reject；批准的写 `decisions.md` 或 `coverage_notes.yaml`，再用公司覆盖修正
+- [x] `uw-pipeline review` 增加来源 `MetricIssueReport`（用户点 "This looks wrong"，或回答 `possible_issue = true`）：publish 阶段把新报告连同那一轮问答复制到管线表 `metric_issue_report`（不复制 UserId，只存哈希），同一公司、指标、期间合并为一条，显示当前值和上下文里的疑点；`--source user|model` 筛选；DQ `review_queue` 统计未处理的报告（D-092）
+- [x] approve / reject；批准的写 `decisions.md` 或 `coverage_notes.yaml`，再用公司覆盖修正：approve = 报告成立、值要修正，必须写 `--note`；修正由人按 OPERATIONS.md 第 6a 节的清单做，不自动改配置
 
 #### 19.D BFF 和前端（对方团队；管线写中文接口说明）
 - [ ] BFF：`POST api/companies/{id}/metrics/{metricId}/chat`（`conversationId`、`message` → 回答、引用、`possibleIssue`）；`POST .../chat/{turnId}/report`

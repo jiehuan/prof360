@@ -309,6 +309,30 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_metric_insight_compan
     CREATE INDEX ix_metric_insight_company_id ON uw_pipeline.metric_insight (company_id);
 GO
 
+IF OBJECT_ID(N'uw_pipeline.metric_issue_report', N'U') IS NULL
+CREATE TABLE uw_pipeline.metric_issue_report (
+	report_id INTEGER NOT NULL, 
+	company_id INTEGER NOT NULL, 
+	metric_code NVARCHAR(60) NOT NULL, 
+	period NVARCHAR(10) NULL, 
+	source NVARCHAR(10) NOT NULL, 
+	comment NVARCHAR(2000) NULL, 
+	issue_summary NVARCHAR(1000) NULL, 
+	turn_id BIGINT NULL, 
+	question NVARCHAR(2000) NULL, 
+	answer NVARCHAR(max) NULL, 
+	grounding NVARCHAR(20) NULL, 
+	user_hash NVARCHAR(16) NOT NULL, 
+	reported_at DATETIMEOFFSET NOT NULL, 
+	pulled_at DATETIMEOFFSET NOT NULL, 
+	PRIMARY KEY (report_id), 
+	FOREIGN KEY(company_id) REFERENCES uw_pipeline.company (company_id)
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_metric_issue_report_company_id' AND object_id = OBJECT_ID(N'uw_pipeline.metric_issue_report'))
+    CREATE INDEX ix_metric_issue_report_company_id ON uw_pipeline.metric_issue_report (company_id);
+GO
+
 IF OBJECT_ID(N'uw_pipeline.metric_source', N'U') IS NULL
 CREATE TABLE uw_pipeline.metric_source (
 	company_id INTEGER NOT NULL, 

@@ -176,6 +176,8 @@
 
 问答的回答只能引用 `data_points` 里的 id，回答中的每个数字都要能在上下文里找到（19.B 的校验，D-091）。
 
+**管线读取 BFF 的表**（D-092）：publish 阶段只读 `MetricIssueReport` 和 `UserMetricChat`（按 ReportId 增量），复制到管线库供复核，不写回、不改这两张表；管线的应用库账号需要这两张表的 SELECT 权限。表还没建时跳过。
+
 `udf_GetActiveChatPrompt(N'metric_chat')` 返回当前提示词：`promptId, promptVersion, systemText, outputSchema`（JSON schema）, `contextVersions`（如 "1"）, `minPackageVersion`, `updatedAt`。管线每次 publish 写入 `config/metric_chat.yaml` 指定的版本，旧版本保留、`IsActive = 0`。BFF 的用法和字段见 `docs/metric-chat-bff.zh-CN.md`（导出时作为 README 一起交付）。
 
 ## 管线内部表（BFF 不需要读）

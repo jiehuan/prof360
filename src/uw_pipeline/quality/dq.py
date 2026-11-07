@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel
-from sqlalchemy import Connection, desc, false, func, or_, select, true
+from sqlalchemy import Connection, Unicode, cast, desc, false, func, literal, or_, select, true
 
 from uw_pipeline.compute.coverage import HistoryStart, company_coverage, history_start
 from uw_pipeline.compute.registry import CompanyRegistry, MetricDef
@@ -32,6 +32,7 @@ from uw_pipeline.schema import (
     metric_detail,
     metric_input,
     metric_insight,
+    metric_issue_report,
     metric_source,
     metric_value,
     release_check,
@@ -462,10 +463,29 @@ def review_queue(conn: Connection, company_id: int, cfg: ReviewQueue) -> list[Fi
                    .where(review_decision.c.item_type == "SIGNAL")))
         .order_by(desc(signal.c.event_date))
     ).all()  # fmt: skip
-    return [
+    findings = [
         Finding("review_queue", cfg.severity, f"{status} signal ({date}): {title}")
         for title, date, status in rows
     ]
+    # Users' reports of a wrong-looking value not yet decided (D-092), one finding per metric.
+    r = metric_issue_report.c
+    decided = select(review_decision.c.item_key).where(review_decision.c.item_type == "REPORT")
+    reports = conn.execute(
+        select(r.metric_code, r.source, func.count())
+        .where(r.company_id == company_id,
+               (literal("report:") + cast(r.report_id, Unicode(20))).not_in(decided))
+        .group_by(r.metric_code, r.source)
+    ).all()  # fmt: skip
+    by_metric: dict[str, dict[str, int]] = {}
+    for code, source, n in reports:
+        by_metric.setdefault(code, {})[source] = int(n)
+    for code, counts in sorted(by_metric.items()):
+        said = ", ".join(f"{n} by {'users' if s == 'USER' else 'the chat'}"
+                         for s, n in sorted(counts.items(), reverse=True))  # fmt: skip
+        findings.append(Finding("review_queue", cfg.severity,
+                                f"open reports that the value looks wrong ({said}); "
+                                "uw-pipeline review", code))  # fmt: skip
+    return findings
 
 
 # -- detail modals (Phase 8) -------------------------------------------------------------------

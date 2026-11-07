@@ -22,7 +22,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
-from sqlalchemy import Connection, and_, func, select
+from sqlalchemy import Connection, and_, func, select, true
 
 from uw_pipeline.compute.registry import CompanyRegistry, MetricDef
 from uw_pipeline.enrich.metric_detail import (
@@ -148,7 +148,7 @@ def peer_medians(
     for r in conn.execute(
         select(v.metric_code, v.fiscal_year, v.unit, v.value)
         .join(company, co.company_id == v.company_id)
-        .where(and_(co.industry_group == group_code, co.is_active.is_(True),
+        .where(and_(co.industry_group == group_code, co.is_active == true(),
                     co.company_id != company_id, v.period_type == "FY",
                     v.value_status == "OK", v.value.is_not(None),
                     v.metric_code.in_(sorted(latest))))
