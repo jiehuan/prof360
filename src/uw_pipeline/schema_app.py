@@ -262,6 +262,34 @@ CompanyMetricDetail = Table(
     Column("UpdatedAt", DateTime),
 )  # fmt: skip
 
+# Metric chat (Phase 19, D-088, D-090). MetricChatContext: per company and metric, the JSON the
+# chat may use (enrich/metric_chat_context.py; its shape: docs/schema-contract.md); the BFF
+# reads it with udf_GetMetricChatContext. ChatPrompt: the chat's prompt versions (written from
+# Phase 19.B; the BFF takes the active row). The BFF's own UserMetricChat and MetricIssueReport
+# are in deploy/sql/bff_metric_chat.sql, not here.
+MetricChatContext = Table(
+    "MetricChatContext", app_metadata,
+    _id("MetricChatContextId"),
+    Column("CompanyId", Integer, ForeignKey("Company.CompanyId"), nullable=False),
+    Column("metric_id", Integer, ForeignKey("metrics.metric_id"), nullable=False),
+    Column("ContextVersion", Integer, nullable=False),
+    Column("ContextJson", UnicodeText, nullable=False),
+    Column("UpdatedAt", DateTime),
+)  # fmt: skip
+
+ChatPrompt = Table(
+    "ChatPrompt", app_metadata,
+    _id("ChatPromptId"),
+    Column("Task", Unicode(40), nullable=False),  # metric_chat
+    Column("PromptVersion", Unicode(40), nullable=False),  # metric_chat_v1
+    Column("SystemText", UnicodeText, nullable=False),
+    Column("OutputSchema", UnicodeText, nullable=False),  # JSON schema of the answer
+    Column("ContextVersions", Unicode(40), nullable=False),  # e.g. "1": contexts it reads
+    Column("MinPackageVersion", Unicode(20), nullable=False),  # uw_metric_chat it needs
+    Column("IsActive", Boolean, nullable=False),
+    Column("UpdatedAt", DateTime),
+)  # fmt: skip
+
 # Risk scores (green tables in the diagram; Phase 9.4). TranscriptsId is the pipeline's
 # transcript document id (alpha_Transcripts is replaced); runId is the pipeline run that scored.
 
@@ -331,3 +359,5 @@ Index("ix_ItemLink_from", ItemLink.c.CompanyId, ItemLink.c.FromType, ItemLink.c.
 Index("ix_ItemLink_to", ItemLink.c.CompanyId, ItemLink.c.ToType, ItemLink.c.ToId)
 Index("ix_CompanyMetricDetail_company_metric", CompanyMetricDetail.c.CompanyId,
       CompanyMetricDetail.c.metric_id)  # fmt: skip
+Index("ix_MetricChatContext_company_metric", MetricChatContext.c.CompanyId,
+      MetricChatContext.c.metric_id)  # fmt: skip

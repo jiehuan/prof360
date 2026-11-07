@@ -2,4 +2,5 @@
 # non-interest income), like the banks; us-gaap:Revenues stops in 2020 (Phase 17e).
 concepts:
   revenue:
+    note: "Bread Financial is a card issuer: revenue is total net revenue (net interest income plus non-interest income), as for banks."
     tags: [us-gaap:RevenuesNetOfInterestExpense]

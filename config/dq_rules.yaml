@@ -83,3 +83,6 @@ metric_identities:   # relations between metrics of the same period
 
 debt_current_portion:  # total debt from the non-current-only fallback understates debt (D-046)
   severity: Warning
+fallback_denominator:  # a ratio's latest FY divides by a proxy tag (concept_map `proxy`, D-090)
+  severity: Info
+  finance_arm_severity: Warning   # trait captive_finance: the arm's interest or debt may be in it

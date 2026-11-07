@@ -16,6 +16,7 @@
 | 所有 sources 类列存 `[{title, url, date}]`，不是纯 URL 列表 | 弹窗要显示可读标题；`KeyInsights.link` 是第一个 URL |
 | `udf_GetCompanyFollowUpQuestions` 增加 readableSources（2026-11-05，BFF 团队的改动） | Follow-up 弹窗显示来源标题：`sources` 中各条的 title 按存储顺序用 ` \| ` 连接，没有来源时为 null；`deploy/sql/bff_followups.sql`（也在 `bff_functions.sql`） |
 | `MatrixData.accession`、`filed_date`、`context_or_dimension` 存 JSON 列表 | 图里是 list 类型 |
+| 新表 `MetricChatContext`（CompanyId, metric_id, ContextVersion, ContextJson, UpdatedAt）、`ChatPrompt`（Task, PromptVersion, SystemText, OutputSchema, ContextVersions, MinPackageVersion, IsActive, UpdatedAt）（2026-11-07，D-090，Phase 19） | 指标弹窗里的问答：每家公司每个指标一份上下文 JSON，BFF 经 `udf_GetMetricChatContext` 读取；提示词从 19.B 起写入 `ChatPrompt`。BFF 自己写的 `UserMetricChat`、`MetricIssueReport` 和两个函数在 `deploy/sql/bff_metric_chat.sql`（函数也在 `bff_functions.sql`） |
 | 新表 `KeyTakeaways`（CompanyId, Ordinal, Takeaway, UpdatedDate, isActive）（2026-10-20，D-053） | 公司页 Key Insights 上方的 Key Takeaway 框：2–3 条对专业责任险最重要的要点，不显示链接；BFF 经 `udf_GetCompanyKeyInsightsSummary`（`keyInsights/summary`）读取，`deploy/sql/bff_key_takeaways.sql` |
 
 ## 应用表的写入规则
@@ -31,6 +32,7 @@
 | FollowUpQuestions | `followup_question` | title = 问题；Priority = system_priority |
 | ItemLink | `insight_link`、`insight_metric`、`followup_question_insight`、`followup_question_metric` | 只连接当前版本（isActive = 1）的对象；从任一端都可查 |
 | CompanyMetricDetail | `metric_detail`、`metric_source`、`metric_insight`、`loan_portfolio_detail` | — |
+| MetricChatContext | `metric_chat_context`（metricdetail 阶段按规则生成，D-090） | 只为公司显示的指标生成；内容不变不重写；格式见下文"指标问答上下文" |
 | Trend / TrendTypes | FI 公司 `metric_value` 的财年值（NIM、CET1、Tier 1、LCR、NPL、Fee Income Growth） | 季度值在 MatrixData |
 | LoanPortfolio / LoanTypes | `loan_portfolio_segment` | 当前期和上一年末两期；两个模型读的层级不同时只保存部门总行（JPM：Wholesale / Loans retained），见 D-044 |
 | Activities / News | `activity` / `news_item` | 只保留与公司本身相关的新闻（规则 + LLM 判断，D-037） |
@@ -152,6 +154,27 @@
 ### 显示建议
 - `review_status` 为 OVERRULED 或 DISPUTED 的信号，以及标题带 "(disputed)" 或 "overruled" 的条目，建议标注"待复核"（D-028）。
 - PRELIMINARY 指标旁边标"初步（来自财报新闻稿）"。
+
+## 指标问答上下文（Phase 19，D-088、D-090）
+
+`udf_GetMetricChatContext(@CompanyId, @MetricId)` 返回一行：`companyId, metricId, contextVersion, context, updatedAt`；没有上下文（该公司不显示这个指标，或没有数据）时没有行。`context` 是一个 JSON 对象（`contextVersion` = 1）：
+
+| 字段 | 内容 |
+|---|---|
+| `company` | ticker, name, industry_group, industry_label, fiscal_year_end, currency |
+| `metric` | code, name, subtitle, description, unit（USD / ratio / fraction …）, kind, definition（与弹窗 Methodology 相同的定义句）, nm_when（可读条件，如 "EBIT ≤ 0"） |
+| `derivations` | 本上下文用到的取值方式 → 说明（REPORTED、DERIVED、COMPUTED、LLM_EXTRACTED、PRELIMINARY、MARKET、FORM4） |
+| `periods` | 弹窗显示的各期（最近 8 个季度、5 个财年，新的在前）：period（`FY2025` / `2026Q3`）、label（`FY2026 Q3`）、period_end、value_id、status（OK / NM）、derivation、formula_used；XBRL 值有 `accession`（见 `filings`），文本提取或其他来源的值有 `source`（title, url, form, filed）和 `evidence`（原文引文）；计算值有 `inputs`；直接取自 XBRL 的值有 `tags`；NM 有 `nm_reason` |
+| `periods[].inputs[]` | 公式的每个输入：id、name、label、period（上年值用于平均数或增长率时是上一期）、derivation、tags、accession |
+| `tags[]` | concept、tag（含维度时为 `tag[轴=成员]`）、dimensional、candidate（如 "2 of 5"）、fallback（不是第一候选）、preferred_tags（公司没有报告的、排在前面的标签）、proxy（量的不是同一个东西时的说明，如 cash interest paid）、company_override |
+| `company_overrides` | 公司覆盖的 concept → 原因（如 GM：只含汽车业务的利息，D-087） |
+| `peer_median` | 同一行业组、公司最近一个财年、至少 3 家：id、fiscal_year、peers（家数）、group |
+| `dq_findings` | 该指标在最近一次 dq 中的发现：rule、severity、period、message |
+| `coverage_note` | `coverage_notes.yaml` 对该指标缺口的说明 |
+| `filings` | 上下文引用的文件，每个 accession 一条：accession、title、url、form、filed |
+| `data_points` | 回答可以引用的全部数字：id、label、value（原值：金额是元，fraction 0.049 = 4.9%）、unit、status。id 格式 `dp:<期>:<名称>`，同行中位数为 `dp:FY2025:<指标>:peer_median`；id 在各次运行之间稳定 |
+
+问答的回答只能引用 `data_points` 里的 id，回答中的每个数字都要能在被引用的数据点里找到（19.B 的校验）。
 
 ## 管线内部表（BFF 不需要读）
 

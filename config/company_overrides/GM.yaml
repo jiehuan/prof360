@@ -5,6 +5,7 @@
 # expense" (D-087), read from each filing's XBRL instance.
 concepts:
   interest_expense:
+    note: "Automotive interest expense only, from the income statement (GM's business-group axis). GM Financial's interest is an operating cost already deducted from operating income, so it is left out (D-087)."
     tags:
       - tag: us-gaap:InterestExpenseNonoperating
         dims: {gm:BusinessGroupAxis: gm:AutomotiveMember}

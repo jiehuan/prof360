@@ -901,3 +901,40 @@ AS RETURN (
     FROM dbo_professional360.udf_GetUserNotifications(@UserId, @Days, @MinNewsRisk) n
 );
 GO
+
+-- Metric chat (Phase 19, D-090; tables and notes: bff_metric_chat.sql) -----------------------
+
+-- The chat context of one company's metric: one row, or none when the metric has no context
+-- (not shown for this company, or no data). context is the JSON object itself.
+CREATE OR ALTER FUNCTION dbo_professional360.udf_GetMetricChatContext (@CompanyId INT, @MetricId INT)
+RETURNS TABLE
+AS RETURN (
+    SELECT TOP 1
+        C.CompanyId AS companyId,
+        C.metric_id AS metricId,
+        C.ContextVersion AS contextVersion,
+        JSON_QUERY(C.ContextJson) AS context,
+        C.UpdatedAt AS updatedAt
+    FROM dbo_professional360.MetricChatContext C
+    WHERE C.CompanyId = @CompanyId AND C.metric_id = @MetricId
+    ORDER BY C.UpdatedAt DESC
+);
+GO
+
+-- The prompt the chat uses for @Task (N'metric_chat'): the active row, newest first.
+CREATE OR ALTER FUNCTION dbo_professional360.udf_GetActiveChatPrompt (@Task NVARCHAR(40))
+RETURNS TABLE
+AS RETURN (
+    SELECT TOP 1
+        P.ChatPromptId AS promptId,
+        P.PromptVersion AS promptVersion,
+        P.SystemText AS systemText,
+        JSON_QUERY(P.OutputSchema) AS outputSchema,
+        P.ContextVersions AS contextVersions,
+        P.MinPackageVersion AS minPackageVersion,
+        P.UpdatedAt AS updatedAt
+    FROM dbo_professional360.ChatPrompt P
+    WHERE P.Task = @Task AND P.IsActive = 1
+    ORDER BY P.UpdatedAt DESC, P.ChatPromptId DESC
+);
+GO

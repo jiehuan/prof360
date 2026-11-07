@@ -130,7 +130,10 @@ concepts:
       - us-gaap:InterestAndDebtExpense
       # Phase 16: cash interest paid where no interest expense is tagged (CAT, GE, NEE keep it
       # in their own tags); close to the expense for most issuers.
-      - us-gaap:InterestPaidNet
+      - tag: us-gaap:InterestPaidNet
+        proxy: >-
+          cash interest paid (cash flow statement), not interest expense; it includes the
+          interest of any finance arm
   operating_cash_flow:
     tags: [us-gaap:NetCashProvidedByUsedInOperatingActivities,
            us-gaap:NetCashProvidedByUsedInOperatingActivitiesContinuingOperations]  # DIS FY2024

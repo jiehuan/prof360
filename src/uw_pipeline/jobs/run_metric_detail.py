@@ -6,6 +6,8 @@ Per company, for every displayed metric with data:
   3. Underwriting Relevance plus the related insights and follow-up questions, in one call
      per company to the synthesis model                      -> metric_insight, insight_metric,
                                                                 followup_question_metric
+  4. the metric chat's context (rules, enrich/metric_chat_context.py, D-090)
+                                                             -> metric_chat_context
 Step 3 runs only when its input (metric values, current insights and questions) changed; the
 links it adds are marked link_source = METRIC_DETAIL and replaced on every new generation.
 Without an LLM the rule-based steps still run.
@@ -25,11 +27,21 @@ from typing import Any
 from sqlalchemy import Connection, Engine, and_, delete, insert, select, true, update
 
 from uw_pipeline.clients.llm import LLMClient
-from uw_pipeline.compute.registry import MetricDef, Registry
+from uw_pipeline.compute.coverage import CoverageNotes
+from uw_pipeline.compute.registry import CompanyRegistry, MetricDef, Registry
 from uw_pipeline.config import CompanyConfig, IndustryConfig
 from uw_pipeline.enrich.grounding import ungrounded_numbers
 from uw_pipeline.enrich.insights import TaskRunner
 from uw_pipeline.enrich.llm import PROMPTS_DIR, LLMConfig
+from uw_pipeline.enrich.metric_chat_context import (
+    CONTEXT_VERSION,
+    CompanyData,
+    build_context,
+    context_json,
+    peer_medians,
+    read_findings,
+    read_inputs,
+)
 from uw_pipeline.enrich.metric_detail import (
     LLM_DERIVATIONS,
     latest,
@@ -49,6 +61,7 @@ from uw_pipeline.schema import (
     insight,
     insight_metric,
     llm_task_stat,
+    metric_chat_context,
     metric_detail,
     metric_insight,
     metric_source,
@@ -65,6 +78,7 @@ LINK = "METRIC_DETAIL"
 class Stats:
     metrics: int = 0
     sources: int = 0
+    contexts: int = 0  # chat contexts written (new or changed)
     relevance: str = "skipped"
     dropped: list[str] = field(default_factory=list)
 
@@ -288,6 +302,52 @@ def relevance(
 # -- company -----------------------------------------------------------------------------------
 
 
+def write_chat_contexts(
+    conn: Connection,
+    cfg: CompanyConfig,
+    row: dict[str, Any],
+    group_code: str,
+    group_label: str,
+    creg: CompanyRegistry,
+    shown: Sequence[MetricDef],
+    values: dict[str, list[dict[str, Any]]],
+    names: dict[str, str],
+    labels: SourceLabels,
+    resolver: SourceResolver,
+    notes: CoverageNotes,
+    now: datetime,
+) -> int:
+    """The metric chat's context per shown metric (D-090); unchanged ones are not rewritten and
+    those of metrics no longer shown are removed. Returns how many were written."""
+    company_id = row["company_id"]
+    data = CompanyData(
+        company=row, group_code=group_code, group_label=group_label, creg=creg, labels=labels,
+        names=names, values=values, inputs=read_inputs(conn, company_id),
+        findings=read_findings(conn, company_id),
+        coverage=notes.for_company(cfg.ticker, row["industry_group"], cfg.traits),
+        peers=peer_medians(conn, company_id, group_code, {m.code: values[m.code] for m in shown}),
+        source_of=lambda m, r: value_source(conn, resolver, m.display_name, r),
+        filing=resolver.filing,
+    )  # fmt: skip
+    c = metric_chat_context.c
+    before = dict(conn.execute(
+        select(c.metric_code, c.context_hash).where(c.company_id == company_id)
+    ).all())  # fmt: skip
+    changed = []
+    for m in shown:
+        text, digest = context_json(build_context(m, data))
+        if before.get(m.code) != digest:
+            changed.append({"company_id": company_id, "metric_code": m.code,
+                            "context_version": CONTEXT_VERSION, "context_json": text,
+                            "context_hash": digest, "updated_at": now})  # fmt: skip
+    upsert(conn, metric_chat_context, changed, key_cols=["company_id", "metric_code"])
+    gone = sorted(set(before) - {m.code for m in shown})
+    if gone:
+        conn.execute(delete(metric_chat_context).where(
+            c.company_id == company_id, c.metric_code.in_(gone)))  # fmt: skip
+    return len(changed)
+
+
 def process_company(
     cfg: CompanyConfig,
     registry: Registry,
@@ -297,11 +357,13 @@ def process_company(
     labels: SourceLabels,
     conn: Connection,
     now: datetime,
+    notes: CoverageNotes | None = None,
 ) -> Stats:
     row = company_row(conn, cfg)
     company_id = row["company_id"]
     group = industry.group_of(row["industry_group"], cfg)
-    all_metrics = registry.for_company(cfg.ticker, group).metrics
+    creg = registry.for_company(cfg.ticker, group)
+    all_metrics = creg.metrics
     values = _values(conn, company_id)
     shown = [m for m in all_metrics if m.display and values.get(m.code)]
     names = {m.code: m.display_name for m in all_metrics} | labels.concepts
@@ -359,6 +421,10 @@ def process_company(
                 metric_source.c.company_id == company_id, metric_source.c.metric_code == code,
                 metric_source.c.period_type == ptype))  # fmt: skip
     stats.sources = len(sources)
+    stats.contexts = write_chat_contexts(
+        conn, cfg, row, group.code, group.label, creg, shown, values, names, labels, resolver,
+        notes or CoverageNotes(), now,
+    )  # fmt: skip
 
     if llm is not None and shown:
         client, _ = llm
@@ -378,16 +444,19 @@ def run_metric_detail_stage(
     engine: Engine,
     *,
     now: Callable[[], datetime] = lambda: datetime.now(UTC),
+    notes: CoverageNotes | None = None,
 ) -> list[TaskResult]:
     results: list[TaskResult] = []
     for cfg in companies:
         try:
             with engine.connect() as conn:  # short transactions, as in the insights stage
-                stats = process_company(cfg, registry, industry, llm, icfg, labels, conn, now())
+                stats = process_company(cfg, registry, industry, llm, icfg, labels, conn, now(),
+                                        notes)  # fmt: skip
                 conn.commit()
             for d in stats.dropped:
                 log.debug("%s: metric relevance dropped %s", cfg.ticker, d)
             detail = (f"{stats.metrics} metrics, {stats.sources} sources, "
+                      f"{stats.contexts} chat contexts written, "
                       f"relevance={stats.relevance}")  # fmt: skip
             log.debug("%s: metricdetail %s", cfg.ticker, detail)
             results.append(TaskResult(cfg.ticker, "metricdetail", ok=True, detail=detail))

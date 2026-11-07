@@ -39,7 +39,8 @@ code. Decisions D-016 and D-049 explain the design.
 | Choose an industry's metrics | `industry_groups.yaml` | `metric_sets`, `metrics` (add codes), `exclude_metrics` (drop codes), `traits` |
 | Define a new metric | `metrics.yaml` | an entry under `metrics` (2.3), then add it to a set or an industry |
 | Use a new XBRL tag | `concept_map.yaml` | a concept with candidate `tags` (optionally with dimensions) |
-| Use a tag only one company files | `company_overrides/<TICKER>.yaml` | `concepts`, `metrics`, `sections` |
+| Use a tag only one company files | `company_overrides/<TICKER>.yaml` | `concepts`, `metrics`, `sections`; each concept needs a `note` saying why, in plain English (the metric chat quotes it, D-090) |
+| Mark a candidate tag that is close to the concept but not it (e.g. cash interest paid for interest expense) | `concept_map.yaml` | `{tag: ..., proxy: "what it measures"}`; a ratio dividing by it gets a `fallback_denominator` finding, a Warning for companies with trait `captive_finance` (D-090) |
 | Stop tracking a signal for an industry | `industry_groups.yaml` | `exclude_signals: [rule ids]` |
 | Change a signal's threshold for one industry | `industry_groups.yaml` | `signal_params: {rule_id: {field: value}}` |
 | Add a keyword signal | `signal_rules.yaml` | an entry under `keywords` (2.4); `industries` to limit it |

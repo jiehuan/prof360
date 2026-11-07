@@ -30,8 +30,16 @@ from uw_pipeline.schema_app import app_metadata
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "deploy" / "sql"
 
-# Changes to the diagram (docs/schema-contract.md): Phase 9, and KeyTakeaways (2026-10-20).
-NEW_TABLES = ["ItemLink", "CompanyMetricDetail", "KeyTakeaways", "pipeline_publish_map"]
+# Changes to the diagram (docs/schema-contract.md): Phase 9, KeyTakeaways (2026-10-20), and the
+# metric chat's tables (Phase 19, D-090).
+NEW_TABLES = [
+    "ItemLink",
+    "CompanyMetricDetail",
+    "KeyTakeaways",
+    "pipeline_publish_map",
+    "MetricChatContext",
+    "ChatPrompt",
+]
 ADDED_COLUMNS = {
     "KeyInsights": ["isActive"],
     "FollowUpQuestions": ["Priority", "isActive"],
@@ -68,6 +76,9 @@ TABLE_DOCS = {
     "most important first (Ordinal 1), no links; read isActive = 1.",
     "pipeline_publish_map": "Pipeline bookkeeping (pipeline object -> app id); written and read "
     "only by the pipeline.",
+    "MetricChatContext": "Metric chat (Phase 19): per company and metric, the JSON the chat may "
+    "use; read with udf_GetMetricChatContext.",
+    "ChatPrompt": "Metric chat (Phase 19): prompt versions; the BFF uses the IsActive row.",
 }
 
 # SQL Server 2019 / Azure SQL: DATE, and NVARCHAR(max) instead of the deprecated NTEXT.

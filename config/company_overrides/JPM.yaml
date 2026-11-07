@@ -3,6 +3,7 @@
 # subsidiary (LegalEntityAxis) and not the Advanced approach.
 concepts:
   cet1_ratio:
+    note: &firm_note "The firm (parent company, consolidated) under the Standardized approach; not the bank subsidiary and not the Advanced approach."
     unit: pure
     tags:
       - tag: jpm:CommonEquityTier1CapitaltoRiskWeightedAssets
@@ -10,10 +11,12 @@ concepts:
           srt:ConsolidatedEntitiesAxis: srt:ParentCompanyMember
           us-gaap:RiskWeightedAssetsCalculationMethodologyAxis: jpm:BaselIIIStandardizedMember
   tier1_ratio:
+    note: *firm_note
     unit: pure
     tags:
       - {tag: us-gaap:TierOneRiskBasedCapitalToRiskWeightedAssets, dims: *firm_standardized}
   total_capital_ratio:
+    note: *firm_note
     unit: pure
     tags:
       - {tag: us-gaap:CapitalToRiskWeightedAssets, dims: *firm_standardized}

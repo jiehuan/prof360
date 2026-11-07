@@ -41,7 +41,7 @@ def latest(rows: Sequence[Mapping[str, Any]], ptype: str) -> Mapping[str, Any] |
     return max(of_type, key=lambda r: r["period_end"]) if of_type else None
 
 
-def _readable(expr: str, names: Mapping[str, str]) -> str:
+def readable_expr(expr: str, names: Mapping[str, str]) -> str:
     """'total_debt / equity' -> 'Total Debt / Stockholders' Equity'."""
     tree = ast.parse(expr, mode="eval")
     out = expr
@@ -76,7 +76,7 @@ def definition_lines(m: MetricDef, names: Mapping[str, str]) -> list[str]:
             than = "the same period a year earlier"
         lines.append(f"Formula: ({base} - {base} of {than}) / |{base} of {than}|.")
     elif m.kind == "formula":
-        exprs = [_readable(f, names) for f in m.formula]
+        exprs = [readable_expr(f, names) for f in m.formula]
         if (
             len(m.formula) == 1
             and m.formula[0].isidentifier()
@@ -112,7 +112,7 @@ def methodology(
     lines: list[str] = [m.description] if m.description else []
     lines += definition_lines(m, names)
     if m.nm_when:
-        lines.append(f"Shown as N/M when {_readable(m.nm_when, names)}.")
+        lines.append(f"Shown as N/M when {readable_expr(m.nm_when, names)}.")
     tags = _tags(shown)
     if tags and m.kind != "text":
         lines.append("XBRL tags used: " + ", ".join(tags[:6]) + ".")

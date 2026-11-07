@@ -2,4 +2,5 @@
 # read from each filing's XBRL instance.
 concepts:
   franchise_revenue:
+    note: "McDonald's reports revenue from franchised restaurants under its own tag."
     tags: [mcd:Revenuesfromfranchisedrestaurants]

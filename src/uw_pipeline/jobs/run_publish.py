@@ -47,6 +47,7 @@ from uw_pipeline.schema import (
     insight_metric,
     loan_portfolio_detail,
     loan_portfolio_segment,
+    metric_chat_context,
     metric_detail,
     metric_insight,
     metric_source,
@@ -69,6 +70,7 @@ from uw_pipeline.schema_app import (
     LoanPortfolio,
     LoanTypes,
     MatrixData,
+    MetricChatContext,
     News,
     NewsRiskScore,
     RiskTypes,
@@ -475,6 +477,27 @@ class Publisher:
 
     # -- metric detail, trends, loans --------------------------------------------------------
 
+    def metric_chat_contexts(self) -> None:
+        """The metric chat's context per published metric (D-090)."""
+        c = metric_chat_context.c
+        keep = []
+        for r in self.src.execute(
+            select(c.metric_code, c.context_version, c.context_json, c.updated_at)
+            .where(c.company_id == self.company_id)
+        ):  # fmt: skip
+            mid = self.metric_ids.get(r.metric_code)
+            if mid is None:
+                continue
+            key = f"{self.p}{r.metric_code}"
+            self.w.put(MetricChatContext, key, {
+                "CompanyId": self.app_company, "metric_id": mid,
+                "ContextVersion": r.context_version, "ContextJson": r.context_json,
+                "UpdatedAt": r.updated_at,
+            })  # fmt: skip
+            keep.append(key)
+        self.stats.add("MetricChatContext", len(keep))
+        self.w.drop_except(MetricChatContext, self.p, keep)
+
     def metric_details(self) -> None:
         details = {r["metric_code"]: r for r in self.src.execute(
             select(metric_detail).where(metric_detail.c.company_id == self.company_id)
@@ -815,6 +838,7 @@ def publish_company(
     qs = p.questions()
     p.links(ins, qs)
     p.metric_details()
+    p.metric_chat_contexts()
     p.trends()
     p.loans()
     p.news()

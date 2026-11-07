@@ -29,6 +29,9 @@ class Value:
     filed: str
     formula: str
     sources: tuple[tuple[str, str], ...] = field(default=())  # (concept, tag label)
+    # The named values a formula or growth used, each with its own period (D-090): the
+    # metric-chat context shows them, e.g. ebit and interest_expense behind interest coverage.
+    inputs: tuple[tuple[str, PeriodKey, Value], ...] = field(default=(), compare=False)
 
     def source_map(self) -> dict[str, list[str]]:
         """Concept -> tags used, for lineage (a derived value can mix two candidate tags)."""
@@ -151,7 +154,13 @@ def _names(expr: str) -> list[str]:
     return [n.id for n in ast.walk(ast.parse(expr, mode="eval")) if isinstance(n, ast.Name)]
 
 
-def _combine(parts: list[Value], value: float | None, status: str, formula: str) -> Value:
+def _combine(
+    parts: list[Value],
+    value: float | None,
+    status: str,
+    formula: str,
+    inputs: tuple[tuple[str, PeriodKey, Value], ...] = (),
+) -> Value:
     latest = max(parts, key=lambda v: (v.filed, v.accn))
     single = len(parts) == 1 and formula == parts[0].formula
     sources = tuple(dict.fromkeys(s for p in parts for s in p.sources))
@@ -164,7 +173,15 @@ def _combine(parts: list[Value], value: float | None, status: str, formula: str)
         filed=latest.filed,
         formula=formula,
         sources=sources,
+        inputs=inputs,
     )
+
+
+def input_key(name: str, key: PeriodKey) -> tuple[str, PeriodKey]:
+    """The value a formula name stands for: `x_py` is x a year earlier; `x_ttm` stays x_ttm."""
+    if name.endswith(PRIOR_YEAR):
+        return name[: -len(PRIOR_YEAR)], (key[0], key[1] - 1, key[2])
+    return name, key
 
 
 PRIOR_YEAR = "_py"  # `assets_py`: assets for the same period a year earlier (averages, D-043)
@@ -210,8 +227,9 @@ def _formula_value(
         if not required or any(n not in present for n in required):
             continue
         parts = list(present.values())
+        inputs = tuple((*input_key(n, key), v) for n, v in present.items())
         if any(p.value is None for p in parts):
-            nm = nm or _combine(parts, None, "NM", expr)
+            nm = nm or _combine(parts, None, "NM", expr, inputs)
             continue  # an input is itself N/M: try the next form
         env = {n: 0.0 for n in names} | {
             n: v.value for n, v in present.items() if v.value is not None
@@ -225,13 +243,13 @@ def _formula_value(
             }
             nm_expr = ast.parse(metric.nm_when, mode="eval")
             if set(nm_env) == set(nm_names) and _eval(nm_expr, nm_env):
-                return _combine(parts, None, "NM", expr)
+                return _combine(parts, None, "NM", expr, inputs)
         try:
             value = _eval(ast.parse(expr, mode="eval"), env)
         except _Undefined:
             continue
         label = parts[0].formula if len(names) == 1 and len(parts) == 1 else expr
-        return _combine(parts, float(value), "OK", label)
+        return _combine(parts, float(value), "OK", label, inputs)
     return nm
 
 
@@ -247,15 +265,18 @@ def _growth_value(
 ) -> Value | None:
     assert metric.base and metric.compare
     series = known.get(metric.base, {})
-    cur, prev = series.get(key), series.get(_comparison_key(key, metric.compare))
+    before = _comparison_key(key, metric.compare)
+    cur, prev = series.get(key), series.get(before)
     label = f"growth({metric.base}, {metric.compare})"
     if cur is None or prev is None:
         return None
+    inputs = ((metric.base, key, cur), (metric.base, before, prev))
     if cur.value is None or prev.value is None:
-        return _combine([cur, prev], None, "NM", label)  # a period that is itself N/M
+        return _combine([cur, prev], None, "NM", label, inputs)  # a period that is itself N/M
     if prev.value == 0:
         return None
-    return _combine([cur, prev], (cur.value - prev.value) / abs(prev.value), "OK", label)
+    return _combine([cur, prev], (cur.value - prev.value) / abs(prev.value), "OK", label,
+                    inputs)  # fmt: skip
 
 
 def compute_metrics(

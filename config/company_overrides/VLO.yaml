@@ -5,8 +5,10 @@
 # leaves out finance leases too, so it is not read as debt including current maturities.
 concepts:
   debt_total_reported:
+    note: "Valero's total debt is the balance sheet's, including finance lease obligations (D-073)."
     tags:
       - us-gaap:DebtAndCapitalLeaseObligations
       - us-gaap:LongTermDebtAndCapitalLeaseObligationsIncludingCurrentMaturities
   ltd_total:
+    note: "Valero's us-gaap:LongTermDebt leaves out finance leases, so it is not read as debt including current maturities (D-073)."
     tags: []

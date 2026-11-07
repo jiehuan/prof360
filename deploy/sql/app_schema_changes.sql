@@ -80,6 +80,40 @@ CREATE TABLE dbo_professional360.pipeline_publish_map (
 );
 GO
 
+-- MetricChatContext: Metric chat (Phase 19): per company and metric, the JSON the chat may use; read with udf_GetMetricChatContext.
+IF OBJECT_ID(N'dbo_professional360.MetricChatContext', N'U') IS NULL
+CREATE TABLE dbo_professional360.[MetricChatContext] (
+	[MetricChatContextId] INTEGER NOT NULL IDENTITY, 
+	[CompanyId] INTEGER NOT NULL, 
+	metric_id INTEGER NOT NULL, 
+	[ContextVersion] INTEGER NOT NULL, 
+	[ContextJson] NVARCHAR(max) NOT NULL, 
+	[UpdatedAt] DATETIME NULL, 
+	PRIMARY KEY ([MetricChatContextId]), 
+	FOREIGN KEY([CompanyId]) REFERENCES dbo_professional360.[Company] ([CompanyId]), 
+	FOREIGN KEY(metric_id) REFERENCES dbo_professional360.metrics (metric_id)
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_MetricChatContext_company_metric' AND object_id = OBJECT_ID(N'dbo_professional360.MetricChatContext'))
+    CREATE INDEX [ix_MetricChatContext_company_metric] ON dbo_professional360.[MetricChatContext] ([CompanyId], metric_id);
+GO
+
+-- ChatPrompt: Metric chat (Phase 19): prompt versions; the BFF uses the IsActive row.
+IF OBJECT_ID(N'dbo_professional360.ChatPrompt', N'U') IS NULL
+CREATE TABLE dbo_professional360.[ChatPrompt] (
+	[ChatPromptId] INTEGER NOT NULL IDENTITY, 
+	[Task] NVARCHAR(40) NOT NULL, 
+	[PromptVersion] NVARCHAR(40) NOT NULL, 
+	[SystemText] NVARCHAR(max) NOT NULL, 
+	[OutputSchema] NVARCHAR(max) NOT NULL, 
+	[ContextVersions] NVARCHAR(40) NOT NULL, 
+	[MinPackageVersion] NVARCHAR(20) NOT NULL, 
+	[IsActive] BIT NOT NULL, 
+	[UpdatedAt] DATETIME NULL, 
+	PRIMARY KEY ([ChatPromptId])
+);
+GO
+
 -- 2. Added columns ----------------------------------------------------------
 
 -- KeyInsights

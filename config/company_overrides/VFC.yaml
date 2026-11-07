@@ -2,4 +2,5 @@
 # separate line, not included (Phase 17e).
 concepts:
   capex:
+    note: "VF Corp tags capital expenditures as capital improvements; software purchases are a separate line, not included."
     tags: [us-gaap:PaymentsForCapitalImprovements]

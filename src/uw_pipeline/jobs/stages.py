@@ -24,6 +24,7 @@ from uw_pipeline.clients.runware import RunwareClient, load_runware_config
 from uw_pipeline.clients.sec import SecClient
 from uw_pipeline.clients.securegpt import SecureGPTClient, load_securegpt_config
 from uw_pipeline.clients.storage import make_storage
+from uw_pipeline.compute.coverage import load_notes
 from uw_pipeline.compute.registry import load_registry
 from uw_pipeline.config import CompanyConfig, load_companies, load_industry_config
 from uw_pipeline.enrich.llm import DailyBudget, LLMConfig, load_llm_config
@@ -275,6 +276,7 @@ class StageRunner:
                 load_insights_config(s.config_dir, s.llm_provider),
                 load_source_labels(s.config_dir),
                 e,
+                notes=load_notes(s.config_dir),
             )
         raise ValueError(f"unknown stage {stage}")
 

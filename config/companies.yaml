@@ -159,6 +159,7 @@ companies:
     cik: 18230
     display_name: "Caterpillar"
     news_aliases: ["Caterpillar"]
+    traits: [captive_finance]   # Cat Financial (D-090: fallback_denominator)
   - ticker: CMCSA
     cik: 1166691
     display_name: "Comcast"
@@ -197,6 +198,7 @@ companies:
     cik: 315189
     display_name: "Deere & Company"
     news_aliases: ["Deere"]
+    traits: [captive_finance]   # John Deere Financial (D-090: fallback_denominator)
   - ticker: DELL
     cik: 1571996
     display_name: "Dell Technologies"

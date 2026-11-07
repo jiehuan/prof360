@@ -37,13 +37,13 @@ def run_dq_stage(
         try:
             with engine.begin() as conn:
                 row = company_row(conn, company)
-                metrics = registry.for_company(
-                    company.ticker, industry.group_of(row["industry_group"], company)
-                ).metrics
-                findings = run_rules(conn, row["company_id"], company.ticker, metrics,
+                group = industry.group_of(row["industry_group"], company)
+                creg = registry.for_company(company.ticker, group)
+                traits = frozenset([*group.traits, *company.traits])
+                findings = run_rules(conn, row["company_id"], company.ticker, creg.metrics,
                                      notes.for_company(company.ticker, row["industry_group"],
                                                        company.traits),
-                                     cfg, now)  # fmt: skip
+                                     cfg, now, creg=creg, traits=traits)  # fmt: skip
                 # Re-running the stage within a run replaces that run's findings.
                 conn.execute(
                     delete(dq_finding).where(

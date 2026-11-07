@@ -2,6 +2,7 @@
 # (srt:ProductOrServiceAxis = mar:FeeServiceMember), read from each filing's XBRL instance.
 concepts:
   gross_fee_revenue:
+    note: "Marriott's fee revenues are dimensional facts (fee services member of the product-or-service axis)."
     tags:
       - tag: mar:RevenuesGrossOfCapitalizedContractCostAmortization
         dims: {srt:ProductOrServiceAxis: mar:FeeServiceMember}
@@ -9,11 +10,13 @@ concepts:
       - tag: mar:RevenuesGrossofCapitalizedContractCostAmortization
         dims: {srt:ProductOrServiceAxis: mar:FeeServiceMember}
   net_fee_revenue:
+    note: "Revenue of the fee services member: gross fees less amortization of contract investments."
     tags:
       - tag: us-gaap:Revenues
         dims: {srt:ProductOrServiceAxis: mar:FeeServiceMember}
   # Marriott reports "Depreciation, amortization, and other" under its own tag since 2015.
   d_and_a:
+    note: "Marriott reports \"Depreciation, amortization, and other\" under its own tag since 2015."
     tags:
       - us-gaap:DepreciationDepletionAndAmortization
       - mar:DepreciationAmortizationAndOther

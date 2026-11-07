@@ -3,6 +3,8 @@ reads the database and returns findings for one company; the `dq` stage stores t
 
 from __future__ import annotations
 
+import ast
+import json
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -13,7 +15,7 @@ from pydantic import BaseModel
 from sqlalchemy import Connection, desc, false, func, or_, select, true
 
 from uw_pipeline.compute.coverage import HistoryStart, company_coverage, history_start
-from uw_pipeline.compute.registry import MetricDef
+from uw_pipeline.compute.registry import CompanyRegistry, MetricDef
 from uw_pipeline.quality.identities import IDENTITY_TASK, Identities
 from uw_pipeline.schema import (
     company,
@@ -28,6 +30,7 @@ from uw_pipeline.schema import (
     llm_task_stat,
     loan_portfolio_segment,
     metric_detail,
+    metric_input,
     metric_insight,
     metric_source,
     metric_value,
@@ -84,6 +87,12 @@ class DetailCoverage(_Rule):
     min_relevance: float
 
 
+class FallbackDenominator(_Rule):
+    # Severity for a company with a captive finance arm (trait captive_finance), whose interest
+    # can sit in a proxy figure (D-087, D-090); `severity` for the others.
+    finance_arm_severity: str = "Warning"
+
+
 class DqConfig(BaseModel):
     missing_metric: _Rule
     quarter_jump: QuarterJump
@@ -98,6 +107,7 @@ class DqConfig(BaseModel):
     link_integrity: _Rule
     metric_identities: Identities = Identities()
     debt_current_portion: _Rule = _Rule(severity="Warning")
+    fallback_denominator: FallbackDenominator = FallbackDenominator(severity="Info")
 
 
 def load_dq_config(config_dir: Path) -> DqConfig:
@@ -288,6 +298,77 @@ def debt_current_portion(values: list[dict[str, Any]], cfg: _Rule) -> list[Findi
                     f"total debt {label} ({latest['value'] / 1e6:,.0f}M) has no current portion: "
                     "the filing tags none, so debt due within a year is missing", "total_debt",
                     label)]  # fmt: skip
+
+
+def _denominators(expr: str) -> set[str]:
+    """Names on the right of a division: 'ebit / interest_expense' -> {'interest_expense'}."""
+    try:
+        tree = ast.parse(expr, mode="eval")
+    except SyntaxError:  # a tag label, not a formula
+        return set()
+    return {n.id for node in ast.walk(tree)
+            if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div)
+            for n in ast.walk(node.right) if isinstance(n, ast.Name)}  # fmt: skip
+
+
+def fallback_denominator(
+    conn: Connection,
+    company_id: int,
+    values: list[dict[str, Any]],
+    metrics: Sequence[MetricDef],
+    creg: CompanyRegistry,
+    traits: frozenset[str],
+    cfg: FallbackDenominator,
+) -> list[Finding]:
+    """A shown ratio whose latest fiscal year divides by a proxy tag: a candidate marked in
+    concept_map.yaml as measuring something close to the concept but not it, e.g. cash interest
+    paid for interest expense. With a captive finance arm the proxy can carry the arm's interest,
+    as GM's did (0.44x, D-087), so it is a Warning there (D-090)."""
+    shown = {m.code: m for m in metrics if m.display and m.unit in ("ratio", "fraction")}
+    latest: dict[str, dict[str, Any]] = {}
+    for v in values:
+        if (v["metric_code"] in shown and v["period_type"] == "FY"
+                and v["derivation"] == "COMPUTED"):  # fmt: skip
+            top = latest.get(v["metric_code"])
+            if top is None or v["fiscal_year"] > top["fiscal_year"]:
+                latest[v["metric_code"]] = v
+    if not latest:
+        return []
+    mi = metric_input.c
+    inputs = {
+        r.metric_code: json.loads(r.inputs_json)
+        for r in conn.execute(
+            select(mi.metric_code, mi.fiscal_year, mi.inputs_json).where(
+                mi.company_id == company_id, mi.period_type == "FY",
+                mi.metric_code.in_(sorted(latest)))
+        )
+        if r.fiscal_year == latest[r.metric_code]["fiscal_year"]
+    }  # fmt: skip
+    arm = "captive_finance" in traits
+    out = []
+    for code, row in sorted(latest.items()):
+        below = _denominators(row["formula"] or "")
+        for i in inputs.get(code, []):
+            if i["name"] not in below:
+                continue
+            for concept, labels in (i.get("tags") or {}).items():
+                refs = {t.label(): t for t in creg.concepts.get(concept, [])}
+                for label in labels:
+                    ref = refs.get(label)
+                    if ref is None or not ref.proxy:
+                        continue
+                    period = f"FY{row['fiscal_year']}"
+                    why = (
+                        "; the company has a captive finance arm, so the figure may hold the "
+                        "arm's interest"
+                        if arm
+                        else ""
+                    )
+                    out.append(Finding(
+                        "fallback_denominator", cfg.finance_arm_severity if arm else cfg.severity,
+                        f"{shown[code].display_name} {period} divides by {concept} read from "
+                        f"{label}: {ref.proxy}{why}", code, period))  # fmt: skip
+    return out
 
 
 def _amount(v: float) -> str:
@@ -506,6 +587,9 @@ def run_rules(
     notes: dict[str, str],
     cfg: DqConfig,
     now: Callable[[], datetime] = lambda: datetime.now(UTC),
+    *,
+    creg: CompanyRegistry | None = None,
+    traits: frozenset[str] = frozenset(),
 ) -> list[Finding]:
     stamp = now()
     values = _values(conn, company_id)
@@ -521,6 +605,13 @@ def run_rules(
         *quarters_vs_year(values, cfg.quarters_vs_year),
         *release_vs_xbrl(conn, company_id, cfg.release_vs_xbrl, stamp),
         *debt_current_portion(values, cfg.debt_current_portion),
+        *(
+            fallback_denominator(
+                conn, company_id, values, metrics, creg, traits, cfg.fallback_denominator
+            )
+            if creg is not None
+            else []
+        ),
         *metric_identities(
             conn, company_id, values, cfg.metric_identities, stamp, cfg.llm_drop_rate.days
         ),

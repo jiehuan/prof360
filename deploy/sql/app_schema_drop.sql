@@ -34,6 +34,10 @@ IF OBJECT_ID(N'dbo_professional360.News', N'U') IS NOT NULL
     DROP TABLE dbo_professional360.[News];
 GO
 
+IF OBJECT_ID(N'dbo_professional360.MetricChatContext', N'U') IS NOT NULL
+    DROP TABLE dbo_professional360.[MetricChatContext];
+GO
+
 IF OBJECT_ID(N'dbo_professional360.MatrixData', N'U') IS NOT NULL
     DROP TABLE dbo_professional360.[MatrixData];
 GO
@@ -104,6 +108,10 @@ GO
 
 IF OBJECT_ID(N'dbo_professional360.KeyInsightsTypes', N'U') IS NOT NULL
     DROP TABLE dbo_professional360.[KeyInsightsTypes];
+GO
+
+IF OBJECT_ID(N'dbo_professional360.ChatPrompt', N'U') IS NOT NULL
+    DROP TABLE dbo_professional360.[ChatPrompt];
 GO
 
 -- The copy notebook's staging tables (all of them) and schema.

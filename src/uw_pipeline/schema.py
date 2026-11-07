@@ -123,6 +123,21 @@ metric_value = Table(
     ),
 )
 
+# The named inputs behind a COMPUTED metric value (D-090), e.g. ebit and interest_expense for
+# interest coverage: [{name, period, value, status, derivation, period_end, accn, formula,
+# tags: {concept: [tag labels]}}]. Written by the compute stage with the value; read by the
+# metric-chat context. Reported and derived values carry their tag in metric_value itself.
+metric_input = Table(
+    "metric_input",
+    metadata,
+    Column("company_id", Integer, ForeignKey("company.company_id"), primary_key=True),
+    Column("metric_code", Unicode(60), primary_key=True),
+    Column("period_type", Unicode(2), primary_key=True),
+    Column("fiscal_year", Integer, primary_key=True),
+    Column("fiscal_quarter", Integer, primary_key=True),
+    Column("inputs_json", UnicodeText, nullable=False),
+)
+
 # Every SEC document the pipeline references: filings (metadata only for most 8-Ks), primary
 # documents it downloaded, and exhibits such as the EX-99.1 earnings release.
 source_document = Table(
@@ -486,6 +501,20 @@ metric_insight = Table(
     Column("prompt_version", Unicode(40), nullable=False),
     Column("input_hash", Unicode(64), nullable=False),
     Column("created_at", DateTime(timezone=True), nullable=False),
+)
+
+# Metric chat (Phase 19, D-088, D-090): what the chat may use about one company's metric, as
+# JSON (enrich/metric_chat_context.py), built by the metricdetail stage and published to
+# MetricChatContext. context_hash: unchanged contexts are not rewritten.
+metric_chat_context = Table(
+    "metric_chat_context",
+    metadata,
+    Column("company_id", Integer, ForeignKey("company.company_id"), primary_key=True),
+    Column("metric_code", Unicode(60), primary_key=True),
+    Column("context_version", Integer, nullable=False),
+    Column("context_json", UnicodeText, nullable=False),
+    Column("context_hash", Unicode(64), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False),
 )
 
 # Orchestration (Phase 6, decisions D-034). One row per run; one task per (company, stage).

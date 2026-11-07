@@ -9,7 +9,7 @@ how prod is generated from the release source, are documented below.
 | Document | Holds |
 |---|---|
 | `docs/PLAN.md` | Plan of record, phase checklists, open questions |
-| `docs/decisions.md` | Every design decision with its reason (D-001 … D-089), cited below as D-xxx |
+| `docs/decisions.md` | Every design decision with its reason (D-001 … D-090), cited below as D-xxx |
 | `docs/ALPHAVANTAGE_APIM.zh-CN.md` | Alpha Vantage direct/APIM setup, OAuth wire formats and deployment credentials |
 | `docs/OPERATIONS.md` | Day-to-day operations, troubleshooting (Chinese) |
 | `docs/schema-contract.md` | Application tables as the BFF reads them |
@@ -125,7 +125,7 @@ flowchart LR
 | clinical | `run_clinical` | Pipeline of companies with the `clinical_stage` trait: candidates, phase, next milestone and its timing from the latest 10-K and later 10-Qs, both models agreeing; an insight input, not published (D-058) | `clinical_program` | LLM |
 | signals | `run_signals` | 8-K, keyword, auditor, metric, threshold, board, 13D, market, insider and legal signals; LLM vote on judgment topics (D-027, D-028, D-045, D-049, D-050) | `signal`, `signal_vote` | LLM |
 | insights | `run_insights` | Activity summaries, behavioral, strategic & risk, key insights, follow-up questions (D-033), key takeaways (D-053) | `insight*`, `followup_question*`, `activity` | LLM |
-| metricdetail | `run_metric_detail` | Methodology and sources by rules; underwriting relevance by LLM (D-036), without item ids in the text (D-068) | `metric_detail`, `metric_source`, `metric_insight` | LLM |
+| metricdetail | `run_metric_detail` | Methodology and sources by rules; underwriting relevance by LLM (D-036), without item ids in the text (D-068); the metric chat's context by rules (D-090) | `metric_detail`, `metric_source`, `metric_insight`, `metric_chat_context` | LLM |
 | publish | `run_publish` | Writes the app database (§11) | app tables | – |
 | dq | `run_dq` | Data-quality findings (§12) | `dq_finding` | – |
 
@@ -171,18 +171,18 @@ SUCCEEDED run can have Errors; the summary then points to `uw-pipeline dq-report
 
 ## 6. Data model
 
-### Pipeline database (`schema.py`, 40 tables)
+### Pipeline database (`schema.py`, 42 tables)
 
 | Area | Tables |
 |---|---|
-| Company and raw facts | `company`, `ingest_state`, `xbrl_fact`, `metric_definition`, `metric_value` |
+| Company and raw facts | `company`, `ingest_state`, `xbrl_fact`, `metric_definition`, `metric_value`, `metric_input` (the inputs behind each computed value, D-090) |
 | Documents | `source_document`, `filing_section`, `section_chunk` |
 | Signals | `signal`, `signal_vote` |
 | News | `news_item`, `activity`, `news_risk_score` |
 | Transcripts | `transcript_tone`, `transcript_flag` |
 | Text metrics | `loan_portfolio_segment`, `loan_portfolio_detail`, `release_check` |
 | Insights | `insight`, `insight_evidence`, `insight_link`, `insight_metric`, `followup_question`, `followup_question_insight`, `followup_question_metric`, `followup_question_source` |
-| Metric detail | `metric_detail`, `metric_source`, `metric_insight` |
+| Metric detail | `metric_detail`, `metric_source`, `metric_insight`, `metric_chat_context` (D-090) |
 | LLM | `llm_call` (cache), `llm_task_stat` (grounding drop rates) |
 | Runs and quality | `pipeline_run`, `pipeline_task`, `dq_finding`, `review_decision` |
 | Governance | `board_composition` |
@@ -213,11 +213,12 @@ Conventions:
 - Signals keep `detected_at` across reruns; `signal_key` = hash(company, rule, accession,
   section, extra) (D-027).
 
-### Application database (`schema_app.py`, 24 tables)
+### Application database (`schema_app.py`, 26 tables)
 
 The team's data model diagram, with the changes in D-037: new `ItemLink` and
 `CompanyMetricDetail`, a few added columns, and `pipeline_publish_map` (pipeline bookkeeping);
-and `KeyTakeaways` (D-053).
+and `KeyTakeaways` (D-053); `MetricChatContext` and `ChatPrompt` for the metric chat (D-090;
+the BFF's own `UserMetricChat` and `MetricIssueReport` are in `deploy/sql/bff_metric_chat.sql`).
 The column-level mapping to the front end is in `docs/schema-contract.md`. Tables owned by the
 application (users, favorites, history) are not touched.
 
@@ -406,7 +407,9 @@ The `dq` stage runs last in `nightly` and `morning` and writes `dq_finding`; fin
 the task. Rules (`config/dq_rules.yaml`, D-035, D-036): missing core metric, quarter jump
 (> 500% vs prior quarter and vs a year earlier), negative positive-only metric, four quarters ≠
 fiscal year (> 0.5%), press release ≠ XBRL, metric identities (Error), total debt without a
-current portion (Warning), grounding drop rate > 20% in 30 days, no 10-K/10-Q for 120 days,
+current portion (Warning), a ratio dividing by a proxy tag such as cash interest paid
+(`fallback_denominator`: Info, Warning with a captive finance arm, D-090), grounding drop rate
+> 20% in 30 days, no 10-K/10-Q for 120 days,
 review queue (undecided DISPUTED / OVERRULED signals), detail and source coverage, link
 integrity.
 

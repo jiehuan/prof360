@@ -122,8 +122,16 @@ IF OBJECT_ID(N'uw_pipeline.metric_insight', N'U') IS NOT NULL
     DROP TABLE uw_pipeline.[metric_insight];
 GO
 
+IF OBJECT_ID(N'uw_pipeline.metric_input', N'U') IS NOT NULL
+    DROP TABLE uw_pipeline.[metric_input];
+GO
+
 IF OBJECT_ID(N'uw_pipeline.metric_detail', N'U') IS NOT NULL
     DROP TABLE uw_pipeline.[metric_detail];
+GO
+
+IF OBJECT_ID(N'uw_pipeline.metric_chat_context', N'U') IS NOT NULL
+    DROP TABLE uw_pipeline.[metric_chat_context];
 GO
 
 IF OBJECT_ID(N'uw_pipeline.loan_portfolio_detail', N'U') IS NOT NULL

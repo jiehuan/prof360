@@ -26,6 +26,9 @@ class TagRef(BaseModel, frozen=True):
 
     tag: str
     dims: tuple[tuple[str, str], ...] = ()
+    # Set on a candidate that measures something close to, but not, the concept (D-090), in
+    # plain English: what it is. The `fallback_denominator` DQ rule and the metric chat use it.
+    proxy: str | None = None
 
     @field_validator("tag")
     @classmethod
@@ -79,6 +82,9 @@ class ConceptDef(BaseModel):
     tags: list[TagRef]
     by_group: dict[str, list[TagRef]] = Field(default_factory=dict)
     unit: str = "USD"  # unit of the facts to use: USD, or pure for ratios
+    # Why a company override reads this concept its own way, in plain English (D-090): the
+    # metric chat quotes it, e.g. GM's interest expense being automotive interest only.
+    note: str | None = None
 
     @model_validator(mode="after")
     def _no_thresholds(self) -> ConceptDef:
@@ -271,6 +277,7 @@ class Registry(BaseModel):
         for code, c in (self.concepts | override.concepts).items():
             concepts[code] = c.by_group.get(group.code, c.tags)
             units[code] = c.unit
+        notes = {code: c.note for code, c in override.concepts.items() if c.note}
 
         catalog = self._catalog(ticker)
         by_code = {m.code: m for m in catalog}
@@ -310,7 +317,8 @@ class Registry(BaseModel):
             metrics = [
                 m for m in metrics if m.code == "market_cap" or "market_cap" not in m.inputs()
             ]
-        return CompanyRegistry(concepts=concepts, units=units, metrics=metrics, currency=currency)
+        return CompanyRegistry(concepts=concepts, units=units, metrics=metrics, currency=currency,
+                               overridden=set(override.concepts), notes=notes)  # fmt: skip
 
 
 class CompanyRegistry(BaseModel):
@@ -320,6 +328,9 @@ class CompanyRegistry(BaseModel):
     units: dict[str, str] = Field(default_factory=dict)  # concept -> fact unit (default USD)
     metrics: list[MetricDef]
     currency: str = "USD"  # the company's reporting currency (D-072)
+    # Concepts a company override replaces, and the override's reason per concept (D-090).
+    overridden: set[str] = Field(default_factory=set)
+    notes: dict[str, str] = Field(default_factory=dict)
 
     def unit_of(self, m: MetricDef) -> str:
         """The unit stored for metric `m`: its own, with money in the company's currency."""

@@ -3,4 +3,5 @@
 # 1,631M of notes), so it is not read as long-term debt including current maturities (D-073).
 concepts:
   ltd_total:
+    note: "PulteGroup's debt is its senior notes; us-gaap:LongTermDebt in its 10-Ks is a small other item, so it is not read as debt including current maturities (D-073)."
     tags: []

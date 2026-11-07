@@ -186,6 +186,7 @@
 | DQ 报出 `metric_identity`（Error） | 存下的值违反了指标关系（例如 CET1 > Tier 1）。核对原始文件；确认后用 `uw-pipeline review` 记下结论 |
 | DQ 报出 `debt_current_portion`（Warning） | 公司没有标注一年内到期的债务，总债务只含长期部分（例如 Macy's）。属于数据缺口，不需要处理 |
 | 日志里出现 `daily LLM budget` | 当天新调用超过 `LLM_DAILY_BUDGET`。未完成的项目第二天会自动补上；需要当天补完时临时调高该变量 |
+| DQ 报出 `fallback_denominator` | 比率的分母用了 `concept_map.yaml` 里标为 `proxy` 的标签（目前只有 cash interest paid 代替利息费用）。有自营金融子公司（trait `captive_finance`）的公司是 Warning：要核对分母里是否混进了金融子公司的利息（GM 曾因此显示 0.44x，D-087）；需要时像 GM 一样加公司覆盖，并写 `note`（D-090） |
 | DQ 报出 `source_coverage`（Info） | 洞察只引用了电话会议记录，没有公开链接，属于预期情况 |
 
 ## 12. 密钥和费用

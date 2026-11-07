@@ -880,7 +880,7 @@ uw-pipeline dq-report --run-id <id>
 
 ---
 
-### Phase 19 — 指标问答（BFF 内的 chatbot，调用 SecureGPT）（2026-11-06 计划，未开始，D-088）
+### Phase 19 — 指标问答（BFF 内的 chatbot，调用 SecureGPT）（2026-11-06 计划；19.A 2026-11-07 完成，D-088、D-090）
 
 **目标**：用户在指标弹窗里问"这个数怎么算的 / 为什么这么低 / 数据从哪来"，得到只基于本公司本指标数据、每个数字都有出处的英文回答；觉得数不对时可以一键报告，报告进入管线复核。起因：GM 的 interest coverage 曾显示 0.44x（分母误用了含 GM Financial 的支付利息，D-087），网页上的用户无从知道原因。
 
@@ -908,15 +908,15 @@ BFF
 - 提示词放在数据库（`ChatPrompt`），由管线 publish 写入：只改提示词时 BFF 不用重新复制或部署；改校验逻辑才需要换文件夹。
 
 #### 19.A 问答上下文（管线，约 3 天）
-- [ ] metricdetail 阶段为每个 公司 × 指标 生成上下文 JSON，publish 写入 `MetricChatContext`：
+- [x] metricdetail 阶段为每个 公司 × 指标 生成上下文 JSON，publish 写入 `MetricChatContext`（2026-11-07，D-090；公式输入由 compute 写入新表 `metric_input`）：
   - 公式、每期的值和每个公式输入的值（如每期的 operating income 与 interest expense，输入不一定是展示的指标）
   - 每个值的 XBRL 标签、是否维度事实、是否用了候选列表靠后的兜底标签（如 `InterestPaidNet`）、来源 accession 和文件链接
   - NM 的原因、该指标的 DQ 发现、`coverage_notes` 的说明、同行业中位数
   - 每个数据点一个稳定 id（如 `dp:FY2025:interest_expense`），回答只能引用这些 id
-- [ ] `udf_GetMetricChatContext(@CompanyId, @MetricId)`，BFF 一次读取
-- [ ] 建表脚本 `deploy/sql/bff_metric_chat.sql`：`MetricChatContext`、`ChatPrompt`（管线写）；`UserMetricChat`、`MetricIssueReport`（BFF 写，`User*` 规则同 D-075/D-086）
-- [ ] DQ 规则：比率的分母用了兜底标签、且公司有金融子公司 / 业务维度时给 Warning（GM 这类问题在用户提问前就能发现）
-- [ ] `schema_app.py`、`scripts/export_app_ddl.py` 重新生成、`docs/schema-contract.md`、测试
+- [x] `udf_GetMetricChatContext(@CompanyId, @MetricId)`，BFF 一次读取；另有 `udf_GetActiveChatPrompt(@Task)`
+- [x] 建表脚本 `deploy/sql/bff_metric_chat.sql`（SQL Server 2022 上实测）：`MetricChatContext`、`ChatPrompt`（管线写）；`UserMetricChat`、`MetricIssueReport`（BFF 写，`User*` 规则同 D-075/D-086）
+- [x] DQ 规则：比率的分母用了兜底标签、且公司有金融子公司 / 业务维度时给 Warning（GM 这类问题在用户提问前就能发现）。实际做法（D-090）：库里看不出金融子公司，单看兜底标签又太宽，改为 `concept_map.yaml` 里标 `proxy` 的标签（目前只有 cash interest paid）；trait `captive_finance`（AUTOMOTIVE 组，加上 CAT、DE）为 Warning，其他为 Info
+- [x] `schema_app.py`、`scripts/export_app_ddl.py` 重新生成、`docs/schema-contract.md`、测试
 
 #### 19.B `uw_metric_chat` 和评估（管线，约 3–4 天）
 - [ ] `packages/uw_metric_chat/`：只依赖 pydantic 和 httpx，无数据库、无管线代码

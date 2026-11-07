@@ -251,6 +251,19 @@ CREATE TABLE uw_pipeline.loan_portfolio_detail (
 );
 GO
 
+IF OBJECT_ID(N'uw_pipeline.metric_chat_context', N'U') IS NULL
+CREATE TABLE uw_pipeline.metric_chat_context (
+	company_id INTEGER NOT NULL, 
+	metric_code NVARCHAR(60) NOT NULL, 
+	context_version INTEGER NOT NULL, 
+	context_json NVARCHAR(max) NOT NULL, 
+	context_hash NVARCHAR(64) NOT NULL, 
+	updated_at DATETIMEOFFSET NOT NULL, 
+	PRIMARY KEY (company_id, metric_code), 
+	FOREIGN KEY(company_id) REFERENCES uw_pipeline.company (company_id)
+);
+GO
+
 IF OBJECT_ID(N'uw_pipeline.metric_detail', N'U') IS NULL
 CREATE TABLE uw_pipeline.metric_detail (
 	company_id INTEGER NOT NULL, 
@@ -260,6 +273,19 @@ CREATE TABLE uw_pipeline.metric_detail (
 	latest_value_text NVARCHAR(40) NULL, 
 	updated_at DATETIMEOFFSET NOT NULL, 
 	PRIMARY KEY (company_id, metric_code), 
+	FOREIGN KEY(company_id) REFERENCES uw_pipeline.company (company_id)
+);
+GO
+
+IF OBJECT_ID(N'uw_pipeline.metric_input', N'U') IS NULL
+CREATE TABLE uw_pipeline.metric_input (
+	company_id INTEGER NOT NULL, 
+	metric_code NVARCHAR(60) NOT NULL, 
+	period_type NVARCHAR(2) NOT NULL, 
+	fiscal_year INTEGER NOT NULL, 
+	fiscal_quarter INTEGER NOT NULL, 
+	inputs_json NVARCHAR(max) NOT NULL, 
+	PRIMARY KEY (company_id, metric_code, period_type, fiscal_year, fiscal_quarter), 
 	FOREIGN KEY(company_id) REFERENCES uw_pipeline.company (company_id)
 );
 GO

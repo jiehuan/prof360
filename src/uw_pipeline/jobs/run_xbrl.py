@@ -16,6 +16,7 @@ from uw_pipeline.clients.sec import SecClient, pad_cik
 from uw_pipeline.compute.metrics import Value, compute_metrics
 from uw_pipeline.compute.registry import CompanyRegistry, Registry
 from uw_pipeline.config import CompanyConfig, IndustryConfig
+from uw_pipeline.enrich.metric_chat_context import period_id
 from uw_pipeline.extract.filings import Filing, filings_since, instance_name, periodic_filings
 from uw_pipeline.frames import records
 from uw_pipeline.jobs.run_company import TaskResult
@@ -27,7 +28,14 @@ from uw_pipeline.normalize.xbrl_facts import (
     facts_from_instance,
     pay_versus_performance,
 )
-from uw_pipeline.schema import company, ingest_state, metric_definition, metric_value, xbrl_fact
+from uw_pipeline.schema import (
+    company,
+    ingest_state,
+    metric_definition,
+    metric_input,
+    metric_value,
+    xbrl_fact,
+)
 
 log = logging.getLogger(__name__)
 
@@ -296,6 +304,16 @@ def compute_company(
     return periods, compute_metrics(periods, creg, stored)
 
 
+def inputs_json(v: Value) -> str:
+    """A computed value's inputs, one level deep, for metric_input (D-090)."""
+    return json.dumps([
+        {"name": name, "period": period_id(key), "value": i.value, "status": i.status,
+         "derivation": i.derivation, "period_end": i.period_end, "accn": i.accn,
+         "formula": i.formula, "tags": i.source_map()}
+        for name, key, i in v.inputs
+    ], separators=(",", ":"))  # fmt: skip
+
+
 def _definition_rows(registry: Registry) -> list[dict[str, Any]]:
     rows: dict[str, dict[str, Any]] = {}
     for ticker in ["", *registry.overrides]:
@@ -381,9 +399,16 @@ def run_compute_stage(
             )
             stamp = now()
             out: list[dict[str, Any]] = []
+            input_rows: list[dict[str, Any]] = []
             for code, by_period in metrics.items():
                 unit = next(creg.unit_of(m) for m in creg.metrics if m.code == code)
                 for (ptype, fy, fq), v in by_period.items():
+                    if v.derivation == "COMPUTED" and v.inputs:
+                        input_rows.append({
+                            "company_id": row["company_id"], "metric_code": code,
+                            "period_type": ptype, "fiscal_year": fy, "fiscal_quarter": fq,
+                            "inputs_json": inputs_json(v),
+                        })  # fmt: skip
                     out.append(
                         {
                             "company_id": row["company_id"],
@@ -419,6 +444,17 @@ def run_compute_stage(
                 if stale:
                     delete_keys(conn, metric_value, keys[1:], stale,
                                 metric_value.c.company_id == row["company_id"])  # fmt: skip
+                # Inputs of this company's computed values (D-090), kept in step the same way.
+                upsert(conn, metric_input, input_rows, key_cols=keys)
+                with_inputs = {tuple(r[k] for k in keys[1:]) for r in input_rows}
+                old_inputs = conn.execute(
+                    select(*(metric_input.c[k] for k in keys[1:]))
+                    .where(metric_input.c.company_id == row["company_id"])
+                ).all()  # fmt: skip
+                gone = [tuple(e) for e in old_inputs if tuple(e) not in with_inputs]
+                if gone:
+                    delete_keys(conn, metric_input, keys[1:], gone,
+                                metric_input.c.company_id == row["company_id"])  # fmt: skip
             log.debug("%s: %d metric values (%d stale removed)", cfg.ticker, len(out), len(stale))
             results.append(TaskResult(cfg.ticker, "compute", ok=True, detail=f"{len(out)} values"))
         except Exception as exc:

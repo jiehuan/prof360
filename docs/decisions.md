@@ -2059,3 +2059,42 @@ income" (2026-11-01).**
   `--list`). In the web console: the Terminal of a running CronJob pod, or a temporary Job
   (`deploy/openshift/log-viewer.yaml`, 30 minutes, then deleted) that mounts the PVC. The PVC
   is ReadWriteOnce, so the viewer must not overlap a scheduled run on another node.
+
+**D-090 Metric chat context: what the chat may use (2026-11-07, PLAN Phase 19.A).**
+- Need: the metric chat (D-088) must explain how a value was computed from facts the pipeline
+  holds, and every number it says must be checkable.
+- Formula inputs. A computed value's inputs (ebit and interest expense behind interest
+  coverage, assets a year earlier behind ROA) existed only during compute. Options: (a) a JSON
+  column on `metric_value`; (b) a new pipeline table; (c) recompute in metricdetail. Chosen: (b)
+  `metric_input`, one row per COMPUTED value with its inputs one level deep (name, period,
+  value, derivation, accession, tags): rerunning pipeline_schema_full.sql creates it (a new
+  column would need an ALTER), and compute rewrites every value each run, so the first run fills
+  it. Reported and derived values carry their
+  tag in `metric_value`.
+- Context. One JSON per company and shown metric, built by the metricdetail stage
+  (`metric_chat_context`, rewritten only when its hash changes) and published to
+  `MetricChatContext`: the definition; each popup period's value, filing and inputs; each tag's
+  candidate rank, dimensions, proxy text and company override; why a value is N/M; the
+  metric's latest DQ findings (the dq stage runs after metricdetail, so the previous run's);
+  the coverage note; the industry group's median for the latest fiscal year (at least three
+  active peers, same unit). Every number is a data point with a stable id (`dp:FY2025:ebit`);
+  answers may cite only these. About 12 KB a context (3k tokens), 80 MB for the universe.
+- Override reasons, which were YAML comments, are now a `note` on each override concept
+  (required by a test); GM's coverage note on interest expense was out of date after D-087 and
+  is rewritten.
+- DQ rule. PLAN asked for a Warning when a ratio's denominator uses a fallback tag at a company
+  with a finance arm. Two findings changed it: (1) a fallback rank alone is too broad (equity
+  with minority interest, contract revenue: same measure, other tag); (2) no stored fact shows
+  a finance arm (companyfacts has no dimensions; none of the 42 companies on a fallback
+  interest tag has a "Financ" member). Chosen: a candidate tag can be marked `proxy` in
+  concept_map.yaml with what it measures (only us-gaap:InterestPaidNet, cash interest paid);
+  `fallback_denominator` reports a shown ratio whose latest fiscal year divides by a proxy:
+  Info, or Warning for companies with trait `captive_finance` (group AUTOMOTIVE; CAT and DE
+  added). On the local data: CAT interest coverage Warning, LOW Info.
+- Deploying: run `pipeline_schema_full.sql` and `app_schema_changes.sql` (or
+  `bff_metric_chat.sql`) with the run_sql_script notebook before the first run.
+- SQL: `deploy/sql/bff_metric_chat.sql` creates the two pipeline tables, the BFF's
+  `UserMetricChat` (every turn) and `MetricIssueReport` (user or model reports; the pipeline
+  keeps its review decisions on its side), `udf_GetMetricChatContext` and
+  `udf_GetActiveChatPrompt`. Tested on SQL Server 2022 (twice, a real GM context read back).
+

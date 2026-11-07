@@ -380,8 +380,10 @@ GM:
   long_term_debt: >-
     Debt is tagged as one total including GM Financial; no non-current long-term debt tag.
   interest_expense: >-
-    Interest expense is not tagged with the standard tags; the fallback, cash interest paid, is
-    tagged annually only.
+    Automotive interest expense (D-087) is read from each filing's XBRL instance (GM's
+    business-group axis): fiscal years from FY2022 and quarters from Q2 2023. Earlier filings
+    were not read for it, and the standard tags give only cash interest paid, most of it GM
+    Financial's, so earlier periods are not shown.
   interest_coverage: Needs interest expense; see its note.
   inventory_days: No cost of goods sold line under the standard tags (costs are reported by type).
   warranty_reserve: Warranty reserve not tagged with the standard tags.
