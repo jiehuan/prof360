@@ -16,6 +16,7 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 .venv/bin/uw-pipeline run --job nightly   # scheduled job (config/jobs.yaml); resumes a dead run
 .venv/bin/uw-pipeline runs           # recent runs and failed/skipped tasks
 .venv/bin/uw-pipeline dq-report      # data-quality findings of the latest run
+.venv/bin/uw-pipeline logs --level warning   # a run's log file (LOG_DIR; /data/logs in the image)
 .venv/bin/uw-pipeline run --ticker MAR --stage compute
 .venv/bin/uw-pipeline run --ticker MAR --force       # ignore same-day raw cache / input hash
 .venv/bin/uw-pipeline coverage-report                # data/reports/coverage-<date>.md

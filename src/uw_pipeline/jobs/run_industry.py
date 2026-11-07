@@ -133,7 +133,7 @@ def run_industry_stage(
                                  .where(company.c.company_id == row["company_id"])
                                  .values(industry_group=group, is_financial=financial))  # fmt: skip
                     changed.append(cfg)
-            log.info("%s: industry %s", cfg.ticker, detail)
+            log.debug("%s: industry %s", cfg.ticker, detail)
             results.append(TaskResult(cfg.ticker, "industry", ok=True, detail=detail))
         except Exception as exc:
             log.exception("%s: industry stage failed", cfg.ticker)

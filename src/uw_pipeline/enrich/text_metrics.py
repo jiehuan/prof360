@@ -274,7 +274,7 @@ def dual_checked(
             kept.append(c)
         else:
             dropped += 1
-            log.info("%s %s %s: models disagree (extractor %s, tie-breaker %s); not kept",
+            log.debug("%s %s %s: models disagree (extractor %s, tie-breaker %s); not kept",
                      label, c.metric_code, c.key, c.value,
                      match.value if match else "no value")  # fmt: skip
     return kept, dropped

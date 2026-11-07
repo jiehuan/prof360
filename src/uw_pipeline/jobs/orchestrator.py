@@ -355,24 +355,51 @@ class Orchestrator:
 
         # Stage-major order: a stage's tasks (one per company) are consecutive. They depend only
         # on earlier stages, so they can run in parallel (Phase 15i).
-        for _, group in itertools.groupby(tasks, key=lambda t: t["stage"]):
+        for stage, group in itertools.groupby(tasks, key=lambda t: t["stage"]):
             batch = list(group)
-            workers = min(self.parallel.get(batch[0]["stage"], 1), len(batch))
-            if not self._parallel_ok(batch[0]["stage"]) or workers <= 1:
+            workers = min(self.parallel.get(stage, 1), len(batch))
+            if not self._parallel_ok(stage):
+                workers = 1
+            todo = sum(status[(t["ticker"], stage)] not in DONE for t in batch)
+            log.info("stage %s: %d of %d companies to run%s", stage, todo, len(batch),
+                     f", {workers} in parallel" if workers > 1 and todo > 1 else "")  # fmt: skip
+            began = self.now()
+            if workers <= 1:
                 for t in batch:
                     run_task(t)
-                continue
-            # Each task gets a copy of this thread's logging context (run and job fields).
-            contexts = [contextvars.copy_context() for _ in batch]
-            with ThreadPoolExecutor(max_workers=workers,
-                                    thread_name_prefix=batch[0]["stage"]) as pool:  # fmt: skip
-                list(
-                    pool.map(
-                        lambda pair: pair[0].run(run_task, pair[1]),
-                        zip(contexts, batch, strict=True),
+            else:
+                # Each task gets a copy of this thread's logging context (run and job fields).
+                contexts = [contextvars.copy_context() for _ in batch]
+                with ThreadPoolExecutor(max_workers=workers,
+                                        thread_name_prefix=stage) as pool:  # fmt: skip
+                    list(
+                        pool.map(
+                            lambda pair: pair[0].run(run_task, pair[1]),
+                            zip(contexts, batch, strict=True),
+                        )
                     )
-                )
+            self._log_stage(stage, [status[(t["ticker"], stage)] for t in batch],
+                            [t["ticker"] for t in batch], self.now() - began)  # fmt: skip
         return self._finish(run_id)
+
+    @staticmethod
+    def _log_stage(stage: str, states: list[str], tickers: list[str], took: timedelta) -> None:
+        """One line per stage (D-089): per-company detail is DEBUG and in pipeline_task."""
+        counts = {s: states.count(s) for s in ("SUCCEEDED", "FAILED", "SKIPPED")}
+        failed = [t for t, s in zip(tickers, states, strict=True) if s == "FAILED"]
+        skipped = [t for t, s in zip(tickers, states, strict=True) if s == "SKIPPED"]
+
+        def names(found: list[str]) -> str:
+            shown = ", ".join(found[:10])
+            return f" ({shown}{', ...' if len(found) > 10 else ''})" if found else ""
+
+        seconds = int(took.total_seconds())
+        log.log(
+            logging.WARNING if failed else logging.INFO,
+            "stage %s done in %dm%02ds: %d succeeded, %d failed%s, %d skipped%s",
+            stage, seconds // 60, seconds % 60, counts["SUCCEEDED"], counts["FAILED"],
+            names(failed), counts["SKIPPED"], names(skipped),
+        )  # fmt: skip
 
     def _finish(self, run_id: int) -> RunOutcome:
         now = self.now()

@@ -2039,3 +2039,23 @@ income" (2026-11-01).**
 - Model: SecureGPT gpt-6-luna by default, sol selectable, decided by an offline evaluation.
   English only. Every turn is logged (`UserMetricChat`); reports go to `MetricIssueReport` and
   into `uw-pipeline review`.
+
+**D-089 Concise run logs, kept on the PVC and readable from the web console (2026-11-07).**
+- Need: a nightly run logged 7,315 lines (run 173, 277 companies): one line per company per
+  stage (~4,400) and extraction detail (~1,200), with the ~60 warnings and errors buried. Logs
+  went only to stdout, so a run's log was gone with its pod (three jobs, 7 days), and the team
+  has the OpenShift web console only, no `oc`.
+- Level. Options: (a) keep INFO and filter when reading; (b) per-company lines to DEBUG, one
+  line per stage at INFO. Chosen: (b). INFO is the run start, each stage's start and outcome
+  (succeeded / failed / skipped with the tickers, time taken; WARNING when a task failed),
+  warnings, errors and the run summary: about a hundred lines. Per-company outcomes stay in
+  `pipeline_task.detail`; `LOG_LEVEL=DEBUG` (or `-v`) brings the detail back.
+- Where. Options: (a) the pod's own filesystem (lost with the pod); (b) the PVC; (c) a database
+  table. Chosen: (b): `LOG_DIR` (`/data/logs` in the image) gets one text file per run,
+  `<date>_<job>_run<id>.log`; a resumed run appends to its file; files older than
+  `LOG_KEEP_DAYS` (30) are deleted when a run starts. Only the concise log is kept. stdout stays
+  JSON for the platform.
+- Reading: `uw-pipeline logs` (latest run, `--run`, `--job`, `--level`, `--ticker`, `--tail`,
+  `--list`). In the web console: the Terminal of a running CronJob pod, or a temporary Job
+  (`deploy/openshift/log-viewer.yaml`, 30 minutes, then deleted) that mounts the PVC. The PVC
+  is ReadWriteOnce, so the viewer must not overlap a scheduled run on another node.

@@ -199,7 +199,7 @@ def run_legal_stage(
             with short_transactions(engine) as conn:
                 stats = process_company(cfg, llm[0], llm[1], storage, conn, now())
             detail = str(vars(stats))
-            log.info("%s: legal %s", cfg.ticker, detail)
+            log.debug("%s: legal %s", cfg.ticker, detail)
             results.append(TaskResult(cfg.ticker, "legal", ok=True, detail=detail))
         except Exception as exc:
             log.exception("%s: legal stage failed", cfg.ticker)

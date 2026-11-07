@@ -144,7 +144,7 @@ def run_clinical_stage(
                 stats = process_company(cfg, llm[0], llm[1], storage, conn, now())
             detail = (f"{stats.current} current programs from {stats.documents} filings "
                       f"({stats.unpaired} readings unpaired)")  # fmt: skip
-            log.info("%s: clinical %s", cfg.ticker, detail)
+            log.debug("%s: clinical %s", cfg.ticker, detail)
             results.append(TaskResult(cfg.ticker, "clinical", ok=True, detail=detail))
         except Exception as exc:
             log.exception("%s: clinical stage failed", cfg.ticker)

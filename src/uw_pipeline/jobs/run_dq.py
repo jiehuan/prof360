@@ -65,7 +65,7 @@ def run_dq_stage(
             counts: dict[str, int] = {}
             for f in findings:
                 counts[f.severity] = counts.get(f.severity, 0) + 1
-            log.info("%s: dq %s", company.ticker, counts or "clean")
+            log.debug("%s: dq %s", company.ticker, counts or "clean")
             detail = ", ".join(f"{k}={v}" for k, v in sorted(counts.items())) or "clean"
             # Findings are data, not stage failures: the task succeeds either way.
             results.append(TaskResult(company.ticker, "dq", ok=True, detail=detail))

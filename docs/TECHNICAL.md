@@ -9,7 +9,7 @@ how prod is generated from the release source, are documented below.
 | Document | Holds |
 |---|---|
 | `docs/PLAN.md` | Plan of record, phase checklists, open questions |
-| `docs/decisions.md` | Every design decision with its reason (D-001 … D-088), cited below as D-xxx |
+| `docs/decisions.md` | Every design decision with its reason (D-001 … D-089), cited below as D-xxx |
 | `docs/ALPHAVANTAGE_APIM.zh-CN.md` | Alpha Vantage direct/APIM setup, OAuth wire formats and deployment credentials |
 | `docs/OPERATIONS.md` | Day-to-day operations, troubleshooting (Chinese) |
 | `docs/schema-contract.md` | Application tables as the BFF reads them |
@@ -445,6 +445,9 @@ because the service echoes the key.
 | `ALPHAVANTAGE_CALLS_PER_MINUTE`, `ALPHAVANTAGE_DAILY_QUOTA` | 5, 25 | Paid plan: 75 and 0 (unlimited) |
 | `LLM_ENABLED` | true | `false` runs rules only |
 | `LOG_FORMAT` | text | `json`: one object per line with run, job, ticker and stage |
+| `LOG_LEVEL` | INFO | INFO: run, one line per stage, warnings, errors; `DEBUG`: per-company detail too (D-089) |
+| `LOG_DIR` | – (image: `/data/logs`) | Each run also writes a text log `<date>_<job>_run<id>.log` there; `uw-pipeline logs` reads it |
+| `LOG_KEEP_DAYS` | 30 | Older run logs are deleted when a run starts |
 
 AV credentials are checked lazily when an AV client is created, so SEC-only runs do not require
 them. `config check` validates YAML structure offline, without checking live credentials or

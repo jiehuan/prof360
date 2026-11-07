@@ -840,7 +840,7 @@ def run_publish_stage(
                 stats, w = publish_company(cfg, registry, industry, pcfg, labels, src, dst, now())
             detail = (f"{w.written} written, {w.unchanged} unchanged; "
                       + ", ".join(f"{k}={v}" for k, v in stats.counts.items() if v))  # fmt: skip
-            log.info("%s: publish %s", cfg.ticker, detail)
+            log.debug("%s: publish %s", cfg.ticker, detail)
             results.append(TaskResult(cfg.ticker, "publish", ok=True, detail=detail[:500]))
         except Exception as exc:
             log.exception("%s: publish stage failed", cfg.ticker)
