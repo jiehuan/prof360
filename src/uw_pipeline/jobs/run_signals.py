@@ -324,7 +324,7 @@ def run_signals_stage(
             counts: dict[str, int] = {}
             for r in rows:
                 counts[r["severity"]] = counts.get(r["severity"], 0) + 1
-            log.info(
+            log.debug(
                 "%s: %d signals %s (%d stale removed)%s", cfg.ticker, len(rows), counts,
                 len(stale), f" llm {voter.stats}" if voter else "",
             )  # fmt: skip

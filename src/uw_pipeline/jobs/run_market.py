@@ -272,7 +272,7 @@ def run_market_stage(
                     delete_keys(conn, metric_value, keys[1:], stale,
                                 metric_value.c.company_id == row["company_id"])  # fmt: skip
             detail = f"{len(prices)} prices, {len(rows)} market values"
-            log.info("%s: market %s (%d stale removed)", cfg.ticker, detail, len(stale))
+            log.debug("%s: market %s (%d stale removed)", cfg.ticker, detail, len(stale))
             results.append(TaskResult(cfg.ticker, "market", ok=True, detail=detail))
         except Exception as exc:
             log.exception("%s: market stage failed", cfg.ticker)

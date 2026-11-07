@@ -1959,3 +1959,44 @@ income" (2026-11-01).**
   earlier years, read from interest paid before, are no longer shown. Q4 2025 is NM
   (operating loss).
 - Other issuers on interest paid with a captive finance arm (e.g. CAT) may need the same check.
+
+**D-088 Metric chat in the BFF, grounded in pipeline context (2026-11-06; planned, PLAN Phase 19).**
+- Need: a user cannot tell why a metric looks wrong (GM's interest coverage read 0.44x until
+  D-087). A chat in the metric popup should explain how a value was computed and from which
+  filing and tag, and let the user report a value that looks wrong.
+- Where it runs. Options: (a) a chat service in this repo, deployed as its own pod, with the
+  BFF proxying; (b) in the BFF (Python FastAPI, already running on OpenShift), with the
+  pipeline supplying the context, prompt and checks. Chosen: (b), one pod fewer to run.
+- How the BFF gets the code. Options: (a) pip from this repo (needs repo access from the BFF's
+  image build); (b) a wheel in an internal package index; (c) a folder copied into the BFF's
+  code. Chosen: (c). `packages/uw_metric_chat/` (pydantic and httpx only) is exported with a
+  version, source commit and checksums; the BFF replaces the folder to upgrade and never edits
+  it. The BFF has no SecureGPT client, so the folder includes an async one.
+- The prompt lives in the database (`ChatPrompt`, written by publish), so a prompt change needs
+  no BFF release; the folder refuses a prompt newer than it supports.
+- Grounding: the model may use only the context of one company and metric, cites data-point
+  ids, and every number in an answer must match a cited data point; otherwise the BFF answers
+  "can't confirm". The context holds structured data only, no filing text.
+- Model: SecureGPT gpt-6-luna by default, sol selectable, decided by an offline evaluation.
+  English only. Every turn is logged (`UserMetricChat`); reports go to `MetricIssueReport` and
+  into `uw-pipeline review`.
+
+**D-089 Concise run logs, kept on the PVC and readable from the web console (2026-11-07).**
+- Need: a nightly run logged 7,315 lines (run 173, 277 companies): one line per company per
+  stage (~4,400) and extraction detail (~1,200), with the ~60 warnings and errors buried. Logs
+  went only to stdout, so a run's log was gone with its pod (three jobs, 7 days), and the team
+  has the OpenShift web console only, no `oc`.
+- Level. Options: (a) keep INFO and filter when reading; (b) per-company lines to DEBUG, one
+  line per stage at INFO. Chosen: (b). INFO is the run start, each stage's start and outcome
+  (succeeded / failed / skipped with the tickers, time taken; WARNING when a task failed),
+  warnings, errors and the run summary: about a hundred lines. Per-company outcomes stay in
+  `pipeline_task.detail`; `LOG_LEVEL=DEBUG` (or `-v`) brings the detail back.
+- Where. Options: (a) the pod's own filesystem (lost with the pod); (b) the PVC; (c) a database
+  table. Chosen: (b): `LOG_DIR` (`/data/logs` in the image) gets one text file per run,
+  `<date>_<job>_run<id>.log`; a resumed run appends to its file; files older than
+  `LOG_KEEP_DAYS` (30) are deleted when a run starts. Only the concise log is kept. stdout stays
+  JSON for the platform.
+- Reading: `uw-pipeline logs` (latest run, `--run`, `--job`, `--level`, `--ticker`, `--tail`,
+  `--list`). In the web console: the Terminal of a running CronJob pod, or a temporary Job
+  (`deploy/openshift/log-viewer.yaml`, 30 minutes, then deleted) that mounts the PVC. The PVC
+  is ReadWriteOnce, so the viewer must not overlap a scheduled run on another node.

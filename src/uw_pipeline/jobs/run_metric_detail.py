@@ -386,10 +386,10 @@ def run_metric_detail_stage(
                 stats = process_company(cfg, registry, industry, llm, icfg, labels, conn, now())
                 conn.commit()
             for d in stats.dropped:
-                log.info("%s: metric relevance dropped %s", cfg.ticker, d)
+                log.debug("%s: metric relevance dropped %s", cfg.ticker, d)
             detail = (f"{stats.metrics} metrics, {stats.sources} sources, "
                       f"relevance={stats.relevance}")  # fmt: skip
-            log.info("%s: metricdetail %s", cfg.ticker, detail)
+            log.debug("%s: metricdetail %s", cfg.ticker, detail)
             results.append(TaskResult(cfg.ticker, "metricdetail", ok=True, detail=detail))
         except Exception as exc:
             log.exception("%s: metricdetail stage failed", cfg.ticker)

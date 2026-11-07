@@ -26,7 +26,15 @@ Operations:
   and continues with unfinished tasks (`pipeline_run` / `pipeline_task`).
 - Scheduled jobs re-fetch SEC metadata on every run (`refresh_sec` in config/jobs.yaml), so the
   05:30 catch-up sees filings made after the 23:30 run.
-- Logs are one JSON object per line, with `run_id`, `ticker` and `stage`.
+- Logs (D-089): stdout is one JSON object per line, with `run_id`, `ticker` and `stage`. It is
+  concise: one line per stage, warnings and errors, and the run summary; per-company detail is
+  in `pipeline_task.detail` (`uw-pipeline runs`) and comes back with `LOG_LEVEL=DEBUG`. Each run
+  also writes a text file to `/data/logs` on the PVC (`LOG_DIR`), kept 30 days
+  (`LOG_KEEP_DAYS`).
+- Reading the logs without `oc`: in the web console, open the Terminal of a running
+  uw-nightly / uw-morning pod, or create the temporary pod in `log-viewer.yaml` (Jobs -> Create
+  Job) and run `uw-pipeline logs` in its Terminal. Pod logs (the Logs tab) of the last three
+  jobs stay for 7 days.
 
 Dev uses SQLite on the PVC (`DATABASE_URL=sqlite:////data/uw.db`). SQLite allows one writer at
 a time, so jobs must not overlap: nightly (23:30) and morning (05:30) are 6 hours apart, and

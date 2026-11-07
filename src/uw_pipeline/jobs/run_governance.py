@@ -254,7 +254,7 @@ def run_governance_stage(
         try:
             with short_transactions(engine) as conn:
                 detail = process_company(cfg, llm[0], llm[1], storage, conn, now())
-            log.info("%s: governance %s", cfg.ticker, detail)
+            log.debug("%s: governance %s", cfg.ticker, detail)
             results.append(TaskResult(cfg.ticker, "governance", ok=True, detail=detail))
         except Exception as exc:
             log.exception("%s: governance stage failed", cfg.ticker)

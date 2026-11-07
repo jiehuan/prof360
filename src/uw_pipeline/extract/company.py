@@ -19,7 +19,7 @@ def resolve_cik(cfg: CompanyConfig, ticker_map: dict[str, int]) -> int:
     mapped = ticker_map.get(cfg.ticker)
     if cfg.cik is not None:
         if mapped is None:
-            log.info("%s not in SEC ticker list; using pinned CIK %s", cfg.ticker, cfg.cik)
+            log.debug("%s not in SEC ticker list; using pinned CIK %s", cfg.ticker, cfg.cik)
         elif mapped != cfg.cik:
             log.warning(
                 "%s maps to CIK %s in SEC ticker list but config pins %s; using pinned CIK",

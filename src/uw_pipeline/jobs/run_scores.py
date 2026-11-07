@@ -278,7 +278,7 @@ def run_scores_stage(
                            row["legal_name"], run_id, stamp, stats)  # fmt: skip
                 score_transcripts(conn, client, llm_cfg, cfg.transcript, row["company_id"],
                                   row["legal_name"], run_id, stamp, stats)  # fmt: skip
-            log.info("%s: scores %s", c.ticker, stats.__dict__)
+            log.debug("%s: scores %s", c.ticker, stats.__dict__)
             detail = (
                 f"news {stats.news_scored} scored/{stats.news_unchanged} unchanged, "
                 f"transcripts {stats.transcripts_scored} scored, {stats.flags} flags"

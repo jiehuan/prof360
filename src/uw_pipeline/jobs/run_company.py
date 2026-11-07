@@ -45,7 +45,7 @@ def run_company_stage(
             sic = parse_sic(doc.payload)
             group, how = industry.classify(sic, cfg)
             if how == "company":
-                log.info("%s: classified as %s by companies.yaml (SIC %s): %s", cfg.ticker,
+                log.debug("%s: classified as %s by companies.yaml (SIC %s): %s", cfg.ticker,
                          group.code, sic, cfg.industry_reason)  # fmt: skip
             elif how == "default":  # SIC ranges are the normal case since Phase 17 (D-055)
                 log.warning("%s: SIC %s is in no industry group; classified as %s", cfg.ticker,
@@ -67,7 +67,7 @@ def run_company_stage(
                             "industry_group": chosen,
                             "is_financial": industry.groups[chosen].is_financial})  # fmt: skip
                 upsert(conn, company_table, [record.model_dump()], key_cols=["cik"])
-            log.info(
+            log.debug(
                 "%s: CIK %s, SIC %s -> %s%s",
                 cfg.ticker,
                 record.cik,

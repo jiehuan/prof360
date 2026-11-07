@@ -394,7 +394,7 @@ def run_news_stage(
                     conn, row["company_id"], row["legal_name"], cfg, llm, stamp
                 )
                 stats.pruned = pruned + removed
-            log.info("%s: news %s", company_cfg.ticker, stats.__dict__)
+            log.debug("%s: news %s", company_cfg.ticker, stats.__dict__)
             detail = f"{stats.new_activities} new activities from {stats.fetched} articles"
             results.append(TaskResult(company_cfg.ticker, "news", ok=True, detail=detail))
         except PremiumRequiredError:

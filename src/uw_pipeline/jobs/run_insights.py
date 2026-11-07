@@ -761,8 +761,8 @@ def run_insights_stage(
                     raise
                 conn.commit()
             for ex in stats.dropped_examples:
-                log.info("%s: dropped %s", cfg.ticker, ex)
-            log.info("%s: insights %s, %d activities summarised", cfg.ticker, stats.tasks,
+                log.debug("%s: dropped %s", cfg.ticker, ex)
+            log.debug("%s: insights %s, %d activities summarised", cfg.ticker, stats.tasks,
                      stats.activities_summarised)  # fmt: skip
             detail = ", ".join(f"{k}={v}" for k, v in stats.tasks.items())
             results.append(TaskResult(cfg.ticker, "insights", ok=True, detail=detail))

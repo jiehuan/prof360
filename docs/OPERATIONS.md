@@ -9,6 +9,7 @@
 | `uw-pipeline run --job nightly` | 定时任务。nightly 在美东 23:30 运行，morning 在 05:30 运行，阶段定义在 `config/jobs.yaml` |
 | `uw-pipeline run --ticker MAR --stage compute` | 手动运行指定公司的指定阶段，`--stage` 可以写多次 |
 | `uw-pipeline runs` | 列出最近的运行，以及最近一次里失败或被跳过的任务和原因。每次运行旁边显示数据质量结果：`dq={'Error': 1, 'Warning': 3}`；没跑 dq 阶段的显示 `dq=not run`。运行成功不代表质量通过：dq 查出 Error 时任务仍是 SUCCEEDED，详情看 `dq-report` |
+| `uw-pipeline logs` | 查看某次运行的日志文件（`LOG_DIR`，镜像里是 PVC 上的 `/data/logs`，保留 30 天）。默认显示最近一次；`--list` 列出全部，`--run 174`、`--job morning` 选运行，`--level warning` 只看警告和错误，`--ticker MAR` 只看某家公司，`--tail 50` 只看最后 50 行。没有 `oc` 时在网页控制台里看：见 `deploy/openshift/README.md` 和 `log-viewer.yaml`（D-089） |
 | `uw-pipeline dq-report` | 生成数据质量报告，写到 `data/reports/dq-run<id>.md` |
 | `uw-pipeline coverage-report` | 生成 XBRL 指标覆盖率报告，并列出没有说明原因的缺口 |
 | `uw-pipeline run --stage publish` | 把当前结果写进应用库（nightly、morning 两个 job 末尾都会跑） |
@@ -26,6 +27,8 @@
 **续跑**：进程或 pod 被杀之后，再次启动同一个 job（阶段和公司都相同）会自动接着跑，前提是上一次运行的心跳已经超过 30 分钟，并且它开始不到 12 小时（`stale_after_minutes`、`resume_within_hours`，在 `config/jobs.yaml`）。更早的、或者阶段和公司不同的中断运行会被关闭（FAILED，`stats_json` 里有 `abandoned`），新运行从头开始。运行期间每 5 分钟刷新一次心跳（`heartbeat_minutes`），所以耗时很长的任务不会被误判为已死。
 
 **运行锁**：只要有任何 job 正在运行（心跳仍然新鲜），新的启动就会以退出码 2 退出。不同的 job 也一样：例如 nightly 还没跑完时到点的 morning 会跳过这一轮，因为两者写同一批表。新闻（`news` 阶段）在 nightly 和 morning 里抓取，没有单独的 job（D-077）。
+
+**日志**：默认只记运行开始和结束、每个阶段一行（多少家成功、失败、跳过，用时）、警告和错误；每家公司每个阶段的明细在 `pipeline_task.detail`（`runs` 命令），需要时用 `LOG_LEVEL=DEBUG`（或 `-v`）重跑就会输出（D-089）。
 
 **费用**：每次运行的 LLM token 用量和估算费用记录在 `pipeline_run.stats_json` 中，`runs` 命令也会显示。
 
@@ -166,13 +169,13 @@
 | transcripts 显示 `unavailable` | AV 没有这家公司这一季的记录。改过 ticker 的公司，AV 常把旧数据留在旧代码下：在 `config/companies.yaml` 设置 `av_symbols`（新代码在前，例如 SKYD 是 `[SKYD, PSKY]`），下次运行会按新列表重试，新闻也会重新回补 30 天 |
 | SEC 返回 403/429 | 检查 `SEC_USER_AGENT` 是否包含联系邮箱，限速不要超过 10 次/秒（默认 8）。客户端已经带了重试 |
 | 日志里出现 `LLM unavailable` | 凭证、环境或部署名有问题（SecureGPT：检查 `SECUREGPT_*` 和 `config/securegpt.yaml`，先跑 smoke test）。此时 signals 会退回纯规则，textmetrics 和 insights 会失败 |
-| 某家公司的阶段长时间没有日志 | 本地运行时先看电脑是否睡眠过（`pmset -g log | grep Sleep`）：睡眠会冻结进程、断开连接，计时也暂停。长时间运行用 `caffeinate -i uw-pipeline run ...`。否则多半是一次 LLM 请求没有返回：超过 `config/securegpt.yaml` 的 `timeout_sec` 后这一项失败、运行继续，下次运行重新请求 |
+| 某个阶段长时间没有结束（日志里只有 `stage ...: N of N companies to run`，没有 `done`） | 本地运行时先看电脑是否睡眠过（`pmset -g log | grep Sleep`）：睡眠会冻结进程、断开连接，计时也暂停。长时间运行用 `caffeinate -i uw-pipeline run ...`。否则多半是一次 LLM 请求没有返回：超过 `config/securegpt.yaml` 的 `timeout_sec` 后这一项失败、运行继续，下次运行重新请求 |
 | 运行一直显示 RUNNING | 进程已经死了。30 分钟后再次启动同一个 job 就会续跑（12 小时之内）；也可以等下一次 CronJob。超过 12 小时的会被关闭，新运行从头开始 |
 | 退出码 2 | 有运行正在进行（任何 job，运行锁），无需处理；被挡住的 job 会在下一个时间点运行 |
 | DQ 报出 `quarters_vs_year` 错误 | 通常是公司在新申报里重述了前期数据，新旧口径混在一起（例如 LUV 2025 年的 capex，见 D-035）。要核对原始文件；等下一份 10-K 入库后，口径通常会恢复一致 |
 | DQ 报出 `quarter_jump` | 先在申报文件里核实，常见原因是一次性的减值或计提。如果是单位错误，修正 concept 映射 |
 | `coverage-report` 列出 UNEXPLAINED | 要么修正 tag 映射，要么在 `coverage_notes.yaml` 里写明原因 |
-| DQ 报出 `detail_coverage` | 没跑 `metricdetail`，或模型输出的数字没通过校验被丢弃。重跑 `--stage metricdetail`；仍然缺失时看日志里的 `metric relevance dropped` |
+| DQ 报出 `detail_coverage` | 没跑 `metricdetail`，或模型输出的数字没通过校验被丢弃。重跑 `--stage metricdetail`；仍然缺失时用 `LOG_LEVEL=DEBUG` 重跑，看日志里的 `metric relevance dropped` |
 | DQ 报出 `link_integrity` | 关联指向了已经被替换的洞察。重跑 `--stage insights --stage metricdetail`（输出来自缓存，不产生费用） |
 | DQ 报出 `metric_identity`（Error） | 存下的值违反了指标关系（例如 CET1 > Tier 1）。核对原始文件；确认后用 `uw-pipeline review` 记下结论 |
 | DQ 报出 `debt_current_portion`（Warning） | 公司没有标注一年内到期的债务，总债务只含长期部分（例如 Macy's）。属于数据缺口，不需要处理 |

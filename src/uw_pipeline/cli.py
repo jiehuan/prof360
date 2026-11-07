@@ -33,7 +33,15 @@ from uw_pipeline.jobs.orchestrator import Orchestrator, RunInProgressError, load
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.jobs.stages import StageRunner
 from uw_pipeline.logos import check_logo, logo_files
-from uw_pipeline.logs import log_context, setup_logging
+from uw_pipeline.logs import (
+    FILE_ONLY,
+    log_context,
+    log_dir,
+    read_records,
+    run_log_file,
+    run_logs,
+    setup_logging,
+)
 from uw_pipeline.schema import company, dq_finding, metric_value, pipeline_run, pipeline_task
 from uw_pipeline.schema_app import app_metadata
 from uw_pipeline.settings import Settings
@@ -147,26 +155,37 @@ def run(
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=2) from exc
     started = datetime.now(UTC)
-    with log_context(run_id=run_id, job=job or "manual"):
-        log.info("run %d %s: %s for %s", run_id, "resumed" if resumed else "started",
-                 stages, [c.ticker for c in selected])  # fmt: skip
+    tickers = [c.ticker for c in selected]
+    with (
+        run_log_file(job or "manual", run_id) as log_path,
+        log_context(run_id=run_id, job=job or "manual"),
+    ):
+        log.info("run %d %s: %d stages (%s), %d companies%s%s", run_id,
+                 "resumed" if resumed else "started", len(stages), ", ".join(stages),
+                 len(tickers), f" ({', '.join(tickers)})" if len(tickers) <= 10 else "",
+                 f"; log {log_path}" if log_path else "")  # fmt: skip
         refresh = jobs_cfg.jobs[job].refresh_sec if job else False
         with StageRunner(settings, engine, force=force, refresh_sec=refresh) as runner:
             runner.run_id = run_id
             outcome = orch.execute(run_id, runner)
             orch.add_stats(run_id, {"usage_last_start": runner.usage(started)})
-    counts = ", ".join(f"{k.lower()}={v}" for k, v in sorted(outcome.counts.items()))
-    with engine.connect() as conn:
-        dq, flagged = _dq_status(conn, run_id)
-        hint = " (uw-pipeline dq-report)" if flagged else ""
-        typer.echo(f"run {run_id} {outcome.status}: {counts}; {dq}{hint}")
-        failed = conn.execute(
-            select(pipeline_task.c.ticker, pipeline_task.c.stage, pipeline_task.c.status,
-                   pipeline_task.c.detail)
-            .where(pipeline_task.c.run_id == run_id,
-                   pipeline_task.c.status.in_(("FAILED", "SKIPPED")))
-            .order_by(pipeline_task.c.ordinal)
-        ).all()  # fmt: skip
+        counts = ", ".join(f"{k.lower()}={v}" for k, v in sorted(outcome.counts.items()))
+        with engine.connect() as conn:
+            dq, flagged = _dq_status(conn, run_id)
+            hint = " (uw-pipeline dq-report)" if flagged else ""
+            summary = f"run {run_id} {outcome.status}: {counts}; {dq}{hint}"
+            failed = conn.execute(
+                select(pipeline_task.c.ticker, pipeline_task.c.stage, pipeline_task.c.status,
+                       pipeline_task.c.detail)
+                .where(pipeline_task.c.run_id == run_id,
+                       pipeline_task.c.status.in_(("FAILED", "SKIPPED")))
+                .order_by(pipeline_task.c.ordinal)
+            ).all()  # fmt: skip
+        # Printed below; the log file gets the same lines (D-089).
+        log.info("%s", summary, extra=FILE_ONLY)
+        for t, st, status, detail in failed:
+            log.warning("%s %s [%s]: %s", status, t, st, detail, extra=FILE_ONLY)
+    typer.echo(summary)
     for t, st, status, detail in failed:
         typer.echo(f"  {status} {t} [{st}]: {detail}", err=True)
     if outcome.status != "SUCCEEDED":
@@ -236,6 +255,52 @@ def runs(limit: Annotated[int, typer.Option(help="Runs to show")] = 10) -> None:
             ).all()  # fmt: skip
             for t, st, status, attempts, detail in bad:
                 typer.echo(f"  {status:<9} {t:<5} {st:<12} attempts={attempts} {detail or ''}")
+
+
+@app.command("logs")
+def logs_command(
+    run_id: Annotated[
+        int | None, typer.Option("--run", help="Run id (default: the latest run's log)")
+    ] = None,
+    job: Annotated[str | None, typer.Option(help="The latest log of this job")] = None,
+    level: Annotated[
+        str, typer.Option(help="Lowest level shown: debug, info, warning, error")
+    ] = "info",
+    ticker: Annotated[str | None, typer.Option(help="Only lines about this company")] = None,
+    tail: Annotated[int | None, typer.Option(help="Only the last N lines")] = None,
+    list_: Annotated[bool, typer.Option("--list", help="List the run logs")] = False,
+    directory: Annotated[
+        Path | None, typer.Option("--dir", help="Log directory (default: LOG_DIR)")
+    ] = None,
+) -> None:
+    """Show a run's log file (written under LOG_DIR, /data/logs in the image; D-089)."""
+    folder = directory or log_dir()
+    if folder is None:
+        raise typer.BadParameter("LOG_DIR is not set; pass --dir")
+    found = run_logs(folder) if folder.is_dir() else []
+    if list_:
+        for path, name, rid in found:
+            stat = path.stat()
+            changed = datetime.fromtimestamp(stat.st_mtime, UTC)
+            typer.echo(f"{rid:>6} {name:<8} {changed:%Y-%m-%d %H:%M} UTC "
+                       f"{stat.st_size / 1024:>8.0f} KB  {path.name}")  # fmt: skip
+        if not found:
+            typer.echo(f"no run logs in {folder}")
+        return
+    chosen = [f for f in found if (run_id is None or f[2] == run_id)
+              and (job is None or f[1] == job)]  # fmt: skip
+    if not chosen:
+        what = f"run {run_id}" if run_id is not None else f"job {job}" if job else "any run"
+        typer.echo(f"no log for {what} in {folder} (uw-pipeline logs --list)", err=True)
+        raise typer.Exit(code=1)
+    min_level = logging.getLevelName(level.upper())
+    if not isinstance(min_level, int):
+        raise typer.BadParameter(f"unknown level {level!r}")
+    path = chosen[-1][0]
+    lines = list(read_records(path, min_level=min_level, ticker=ticker))
+    typer.echo(f"== {path}")
+    for line in lines[-tail:] if tail else lines:
+        typer.echo(line)
 
 
 @app.command("coverage-report")
