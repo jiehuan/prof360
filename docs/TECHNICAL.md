@@ -9,7 +9,7 @@ how prod is generated from the release source, are documented below.
 | Document | Holds |
 |---|---|
 | `docs/PLAN.md` | Plan of record, phase checklists, open questions |
-| `docs/decisions.md` | Every design decision with its reason (D-001 … D-092), cited below as D-xxx |
+| `docs/decisions.md` | Every design decision with its reason (D-001 … D-093), cited below as D-xxx |
 | `docs/ALPHAVANTAGE_APIM.zh-CN.md` | Alpha Vantage direct/APIM setup, OAuth wire formats and deployment credentials |
 | `docs/OPERATIONS.md` | Day-to-day operations, troubleshooting (Chinese) |
 | `docs/schema-contract.md` | Application tables as the BFF reads them |
@@ -78,6 +78,7 @@ does not switch routes. Raw cache keys, public source URLs and AV JSON parsing r
 | `quality/dq.py`, `quality/identities.py` | Data-quality rules; metric identities (also the textmetrics gate) |
 | `schema.py`, `schema_app.py`, `schema_bff.py` | Pipeline tables (43), application tables (26), and the BFF's chat tables the pipeline only reads (D-092) |
 | `../uw_metric_chat/` | The metric chat package the BFF copies in (D-091): its own package beside `uw_pipeline`, pydantic and httpx only, relative imports. `answer_question` builds the messages (prompt + context), calls SecureGPT (`securegpt.py`, async), and checks every number of the answer against the context (`grounding.py`); `scripts/export_metric_chat.py` exports it, `scripts/eval_metric_chat.py` evaluates it. The pipeline imports only its `ANSWER_SCHEMA` (published with the prompt) |
+| `../../examples/bff_metric_chat/` | Reference FastAPI code for the BFF team (D-093): the chat's three endpoints, rate limiting, and a SQL store over `bff_metric_chat.sql`; exported as `reference_bff/`, never run by the pipeline |
 | `logs.py`, `frames.py` | JSON logging with run context; pandas helpers |
 
 ## 4. Stages

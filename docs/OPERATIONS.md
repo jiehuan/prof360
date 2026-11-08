@@ -87,7 +87,7 @@
 
 - **改提示词**：新建 `src/uw_pipeline/enrich/prompts/metric_chat_v<N+1>.md`，把 `config/metric_chat.yaml` 的 `prompt_version` 改成它；下一次 publish 把新版本写进 `ChatPrompt` 并设为唯一的 IsActive，BFF 不用重新部署。先用 `python scripts/eval_metric_chat.py`（本地开发模型）和 `--provider securegpt`（工作网络）跑评估。
 - **改包**（`src/uw_metric_chat/`：校验规则、客户端、答案格式）：提升 `version.py` 的 `VERSION`；新提示词需要新包时，同时提升 `config/metric_chat.yaml` 的 `min_package_version`，并且**先**让 BFF 换上新文件夹，再发布提示词（旧包遇到新提示词会报 `IncompatibleError`）。
-- **交给 BFF**：commit 之后运行 `python scripts/export_metric_chat.py`，把 `dist/uw_metric_chat-<版本>/` 整个发给 BFF 团队（含中文 README、CHECKSUMS 和 `bff_metric_chat.sql`）。
+- **交给 BFF**：commit 之后运行 `python scripts/export_metric_chat.py`，把 `dist/uw_metric_chat-<版本>/` 整个发给 BFF 和前端团队：`uw_metric_chat/`（勿改的包）、`README.zh-CN.md`（BFF 怎么接）、`INTERFACE.zh-CN.md`（接口和前端）、`reference_bff/`（FastAPI 参考实现，可改）、`bff_metric_chat.sql`、`CHECKSUMS`。
 - **评估**：题目在 `tests/fixtures/metric_chat_eval.yaml`，报告写到 `data/reports/metric-chat-eval-*.md`；每道题是一次付费调用。
 - **用户报告"值不对"**（D-092）：publish 阶段把新报告拉进管线库，`uw-pipeline review` 里显示为 `R-...`（同一公司、指标、期间一条；`--source user` 只看用户点的，`--source model` 只看问答标记的），附报告内容、当前值、上下文里的疑点和来源文件。处理：
   1. 打开来源文件核对这一期的值和标签。

@@ -11,118 +11,42 @@
 - 环境变量（与管线同名）：`SECUREGPT_CLIENT_ID`、`SECUREGPT_CLIENT_SECRET`、`SECUREGPT_SUBSCRIPTION_KEY`、`SECUREGPT_ENV`（dv / pp / pr）。凭证不会写进日志或错误信息。
 - 数据库：先执行同目录下的 `bff_metric_chat.sql`（可重复执行），建表 `MetricChatContext`、`ChatPrompt`（管线写），`UserMetricChat`、`MetricIssueReport`（BFF 写），以及函数 `udf_GetMetricChatContext`、`udf_GetActiveChatPrompt`。
 
-## 2. 接口
+## 2. 接口和前端
 
-### `POST api/companies/{id}/metrics/{metricId}/chat`
+三个接口（建议问题、提问、报告）的请求、响应、错误码，以及前端的交互和文案，见同目录的 `INTERFACE.zh-CN.md`。
 
-请求：`{"conversationId": "<uuid，新会话时为空>", "message": "Why is Q4 2025 N/M?"}`
+## 3. 参考实现（`reference_bff/`）
 
-响应：
+一份可运行的 FastAPI 实现，供参考，可以按 BFF 自己的结构改写（这一部分不是"勿改"的包）。它按顶层包导入 `uw_metric_chat`（与 `reference_bff` 放在同一层）；包放在别处时，改这几行 import 即可：
 
-```json
-{
-  "conversationId": "…",
-  "turnId": 123,
-  "answer": "Interest coverage for FY2025 Q4 is N/M because EBIT was a loss of $3.65B …",
-  "citations": [{"id": "dp:2025Q4:ebit", "label": "EBIT FY2025 Q4", "value": -3646000000.0,
-                 "unit": "USD", "status": "OK", "period": "2025Q4"}],
-  "possibleIssue": false,
-  "issueSummary": null,
-  "period": "2025Q4"
-}
-```
+| 文件 | 内容 |
+|---|---|
+| `api.py` | `router`：三个接口；按用户限流（默认每小时 30 个问题，进程内计数，多个 pod 时换成共享存储）；`current_user` 依赖要换成 BFF 自己的鉴权 |
+| `store.py` | `ChatStore` 接口和 `SqlChatStore`：用 SQLAlchemy 调 `udf_GetMetricChatContext`、`udf_GetActiveChatPrompt`，读写 `UserMetricChat`、`MetricIssueReport`（SQL 在 SQL Server 2022 上实测过）。BFF 用自己的数据访问层时，照着这里的 SQL 写即可 |
+| `main.py` | `create_app()`：启动时建一个 `AsyncSecureGPT`（每个进程一个，关闭时释放）、存储层和设置，挂上 `router` |
 
-`citations[].period` 与弹窗的期间对应（`FY2025` = 财年，`2026Q3` = FY2026 Q3），前端点击引用可定位到那一期。
-
-### `POST api/companies/{id}/metrics/{metricId}/chat/{turnId}/report`
-
-用户点 "This looks wrong"：请求 `{"comment": "…", "period": "FY2025"}`，写一行 `MetricIssueReport`（`Source = 'USER'`）。管线定期读取，复核后修正数据；结论记在管线那边，不写回这张表。
-
-## 3. 示例代码（FastAPI）
+接入现有 app 的最小改动：
 
 ```python
-from uw_metric_chat import (
-    AsyncSecureGPT,
-    ChatPromptRow,
-    HistoryTurn,
-    IncompatibleError,
-    SecureGPTSettings,
-    answer_question,
-)
+from reference_bff.api import ChatSettings, RateLimiter, current_user, router
+from reference_bff.store import SqlChatStore
+from uw_metric_chat import AsyncSecureGPT, SecureGPTSettings
 
-client: AsyncSecureGPT | None = None
+app.include_router(router)
+app.dependency_overrides[current_user] = my_current_user  # 返回带 .id 的用户
 
 
 @app.on_event("startup")
-async def startup() -> None:
-    global client
-    client = AsyncSecureGPT(SecureGPTSettings.from_env())  # 每个进程一个，可共用
+async def chat_startup() -> None:
+    app.state.chat_settings = ChatSettings()  # 模型、历史轮数、限流
+    app.state.chat_limiter = RateLimiter(app.state.chat_settings.questions_per_hour)
+    app.state.chat_store = SqlChatStore(engine)  # BFF 已有的应用库 engine
+    app.state.chat_client = AsyncSecureGPT(SecureGPTSettings.from_env())
 
 
 @app.on_event("shutdown")
-async def shutdown() -> None:
-    await client.aclose()
-
-
-@app.post("/api/companies/{company_id}/metrics/{metric_id}/chat")
-async def chat(company_id: int, metric_id: int, body: ChatRequest, user=Depends(current_user)):
-    ctx_row = db.one(
-        "SELECT * FROM dbo_professional360.udf_GetMetricChatContext(?, ?)", company_id, metric_id
-    )
-    if ctx_row is None:
-        raise HTTPException(404, "No chat for this metric")
-    prompt = ChatPromptRow.model_validate(
-        db.one("SELECT * FROM dbo_professional360.udf_GetActiveChatPrompt(N'metric_chat')")
-    )
-    conversation = body.conversationId or uuid4()
-    history = [
-        HistoryTurn(question=r.Question, answer=r.Answer)
-        for r in db.all(
-            "SELECT Question, Answer FROM dbo_professional360.UserMetricChat "
-            "WHERE ConversationId = ? AND UserId = ? ORDER BY TurnId",
-            conversation,
-            user.id,
-        )
-    ]
-    try:
-        reply = await answer_question(client, prompt, ctx_row.context, history, body.message)
-    except IncompatibleError:
-        # 数据库里的提示词或上下文比这个包新：需要换新文件夹（联系管线团队）
-        raise HTTPException(503, "Chat is being updated")
-    turn_id = db.insert(
-        "UserMetricChat",
-        {
-            "ConversationId": conversation,
-            "UserId": user.id,
-            "CompanyId": company_id,
-            "metric_id": metric_id,
-            "Question": body.message[:2000],
-            "ContextUpdatedAt": ctx_row.updatedAt,
-            **reply.log_row(),
-        },
-    )
-    if reply.possible_issue:
-        db.insert(
-            "MetricIssueReport",
-            {
-                "UserId": user.id,
-                "CompanyId": company_id,
-                "metric_id": metric_id,
-                "TurnId": turn_id,
-                "Source": "MODEL",
-                "Period": reply.period,
-                "IssueSummary": reply.issue_summary,
-            },
-        )
-    return {
-        "conversationId": conversation,
-        "turnId": turn_id,
-        "answer": reply.answer,
-        "citations": [c.model_dump() for c in reply.citations],
-        "possibleIssue": reply.possible_issue,
-        "issueSummary": reply.issue_summary,
-        "period": reply.period,
-    }
+async def chat_shutdown() -> None:
+    await app.state.chat_client.aclose()
 ```
 
 ## 4. 说明

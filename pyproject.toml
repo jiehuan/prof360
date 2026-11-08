@@ -32,6 +32,7 @@ dev = [
     "types-PyYAML",
     "pandas-stubs",
     "lxml-stubs",
+    "fastapi>=0.115",  # examples/bff_metric_chat (reference BFF, D-093) and its tests
 ]
 
 [project.scripts]
@@ -75,7 +76,7 @@ python_version = "3.11"
 strict = true
 plugins = ["pydantic.mypy"]
 mypy_path = "src"
-packages = ["uw_pipeline", "uw_metric_chat"]
+packages = ["uw_pipeline", "uw_metric_chat", "examples.bff_metric_chat"]
 
 [[tool.mypy.overrides]]
 # Optional dependencies (".[azure]"), imported only for ADLS storage / SQL Server.

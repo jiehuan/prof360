@@ -880,7 +880,7 @@ uw-pipeline dq-report --run-id <id>
 
 ---
 
-### Phase 19 — 指标问答（BFF 内的 chatbot，调用 SecureGPT）（2026-11-06 计划；19.A–19.C 2026-11-07 完成，SecureGPT 评估待工作网络，D-088、D-090–D-092）
+### Phase 19 — 指标问答（BFF 内的 chatbot，调用 SecureGPT）（2026-11-06 计划；19.A–19.C 和 19.D 管线侧 2026-11-07 完成，SecureGPT 评估待工作网络，BFF / 前端待对方团队，D-088、D-090–D-093）
 
 **目标**：用户在指标弹窗里问"这个数怎么算的 / 为什么这么低 / 数据从哪来"，得到只基于本公司本指标数据、每个数字都有出处的英文回答；觉得数不对时可以一键报告，报告进入管线复核。起因：GM 的 interest coverage 曾显示 0.44x（分母误用了含 GM Financial 的支付利息，D-087），网页上的用户无从知道原因。
 
@@ -937,7 +937,8 @@ BFF
 - [x] approve / reject；批准的写 `decisions.md` 或 `coverage_notes.yaml`，再用公司覆盖修正：approve = 报告成立、值要修正，必须写 `--note`；修正由人按 OPERATIONS.md 第 6a 节的清单做，不自动改配置
 
 #### 19.D BFF 和前端（对方团队；管线写中文接口说明）
-- [ ] BFF：`POST api/companies/{id}/metrics/{metricId}/chat`（`conversationId`、`message` → 回答、引用、`possibleIssue`）；`POST .../chat/{turnId}/report`
+- [x] 管线侧（2026-11-07，D-093）：Python FastAPI 参考实现 `examples/bff_metric_chat/`（三个接口、按用户限流、SQL 存储层在 SQL Server 2022 上实测）；中文接口和前端说明 `docs/metric-chat-frontend.zh-CN.md`；`export_metric_chat.py` 一并导出（`reference_bff/`、`INTERFACE.zh-CN.md`）
+- [ ] BFF：`POST api/companies/{id}/metrics/{metricId}/chat`（`conversationId`、`message` → 回答、引用、`possibleIssue`）；`POST .../chat/{turnId}/report`；`GET .../chat/suggestions`（三个预设问题，D-093）
 - [ ] 每轮写 `UserMetricChat`：问题、回答、模型、提示词版本、token、耗时、校验结果
 - [ ] 前端：问答抽屉，三个预设问题；引用可点，定位到弹窗里对应的那一期
 

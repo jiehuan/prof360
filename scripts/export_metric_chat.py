@@ -4,7 +4,9 @@
 
 Writes `uw_metric_chat/` (each file headed "generated, do not edit" with the version and the
 source commit), `CHECKSUMS` (sha256 of every file under uw_metric_chat/), `README.zh-CN.md`
-(for the BFF team) and the SQL the BFF runs (`bff_metric_chat.sql`). The BFF copies the
+(for the BFF team), `INTERFACE.zh-CN.md` (endpoints and front end), `reference_bff/` (the
+reference FastAPI code of examples/bff_metric_chat, to adapt) and the SQL the BFF runs
+(`bff_metric_chat.sql`). The BFF copies the
 `uw_metric_chat` folder into its code as it is and replaces the whole folder to upgrade.
 Commit first: the header names the commit, and a dirty tree is refused.
 """
@@ -22,6 +24,8 @@ ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = ROOT / "src" / "uw_metric_chat"
 SQL = ROOT / "deploy" / "sql" / "bff_metric_chat.sql"
 README = ROOT / "docs" / "metric-chat-bff.zh-CN.md"
+INTERFACE = ROOT / "docs" / "metric-chat-frontend.zh-CN.md"
+REFERENCE = ROOT / "examples" / "bff_metric_chat"
 sys.path.insert(0, str(ROOT / "src"))
 
 from uw_metric_chat.version import VERSION  # noqa: E402
@@ -40,7 +44,7 @@ def header(commit: str) -> str:
 
 
 def export(out_root: Path, *, allow_dirty: bool = False) -> Path:
-    dirty = git("status", "--porcelain", "--", "src/uw_metric_chat")
+    dirty = git("status", "--porcelain", "--", "src/uw_metric_chat", "examples/bff_metric_chat")
     if dirty and not allow_dirty:
         sys.exit("src/uw_metric_chat has uncommitted changes; commit them first")
     commit = git("rev-parse", "--short", "HEAD") + ("-dirty" if dirty else "")
@@ -61,6 +65,13 @@ def export(out_root: Path, *, allow_dirty: bool = False) -> Path:
         readme.replace("{VERSION}", VERSION).replace("{COMMIT}", commit), encoding="utf-8"
     )
     shutil.copy(SQL, out / SQL.name)
+    shutil.copy(INTERFACE, out / "INTERFACE.zh-CN.md")
+    ref = out / "reference_bff"
+    ref.mkdir()
+    note = (f"# Reference code from prof360 (commit {commit}), for uw_metric_chat {VERSION}: "
+            "adapt it to the BFF.\n")  # fmt: skip
+    for src in sorted(REFERENCE.glob("*.py")):
+        (ref / src.name).write_text(note + src.read_text(encoding="utf-8"), encoding="utf-8")
     return out
 
 

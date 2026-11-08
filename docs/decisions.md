@@ -2152,3 +2152,21 @@ Phase 19.C).**
   rerun); the pipeline does not edit config. The dq `review_queue` rule lists open reports
   per metric.
 
+**D-093 A reference BFF for the metric chat (2026-11-07, PLAN Phase 19.D).**
+- 19.D is the BFF's and the front end's work, and this repo does not change the BFF. The user
+  asked for the BFF part written out in Python FastAPI as a reference. It is
+  `examples/bff_metric_chat/` (exported as `reference_bff/`), adaptable, unlike the package:
+  `router` with `GET .../chat/suggestions` (three starter questions; the second names an N/M
+  period when the popup shows one), `POST .../chat` and `POST .../chat/{turnId}/report`;
+  per-user rate limiting (30 questions an hour, in process); `ChatStore` and `SqlChatStore`
+  (the SQL against bff_metric_chat.sql's functions and tables, tested on SQL Server 2022);
+  `create_app()` wiring one SecureGPT client per process. Authentication is a dependency the
+  BFF replaces (501 until it does).
+- The response adds `status` (answered, out_of_scope, cannot_confirm, unavailable) so the front
+  end need not compare fixed texts. A report is accepted only on the user's own turn of that
+  company and metric (404 otherwise). A model-flagged answer files a MODEL report.
+- `docs/metric-chat-frontend.zh-CN.md` (exported as INTERFACE.zh-CN.md) gives the endpoints,
+  errors (404, 422, 429 with Retry-After, 503), the drawer's behaviour and English UI texts, and
+  the rollout order (SQL, a nightly, BFF, front end). fastapi joins the dev dependencies for
+  the example's tests only.
+
