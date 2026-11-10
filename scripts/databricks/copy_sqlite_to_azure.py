@@ -277,11 +277,22 @@ def as_text(v: object) -> str | None:
     return str(v)
 
 
+# Longest text of a float from as_text (repr), e.g. "-1.2345678901234567e-308". SQLite's
+# LENGTH of a float is no guide: before 3.43 it counts 15 significant digits ("0.329" for
+# 0.32899999999999996, which repr writes with 17), so a staging column sized from it was too
+# narrow on Databricks' SQLite.
+FLOAT_TEXT = 24
+
+
 def widths(t: str, cols: list[str]) -> list[str]:
     """NVARCHAR size of each staging column: twice the longest SQLite value (room for the
-    text form of numbers and hex of blobs), MAX past 4,000."""
-    longest = src.execute(f"SELECT {', '.join(f'MAX(LENGTH({q(c)}))' for c in cols)} "
-                          f"FROM {q(t)}").fetchone()  # fmt: skip
+    text form of numbers and hex of blobs), a float counted at its longest text; MAX past
+    4,000."""
+    longest = src.execute(
+        "SELECT " + ", ".join(f"MAX(CASE WHEN typeof({q(c)}) = 'real' THEN {FLOAT_TEXT} "
+                              f"ELSE LENGTH({q(c)}) END)" for c in cols)
+        + f" FROM {q(t)}"
+    ).fetchone()  # fmt: skip
     return ["MAX" if 2 * (n or 0) > 4000 else str(max(1, 2 * (n or 0))) for n in longest]
 
 
