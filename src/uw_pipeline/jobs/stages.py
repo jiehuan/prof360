@@ -265,6 +265,7 @@ class StageRunner:
                 load_source_labels(s.config_dir),
                 e,
                 self.app_engine,
+                all_companies=list(self.companies.values()),
             )
         if stage == "metricdetail":
             return lambda c: run_metric_detail_stage(

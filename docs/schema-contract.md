@@ -76,6 +76,8 @@
 - **新指标类别（D-050）**：`Reporting Quality`（应收 / 存货周转天数、应计、商誉、债务到期、Altman Z 等）和 `Market & Trading`（市值、波动率、回撤、EPS 超预期、内部人交易）。**2026-10-20 起暂时隐藏（D-054）**：这两个类别的指标不再发布，MatrixData、CompanyMetricDetail、SIC_Preferences 里的相关行已删除；`metric_category` 和 `metrics` 里的定义行保留。BFF / 前端需要隐藏没有指标的类别（与"无数据时隐藏该模块"的约定一致）；如果是按 SIC_Preferences 或 MatrixData 取指标清单，不需要改动。表结构不变，新指标作为 MatrixData 的新行；新事件（股价大跌、内部人集中卖出、13D、诉讼和监管调查）经信号和洞察进入 StrategicRisk，RiskTypes 可能新增 Market、Insider Trading。
 - **Phase 17 行业模块（D-055、D-056）**：表结构不变。新增 15 个行业组（化工材料、采矿、钢铁金属、住宅建筑商、医疗服务、博彩休闲、餐饮等），新指标都在已有的 `Operational` 类别里（2026-10-29 前叫 `Operational Metrics`），作为 MatrixData 的新行；每个新 SIC 代码在 SIC_Preferences 里有自己的指标清单。开发样本把公司数从 107 家增加到 230 家。新的 subtitle 见上面的数值单位。
 
+- **公司专属指标卡（D-090、D-091，2026-11-09）**：表结构不变，也不需要新的 UDF。Amazon 不报告研发费用，所以不再显示 `R&D / Revenue`，Operational 类别改为三张 Amazon 专属的卡：`Technology & Infrastructure / Revenue`、`Fulfillment / Revenue`、`Days Inventory Outstanding`（`metrics` 新行，数据在 MatrixData，已在 SIC 5961 的 SIC_Preferences 里）。SIC_Preferences 是同一 SIC 代码下所有公司共用的默认清单：从 D-091 起，同一 SIC 代码下没有任何公司显示的指标会从清单中删除。仍有公司显示的指标会留在清单上，例如 Marriott 的 Gross / Net Fee Revenues 也在 Hilton、Hyatt 的默认清单里；这些公司没有对应数据，前端按"无数据时隐藏"处理。用户已保存的 UserMetricsSelection 不会自动改动。
+
 - **溯源**：`source_document.url` 指向 SEC 或 AV 的原始文件。`insight_evidence` 给出每条洞察的原文片段，以及对应的文件和章节。
 
 ## 前端模块对照
