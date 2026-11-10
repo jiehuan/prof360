@@ -96,6 +96,40 @@ def test_unknown_metric_in_set_rejected() -> None:
         Registry.model_validate({"concepts": {}, "metrics": [], "metric_sets": {"S": ["nope"]}})
 
 
+def test_company_override_replaces_a_group_metric(reg, industry) -> None:
+    """D-090: Amazon reports technology and infrastructure expense, not R&D, so its own ratios
+    replace R&D / Revenue; other software companies keep it."""
+    amzn = reg.for_company("AMZN", industry.groups["SOFTWARE_INTERNET"])
+    codes = {m.code for m in amzn.metrics}
+    assert "rnd_to_revenue" not in codes
+    assert {"tech_infra_to_revenue", "fulfillment_to_revenue", "amzn_inventory_days"} <= codes
+    by_code = {m.code: m for m in amzn.metrics}
+    assert by_code["amzn_inventory_days"].display  # inventory_days itself is hidden (D-054)
+    assert not by_code.get("inventory_days") or not by_code["inventory_days"].display
+    assert all(t.needs_instance for t in amzn.concepts["technology_infrastructure"])
+    msft = reg.for_company("MSFT", industry.groups["SOFTWARE_INTERNET"])
+    assert "rnd_to_revenue" in {m.code for m in msft.metrics}
+
+
+def test_override_exclusion_keeps_needed_helpers_hidden(reg, industry) -> None:
+    """A metric a company excludes is still computed, not shown, when another needs it."""
+    o = reg.overrides["AMZN"].model_copy(update={"exclude_metrics": ["revenue"]})
+    r = reg.model_copy(update={"overrides": {**reg.overrides, "AMZN": o}})
+    m = {m.code: m for m in r.for_company("AMZN", industry.groups["SOFTWARE_INTERNET"]).metrics}
+    assert not m["revenue"].display  # revenue growth and the ratios still need it
+    assert m["revenue_growth_yoy"].display
+
+
+def test_unknown_override_exclusion_rejected() -> None:
+    with pytest.raises(ValidationError, match="exclude_metrics lists unknown"):
+        Registry.model_validate({
+            "concepts": {"revenue": {"tags": ["us-gaap:Revenues"]}},
+            "metrics": [{"code": "revenue", "display_name": "Revenue", "subtitle": "x",
+                         "section": "financial", "unit": "USD", "formula": "revenue"}],
+            "overrides": {"AMZN": {"exclude_metrics": ["rnd_to_revenue"]}},
+        })  # fmt: skip
+
+
 def test_instance_concepts_only_for_companies_whose_metrics_use_them() -> None:
     """Phase 17: casino revenue is a dimensional fact read from each filing's XBRL instance;
     a software company must not read instances for it."""

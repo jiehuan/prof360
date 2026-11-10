@@ -2059,3 +2059,22 @@ income" (2026-11-01).**
   `--list`). In the web console: the Terminal of a running CronJob pod, or a temporary Job
   (`deploy/openshift/log-viewer.yaml`, 30 minutes, then deleted) that mounts the PVC. The PVC
   is ReadWriteOnce, so the viewer must not overlap a scheduled run on another node.
+
+**D-090 Amazon's Operational section: its own expense ratios instead of R&D (2026-11-09).**
+- Need: Amazon (SOFTWARE_INTERNET) had one Operational metric, R&D / Revenue, always N/A:
+  Amazon reports no research and development expense. Its income statement has "Technology and
+  infrastructure" (named "Technology and content" before 2024) and "Fulfillment", both under
+  its own tags (`amzn:TechnologyAndInfrastructureExpense`, `amzn:FulfillmentExpense`), which
+  are not in SEC companyfacts.
+- Options: (a) map R&D / Revenue to the technology tag; (b) show inventory days in Operational
+  too; (c) company metrics with their own names, read from each filing's XBRL instance (as for
+  MAR and MCD), and R&D / Revenue dropped for Amazon; (d) move Amazon to RETAIL.
+- Chosen: (b) and (c). Technology and infrastructure includes the servers and data centers
+  behind AWS, so labelling it R&D would overstate R&D (a); RETAIL (d) would lose the software
+  metrics that fit AWS. Inventory days (`inventory_days`) is computed for every company but in
+  REPORTING_QUALITY, hidden by D-054, so Amazon gets its own copy, `amzn_inventory_days`.
+  `config/company_overrides/AMZN.yaml` adds Technology & Infrastructure / Revenue,
+  Fulfillment / Revenue and Days Inventory Outstanding (section operational) and lists
+  rnd_to_revenue under a new override
+  field, `exclude_metrics`, which works like an industry group's: the metric is not tracked,
+  or computed but hidden when another metric needs it. Publish drops the old card's rows.

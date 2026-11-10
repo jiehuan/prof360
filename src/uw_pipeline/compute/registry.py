@@ -210,6 +210,10 @@ class CompanyOverride(BaseModel):
     concepts: dict[str, ConceptDef] = Field(default_factory=dict)
     metrics: list[MetricDef] = Field(default_factory=list)
     sections: dict[str, SectionRule] = Field(default_factory=dict)
+    # Metrics of the company's industry group it does not report, replaced by its own (D-090:
+    # Amazon reports technology and infrastructure expense, not R&D). Like an industry group's
+    # exclude_metrics, a metric another one needs is still computed but not shown.
+    exclude_metrics: list[str] = Field(default_factory=list)
 
 
 class Registry(BaseModel):
@@ -241,6 +245,11 @@ class Registry(BaseModel):
             unknown = set(members) - codes
             if unknown:
                 raise ValueError(f"metric set {name} lists unknown metrics {sorted(unknown)}")
+        for ticker, o in self.overrides.items():
+            unknown = set(o.exclude_metrics) - codes
+            if unknown:
+                raise ValueError(f"override {ticker}: exclude_metrics lists unknown metrics "
+                                 f"{sorted(unknown)}")  # fmt: skip
         unknown_sets = set(self.hidden_metric_sets) - self.metric_sets.keys()
         if unknown_sets:
             raise ValueError(f"hidden_metric_sets: unknown metric sets {sorted(unknown_sets)}")
@@ -276,7 +285,9 @@ class Registry(BaseModel):
         by_code = {m.code: m for m in catalog}
         wanted = {c for s in group.metric_sets for c in self.metric_sets[s]}
         wanted |= set(group.metrics) | {m.code for m in override.metrics}
-        wanted -= set(group.exclude_metrics)  # not tracked for this industry (D-049)
+        # Not tracked for this industry (D-049) or this company (D-090).
+        excluded = set(group.exclude_metrics) | set(override.exclude_metrics)
+        wanted -= excluded
         tracked = set(wanted)
         # Pull in helper metrics that wanted metrics depend on.
         stack = list(wanted)
@@ -288,9 +299,9 @@ class Registry(BaseModel):
         hidden = self.hidden_codes
         metrics = [  # catalog order = dependency order
             m.model_copy(update={"display": False, "insight_input": False})
-            # removed by the industry but needed by another metric (a hidden helper), or in a
-            # hidden set (computed, not shown, D-054)
-            if (m.code in group.exclude_metrics and m.code not in tracked) or m.code in hidden
+            # removed by the industry or company but needed by another metric (a hidden
+            # helper), or in a hidden set (computed, not shown, D-054)
+            if (m.code in excluded and m.code not in tracked) or m.code in hidden
             else m
             for m in catalog
             if m.code in wanted
