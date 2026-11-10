@@ -1,0 +1,46 @@
+# Amazon reports no research and development expense: its income statement has "Technology and
+# infrastructure" (named "Technology and content" before 2024) and "Fulfillment", both under its
+# own tags, read from each filing's XBRL instance (D-090). They replace R&D / Revenue in the
+# Operational section, with days inventory outstanding.
+concepts:
+  technology_infrastructure:
+    tags:
+      - amzn:TechnologyAndInfrastructureExpense
+      - amzn:TechnologyAndContentExpense
+  fulfillment_expense:
+    tags: [amzn:FulfillmentExpense]
+
+exclude_metrics: [rnd_to_revenue]
+
+metrics:
+  - code: tech_infra_to_revenue
+    display_name: Technology & Infrastructure / Revenue
+    subtitle: "Technology and infrastructure spending (incl. AWS) / revenue"
+    description: Technology and infrastructure expense as a share of revenue. It covers
+      engineering and development staff, and the servers, networking and data centers that run
+      AWS and Amazon's stores, so it is broader than research and development.
+    section: operational
+    unit: fraction
+    formula: technology_infrastructure / revenue
+    nm_when: revenue <= 0
+  - code: fulfillment_to_revenue
+    display_name: Fulfillment / Revenue
+    subtitle: "Cost of warehousing, picking and shipping orders / revenue"
+    description: >-
+      Fulfillment expense as a share of revenue: operating and staffing fulfillment and
+      customer service centers, and payment processing.
+    section: operational
+    unit: fraction
+    formula: fulfillment_expense / revenue
+    nm_when: revenue <= 0
+  # Shown for Amazon only: the catalog's inventory_days is in REPORTING_QUALITY, a set computed
+  # but hidden for every company (D-054).
+  - code: amzn_inventory_days
+    display_name: Days Inventory Outstanding
+    subtitle: "Days inventory sits before it is sold"
+    description: Inventory at year-end in days of annual cost of sales.
+    section: operational
+    unit: days
+    period_types: [FY]
+    formula: inventory / cost_of_revenue * 365
+    nm_when: cost_of_revenue <= 0

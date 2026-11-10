@@ -214,9 +214,6 @@ ADBE:
   long_term_debt: Not tagged with the standard us-gaap tags this metric uses (checked 2026-10-18).
 AMD:
   ebitda_computed: D&A is tagged only in the annual cash flow statement, so quarters have no value.
-AMZN:
-  rnd_to_revenue: >-
-    Amazon reports technology and infrastructure expense, not research and development.
 ANET:
   total_debt: No borrowings outstanding in the periods shown (no debt tagged).
   long_term_debt: No borrowings outstanding in the periods shown (no debt tagged).
