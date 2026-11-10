@@ -14,6 +14,7 @@ from uw_pipeline.enrich.sources import load_source_labels
 from uw_pipeline.jobs.run_publish import load_publish_config, run_publish_stage
 from uw_pipeline.schema import (
     activity,
+    company,
     followup_question,
     news_item,
     news_risk_score,
@@ -32,6 +33,7 @@ from uw_pipeline.schema_app import (
     MatrixData,
     NewsRiskScore,
     RiskTypes,
+    SIC_Preferences,
     StrategicRisk,
     TranscriptRiskFlag,
     app_metadata,
@@ -122,6 +124,43 @@ def test_publish_maps_objects_and_links() -> None:
     assert [t["Ordinal"] for t in tk] == [1, 2] and all(t["isActive"] for t in tk)
     assert tk[0]["Takeaway"].startswith("Debt of $16.9B")
     assert len(risks) == 3 and not any(t == "TAKEAWAY" for t, *_ in links)
+
+
+def test_sic_metric_list_keeps_only_cards_its_companies_show() -> None:
+    """D-091: a card leaves the SIC's default metric list when no company of that SIC code shows
+    it any more (Amazon's excluded R&D / Revenue), but stays while another company shows it."""
+    engine, app, _ = _env()
+    with engine.begin() as c:
+        c.execute(update(company).values(sic_code="7011", sic_description="Hotels & Motels"))
+    reg = load_registry(CONFIG_DIR)
+    mar, hlt = CompanyConfig(ticker="MAR", cik=1048286), CompanyConfig(ticker="HLT", cik=1585689)
+
+    def publish(registry, all_companies) -> None:
+        res = run_publish_stage([mar], registry, load_industry_config(CONFIG_DIR), PCFG,
+                                load_source_labels(CONFIG_DIR), engine, app, now=lambda: ti.NOW,
+                                all_companies=all_companies)  # fmt: skip
+        assert res[0].ok, res
+
+    def listed() -> bool:
+        with app.connect() as c:
+            name = metrics.c.metric_name == "Interest Coverage"
+            mid = c.execute(select(metrics.c.metric_id).where(name)).scalar_one()
+            return bool(_count(app, SIC_Preferences, SIC_Preferences.c.metric_id == mid))
+
+    publish(reg, [mar])
+    assert listed()
+    o = reg.overrides["MAR"].model_copy(update={"exclude_metrics": ["interest_coverage"]})
+    excluded = reg.model_copy(update={"overrides": {**reg.overrides, "MAR": o}})
+    publish(excluded, None)  # without the configured companies: left on the list
+    assert listed()
+    with engine.begin() as c:  # Hilton, same SIC code, still shows it
+        row = dict(c.execute(select(company)).mappings().one())
+        row |= {"company_id": row["company_id"] + 1, "cik": "0001585689", "ticker": "HLT"}
+        c.execute(insert(company).values(**row))
+    publish(excluded, [mar, hlt])
+    assert listed()
+    publish(excluded, [mar])  # no configured company of the SIC code shows it
+    assert not listed()
 
 
 def test_republish_is_idempotent_and_new_versions_retire_old_rows() -> None:

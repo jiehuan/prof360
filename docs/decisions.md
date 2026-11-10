@@ -2078,3 +2078,18 @@ income" (2026-11-01).**
   rnd_to_revenue under a new override
   field, `exclude_metrics`, which works like an industry group's: the metric is not tracked,
   or computed but hidden when another metric needs it. Publish drops the old card's rows.
+
+**D-091 A SIC code's default metric list keeps only cards its companies show (2026-11-09).**
+- Need: SIC_Preferences, the default card list the BFF uses for a company with no saved
+  choice, is shared by all companies of a SIC code. Publish added each company's cards to it
+  and removed only hidden metrics (D-054) and views (D-078), so a card a company stopped
+  showing stayed: Amazon's excluded R&D / Revenue (D-090), and cards left over from industry
+  group changes (gross margin for restaurants, pension and warranty cards for chemicals).
+- Options: (a) leave it to the front end to hide cards without data; (b) on each company's
+  publish, remove from its SIC's list the metrics no active configured company of that SIC
+  code shows; (c) rebuild every SIC list after the whole publish stage.
+- Chosen: (b). (a) keeps empty cards for users who pick them; (c) would not run on a
+  single-company publish. Publish now receives every configured company (`all_companies`);
+  without it (tests, scripts) the old behaviour stays. A card one company of the SIC code
+  still shows stays on the list for all of them (Marriott's fee cards for Hilton and Hyatt),
+  since the list is per SIC code, not per company.

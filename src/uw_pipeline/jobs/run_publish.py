@@ -23,6 +23,7 @@ import yaml
 from pydantic import BaseModel, Field
 from sqlalchemy import Connection, Engine, desc, select, true
 
+from uw_pipeline.clients.sec import pad_cik
 from uw_pipeline.compute.registry import MetricDef, Registry
 from uw_pipeline.config import CompanyConfig, IndustryConfig
 from uw_pipeline.enrich.industry_choice import usable_choice
@@ -37,6 +38,7 @@ from uw_pipeline.load.upsert import delete_keys, upsert
 from uw_pipeline.logos import load_logos
 from uw_pipeline.schema import (
     activity,
+    company,
     followup_question,
     followup_question_insight,
     followup_question_metric,
@@ -200,6 +202,7 @@ class Publisher:
         metric_defs: Sequence[MetricDef],
         names: dict[str, str],
         hidden: frozenset[str] = frozenset(),
+        stale: frozenset[str] = frozenset(),
     ) -> None:
         self.src, self.w, self.cfg, self.labels, self.row = src, w, cfg, labels, row
         # Phase 17g (D-059): the group came from the LLM, not the SIC code or companies.yaml.
@@ -209,6 +212,7 @@ class Publisher:
         self.p = f"{self.cik}:"  # key prefix of this company's objects
         self.defs = {m.code: m for m in metric_defs}
         self.hidden = hidden  # metric codes of hidden sets (D-054)
+        self.stale = stale  # cards no company of this SIC code shows (D-091)
         self.names = names
         self.resolver = SourceResolver(src, row, labels)
         self.stats = Stats()
@@ -253,10 +257,12 @@ class Publisher:
             if self.sic_id is not None:
                 pref = {"metric_id": self.metric_ids[m.code], "SIC_Id": self.sic_id}
                 self._lookup(SIC_Preferences, f"{self.row['sic_code']}:{m.code}", pref)
-        if self.sic_id is not None and self.hidden:
-            # Hidden metrics leave the SIC's metric list too (only these: another industry may
-            # show the others for the same SIC code).
-            keys = [f"{self.row['sic_code']}:{c}" for c in sorted(self.hidden)]
+        # Hidden metrics leave the SIC's metric list too, and so do cards no company of the SIC
+        # code shows any more (D-091: a metric one company excludes, or another company's own
+        # metric).
+        gone = self.hidden | self.stale
+        if self.sic_id is not None and gone:
+            keys = [f"{self.row['sic_code']}:{c}" for c in sorted(gone)]
             self.stats.add("SIC_Preferences_removed", self.w.drop(SIC_Preferences, keys))
         if self.row["is_financial"]:
             lm = self.cfg.loan_portfolio_metric
@@ -792,6 +798,41 @@ class Publisher:
         upsert(self.w.conn, TranscriptRiskFlag, list(flags.values()), key_cols=key)
 
 
+def card_codes(defs: Sequence[MetricDef]) -> set[str]:
+    """The metrics a company shows as cards."""
+    return {m.code for m in defs if m.display}
+
+
+def stale_cards(
+    src: Connection,
+    registry: Registry,
+    industry: IndustryConfig,
+    companies: Sequence[CompanyConfig],
+    sic_code: str | None,
+) -> frozenset[str]:
+    """Metric codes no active company of `sic_code` shows as a card (D-091). The SIC's default
+    metric list (SIC_Preferences) is shared by its companies, so a metric leaves it only when
+    none of them shows it: one company's own metric, or one it excludes, must not stay on the
+    list for itself, nor be taken from another company that shows it."""
+    if not sic_code:
+        return frozenset()
+    by_cik = {pad_cik(c.cik): c for c in companies if c.cik is not None}
+    shown: set[str] = set()
+    for r in src.execute(
+        select(company.c.cik, company.c.industry_group)
+        .where(company.c.sic_code == sic_code, company.c.is_active == true())
+    ):  # fmt: skip
+        c = by_cik.get(r.cik)
+        if c is None or r.industry_group not in industry.groups:
+            continue
+        shown |= card_codes(
+            registry.for_company(c.ticker, industry.group_of(r.industry_group, c)).metrics
+        )
+    every = {m.code for m in registry.metrics}
+    every |= {m.code for o in registry.overrides.values() for m in o.metrics}
+    return frozenset(every - shown)
+
+
 def publish_company(
     cfg: CompanyConfig,
     registry: Registry,
@@ -801,13 +842,18 @@ def publish_company(
     src: Connection,
     dst: Connection,
     now: datetime,
+    companies: Sequence[CompanyConfig] | None = None,
 ) -> tuple[Stats, AppWriter]:
+    """`companies`: every configured company, to keep the SIC's metric list to the cards its
+    companies show (D-091); None leaves cards on it."""
     row = company_row(src, cfg)
     group = industry.group_of(row["industry_group"], cfg)
     defs = registry.for_company(cfg.ticker, group).metrics
     names = {m.code: m.display_name for m in defs} | labels.concepts
     w = AppWriter(dst, now, scope=f"{row['cik']}:")
-    p = Publisher(src, w, pcfg, labels, row, defs, names, registry.hidden_codes)
+    stale = (stale_cards(src, registry, industry, companies, row["sic_code"])
+             if companies is not None else frozenset())  # fmt: skip
+    p = Publisher(src, w, pcfg, labels, row, defs, names, registry.hidden_codes, stale)
     p.company()
     p.metrics()
     p.matrix()
@@ -832,12 +878,16 @@ def run_publish_stage(
     app_engine: Engine,
     *,
     now: Callable[[], datetime] = lambda: datetime.now(UTC),
+    all_companies: Sequence[CompanyConfig] | None = None,
 ) -> list[TaskResult]:
+    """`all_companies`: every configured company (not only this run's), for the SIC metric
+    lists (D-091)."""
     results: list[TaskResult] = []
     for cfg in companies:
         try:
             with engine.connect() as src, app_engine.begin() as dst:
-                stats, w = publish_company(cfg, registry, industry, pcfg, labels, src, dst, now())
+                stats, w = publish_company(cfg, registry, industry, pcfg, labels, src, dst,
+                                           now(), all_companies)  # fmt: skip
             detail = (f"{w.written} written, {w.unchanged} unchanged; "
                       + ", ".join(f"{k}={v}" for k, v in stats.counts.items() if v))  # fmt: skip
             log.debug("%s: publish %s", cfg.ticker, detail)
