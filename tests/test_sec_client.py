@@ -103,3 +103,17 @@ def test_refresh_mode_fetches_every_time_with_timestamped_keys(sec_routes, tmp_p
         "2026-10-14T093000Z.json"
     )
     assert sum(1 for c in sec_routes.calls if str(c.request.url) == MAR_URL) == 2
+
+
+def test_ensure_document_downloads_only_a_missing_file(make_sec_client) -> None:
+    """D-093: an existing raw file is neither downloaded nor read."""
+    sec = make_sec_client()
+    url, key = (
+        "https://www.sec.gov/Archives/edgar/data/1/x/a.htm",
+        "sec/filings/CIK0000000001/x/a.htm",
+    )
+    with respx.mock() as router:
+        route = router.get(url).mock(return_value=httpx.Response(200, content=b"doc"))
+        assert sec.ensure_document(url, key) is True
+        assert sec.ensure_document(url, key) is False
+        assert route.call_count == 1

@@ -202,6 +202,15 @@ class SecClient:
         data, _ = self._fetch(url, key, force=False)
         return [item["name"] for item in json.loads(data)["directory"]["item"]]
 
+    def ensure_document(self, url: str, raw_path: str) -> bool:
+        """Download a stored document again when its raw file is missing (D-093: a database
+        copied from another environment refers to files that environment downloaded). True
+        when it was downloaded; an existing file is not read."""
+        if self._storage.exists(raw_path):
+            return False
+        self._fetch(url, raw_path, force=True)
+        return True
+
     def filing_document(self, cik: int | str, accession_no: str, name: str) -> RawDocument:
         url = f"{archive_folder_url(cik, accession_no)}/{name}"
         key = f"sec/filings/CIK{pad_cik(cik)}/{accession_no}/{name}"
