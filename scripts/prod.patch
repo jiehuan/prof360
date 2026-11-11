@@ -548,7 +548,7 @@ index 898880d1a224b8c4d76d50d1285ab6b69cf0f868..376f93ddeb50fabc630313ccc924743a
  | `ALPHAVANTAGE_API_KEY` | – | Required for AV stages in both direct and APIM modes |
  | `ALPHAVANTAGE_MODE` | `direct` | `direct` or `apim`; never automatically falls back |
 diff --git a/docs/decisions.md b/docs/decisions.md
-index 0938528a821efa8c9bce07968e4fb7a18f730255..300e1288899eb054a131d15137979492208686f0 100644
+index c6c6906040a54bef2184ce9c4f5fdc86796e3ad1..5300c4e26511c62e65c4642bf1d085e9198acd21 100644
 --- a/docs/decisions.md
 +++ b/docs/decisions.md
 @@ -220,7 +220,7 @@ has no exhibit; this is logged.
@@ -939,12 +939,15 @@ index 0938528a821efa8c9bce07968e4fb7a18f730255..300e1288899eb054a131d15137979492
  - Options: (a) keep warnings and filter when reading; (b) log each condition once, remembering
    across runs; (c) a third kind, notes: DEBUG in the log, kept with the task, counted in the
    stage's line.
-@@ -2114,4 +2055,4 @@ income" (2026-11-01).**
+@@ -2114,7 +2055,7 @@ income" (2026-11-01).**
  - The run summary groups failed and skipped tasks by stage and reason, one line each with up to
    ten tickers and the first line of the reason; at most 20 lines.
  - Quiet at INFO: httpx2, httpcore2, openai and azure (the Azure SDK's request and token lines),
 -  besides httpx, httpcore and anthropic.
 +  besides httpx and httpcore.
+ 
+ **D-093 Missing raw files of older documents are downloaded again (2026-11-11).**
+ - Need: in OpenShift, textmetrics failed for ACN with "The specified blob does not exist". The
 diff --git a/docs/phases-15-17-review.md b/docs/phases-15-17-review.md
 index e11940c11a789856854e52827ee709e8fa851d78..6d6fb164d3294033a6e538202a715c1a3b078030 100644
 --- a/docs/phases-15-17-review.md
@@ -1979,7 +1982,7 @@ index db6a34289f4972f18ecb0d7551f3f93fc398e3da..3bf9d74db9ff69e52bb4767be4dd24ea
 -    assert len(made) == 2
 -    release.set()
 diff --git a/tests/test_phase3_stages.py b/tests/test_phase3_stages.py
-index aaa3539d261f032ed0c9b1abc33e5d9dae7a96c3..941b60fc679377bcfa5738e313595ae674e36852 100644
+index a8564787ab92d1efd66ad1d4fca5c091c426c85d..942674f5aaa6f10b85c30ace585c85b0c13d82e4 100644
 --- a/tests/test_phase3_stages.py
 +++ b/tests/test_phase3_stages.py
 @@ -184,14 +184,10 @@ def test_signals_with_llm_vote_and_no_calls_on_rerun(env) -> None:
