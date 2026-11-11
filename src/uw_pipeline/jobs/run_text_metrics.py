@@ -73,6 +73,7 @@ from uw_pipeline.enrich.untrusted import data_block
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import RULE_DERIVATIONS, company_row, read_facts
 from uw_pipeline.load.upsert import delete_keys, upsert
+from uw_pipeline.logs import note
 from uw_pipeline.normalize.html_text import html_to_text
 from uw_pipeline.normalize.periods import FiscalCalendar, learn_calendar
 from uw_pipeline.normalize.sections import chunk
@@ -909,8 +910,8 @@ def run_text_metrics_stage(
                     labels,
                     identities,
                 )
-            for m in stats.mismatches:
-                log.warning("%s: earnings release vs XBRL mismatch: %s", cfg.ticker, m)
+            for m in stats.mismatches:  # also a release_vs_xbrl finding of the dq stage
+                note(log, "%s: earnings release vs XBRL mismatch: %s", cfg.ticker, m)
             log.debug("%s: textmetrics %s", cfg.ticker,
                      {k: v for k, v in stats.__dict__.items() if k != "mismatches"})  # fmt: skip
             detail = f"{stats.extracted} values, {stats.preliminary} preliminary"

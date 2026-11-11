@@ -14,6 +14,7 @@ from uw_pipeline.config import CompanyConfig, IndustryConfig
 from uw_pipeline.enrich.industry_choice import usable_choice
 from uw_pipeline.extract.company import fetch_submissions
 from uw_pipeline.load.upsert import upsert
+from uw_pipeline.logs import note
 from uw_pipeline.normalize.company import parse_sic, parse_submissions
 from uw_pipeline.schema import company as company_table
 
@@ -48,8 +49,9 @@ def run_company_stage(
                 log.debug("%s: classified as %s by companies.yaml (SIC %s): %s", cfg.ticker,
                          group.code, sic, cfg.industry_reason)  # fmt: skip
             elif how == "default":  # SIC ranges are the normal case since Phase 17 (D-055)
-                log.warning("%s: SIC %s is in no industry group; classified as %s", cfg.ticker,
-                            sic, group.code)  # fmt: skip
+                # The industry stage then picks a group for it (D-059).
+                note(log, "%s: SIC %s is in no industry group; classified as %s", cfg.ticker,
+                     sic, group.code)  # fmt: skip
             record = parse_submissions(
                 doc.payload,
                 cfg,

@@ -73,3 +73,20 @@ def test_runs_show_dq_outcome(tmp_path, monkeypatch) -> None:
     assert "dq={'Error': 0, 'Warning': 1} (1 of 2 companies checked)" in shown[4]
     assert "dq=not run (skipped=1)" in shown[5]
     assert "dq=pending" in shown[6]
+
+
+def test_run_summary_groups_failures_by_stage_and_reason() -> None:
+    """D-092: a quota stop is one line, not one per company; an error's first line only."""
+    from uw_pipeline.cli import failure_lines
+
+    quota = "skipped: daily quota of 25 Alpha Vantage calls used; resumes next run"
+    rows = [(f"T{i}", "news", "FAILED", quota) for i in range(12)]
+    rows += [("ACN", "textmetrics", "FAILED", "The specified blob does not exist.\nRequestId:1"),
+             ("B", "facts", "SKIPPED", "prerequisite not succeeded: company; note: x")]  # fmt: skip
+    assert failure_lines(rows) == [
+        "FAILED news, 12 companies (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, ...): " + quota,
+        "FAILED textmetrics, 1 company (ACN): The specified blob does not exist.",
+        "SKIPPED facts, 1 company (B): prerequisite not succeeded: company",
+    ]
+    many = [(f"T{i}", "news", "FAILED", f"error {i}") for i in range(25)]
+    assert failure_lines(many)[-1] == "... 5 more (uw-pipeline runs)"

@@ -25,6 +25,7 @@ from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_documents import _store_sections
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.load.upsert import upsert
+from uw_pipeline.logs import note
 from uw_pipeline.normalize.sections import Section
 from uw_pipeline.schema import ingest_state, metric_value, source_document
 
@@ -177,7 +178,7 @@ def run_transcripts_stage(
         except QuotaExhaustedError as exc:
             # Work committed for earlier companies stays; the rest resumes on the next run.
             stop = f"skipped: {exc}; resumes next run"
-            log.warning("%s: %s", cfg.ticker, stop)
+            note(log, "%s: %s", cfg.ticker, stop)  # grouped in the run summary (D-092)
             results.append(TaskResult(cfg.ticker, "transcripts", ok=False, detail=stop))
         except PremiumRequiredError as exc:
             results.append(TaskResult(cfg.ticker, "transcripts", ok=False, detail=str(exc)))

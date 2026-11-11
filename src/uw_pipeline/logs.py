@@ -2,9 +2,10 @@
 (LOG_FORMAT=json), with run/company/stage context on every record.
 
 Concise by default (D-089): INFO carries the run, each stage's outcome, and warnings/errors;
-per-company detail is DEBUG (`-v` or LOG_LEVEL=DEBUG). With LOG_DIR set (the image sets
-/data/logs on the PVC), each run also writes a readable text file there, kept LOG_KEEP_DAYS
-days and shown by `uw-pipeline logs`."""
+per-company detail is DEBUG (`-v` or LOG_LEVEL=DEBUG). Known conditions nobody needs to act on
+are notes (`note`, D-092): DEBUG, counted in the stage's line, kept in pipeline_task.detail.
+With LOG_DIR set (the image sets /data/logs on the PVC), each run also writes a readable text
+file there, kept LOG_KEEP_DAYS days and shown by `uw-pipeline logs`."""
 
 from __future__ import annotations
 
@@ -31,6 +32,31 @@ def log_context(**fields: Any) -> Iterator[None]:
         yield
     finally:
         _context.reset(token)
+
+
+_notes: contextvars.ContextVar[list[str] | None] = contextvars.ContextVar("log_notes", default=None)
+
+
+def note(logger: logging.Logger, msg: str, *args: Any) -> None:
+    """A known, expected condition nobody needs to act on (D-092), e.g. an 8-K without its press
+    release or a SIC code in no industry group. DEBUG in the log; kept with the task
+    (pipeline_task.detail) and counted in the stage's line. A condition someone must act on
+    is a warning."""
+    logger.debug(msg, *args)
+    notes = _notes.get()
+    if notes is not None:
+        notes.append(msg % args if args else msg)
+
+
+@contextmanager
+def collect_notes() -> Iterator[list[str]]:
+    """Gather the notes of the code run in this block (one pipeline task)."""
+    notes: list[str] = []
+    token = _notes.set(notes)
+    try:
+        yield notes
+    finally:
+        _notes.reset(token)
 
 
 class _ContextFilter(logging.Filter):
@@ -92,8 +118,14 @@ def setup_logging(*, json_format: bool, verbose: bool = False) -> None:
     root = logging.getLogger()
     root.handlers[:] = [handler]
     root.setLevel(_level(verbose))
-    for noisy in ("httpx", "httpcore", "anthropic"):
+    for noisy in NOISY_LOGGERS:
         logging.getLogger(noisy).setLevel(logging.WARNING)
+
+
+# Libraries that log every request (or token) at INFO: their warnings and errors still show.
+# httpx2 / httpcore2 are what anthropic 2.x uses; azure covers the ADLS and identity clients
+# (D-092).
+NOISY_LOGGERS = ("httpx", "httpcore", "httpx2", "httpcore2", "anthropic", "openai", "azure")
 
 
 def log_dir() -> Path | None:
