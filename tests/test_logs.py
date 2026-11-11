@@ -116,7 +116,7 @@ def test_note_is_debug_and_collected_only_inside_a_task(caplog) -> None:
 
 
 def test_request_loggers_of_libraries_are_quiet() -> None:
-    """D-092: httpx2 (anthropic 2.x) and the Azure SDK log every request or token at INFO."""
+    """D-092: httpx2 and the Azure SDK log every request or token at INFO."""
     from uw_pipeline.logs import setup_logging
 
     root = logging.getLogger()
