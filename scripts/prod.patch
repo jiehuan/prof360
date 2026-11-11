@@ -548,7 +548,7 @@ index 898880d1a224b8c4d76d50d1285ab6b69cf0f868..376f93ddeb50fabc630313ccc924743a
  | `ALPHAVANTAGE_API_KEY` | – | Required for AV stages in both direct and APIM modes |
  | `ALPHAVANTAGE_MODE` | `direct` | `direct` or `apim`; never automatically falls back |
 diff --git a/docs/decisions.md b/docs/decisions.md
-index 5aaca7e148ed67e44ea294e5371efd6b94853c51..58f76b83bca2213c199c713dfa9dfb587e20ec35 100644
+index 0938528a821efa8c9bce07968e4fb7a18f730255..300e1288899eb054a131d15137979492208686f0 100644
 --- a/docs/decisions.md
 +++ b/docs/decisions.md
 @@ -220,7 +220,7 @@ has no exhibit; this is logged.
@@ -930,6 +930,21 @@ index 5aaca7e148ed67e44ea294e5371efd6b94853c51..58f76b83bca2213c199c713dfa9dfb58
    have 13-51 metrics, the two foreign filers none; every company has 11-31 current insights and
    11-16 questions. Found and fixed on the way: the facts stage failed on a company with no
    US-GAAP facts (PSFE, AAUC); the signals stage failed when the model reported a restatement
+@@ -2103,7 +2044,7 @@ income" (2026-11-01).**
+   findings), 8-Ks without a press release, filings without an XBRL instance, SIC codes in no
+   industry group (the industry stage then picks one, D-059), tickers SEC lists differently,
+   fiscal year ends corrected from the latest 10-K. And 988 of its 1,095 lines were the
+-  `httpx2` logger (anthropic 2.x) logging every request at INFO.
++  `httpx2` logger (a newer HTTP client library) logging every request at INFO.
+ - Options: (a) keep warnings and filter when reading; (b) log each condition once, remembering
+   across runs; (c) a third kind, notes: DEBUG in the log, kept with the task, counted in the
+   stage's line.
+@@ -2114,4 +2055,4 @@ income" (2026-11-01).**
+ - The run summary groups failed and skipped tasks by stage and reason, one line each with up to
+   ten tickers and the first line of the reason; at most 20 lines.
+ - Quiet at INFO: httpx2, httpcore2, openai and azure (the Azure SDK's request and token lines),
+-  besides httpx, httpcore and anthropic.
++  besides httpx and httpcore.
 diff --git a/docs/phases-15-17-review.md b/docs/phases-15-17-review.md
 index e11940c11a789856854e52827ee709e8fa851d78..6d6fb164d3294033a6e538202a715c1a3b078030 100644
 --- a/docs/phases-15-17-review.md
@@ -1658,7 +1673,7 @@ index 85287dfcfc3143b91b46cd90eda9b7f9bad0d402..2924506ba68587996eb4b976880baf77
               "output_tokens": result.output_tokens}  # fmt: skip
      if budget is not None:
 diff --git a/src/uw_pipeline/jobs/stages.py b/src/uw_pipeline/jobs/stages.py
-index 455ae430652d387da6a7ad38883153dc62b6f9f3..724a6f32ade168d4a1419e221c435f3c1b168d09 100644
+index d484459aeccb5198d47fce818c3e6f04d55f653e..f1952e69a6e953e0970e30ee006685e35c63b645 100644
 --- a/src/uw_pipeline/jobs/stages.py
 +++ b/src/uw_pipeline/jobs/stages.py
 @@ -17,10 +17,9 @@ from uw_pipeline.clients.alphavantage import (
@@ -1709,18 +1724,21 @@ index 455ae430652d387da6a7ad38883153dc62b6f9f3..724a6f32ade168d4a1419e221c435f3c
              if client is not None:
                  # Per-model RPM / TPM limits shared by parallel workers (Phase 15i).
 diff --git a/src/uw_pipeline/logs.py b/src/uw_pipeline/logs.py
-index 192ee76cb19d2624b978c7a453f2e79fcf13c787..80c08f57bbb3b570cc369281cd6af5ae29d41e60 100644
+index 4bdc2eb0c50288826d40e7e2e27f7e8072d9167f..275580e85a382e4192b4545d5f255b6f1462706c 100644
 --- a/src/uw_pipeline/logs.py
 +++ b/src/uw_pipeline/logs.py
-@@ -92,7 +92,7 @@ def setup_logging(*, json_format: bool, verbose: bool = False) -> None:
-     root = logging.getLogger()
-     root.handlers[:] = [handler]
-     root.setLevel(_level(verbose))
--    for noisy in ("httpx", "httpcore", "anthropic"):
-+    for noisy in ("httpx", "httpcore"):
-         logging.getLogger(noisy).setLevel(logging.WARNING)
+@@ -123,9 +123,8 @@ def setup_logging(*, json_format: bool, verbose: bool = False) -> None:
  
  
+ # Libraries that log every request (or token) at INFO: their warnings and errors still show.
+-# httpx2 / httpcore2 are what anthropic 2.x uses; azure covers the ADLS and identity clients
+-# (D-092).
+-NOISY_LOGGERS = ("httpx", "httpcore", "httpx2", "httpcore2", "anthropic", "openai", "azure")
++# azure covers the ADLS and identity clients (D-092).
++NOISY_LOGGERS = ("httpx", "httpcore", "httpx2", "httpcore2", "openai", "azure")
+ 
+ 
+ def log_dir() -> Path | None:
 diff --git a/src/uw_pipeline/settings.py b/src/uw_pipeline/settings.py
 index aad39dd95e4fe1f9158656a2b401839509e97036..7c40a784f7414d65b79879b273acfafb8bb39cb8 100644
 --- a/src/uw_pipeline/settings.py
