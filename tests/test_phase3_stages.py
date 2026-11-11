@@ -359,3 +359,30 @@ def test_industry_excluding_signals_turns_them_off(env, tmp_path) -> None:
     with engine.connect() as conn:
         after = {r.rule_id for r in conn.execute(select(signal))}
     assert after == {r for r in before if not r.startswith("8k_5.02")}
+
+
+def test_missing_raw_files_of_older_documents_are_downloaded_again(env) -> None:
+    """D-093: a database copied from another environment refers to raw files that environment
+    downloaded. An earnings release older than the text window (textmetrics reads every one)
+    whose file is missing is downloaded again, once."""
+    engine, sec, router = env
+    _run(engine, sec)
+    accn, name = "0000000042-24-000009", "er-old.htm"
+    url = f"{archive_folder_url(CIK, accn)}/{name}"
+    key = f"sec/filings/CIK0000000042/{accn}/{name}"
+    route = router.get(url).mock(return_value=httpx.Response(200, content=b"<p>Old results</p>"))
+    with engine.begin() as conn:
+        company_id = conn.execute(select(company.c.company_id)).scalar_one()
+        conn.execute(insert(source_document).values(
+            company_id=company_id, source_type="SEC", form_type="8-K", doc_role="EX-99.1",
+            accession_no=accn, doc_name=name, filed_at="2024-06-01", url=url,
+            content_hash="h", raw_path=key, fetched_at=datetime(2024, 6, 1, tzinfo=UTC),
+        ))  # fmt: skip
+    assert not sec._storage.exists(key)
+    res = run_documents_stage([CompanyConfig(ticker="ACME", cik=CIK)], sec,
+                              load_registry(CONFIG_DIR), load_signal_rules(CONFIG_DIR), engine,
+                              today=lambda: TODAY)  # fmt: skip
+    assert res[0].ok and "restored=1" in res[0].detail
+    assert sec._storage.read_bytes(key) == b"<p>Old results</p>" and route.call_count == 1
+    _run(engine, sec)  # present now: checked, not downloaded or read again
+    assert route.call_count == 1

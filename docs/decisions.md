@@ -2056,3 +2056,18 @@ income" (2026-11-01).**
   ten tickers and the first line of the reason; at most 20 lines.
 - Quiet at INFO: httpx2, httpcore2, openai and azure (the Azure SDK's request and token lines),
   besides httpx and httpcore.
+
+**D-093 Missing raw files of older documents are downloaded again (2026-11-11).**
+- Need: in OpenShift, textmetrics failed for ACN with "The specified blob does not exist". The
+  pipeline database there was copied from development (copy_sqlite_to_azure), so its
+  source_document rows refer to raw files development downloaded. The documents stage
+  re-fetches a missing file for documents inside its windows (the SEC client downloads what
+  storage lacks), but textmetrics reads every earnings release and MD&A filing, however old:
+  ACN's release of 2025-09-25 was outside the 400-day window when production started, so it
+  was never downloaded there. Development had 12 such releases and about 400 MD&A filings.
+- Options: (a) the documents stage checks the older documents textmetrics reads and downloads
+  the missing ones; (b) textmetrics skips a document whose file is missing; (c) a one-off
+  repair after each copy.
+- Chosen: (a). (b) would lose the document's values; (c) is easy to forget. The check is one
+  existence test per older document (a few hundred a night across all companies), and a file
+  is not read; each download is a note and counted as `restored` in the task's detail.

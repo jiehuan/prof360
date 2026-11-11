@@ -293,7 +293,33 @@ def process_company(
             history_years=history_years, history_quarters=history_quarters,
         ))  # fmt: skip
     _drop_stray_ownership(conn, row["company_id"], kept_ownership, rules)
+    since_text = (today - timedelta(days=text_lookback_days)).isoformat()
+    stats["restored"] = _restore_missing(conn, sec, cfg, row["company_id"], since_text)
     return dict(stats)
+
+
+def _restore_missing(
+    conn: Connection, sec: SecClient, cfg: CompanyConfig, company_id: int, before: str
+) -> int:
+    """Raw files of the company's older documents that textmetrics reads (earnings releases,
+    MD&A filings), downloaded again when missing (D-093). Newer ones are fetched above, which
+    downloads a missing file anyway. A file is only checked, not read."""
+    d, s = source_document.c, filing_section.c
+    mdna = select(s.doc_id).where(s.section_code.in_(list(HISTORY_SECTIONS.values())))
+    rows = conn.execute(
+        select(d.url, d.raw_path, d.accession_no, d.doc_name).where(
+            d.company_id == company_id, d.raw_path.is_not(None), d.url.is_not(None),
+            d.filed_at < before,
+            or_(d.doc_role == "EX-99.1", and_(d.doc_role == "PRIMARY", d.doc_id.in_(mdna))),
+        )
+    ).all()  # fmt: skip
+    restored = 0
+    for r in rows:
+        if sec.ensure_document(r.url, r.raw_path):
+            restored += 1
+            note(log, "%s %s %s: raw file missing from storage; downloaded again", cfg.ticker,
+                 r.accession_no, r.doc_name)  # fmt: skip
+    return restored
 
 
 def _process_registrant(
