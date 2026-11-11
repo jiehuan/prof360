@@ -30,6 +30,7 @@ from typing import Any
 import pandas as pd
 
 from uw_pipeline.frames import records
+from uw_pipeline.logs import note
 
 log = logging.getLogger(__name__)
 
@@ -111,8 +112,8 @@ def learn_calendar(facts: pd.DataFrame, fye_mmdd: str) -> FiscalCalendar:
     # to June) has older years on the old date, and SEC's current value is right for it.
     latest = max((end for end, _ in years), default=None)
     if latest is not None and (base.locate(latest) or (0, 0))[1] != 4:
-        log.warning("fiscal year end %s does not match the latest 10-K year (ends %s); using %s",
-                    fye_mmdd, latest, latest.strftime("%m%d"))  # fmt: skip
+        note(log, "fiscal year end %s does not match the latest 10-K year (ends %s); using %s",
+             fye_mmdd, latest, latest.strftime("%m%d"))  # fmt: skip
         fye_mmdd = latest.strftime("%m%d")
         base = FiscalCalendar(fye_mmdd)
     offsets: Counter[int] = Counter()

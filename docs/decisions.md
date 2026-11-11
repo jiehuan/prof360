@@ -2000,3 +2000,59 @@ income" (2026-11-01).**
   `--list`). In the web console: the Terminal of a running CronJob pod, or a temporary Job
   (`deploy/openshift/log-viewer.yaml`, 30 minutes, then deleted) that mounts the PVC. The PVC
   is ReadWriteOnce, so the viewer must not overlap a scheduled run on another node.
+
+**D-090 Amazon's Operational section: its own expense ratios instead of R&D (2026-11-09).**
+- Need: Amazon (SOFTWARE_INTERNET) had one Operational metric, R&D / Revenue, always N/A:
+  Amazon reports no research and development expense. Its income statement has "Technology and
+  infrastructure" (named "Technology and content" before 2024) and "Fulfillment", both under
+  its own tags (`amzn:TechnologyAndInfrastructureExpense`, `amzn:FulfillmentExpense`), which
+  are not in SEC companyfacts.
+- Options: (a) map R&D / Revenue to the technology tag; (b) show inventory days in Operational
+  too; (c) company metrics with their own names, read from each filing's XBRL instance (as for
+  MAR and MCD), and R&D / Revenue dropped for Amazon; (d) move Amazon to RETAIL.
+- Chosen: (b) and (c). Technology and infrastructure includes the servers and data centers
+  behind AWS, so labelling it R&D would overstate R&D (a); RETAIL (d) would lose the software
+  metrics that fit AWS. Inventory days (`inventory_days`) is computed for every company but in
+  REPORTING_QUALITY, hidden by D-054, so Amazon gets its own copy, `amzn_inventory_days`.
+  `config/company_overrides/AMZN.yaml` adds Technology & Infrastructure / Revenue,
+  Fulfillment / Revenue and Days Inventory Outstanding (section operational) and lists
+  rnd_to_revenue under a new override
+  field, `exclude_metrics`, which works like an industry group's: the metric is not tracked,
+  or computed but hidden when another metric needs it. Publish drops the old card's rows.
+
+**D-091 A SIC code's default metric list keeps only cards its companies show (2026-11-09).**
+- Need: SIC_Preferences, the default card list the BFF uses for a company with no saved
+  choice, is shared by all companies of a SIC code. Publish added each company's cards to it
+  and removed only hidden metrics (D-054) and views (D-078), so a card a company stopped
+  showing stayed: Amazon's excluded R&D / Revenue (D-090), and cards left over from industry
+  group changes (gross margin for restaurants, pension and warranty cards for chemicals).
+- Options: (a) leave it to the front end to hide cards without data; (b) on each company's
+  publish, remove from its SIC's list the metrics no active configured company of that SIC
+  code shows; (c) rebuild every SIC list after the whole publish stage.
+- Chosen: (b). (a) keeps empty cards for users who pick them; (c) would not run on a
+  single-company publish. Publish now receives every configured company (`all_companies`);
+  without it (tests, scripts) the old behaviour stays. A card one company of the SIC code
+  still shows stays on the list for all of them (Marriott's fee cards for Hilton and Hyatt),
+  since the list is per SIC code, not per company.
+
+**D-092 Notes instead of warnings for known conditions; a grouped run summary (2026-11-11).**
+- Need: after D-089 the engineers still found the nightly log too long. In OpenShift run 185
+  the log was 1,376 lines: per company, each Alpha Vantage quota stop was a warning (market
+  logged a whole traceback), the run summary listed every failed task on its own line, and an
+  Azure error printed its XML body over several lines. Locally, run 181 had 69 warnings, none
+  needing action: earnings release vs XBRL mismatches (also the dq stage's release_vs_xbrl
+  findings), 8-Ks without a press release, filings without an XBRL instance, SIC codes in no
+  industry group (the industry stage then picks one, D-059), tickers SEC lists differently,
+  fiscal year ends corrected from the latest 10-K. And 988 of its 1,095 lines were the
+  `httpx2` logger (a newer HTTP client library) logging every request at INFO.
+- Options: (a) keep warnings and filter when reading; (b) log each condition once, remembering
+  across runs; (c) a third kind, notes: DEBUG in the log, kept with the task, counted in the
+  stage's line.
+- Chosen: (c). `logs.note()` writes DEBUG; the orchestrator adds the task's notes to
+  `pipeline_task.detail` and the stage's line ends "; N notes in the task details". A warning
+  now means someone should look. A quota stop in market, news or transcripts is a note per
+  company and fails the task as before ("skipped: ...; resumes next run", not retried).
+- The run summary groups failed and skipped tasks by stage and reason, one line each with up to
+  ten tickers and the first line of the reason; at most 20 lines.
+- Quiet at INFO: httpx2, httpcore2, openai and azure (the Azure SDK's request and token lines),
+  besides httpx and httpcore.

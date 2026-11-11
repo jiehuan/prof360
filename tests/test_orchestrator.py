@@ -313,3 +313,34 @@ def test_one_log_line_per_stage(engine, caplog) -> None:
         ("INFO", "stage facts: 3 of 3 companies to run"),
         ("INFO", "stage facts done in 0m00s: 2 succeeded, 0 failed, 1 skipped (B)"),
     ]
+
+
+def test_notes_are_counted_and_kept_with_the_task(engine, caplog) -> None:
+    """D-092: a known condition is a note: DEBUG in the log, counted in the stage's line, and
+    kept in the task's detail."""
+    import logging
+
+    from uw_pipeline.logs import note
+
+    orch = Orchestrator(engine, now=Clock(), max_attempts=1)
+    run_id, _ = orch.start("nightly", ["documents"], ["A", "B"])
+    lg = logging.getLogger("uw_pipeline.jobs.run_documents")
+
+    def runner(stage, ticker):
+        if ticker == "A":
+            note(lg, "%s 8-K %s: Item 2.02 without an EX-99.1 file", ticker, "0001")
+            note(lg, "%s 8-K %s: Item 2.02 without an EX-99.1 file", ticker, "0002")
+        return TaskResult(ticker, stage, ok=True, detail="3 sections")
+
+    with caplog.at_level("INFO"):
+        orch.execute(run_id, runner)
+    assert [r.getMessage() for r in caplog.records if r.levelno >= logging.INFO] == [
+        "stage documents: 2 of 2 companies to run",
+        "stage documents done in 0m00s: 2 succeeded, 0 failed, 0 skipped; 2 notes in the task "
+        "details",
+    ]
+    with engine.connect() as c:
+        detail = dict(c.execute(select(pipeline_task.c.ticker, pipeline_task.c.detail)).all())
+    assert detail["A"] == ("3 sections; note: A 8-K 0001: Item 2.02 without an EX-99.1 file; "
+                           "note: A 8-K 0002: Item 2.02 without an EX-99.1 file")  # fmt: skip
+    assert detail["B"] == "3 sections"

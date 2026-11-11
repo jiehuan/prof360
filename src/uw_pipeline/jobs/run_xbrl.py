@@ -20,6 +20,7 @@ from uw_pipeline.extract.filings import Filing, filings_since, instance_name, pe
 from uw_pipeline.frames import records
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.load.upsert import delete_keys, upsert
+from uw_pipeline.logs import note
 from uw_pipeline.normalize.periods import learn_calendar, standardize
 from uw_pipeline.normalize.xbrl_facts import (
     FACT_COLUMNS,
@@ -164,7 +165,7 @@ def _instance_facts(
 ) -> pd.DataFrame | None:
     name = instance_name(sec.filing_index(cik, filing.accn), filing.primary_doc)
     if name is None:
-        log.warning("CIK %s %s: no XBRL instance found", cik, filing.accn)
+        note(log, "CIK %s %s: no XBRL instance found", cik, filing.accn)
         return None
     doc = sec.filing_document(cik, filing.accn, name)
     parse = pay_versus_performance if proxy else facts_from_instance
@@ -291,8 +292,8 @@ def compute_company(
     facts = drop_before(facts, history_start)
     restated: list[str] = []
     periods = standardize(facts, cal, restated)
-    for note in restated:  # held at the basis of their fiscal year (D-046)
-        log.debug("restated after its year was reported, year's basis kept: %s", note)
+    for item in restated:  # held at the basis of their fiscal year (D-046)
+        log.debug("restated after its year was reported, year's basis kept: %s", item)
     return periods, compute_metrics(periods, creg, stored)
 
 

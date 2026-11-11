@@ -98,3 +98,37 @@ def test_logs_command_filters(tmp_path) -> None:
     assert run("--run", "173", "--tail", "1")[0].startswith("2026-11-06 23:33")
     missing = CliRunner().invoke(app, ["logs", "--dir", str(tmp_path), "--run", "9"])
     assert missing.exit_code == 1
+
+
+def test_note_is_debug_and_collected_only_inside_a_task(caplog) -> None:
+    """D-092: outside a task (no collector) a note is just a DEBUG line."""
+    from uw_pipeline.logs import collect_notes, note
+
+    lg = logging.getLogger("uw_pipeline.test")
+    with caplog.at_level("DEBUG", logger="uw_pipeline.test"):
+        note(lg, "outside %s", 1)
+        with collect_notes() as found:
+            note(lg, "inside %s", 2)
+            note(lg, "plain")
+        note(lg, "after")
+    assert found == ["inside 2", "plain"]
+    assert {r.levelname for r in caplog.records} == {"DEBUG"}
+
+
+def test_request_loggers_of_libraries_are_quiet() -> None:
+    """D-092: httpx2 and the Azure SDK log every request or token at INFO."""
+    from uw_pipeline.logs import setup_logging
+
+    root = logging.getLogger()
+    saved = root.handlers[:], root.level
+    try:
+        setup_logging(json_format=False)
+        for name in ("httpx", "httpx2", "httpcore2",
+                     "azure.core.pipeline.policies.http_logging_policy",
+                     "azure.identity._internal.get_token_mixin"):  # fmt: skip
+            lg = logging.getLogger(name)
+            assert not lg.isEnabledFor(logging.INFO) and lg.isEnabledFor(logging.WARNING), name
+        assert logging.getLogger("uw_pipeline.jobs.orchestrator").isEnabledFor(logging.INFO)
+    finally:
+        root.handlers[:], level = saved
+        root.setLevel(level)

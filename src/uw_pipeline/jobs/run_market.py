@@ -28,12 +28,13 @@ from typing import Any
 
 from sqlalchemy import Connection, Engine, select
 
-from uw_pipeline.clients.alphavantage import AlphaVantageClient
+from uw_pipeline.clients.alphavantage import AlphaVantageClient, QuotaExhaustedError
 from uw_pipeline.compute.registry import Registry
 from uw_pipeline.config import CompanyConfig, IndustryConfig
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import company_row, fiscal_periods
 from uw_pipeline.load.upsert import delete_keys, upsert
+from uw_pipeline.logs import note
 from uw_pipeline.schema import earnings_report, market_daily, metric_value, xbrl_fact
 
 log = logging.getLogger(__name__)
@@ -274,6 +275,12 @@ def run_market_stage(
             detail = f"{len(prices)} prices, {len(rows)} market values"
             log.debug("%s: market %s (%d stale removed)", cfg.ticker, detail, len(stale))
             results.append(TaskResult(cfg.ticker, "market", ok=True, detail=detail))
+        except QuotaExhaustedError as exc:
+            # Every later company stops the same way: a note each, the run summary groups them
+            # (D-092).
+            stop = f"skipped: {exc}; resumes next run"
+            note(log, "%s: %s", cfg.ticker, stop)
+            results.append(TaskResult(cfg.ticker, "market", ok=False, detail=stop))
         except Exception as exc:
             log.exception("%s: market stage failed", cfg.ticker)
             results.append(TaskResult(cfg.ticker, "market", ok=False, detail=str(exc)))

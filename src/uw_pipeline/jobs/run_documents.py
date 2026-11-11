@@ -41,6 +41,7 @@ from uw_pipeline.extract.filings import (
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import company_row, fiscal_periods
 from uw_pipeline.load.upsert import delete_keys, insert_missing, upsert
+from uw_pipeline.logs import note
 from uw_pipeline.normalize.form4 import parse_form4
 from uw_pipeline.normalize.html_text import html_to_text
 from uw_pipeline.normalize.sections import (
@@ -347,7 +348,7 @@ def _process_registrant(
             # Single-exhibit filings label the press release plain "EX-99".
             name = exhibit_by_type(index_page, "EX-99.1") or exhibit_by_type(index_page, "EX-99")
             if name is None:
-                log.warning("%s 8-K %s: Item 2.02 without an EX-99.1 file", cfg.ticker, f.accn)
+                note(log, "%s 8-K %s: Item 2.02 without an EX-99.1 file", cfg.ticker, f.accn)
                 continue
             docs.register([_doc_row(company_id, cik, f, name, "EX-99.1")])
             _, data = _download(conn, sec, cik, f.accn, name, force=force, now=now, docs=docs)
