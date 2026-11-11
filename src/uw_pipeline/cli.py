@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from pathlib import Path
@@ -106,6 +107,25 @@ def main(verbose: Annotated[bool, typer.Option("--verbose", "-v")] = False) -> N
     setup_logging(json_format=os.environ.get("LOG_FORMAT", "").lower() == "json", verbose=verbose)
 
 
+def failure_lines(rows: Sequence[Any], *, max_groups: int = 20, max_tickers: int = 10) -> list[str]:
+    """The run summary's failed and skipped tasks, one line per stage and reason (D-092): a
+    quota stop is one line, not one per company. A reason is the first line of the task's
+    detail (an Azure error is many), without its notes; `uw-pipeline runs` has the rest."""
+    groups: dict[tuple[str, str, str], list[str]] = {}
+    for ticker, stage, status, detail in rows:
+        reason = (detail or "").split("; note: ")[0].strip()
+        reason = reason.splitlines()[0][:200] if reason else "no detail"
+        groups.setdefault((status, stage, reason), []).append(ticker)
+    lines = []
+    for (status, stage, reason), tickers in list(groups.items())[:max_groups]:
+        shown = ", ".join(tickers[:max_tickers]) + (", ..." if len(tickers) > max_tickers else "")
+        n = len(tickers)
+        lines.append(f"{status} {stage}, {n} compan{'y' if n == 1 else 'ies'} ({shown}): {reason}")
+    if len(groups) > max_groups:
+        lines.append(f"... {len(groups) - max_groups} more (uw-pipeline runs)")
+    return lines
+
+
 @app.command()
 def run(
     all_: Annotated[bool, typer.Option("--all", help="All active companies")] = False,
@@ -183,11 +203,12 @@ def run(
             ).all()  # fmt: skip
         # Printed below; the log file gets the same lines (D-089).
         log.info("%s", summary, extra=FILE_ONLY)
-        for t, st, status, detail in failed:
-            log.warning("%s %s [%s]: %s", status, t, st, detail, extra=FILE_ONLY)
+        lines = failure_lines(failed)
+        for line in lines:
+            log.warning("%s", line, extra=FILE_ONLY)
     typer.echo(summary)
-    for t, st, status, detail in failed:
-        typer.echo(f"  {status} {t} [{st}]: {detail}", err=True)
+    for line in lines:
+        typer.echo(f"  {line}", err=True)
     if outcome.status != "SUCCEEDED":
         raise typer.Exit(code=1)
 

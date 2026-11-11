@@ -31,7 +31,7 @@ from pydantic import BaseModel
 from sqlalchemy import Engine, func, insert, select, update
 
 from uw_pipeline.jobs.run_company import TaskResult
-from uw_pipeline.logs import log_context
+from uw_pipeline.logs import collect_notes, log_context
 from uw_pipeline.schema import pipeline_run, pipeline_task
 
 log = logging.getLogger(__name__)
@@ -315,6 +315,7 @@ class Orchestrator:
             )
         stages_in_run = set(json.loads(run["stages"]))
         status: dict[tuple[str, str], str] = {(t["ticker"], t["stage"]): t["status"] for t in tasks}
+        notes: dict[tuple[str, str], int] = {}  # notes per task (D-092)
 
         def run_task(t: Any) -> None:
             key = (t["ticker"], t["stage"])
@@ -336,7 +337,8 @@ class Orchestrator:
                 attempts += 1
                 self._set(t["task_id"], run_id, status="RUNNING", attempts=attempts,
                           started_at=self.now())  # fmt: skip
-                with log_context(run_id=run_id, ticker=t["ticker"], stage=t["stage"]):
+                with (log_context(run_id=run_id, ticker=t["ticker"], stage=t["stage"]),
+                      collect_notes() as found):  # fmt: skip
                     beating = self._heartbeat(run_id)
                     try:
                         result = runner(t["stage"], t["ticker"])
@@ -346,9 +348,13 @@ class Orchestrator:
                     finally:
                         beating.set()
                 outcome = "SUCCEEDED" if result.ok else "FAILED"
-                self._set(t["task_id"], run_id, status=outcome, detail=result.detail[:2000],
+                # Notes (D-092) are DEBUG in the log; the task keeps them.
+                detail = "; ".join([result.detail, *(f"note: {n}" for n in found)] if found
+                                   else [result.detail])  # fmt: skip
+                self._set(t["task_id"], run_id, status=outcome, detail=detail[:2000],
                           finished_at=self.now())  # fmt: skip
                 status[key] = outcome
+                notes[key] = len(found)
                 if result.ok or attempts >= self.max_attempts or not _retryable(result):
                     break
                 log.warning("%s %s failed (%s); retrying", t["ticker"], t["stage"], result.detail)
@@ -379,12 +385,16 @@ class Orchestrator:
                         )
                     )
             self._log_stage(stage, [status[(t["ticker"], stage)] for t in batch],
-                            [t["ticker"] for t in batch], self.now() - began)  # fmt: skip
+                            [t["ticker"] for t in batch], self.now() - began,
+                            sum(notes.get((t["ticker"], stage), 0) for t in batch))  # fmt: skip
         return self._finish(run_id)
 
     @staticmethod
-    def _log_stage(stage: str, states: list[str], tickers: list[str], took: timedelta) -> None:
-        """One line per stage (D-089): per-company detail is DEBUG and in pipeline_task."""
+    def _log_stage(
+        stage: str, states: list[str], tickers: list[str], took: timedelta, notes: int = 0
+    ) -> None:
+        """One line per stage (D-089): per-company detail is DEBUG and in pipeline_task, notes
+        (D-092) only counted."""
         counts = {s: states.count(s) for s in ("SUCCEEDED", "FAILED", "SKIPPED")}
         failed = [t for t, s in zip(tickers, states, strict=True) if s == "FAILED"]
         skipped = [t for t, s in zip(tickers, states, strict=True) if s == "SKIPPED"]
@@ -396,9 +406,10 @@ class Orchestrator:
         seconds = int(took.total_seconds())
         log.log(
             logging.WARNING if failed else logging.INFO,
-            "stage %s done in %dm%02ds: %d succeeded, %d failed%s, %d skipped%s",
+            "stage %s done in %dm%02ds: %d succeeded, %d failed%s, %d skipped%s%s",
             stage, seconds // 60, seconds % 60, counts["SUCCEEDED"], counts["FAILED"],
             names(failed), counts["SKIPPED"], names(skipped),
+            f"; {notes} note{'s' if notes != 1 else ''} in the task details" if notes else "",
         )  # fmt: skip
 
     def _finish(self, run_id: int) -> RunOutcome:

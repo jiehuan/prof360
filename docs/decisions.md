@@ -2120,3 +2120,25 @@ income" (2026-11-01).**
   without it (tests, scripts) the old behaviour stays. A card one company of the SIC code
   still shows stays on the list for all of them (Marriott's fee cards for Hilton and Hyatt),
   since the list is per SIC code, not per company.
+
+**D-092 Notes instead of warnings for known conditions; a grouped run summary (2026-11-11).**
+- Need: after D-089 the engineers still found the nightly log too long. In OpenShift run 185
+  the log was 1,376 lines: per company, each Alpha Vantage quota stop was a warning (market
+  logged a whole traceback), the run summary listed every failed task on its own line, and an
+  Azure error printed its XML body over several lines. Locally, run 181 had 69 warnings, none
+  needing action: earnings release vs XBRL mismatches (also the dq stage's release_vs_xbrl
+  findings), 8-Ks without a press release, filings without an XBRL instance, SIC codes in no
+  industry group (the industry stage then picks one, D-059), tickers SEC lists differently,
+  fiscal year ends corrected from the latest 10-K. And 988 of its 1,095 lines were the
+  `httpx2` logger (anthropic 2.x) logging every request at INFO.
+- Options: (a) keep warnings and filter when reading; (b) log each condition once, remembering
+  across runs; (c) a third kind, notes: DEBUG in the log, kept with the task, counted in the
+  stage's line.
+- Chosen: (c). `logs.note()` writes DEBUG; the orchestrator adds the task's notes to
+  `pipeline_task.detail` and the stage's line ends "; N notes in the task details". A warning
+  now means someone should look. A quota stop in market, news or transcripts is a note per
+  company and fails the task as before ("skipped: ...; resumes next run", not retried).
+- The run summary groups failed and skipped tasks by stage and reason, one line each with up to
+  ten tickers and the first line of the reason; at most 20 lines.
+- Quiet at INFO: httpx2, httpcore2, openai and azure (the Azure SDK's request and token lines),
+  besides httpx, httpcore and anthropic.

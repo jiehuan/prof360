@@ -6,6 +6,7 @@ import logging
 
 from uw_pipeline.clients.sec import RawDocument, SecClient
 from uw_pipeline.config import CompanyConfig
+from uw_pipeline.logs import note
 
 log = logging.getLogger(__name__)
 
@@ -40,10 +41,7 @@ def fetch_submissions(
     doc = sec.submissions(cik, force=force)
     sec_tickers = {t.upper() for t in doc.payload.get("tickers") or []}
     if cfg.ticker not in sec_tickers:
-        log.warning(
-            "%s (CIK %s): configured ticker not in SEC submissions tickers %s",
-            cfg.ticker,
-            cik,
-            sorted(sec_tickers),
-        )
+        # Tickers are display-only; the pinned CIK identifies the company.
+        note(log, "%s (CIK %s): configured ticker not in SEC submissions tickers %s",
+             cfg.ticker, cik, sorted(sec_tickers))  # fmt: skip
     return doc

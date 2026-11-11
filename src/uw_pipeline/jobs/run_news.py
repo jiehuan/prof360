@@ -25,6 +25,7 @@ from uw_pipeline.enrich.news_relevance import judge
 from uw_pipeline.jobs.run_company import TaskResult
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.load.upsert import upsert
+from uw_pipeline.logs import note
 from uw_pipeline.normalize.news import (
     Doc,
     NewsConfig,
@@ -401,9 +402,10 @@ def run_news_stage(
             msg = "NEWS_SENTIMENT needs a premium Alpha Vantage plan"
             log.error("%s: %s", company_cfg.ticker, msg)
             results.append(TaskResult(company_cfg.ticker, "news", ok=False, detail=msg))
-        except QuotaExhaustedError as exc:
-            log.warning("%s: %s; continuing next run", company_cfg.ticker, exc)
-            results.append(TaskResult(company_cfg.ticker, "news", ok=False, detail=str(exc)))
+        except QuotaExhaustedError as exc:  # grouped in the run summary (D-092)
+            stop = f"skipped: {exc}; resumes next run"
+            note(log, "%s: %s", company_cfg.ticker, stop)
+            results.append(TaskResult(company_cfg.ticker, "news", ok=False, detail=stop))
         except Exception as exc:
             log.exception("%s: news stage failed", company_cfg.ticker)
             results.append(TaskResult(company_cfg.ticker, "news", ok=False, detail=str(exc)))
