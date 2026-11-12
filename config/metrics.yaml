@@ -95,6 +95,8 @@ metric_sets:
     - roe
     - loan_loss_reserve_ratio
     - fee_to_net_interest_income
+    - ppnr
+    - efficiency_ratio
   CONTRACT_REVENUE:
     - rpo
   MANUFACTURING_OPERATING:
@@ -557,6 +559,26 @@ metrics:
     unit: USD
     formula: net_interest_income
     display: false
+  # A bank's earnings before credit losses and taxes, its counterpart of EBITDA, and its cost
+  # control (D-096). On the GAAP figures as tagged: a bank's own headline ratio may be on an
+  # adjusted (FTE or managed) basis and differ by a point or two.
+  - code: ppnr
+    display_name: Pre-Provision Net Revenue (PPNR)
+    subtitle: "Net interest and fee income minus operating expenses, before credit losses"
+    description: >-
+      Net interest income plus noninterest income minus noninterest expense: earnings before
+      credit loss provisions and taxes.
+    section: financial
+    unit: USD
+    formula: net_interest_income + noninterest_income - noninterest_expense
+  - code: efficiency_ratio
+    display_name: Efficiency Ratio
+    subtitle: "Operating expenses / revenue (lower is better)"
+    description: Noninterest expense as a share of net interest income plus noninterest income.
+    section: fi_performance
+    unit: fraction
+    formula: noninterest_expense / (net_interest_income + noninterest_income)
+    nm_when: net_interest_income + noninterest_income <= 0
   - code: fee_to_net_interest_income
     display_name: Noninterest Income / Net Interest Income
     section: fi_performance

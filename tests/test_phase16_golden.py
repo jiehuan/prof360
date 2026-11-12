@@ -103,9 +103,12 @@ def test_payments_visa_fy2025(make_sec_client) -> None:
 def test_banks_bank_of_america_fy2025(make_sec_client) -> None:
     """BAC 10-K FY2025: revenue (us-gaap:Revenues, net of interest expense) 113,097, deposits
     2,018,729 (1,965,467 a year earlier), unrecognized losses on HTM securities 80,257 (no AFS
-    gross loss tag), equity 303,243."""
+    gross loss tag), equity 303,243; net interest income 60,096, noninterest income 53,001 and
+    noninterest expense 69,727 (PPNR and efficiency ratio, D-096)."""
     _check(make_sec_client, "BAC", ("FY", 2025, 0), {
         "revenue": 113_097e6,
+        "ppnr": (60_096 + 53_001 - 69_727) * 1e6,
+        "efficiency_ratio": 69_727 / (60_096 + 53_001),
         "deposits": 2_018_729e6,
         "deposit_growth_yoy": 2_018_729 / 1_965_467 - 1,
         "unrealized_loss_to_equity": 80_257 / 303_243,

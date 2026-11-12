@@ -27,6 +27,7 @@ def test_metric_list_comes_from_group_config(reg, industry) -> None:
         "buybacks", "buyback_intensity", "noninterest_income", "fee_income_growth_yoy",
         "roa", "roe", "loan_loss_reserve_ratio", "net_interest_income",
         "fee_to_net_interest_income",  # D-043
+        "ppnr", "efficiency_ratio",  # D-096
         "cet1_ratio", "tier1_ratio", "total_capital_ratio", "lcr", "nim", "npl_ratio",
         "total_loans", "avg_interest_earning_assets", "aum", "var_total_avg",
         "international_revenue",  # BANK_REGULATORY

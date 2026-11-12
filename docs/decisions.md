@@ -2183,3 +2183,21 @@ income" (2026-11-01).**
   within a priority), so `ordinal` and the published `FollowUpQuestionId` follow that order
   even when the model mixes priorities. Questions are regenerated on the next run (new prompt
   version, so a new input hash).
+
+**D-096 Banks: PPNR and efficiency ratio (2026-11-12).**
+- Need (UAT): why do banks such as Capital One have no EBITDA? It is left out on purpose:
+  interest expense is a bank's main cost, so earnings before interest mean little, bank income
+  statements have no operating income line, and coverage of interest is not how a bank's
+  capacity to pay is judged (capital, liquidity and funding are, and are shown). The user
+  asked whether the bank counterparts could be added.
+- Options: (a) PPNR (pre-provision net revenue) = net interest income + noninterest income -
+  noninterest expense, and the efficiency ratio = noninterest expense / (net interest income +
+  noninterest income); (b) PPNR as pre-tax income + provision for credit losses.
+- Coverage checked on the 9 BANKS companies (AXP, BAC, BNY, C, COF, JPM, MTB, USB, WFC):
+  us-gaap:InterestIncomeExpenseNet, NoninterestIncome and NoninterestExpense for all 9, five
+  fiscal years and the quarters. (b) fails for BNY (pre-tax income tagged only as domestic and
+  foreign) and the provision has five or six tags across the banks.
+- Chosen: (a), in BANK_CORE; new concept noninterest_expense. FY2025 check: JPM efficiency
+  52.4% (its own overhead ratio about 52%), BAC 61.7%, COF 57.1%; AXP 73.6% (card rewards and
+  marketing are noninterest expense). GAAP figures as tagged: a bank's headline ratio on an FTE
+  or managed basis may differ by a point or two. Formula metrics: no LLM cost.
