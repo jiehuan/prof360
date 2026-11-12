@@ -2144,3 +2144,15 @@ income" (2026-11-01).**
   signal key of a still-growing wave. On the release database: 775 signals become 669 (106
   duplicates removed); the same 166 companies have one. The next signals run removes them as
   stale.
+
+**D-095 Follow-up questions listed by importance (2026-11-12).**
+- Need (UAT): are the follow-up questions ordered by importance? Only by priority group: the
+  BFF orders by `priorityOrder, id`, and within a priority `id` is the order the model wrote
+  them in, which followups_v2 did not ask to be by importance.
+- Options: (a) followups_v3 asks for the questions from most to least important, high before
+  medium before low, the most material risk first within a priority; (b) a rank column, which
+  needs a schema and BFF change.
+- Chosen: (a). The insights stage also stores them high, medium, low (keeping the model's order
+  within a priority), so `ordinal` and the published `FollowUpQuestionId` follow that order
+  even when the model mixes priorities. Questions are regenerated on the next run (new prompt
+  version, so a new input hash).

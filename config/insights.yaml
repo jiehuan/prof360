@@ -10,7 +10,7 @@ prompt_versions:
   behavioral: behavioral_v1
   strategic_risk: strategic_risk_v1
   key_insights: key_insights_v2
-  followups: followups_v2
+  followups: followups_v3   # v3: questions listed by importance (D-095)
   key_takeaways: key_takeaways_v1   # 2-3 bullets for professional lines, shown without links
   metric_detail: metric_detail_v2   # metricdetail stage: per-metric UW relevance (v2: D-068)
 

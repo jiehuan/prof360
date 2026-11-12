@@ -66,6 +66,9 @@ log = logging.getLogger(__name__)
 # inputs are re-grounded (the LLM output itself still comes from the cache).
 GROUNDING_VERSION = "7"
 
+# Follow-up questions are stored, and shown, high first (D-095).
+PRIORITY_RANK = {"high": 0, "medium": 1, "low": 2}
+
 
 @dataclass
 class CompanyStats:
@@ -360,7 +363,10 @@ def _store_followups(
     metric_ids = {s.id: s.metric_code for s in pkg.of("METRIC") if s.metric_code}
     display = {s.metric_code: s.label.rsplit(" FY", 1)[0] for s in pkg.of("METRIC")
                if s.metric_code}  # fmt: skip
-    for ordinal, q in enumerate(questions, start=1):
+    # Shown in this order (D-095): high, medium, low; within a priority, the model's order
+    # (followups_v3 lists them by importance).
+    ranked = sorted(questions, key=lambda q: PRIORITY_RANK.get(q.system_priority, 3))
+    for ordinal, q in enumerate(ranked, start=1):
         res = conn.execute(
             insert(followup_question).values(
                 company_id=company_id, ordinal=ordinal, category=q.category,
