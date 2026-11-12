@@ -197,6 +197,30 @@ def test_grounded_insights_stored_with_lineage(env) -> None:
     assert links == 2
 
 
+def test_followups_stored_high_first(env) -> None:
+    # D-095: whatever order the model returns, high questions come first; within a priority
+    # the model's order (by importance, followups_v3) is kept.
+    def ask(**kw: str) -> dict:
+        return {"category": "Financial", "question": kw["q"], "summary": "Total debt is $16.9B.",
+                "following_risk": "Refinancing risk", "uw_relevance": "Refinancing risk.",
+                "system_priority": kw["p"], "related_insight_ids": ["K1"],
+                "related_metric_ids": []}  # fmt: skip
+
+    def llm(model, user):
+        if "## Insights from earlier steps" in user and "## Rule-based signals" not in user:
+            return {"questions": [ask(q="Low one?", p="low"), ask(q="Medium one?", p="medium"),
+                                  ask(q="First high?", p="high"),
+                                  ask(q="Second high?", p="high")]}  # fmt: skip
+        return answer(model, user)
+
+    _run(env, FakeLLM(llm))
+    with env.connect() as c:
+        q = c.execute(select(followup_question).order_by(followup_question.c.ordinal)).all()
+    assert [(r.ordinal, r.question) for r in q] == [
+        (1, "First high?"), (2, "Second high?"), (3, "Medium one?"), (4, "Low one?"),
+    ]  # fmt: skip
+
+
 def test_sources_links_and_evidence_text(env) -> None:
     _run(env, FakeLLM(answer))
     with env.connect() as c:
