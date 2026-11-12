@@ -143,6 +143,26 @@ def test_insider_cluster_is_one_signal_per_episode() -> None:
     )
 
 
+def test_insider_cluster_does_not_reuse_sales_of_the_last_episode() -> None:
+    # Oracle, September-October 2025 (D-094): Seligman's 09-26 sale and the 10-21 sales were
+    # counted in two episodes each, giving a third episode (09-26 to 10-23) of only 2 new sellers.
+    trades = [
+        _trade("2025-09-12", "Magouyrk"),
+        _trade("2025-09-12", "Parrett"),
+        _trade("2025-09-26", "Seligman"),
+        _trade("2025-10-21", "Magouyrk"),
+        _trade("2025-10-21", "Smith"),
+        _trade("2025-10-23", "Smith"),
+        _trade("2025-10-28", "Berg"),
+    ]
+    first, second = insider_signals(trades, [], RULES, "2025-12-31")
+    assert (first.key_extra, first.event_date) == ("2025-09-12", "2025-09-26")
+    assert (second.key_extra, second.event_date) == ("2025-10-21", "2025-10-28")
+    assert ": Berg, Magouyrk, Smith." in second.description
+    # Two new sellers after an episode are not a cluster of their own.
+    assert len(insider_signals(trades[:6], [], RULES, "2025-12-31")) == 1
+
+
 def test_insider_cluster_followed_by_a_drop_is_a_warning() -> None:
     [s] = insider_signals(CLUSTER, [_drop("2026-05-01")], RULES, "2026-10-13")
     assert s.severity == "Warning"

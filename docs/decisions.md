@@ -2157,3 +2157,17 @@ income" (2026-11-01).**
 - Chosen: (a). (b) would lose the document's values; (c) is easy to forget. The check is one
   existence test per older document (a few hundred a night across all companies), and a file
   is not read; each download is a note and counted as `restored` in the task's detail.
+
+**D-094 An insider cluster does not reuse the sales of the episode before it (2026-11-12).**
+- Need: preparing a UAT example, Oracle showed three overlapping insider-cluster episodes in
+  September-October 2025 (09-12 to 09-26, 09-26 to 10-23, 10-21 to 10-28) and Dell three in one
+  month. After an episode was reported, the next sale's 30-day window still reached back into
+  it, so a sale was counted in two episodes: the 09-26 to 10-23 episode had only two sellers
+  that were not already reported, and its people and amount were overstated. D-050 meant one
+  signal per episode.
+- Options: (a) the next window takes only sales after the reported episode ends; (b) chain
+  episodes into one wave while sales keep coming within 30 days.
+- Chosen: (a), the D-050 rule as written. (b) would make an episode open-ended and change the
+  signal key of a still-growing wave. On the release database: 775 signals become 669 (106
+  duplicates removed); the same 166 companies have one. The next signals run removes them as
+  stale.

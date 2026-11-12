@@ -549,8 +549,10 @@ def insider_signals(
         day = sale["trade_date"]
         if day <= cluster_end:
             continue  # part of the episode already reported
+        # A sale already in a reported episode is not counted again (D-094).
         start = (date.fromisoformat(day) - timedelta(days=rule.window_days)).isoformat()
-        window = [r for r in sales[: i + 1] if r["trade_date"] >= start]
+        window = [r for r in sales[: i + 1] if r["trade_date"] >= start
+                  and r["trade_date"] > cluster_end]  # fmt: skip
         if len({who(r) for r in window}) < rule.min_insiders:
             continue
         # One signal per episode: window_days from its first sale, keyed on that date so a
