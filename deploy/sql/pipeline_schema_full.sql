@@ -532,6 +532,9 @@ CREATE TABLE uw_pipeline.followup_question_insight (
 	FOREIGN KEY(insight_id) REFERENCES uw_pipeline.insight (insight_id)
 );
 GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_followup_question_insight_insight_id' AND object_id = OBJECT_ID(N'uw_pipeline.followup_question_insight'))
+    CREATE INDEX ix_followup_question_insight_insight_id ON uw_pipeline.followup_question_insight (insight_id);
+GO
 
 IF OBJECT_ID(N'uw_pipeline.followup_question_metric', N'U') IS NULL
 CREATE TABLE uw_pipeline.followup_question_metric (
@@ -647,6 +650,9 @@ CREATE TABLE uw_pipeline.insight_link (
 	FOREIGN KEY(linked_insight_id) REFERENCES uw_pipeline.insight (insight_id)
 );
 GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_insight_link_linked_insight_id' AND object_id = OBJECT_ID(N'uw_pipeline.insight_link'))
+    CREATE INDEX ix_insight_link_linked_insight_id ON uw_pipeline.insight_link (linked_insight_id);
+GO
 
 IF OBJECT_ID(N'uw_pipeline.insight_metric', N'U') IS NULL
 CREATE TABLE uw_pipeline.insight_metric (
@@ -733,6 +739,9 @@ CREATE TABLE uw_pipeline.news_item (
 	FOREIGN KEY(company_id) REFERENCES uw_pipeline.company (company_id), 
 	FOREIGN KEY(activity_id) REFERENCES uw_pipeline.activity (activity_id)
 );
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_news_item_activity_id' AND object_id = OBJECT_ID(N'uw_pipeline.news_item'))
+    CREATE INDEX ix_news_item_activity_id ON uw_pipeline.news_item (activity_id);
 GO
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'ix_news_item_company_id' AND object_id = OBJECT_ID(N'uw_pipeline.news_item'))
     CREATE INDEX ix_news_item_company_id ON uw_pipeline.news_item (company_id);

@@ -9,7 +9,9 @@ A run is one execution of a job (a list of stages) for a list of companies. Each
 - Lock: a RUNNING run with a fresh heartbeat blocks a second start of the same job.
 - Dependencies: a stage whose prerequisite stage failed or was skipped for that company is
   skipped (other companies are unaffected).
-- Retry: a failed task is retried immediately while it has attempts left.
+- Retry: a failed task is retried immediately while it has attempts left. A deadlock victim
+  (SQL Server error 1205) is retried after a short wait, up to DEADLOCK_RETRIES times more,
+  without using an attempt (D-097).
 """
 
 from __future__ import annotations
@@ -18,7 +20,9 @@ import contextvars
 import itertools
 import json
 import logging
+import random
 import threading
+import time
 from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
@@ -152,8 +156,10 @@ class Orchestrator:
         now: Callable[[], datetime] = lambda: datetime.now(UTC),
         parallel: dict[str, int] | None = None,
         allow_parallel: bool | None = None,
+        sleep: Callable[[float], None] = time.sleep,
     ) -> None:
         self.engine = engine
+        self.sleep = sleep
         self.stale_after = stale_after
         self.max_attempts = max_attempts
         self.resume_within = resume_within
@@ -333,6 +339,7 @@ class Orchestrator:
                           detail=f"prerequisite not succeeded: {', '.join(blocked)}")  # fmt: skip
                 return
             attempts = t["attempts"]
+            deadlocks = 0  # deadlock retries do not use attempts (D-097)
             while True:
                 attempts += 1
                 self._set(t["task_id"], run_id, status="RUNNING", attempts=attempts,
@@ -355,7 +362,19 @@ class Orchestrator:
                           finished_at=self.now())  # fmt: skip
                 status[key] = outcome
                 notes[key] = len(found)
-                if result.ok or attempts >= self.max_attempts or not _retryable(result):
+                if result.ok or not _retryable(result):
+                    break
+                if _deadlock(result) and deadlocks < DEADLOCK_RETRIES:
+                    deadlocks += 1
+                    attempts -= 1
+                    # Parallel workers chose this task's transaction as the victim: wait, so
+                    # the other transaction finishes, and run it again.
+                    wait = DEADLOCK_WAIT_S * 2 ** (deadlocks - 1) * (1 + random.random())
+                    log.warning("%s %s was a deadlock victim; retrying in %.0f s",
+                                t["ticker"], t["stage"], wait)  # fmt: skip
+                    self.sleep(wait)
+                    continue
+                if attempts >= self.max_attempts:
                     break
                 log.warning("%s %s failed (%s); retrying", t["ticker"], t["stage"], result.detail)
 
@@ -460,3 +479,13 @@ _PERMANENT = ("premium", "quota", "not set", "not configured", "not in company t
 def _retryable(result: TaskResult) -> bool:
     detail = result.detail.lower()
     return not any(p in detail for p in _PERMANENT)
+
+
+# SQL Server deadlock victims (error 1205, SQLSTATE 40001), retried apart from attempts (D-097).
+DEADLOCK_RETRIES = 3
+DEADLOCK_WAIT_S = 5.0
+
+
+def _deadlock(result: TaskResult) -> bool:
+    detail = result.detail.lower()
+    return "deadlock" in detail or "(1205)" in detail or "'40001'" in detail

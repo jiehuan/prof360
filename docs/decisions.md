@@ -2174,3 +2174,30 @@ income" (2026-11-01).**
   52.4% (its own overhead ratio about 52%), BAC 61.7%, COF 57.1%; AXP 73.6% (card rewards and
   marketing are noninterest expense). GAAP figures as tagged: a bank's headline ratio on an FTE
   or managed basis may differ by a point or two. Formula metrics: no LLM cost.
+
+**D-097 SQL Server deadlocks, Alpha Vantage "Invalid API call" and idle connections (2026-11-13).**
+- Need (prod morning run 5, OpenShift + Azure SQL): news workers deadlocked (error 1205) on
+  `DELETE FROM activity WHERE activity_id IN (...)`; APO and MAN failed after both attempts.
+  Market: 15 EARNINGS calls returned "Invalid API call"; 9 succeeded when the task ran again,
+  6 failed (CAH, GPCR, SLB, RJF, ALDX, CVSA). YUMC textmetrics lost its connection (08S01,
+  TCP timeout) and succeeded on the retry.
+- Cause of the deadlocks: deleting an activity makes SQL Server check that no `news_item` row
+  still references it; `news_item.activity_id` had no index, so every check scanned the table
+  that the other workers were writing. The insights stage (8 workers) deletes through two more
+  unindexed foreign keys, `followup_question_insight.insight_id` and
+  `insight_link.linked_insight_id`.
+- Options: (a) index those foreign keys; (b) fewer workers; (c) retry a deadlock victim. (b)
+  only lowers the odds and costs time; (a) removes the cause found, and (c) covers deadlocks
+  still unknown (e.g. MERGE WITH HOLDLOCK key ranges).
+- Chosen: (a) and (c), plus the two smaller fixes:
+  - Indexes on the three columns (schema.py). Azure SQL: rerun
+    `deploy/sql/pipeline_schema_full.sql` (idempotent; it adds missing indexes). A local SQLite
+    database gets them from `ensure_schema`, which now adds indexes missing on existing tables.
+  - Orchestrator: a task failed by a deadlock (1205 / SQLSTATE 40001) waits 5, 10, 20 s (plus
+    jitter) and runs again, up to 3 times, without using one of its `max_attempts`.
+  - Alpha Vantage: "Invalid API call" is `InvalidCallError`, asked again with the transport
+    retries' backoff (3 attempts) before it fails; a symbol that is really invalid costs two
+    extra calls.
+  - SQL Server pool: `pool_recycle=1800`, so a pooled connection that a network idle timeout
+    may have cut is replaced before use (pre-ping was already on). A connection cut while a
+    task holds it still fails that task, which the retry then reruns.
