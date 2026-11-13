@@ -170,6 +170,9 @@ concepts:
   # -- Bank profitability and credit (decisions D-043) --------------------------------------------
   total_assets: {tags: [us-gaap:Assets]}
   net_interest_income: {tags: [us-gaap:InterestIncomeExpenseNet]}
+  # Operating expenses of a bank (compensation, occupancy, technology, ...): PPNR and the
+  # efficiency ratio (D-096).
+  noninterest_expense: {tags: [us-gaap:NoninterestExpense]}
   allowance_for_loan_losses:
     tags:
       - us-gaap:FinancingReceivableAllowanceForCreditLossExcludingAccruedInterest

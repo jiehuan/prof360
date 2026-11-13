@@ -2071,3 +2071,47 @@ income" (2026-11-01).**
 - Chosen: (a). (b) would lose the document's values; (c) is easy to forget. The check is one
   existence test per older document (a few hundred a night across all companies), and a file
   is not read; each download is a note and counted as `restored` in the task's detail.
+
+**D-094 An insider cluster does not reuse the sales of the episode before it (2026-11-12).**
+- Need: preparing a UAT example, Oracle showed three overlapping insider-cluster episodes in
+  September-October 2025 (09-12 to 09-26, 09-26 to 10-23, 10-21 to 10-28) and Dell three in one
+  month. After an episode was reported, the next sale's 30-day window still reached back into
+  it, so a sale was counted in two episodes: the 09-26 to 10-23 episode had only two sellers
+  that were not already reported, and its people and amount were overstated. D-050 meant one
+  signal per episode.
+- Options: (a) the next window takes only sales after the reported episode ends; (b) chain
+  episodes into one wave while sales keep coming within 30 days.
+- Chosen: (a), the D-050 rule as written. (b) would make an episode open-ended and change the
+  signal key of a still-growing wave. On the release database: 775 signals become 669 (106
+  duplicates removed); the same 166 companies have one. The next signals run removes them as
+  stale.
+
+**D-095 Follow-up questions listed by importance (2026-11-12).**
+- Need (UAT): are the follow-up questions ordered by importance? Only by priority group: the
+  BFF orders by `priorityOrder, id`, and within a priority `id` is the order the model wrote
+  them in, which followups_v2 did not ask to be by importance.
+- Options: (a) followups_v3 asks for the questions from most to least important, high before
+  medium before low, the most material risk first within a priority; (b) a rank column, which
+  needs a schema and BFF change.
+- Chosen: (a). The insights stage also stores them high, medium, low (keeping the model's order
+  within a priority), so `ordinal` and the published `FollowUpQuestionId` follow that order
+  even when the model mixes priorities. Questions are regenerated on the next run (new prompt
+  version, so a new input hash).
+
+**D-096 Banks: PPNR and efficiency ratio (2026-11-12).**
+- Need (UAT): why do banks such as Capital One have no EBITDA? It is left out on purpose:
+  interest expense is a bank's main cost, so earnings before interest mean little, bank income
+  statements have no operating income line, and coverage of interest is not how a bank's
+  capacity to pay is judged (capital, liquidity and funding are, and are shown). The user
+  asked whether the bank counterparts could be added.
+- Options: (a) PPNR (pre-provision net revenue) = net interest income + noninterest income -
+  noninterest expense, and the efficiency ratio = noninterest expense / (net interest income +
+  noninterest income); (b) PPNR as pre-tax income + provision for credit losses.
+- Coverage checked on the 9 BANKS companies (AXP, BAC, BNY, C, COF, JPM, MTB, USB, WFC):
+  us-gaap:InterestIncomeExpenseNet, NoninterestIncome and NoninterestExpense for all 9, five
+  fiscal years and the quarters. (b) fails for BNY (pre-tax income tagged only as domestic and
+  foreign) and the provision has five or six tags across the banks.
+- Chosen: (a), in BANK_CORE; new concept noninterest_expense. FY2025 check: JPM efficiency
+  52.4% (its own overhead ratio about 52%), BAC 61.7%, COF 57.1%; AXP 73.6% (card rewards and
+  marketing are noninterest expense). GAAP figures as tagged: a bank's headline ratio on an FTE
+  or managed basis may differ by a point or two. Formula metrics: no LLM cost.
