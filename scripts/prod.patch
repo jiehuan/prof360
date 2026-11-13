@@ -52,7 +52,7 @@ index 7505c7f3f81dac7908465d180183d4bee7c79c39..78f9330caa85c6d90075bc64d22d0ea8
 -Release to the SecureGPT-only `prod` branch: `.venv/bin/python scripts/release_prod.py --push`
 -(it stops on a patch conflict or a provider name; fix in its worktree, then `--refresh`).
 diff --git a/config/insights.yaml b/config/insights.yaml
-index aeead8dbc264fbb870aa5bab847a499b41662a25..d7ec231f9f860e774fc3cce350f713fdd74defd7 100644
+index 700a2b2af4d7e5620147c5ceeef09f7aa628b3ac..75229d01a45de19d4327589ec52fd8f0277bfbff 100644
 --- a/config/insights.yaml
 +++ b/config/insights.yaml
 @@ -25,7 +25,7 @@ excerpts:
@@ -548,7 +548,7 @@ index 898880d1a224b8c4d76d50d1285ab6b69cf0f868..376f93ddeb50fabc630313ccc924743a
  | `ALPHAVANTAGE_API_KEY` | – | Required for AV stages in both direct and APIM modes |
  | `ALPHAVANTAGE_MODE` | `direct` | `direct` or `apim`; never automatically falls back |
 diff --git a/docs/decisions.md b/docs/decisions.md
-index c6c6906040a54bef2184ce9c4f5fdc86796e3ad1..5300c4e26511c62e65c4642bf1d085e9198acd21 100644
+index 23f424f8799b043da59378a60faff8bb045674f2..1c852f444f57378630fd4427afd738358a5ed64d 100644
 --- a/docs/decisions.md
 +++ b/docs/decisions.md
 @@ -220,7 +220,7 @@ has no exhibit; this is logged.
