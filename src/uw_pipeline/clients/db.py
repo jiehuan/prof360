@@ -102,7 +102,10 @@ def make_engine(url: str | URL, schema: str | None = None) -> Engine:
         else:
             engine = create_engine(parsed)
     elif parsed.get_backend_name() == "mssql":
-        engine = create_engine(parsed, fast_executemany=True, pool_pre_ping=True)
+        # pool_recycle (D-097): a pooled connection older than 30 minutes is replaced before
+        # use, as a network idle timeout may have cut it (pre-ping catches what is left).
+        engine = create_engine(parsed, fast_executemany=True, pool_pre_ping=True,
+                               pool_recycle=1800)  # fmt: skip
     else:
         engine = create_engine(parsed)
     if schema:
@@ -210,6 +213,9 @@ def ensure_schema(engine: Engine, md: MetaData = metadata) -> None:
                     continue
                 ddl = CreateColumn(col).compile(dialect=engine.dialect)
                 conn.execute(text(f'ALTER TABLE "{table.name}" ADD COLUMN {ddl}'))
+            # Indexes added to an existing table (create_all only makes them with the table).
+            for ix in table.indexes:
+                ix.create(conn, checkfirst=True)
 
 
 def create_tables(engine: Engine, md: MetaData = metadata) -> None:

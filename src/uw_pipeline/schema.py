@@ -264,7 +264,9 @@ news_item = Table(
     metadata,
     Column("news_id", Integer, primary_key=True, autoincrement=True),
     Column("company_id", Integer, ForeignKey("company.company_id"), nullable=False, index=True),
-    Column("activity_id", Integer, ForeignKey("activity.activity_id"), nullable=False),
+    # Indexed: deleting an activity checks this foreign key; unindexed, SQL Server scans the
+    # table and parallel news workers deadlock on it (D-097).
+    Column("activity_id", Integer, ForeignKey("activity.activity_id"), nullable=False, index=True),
     Column("url_hash", Unicode(64), nullable=False),
     Column("url", Unicode(2000), nullable=False),
     Column("title", Unicode(1000), nullable=False),
@@ -371,7 +373,10 @@ insight_link = Table(
     "insight_link",
     metadata,
     Column("insight_id", Integer, ForeignKey("insight.insight_id"), primary_key=True),
-    Column("linked_insight_id", Integer, ForeignKey("insight.insight_id"), primary_key=True),
+    # Indexed for deletes by the linked insight and the foreign key check (D-097).
+    Column(
+        "linked_insight_id", Integer, ForeignKey("insight.insight_id"), primary_key=True, index=True
+    ),
 )
 
 insight_metric = Table(
@@ -408,7 +413,8 @@ followup_question_insight = Table(
     "followup_question_insight",
     metadata,
     Column("question_id", Integer, ForeignKey("followup_question.question_id"), primary_key=True),
-    Column("insight_id", Integer, ForeignKey("insight.insight_id"), primary_key=True),
+    # Indexed for deletes by insight and the foreign key check (D-097).
+    Column("insight_id", Integer, ForeignKey("insight.insight_id"), primary_key=True, index=True),
 )
 
 followup_question_metric = Table(
