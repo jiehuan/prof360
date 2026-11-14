@@ -2240,3 +2240,17 @@ income" (2026-11-01).**
   on a warm one. More concurrent writers on Azure SQL: released together with D-097 (indexes,
   deadlock retries). Requests per minute are still unknown; 429s are retried and pause the
   model.
+
+**D-100 The documents stage does not read stored archive documents again (2026-11-14).**
+- Need: prod run 8's documents stage used about 0.1 CPU while reading 5-8 MB/s from the
+  network (pod metrics); run 5 took 45 min against 3.3 min locally. To learn that a document
+  had not changed, `_download` read each one in the text window in full from raw storage and
+  compared its hash with the stored one: on ADLS a download per document per run (about 10 GB
+  a run), on a local disk cheap.
+- Options: (a) skip the read when the stored row has a hash and the raw file exists (one
+  existence check); (b) skip it whenever the row has a hash; (c) keep the read. Archive
+  documents are immutable (stored under their accession number), so the comparison never
+  found a change. (b) would miss a raw file lost from storage, which (a) downloads again as
+  before (D-093).
+- Chosen: (a). `--force` still reads and re-splits every document. Expected: documents in a
+  few minutes on prod instead of about 45.
