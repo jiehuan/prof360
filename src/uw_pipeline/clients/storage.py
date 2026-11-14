@@ -27,6 +27,10 @@ class Storage(Protocol):
         """Remove `key` if present."""
         ...
 
+    def list_keys(self, prefix: str) -> list[str]:
+        """Keys of the files under folder `prefix` (recursive; empty when it does not exist)."""
+        ...
+
 
 class LocalStorage:
     """Stores objects as files under `root`; keys are '/'-separated relative paths."""
@@ -62,6 +66,14 @@ class LocalStorage:
 
     def delete(self, key: str) -> None:
         self._path(key).unlink(missing_ok=True)
+
+    def list_keys(self, prefix: str) -> list[str]:
+        folder = self._path(prefix)
+        if not folder.is_dir():
+            return []
+        root = self.root.resolve()
+        return sorted(p.relative_to(root).as_posix() for p in folder.rglob("*")
+                      if p.is_file() and not p.name.startswith("."))  # fmt: skip
 
 
 class AdlsStorage:
@@ -110,6 +122,15 @@ class AdlsStorage:
         client = self.fs.get_file_client(self._path(key))
         if client.exists():
             client.delete_file()
+
+    def list_keys(self, prefix: str) -> list[str]:
+        folder = self._path(prefix.rstrip("/"))
+        if not self.fs.get_directory_client(folder).exists():
+            return []
+        cut = len(self.root) + 1 if self.root else 0
+        paths = self.fs.get_paths(path=folder, recursive=True)
+        files = (p.name for p in paths if not p.is_directory)
+        return sorted(n[cut:] for n in files if not n.rpartition("/")[2].startswith("."))
 
 
 def make_storage(settings: Settings, get_secret: SecretGetter | None = None) -> Storage:

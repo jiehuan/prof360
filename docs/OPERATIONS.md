@@ -13,6 +13,7 @@
 | `uw-pipeline dq-report` | 生成数据质量报告，写到 `data/reports/dq-run<id>.md` |
 | `uw-pipeline coverage-report` | 生成 XBRL 指标覆盖率报告，并列出没有说明原因的缺口 |
 | `uw-pipeline run --stage publish` | 把当前结果写进应用库（nightly、morning 两个 job 末尾都会跑） |
+| `uw-pipeline prune-raw` | 删除超过 7 天的原始快照（companyfacts、submissions、代码表、日线行情、财报日期、新闻），范围和天数在 `config/jobs.yaml` 的 `raw_retention`。每个目录最新的一份、被 `source_document` 引用的文件、`sec/filings` 和 `av/transcripts` 不删。`--dry-run` 只统计不删。nightly、morning 末尾的 `prune` 阶段按公司做同样的事（D-098） |
 | `uw-pipeline audit-insights` | 抽样检查 LLM 洞察：引用的原文能否找到、来源是否都有标题、追问问题是否都有来源、贷款行能否在原文找到、非 FI 公司是否混入了 FI 数据 |
 
 **运行状态**：`pipeline_run.status` 有以下几种取值：

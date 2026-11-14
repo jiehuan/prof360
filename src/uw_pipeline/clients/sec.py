@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import threading
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
@@ -91,6 +92,10 @@ class SecClient:
         self._refresh = refresh
         self._clock = clock
         self.requests = 0  # HTTP requests sent (for run statistics)
+        # SEC's ticker map, fetched once per client: the company stage runs one task per
+        # company and each asked for it again (D-098).
+        self._tickers: dict[str, int] | None = None
+        self._tickers_lock = threading.Lock()
 
     def close(self) -> None:
         self._http.close()
@@ -151,9 +156,14 @@ class SecClient:
     # -- endpoints ---------------------------------------------------------------------------
 
     def company_tickers(self, *, force: bool = False) -> dict[str, int]:
-        """Map upper-case ticker -> CIK from SEC's company_tickers.json."""
-        doc = self._fetch_json(COMPANY_TICKERS_URL, "sec/company_tickers", force=force)
-        return {row["ticker"].upper(): int(row["cik_str"]) for row in doc.payload.values()}
+        """Map upper-case ticker -> CIK from SEC's company_tickers.json, fetched once per
+        client (a run) unless `force`."""
+        with self._tickers_lock:
+            if self._tickers is None or force:
+                doc = self._fetch_json(COMPANY_TICKERS_URL, "sec/company_tickers", force=force)
+                self._tickers = {row["ticker"].upper(): int(row["cik_str"])
+                                 for row in doc.payload.values()}  # fmt: skip
+            return dict(self._tickers)
 
     def company_tickers_exchange(self, *, force: bool = False) -> list[dict[str, Any]]:
         """Every ticker SEC lists, with its exchange (Phase 17): dicts of cik, name, ticker,

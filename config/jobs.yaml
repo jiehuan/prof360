@@ -7,13 +7,13 @@ jobs:
   nightly:
     stages: [company, facts, compute, market, documents, industry, transcripts, news, scores,
              textmetrics, governance, legal, clinical, signals, insights, metricdetail, publish,
-             dq]
+             dq, prune]
     refresh_sec: true   # nightly and morning share a UTC date; never reuse the earlier fetch
   # 05:30 ET catch-up: late filings and anything that failed overnight.
   morning:
     stages: [company, facts, compute, market, documents, industry, transcripts, news, scores,
              textmetrics, governance, legal, clinical, signals, insights, metricdetail, publish,
-             dq]
+             dq, prune]
     refresh_sec: true
 
 # One run at a time across all jobs (D-041): a start while any run has a fresh heartbeat exits
@@ -49,3 +49,22 @@ parallel:
 sqlite_parallel:
   insights: 4
   metricdetail: 4
+
+# Raw snapshot retention (D-098). Snapshots are only read on the day they are fetched (the
+# same-day cache, D-004); older ones only allow a run to be replayed. Files whose name's date is
+# older than keep_days are deleted, except the newest file of each folder and any key a
+# source_document row references. Folders not listed here are never touched: sec/filings
+# (archive documents that later stages read back; D-093 downloads a missing one again),
+# av/transcripts (cached without a date), sec/frames and sec/universe. The prune stage does
+# each company's folders; `uw-pipeline prune-raw` does those and the shared ones.
+raw_retention:
+  keep_days: 7
+  company_prefixes:            # {cik}: each registrant CIK (10 digits); {symbol}: AV symbols
+    - sec/companyfacts/CIK{cik}
+    - sec/submissions/CIK{cik}
+    - av/daily/{symbol}
+    - av/earnings/{symbol}
+    - av/news/{symbol}
+  shared_prefixes:
+    - sec/company_tickers
+    - sec/company_tickers_exchange

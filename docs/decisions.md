@@ -2228,3 +2228,24 @@ income" (2026-11-01).**
   - SQL Server pool: `pool_recycle=1800`, so a pooled connection that a network idle timeout
     may have cut is replaced before use (pre-ping was already on). A connection cut while a
     task holds it still fails that task, which the retry then reruns.
+
+**D-098 Raw snapshots are kept for 7 days; the ticker map is fetched once per run (2026-11-14).**
+- Need: local raw storage had grown to 40 GB in a month (ADLS on prod grows the same way). The
+  same-day cache (D-004) writes one file per resource per fetch and never removes one; with
+  `refresh_sec` (D-034) every scheduled run adds a timestamped copy.
+- What is read back: archive documents (`sec/filings`: governance, legal, clinical and text
+  metrics read them; a missing one is downloaded again, D-093) and transcripts (cached
+  without a date; Alpha Vantage calls are scarce). Daily snapshots (companyfacts 14 GB,
+  submissions 4.3 GB, ticker map 1 GB, daily prices 5.3 GB, earnings, news) are only read on
+  the day they are fetched; older ones serve replay only.
+- The company stage fetched SEC's ticker map (800 KB) once per company task: 80-100 copies a
+  day, about 280 ADLS writes per prod run.
+- Options: (a) the pipeline deletes old snapshots itself; (b) an ADLS lifecycle policy; (c)
+  keep everything. (b) covers prod only and needs the platform team; (c) grows without bound.
+- Chosen: (a). `raw_retention` in config/jobs.yaml names the snapshot prefixes and
+  `keep_days` (7). A file is deleted when its name's date is older than that, except the
+  newest file of each folder and any key a `source_document` row references. Prefixes not
+  listed (filings, transcripts, frames, universe) are never touched. A `prune` stage at the end
+  of the scheduled jobs removes a company's old snapshots; `uw-pipeline prune-raw [--dry-run]`
+  does every company and the shared files (ticker maps). Replay is limited to the last 7 days.
+- The SEC client keeps the ticker map it fetched for the rest of the run (one fetch per run).

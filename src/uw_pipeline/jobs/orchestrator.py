@@ -35,6 +35,7 @@ from pydantic import BaseModel
 from sqlalchemy import Engine, func, insert, select, update
 
 from uw_pipeline.jobs.run_company import TaskResult
+from uw_pipeline.jobs.run_prune import RawRetention
 from uw_pipeline.logs import collect_notes, log_context
 from uw_pipeline.schema import pipeline_run, pipeline_task
 
@@ -76,6 +77,8 @@ DEPENDS: dict[str, tuple[str, ...]] = {
     # Publishes whatever is current, so it runs even when an LLM stage failed.
     "publish": ("compute",),
     "dq": ("compute",),
+    # Old raw snapshots (D-098): reads nothing the other stages write, so it waits for none.
+    "prune": (),
 }
 
 DONE = ("SUCCEEDED", "SKIPPED")
@@ -107,6 +110,8 @@ class JobsConfig(BaseModel):
     # Lower worker counts on a SQLite file (one writer: more threads mean "database is
     # locked"); `parallel` applies on Azure SQL (D-081).
     sqlite_parallel: dict[str, int] = {}
+    # Which raw snapshots are deleted, and after how many days (D-098).
+    raw_retention: RawRetention = RawRetention()
 
     def parallel_for(self, dialect: str) -> dict[str, int]:
         """Workers per stage on this database: `parallel`, capped by `sqlite_parallel`."""
