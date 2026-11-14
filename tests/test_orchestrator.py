@@ -113,6 +113,36 @@ def test_transient_failure_is_retried_permanent_is_not(engine) -> None:
     assert t[("A", "company")] == ("SUCCEEDED", 2)
 
 
+DEADLOCK = (
+    "APO news failed ((pyodbc.Error) ('40001', '[40001] [Microsoft][ODBC Driver 18 for "
+    "SQL Server][SQL Server]Transaction (Process ID 100) was deadlocked on lock resources "
+    "with another process and has been chosen as the deadlock victim. Rerun the "
+    "transaction. (1205) (SQLExecDirectW)'))"
+)
+
+
+def test_deadlock_victim_is_retried_without_using_attempts(engine) -> None:
+    """D-097: prod run 5 lost APO and MAN in news to deadlocks after two attempts. A deadlock
+    victim waits and runs again, up to three more times, and keeps its normal attempts."""
+    waits: list[float] = []
+    orch = Orchestrator(engine, now=Clock(), max_attempts=2, sleep=waits.append)
+    run_id, _ = orch.start("nightly", ["news"], ["APO", "MAN"])
+    seen: dict[str, int] = {}
+
+    def runner(stage, ticker):
+        seen[ticker] = seen.get(ticker, 0) + 1
+        if ticker == "APO":  # three deadlocks, then success
+            return TaskResult(ticker, stage, ok=seen[ticker] > 3, detail=DEADLOCK)
+        return TaskResult(ticker, stage, ok=False, detail=DEADLOCK)  # deadlocks every time
+
+    orch.execute(run_id, runner)
+    t = tasks(engine, run_id)
+    assert t[("APO", "news")] == ("SUCCEEDED", 1)
+    # MAN: three deadlock retries, then its two normal attempts.
+    assert seen["MAN"] == 3 + 2 and t[("MAN", "news")] == ("FAILED", 2)
+    assert len(waits) == 3 + 3 and all(w >= 5 for w in waits)
+
+
 def test_live_run_blocks_a_second_start(engine) -> None:
     clock = Clock()
     orch = Orchestrator(engine, now=clock, stale_after=timedelta(minutes=30))

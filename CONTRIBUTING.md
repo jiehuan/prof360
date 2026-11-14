@@ -12,6 +12,7 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
                                      #   -> transcripts -> news -> scores -> textmetrics
                                      #   -> governance -> legal -> clinical -> signals -> insights
                                      #   -> metricdetail -> publish (app database) -> dq
+                                     #   (scheduled jobs end with prune, D-098)
 .venv/bin/uw-pipeline audit-insights # re-verify insight evidence (Phase 5 acceptance)
 .venv/bin/uw-pipeline run --job nightly   # scheduled job (config/jobs.yaml); resumes a dead run
 .venv/bin/uw-pipeline runs           # recent runs and failed/skipped tasks
@@ -20,6 +21,7 @@ there go in `docs/decisions.md` (record options and rationale before proceeding)
 .venv/bin/uw-pipeline run --ticker MAR --stage compute
 .venv/bin/uw-pipeline run --ticker MAR --force       # ignore same-day raw cache / input hash
 .venv/bin/uw-pipeline coverage-report                # data/reports/coverage-<date>.md
+.venv/bin/uw-pipeline prune-raw --dry-run             # raw snapshots past raw_retention (D-098)
 .venv/bin/uw-pipeline review                          # disputed signals / identity breaks; approve|reject
 .venv/bin/uw-pipeline config check                    # validate config/ as a run would (D-049)
 .venv/bin/uw-pipeline config show --ticker MAR        # a company's industry, metrics and signals; guide: docs/CONFIGURATION.md

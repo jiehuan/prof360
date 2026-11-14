@@ -29,6 +29,7 @@ from uw_pipeline.enrich.llm import DailyBudget, LLMConfig, load_llm_config
 from uw_pipeline.enrich.package import load_insights_config
 from uw_pipeline.enrich.sources import load_source_labels
 from uw_pipeline.enrich.text_metrics import load_text_config
+from uw_pipeline.jobs.orchestrator import load_jobs_config
 from uw_pipeline.jobs.run_clinical import run_clinical_stage
 from uw_pipeline.jobs.run_company import TaskResult, run_company_stage
 from uw_pipeline.jobs.run_documents import run_documents_stage
@@ -40,6 +41,7 @@ from uw_pipeline.jobs.run_legal import run_legal_stage
 from uw_pipeline.jobs.run_market import run_market_stage
 from uw_pipeline.jobs.run_metric_detail import run_metric_detail_stage
 from uw_pipeline.jobs.run_news import load_news_config, run_news_stage
+from uw_pipeline.jobs.run_prune import run_prune_stage
 from uw_pipeline.jobs.run_publish import load_publish_config, run_publish_stage
 from uw_pipeline.jobs.run_scores import load_scores_config, run_scores_stage
 from uw_pipeline.jobs.run_signals import run_signals_stage
@@ -264,6 +266,9 @@ class StageRunner:
                 load_source_labels(s.config_dir),
                 e,
             )
+        if stage == "prune":
+            retention = load_jobs_config(s.config_dir).raw_retention
+            return lambda c: run_prune_stage(c, retention, self.storage, e)
         raise ValueError(f"unknown stage {stage}")
 
     def _av_stage(self, stage: str, companies: list[CompanyConfig]) -> list[TaskResult]:

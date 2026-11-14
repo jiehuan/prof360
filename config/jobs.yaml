@@ -7,13 +7,13 @@ jobs:
   nightly:
     stages: [company, facts, compute, market, documents, industry, transcripts, news, scores,
              textmetrics, governance, legal, clinical, signals, insights, metricdetail, publish,
-             dq]
+             dq, prune]
     refresh_sec: true   # nightly and morning share a UTC date; never reuse the earlier fetch
   # 05:30 ET catch-up: late filings and anything that failed overnight.
   morning:
     stages: [company, facts, compute, market, documents, industry, transcripts, news, scores,
              textmetrics, governance, legal, clinical, signals, insights, metricdetail, publish,
-             dq]
+             dq, prune]
     refresh_sec: true
 
 # One run at a time across all jobs (D-041): a start while any run has a fresh heartbeat exits
@@ -32,20 +32,47 @@ max_attempts: 2
 # development) only the LLM stages run in parallel (short transactions, D-052, D-061); the
 # other stages run one company at a time there. News runs in parallel too (D-079): its time
 # is the LLM relevance and event reads; Alpha Vantage calls share one 75-per-minute limiter.
+# D-099: the gpt-6-luna stages run 6 workers (was 4; scores 2) within the 2.5M tokens per
+# minute this job may use; at most about 0.8M is reserved at once.
 parallel:
-  textmetrics: 4
+  textmetrics: 6
   industry: 4
+  governance: 6
+  legal: 6
+  clinical: 6
+  signals: 6
+  insights: 8
+  metricdetail: 6
+  scores: 6
+  news: 3
+# Caps on a SQLite file (local development, D-081): one writer, so more threads only add
+# "database is locked" retries. The insights and metric-detail counts above are sized for
+# SecureGPT's gpt-6-sol quota (2M tokens per minute, D-099) on Azure SQL.
+sqlite_parallel:
+  insights: 4
+  metricdetail: 4
+  textmetrics: 4
   governance: 4
   legal: 4
   clinical: 4
   signals: 4
-  insights: 8
-  metricdetail: 6
   scores: 2
-  news: 3
-# Caps on a SQLite file (local development, D-081): one writer, so more threads only add
-# "database is locked" retries. The insights and metric-detail counts above are sized for
-# SecureGPT's 1.5M tokens per minute (D-080) on Azure SQL.
-sqlite_parallel:
-  insights: 4
-  metricdetail: 4
+
+# Raw snapshot retention (D-098). Snapshots are only read on the day they are fetched (the
+# same-day cache, D-004); older ones only allow a run to be replayed. Files whose name's date is
+# older than keep_days are deleted, except the newest file of each folder and any key a
+# source_document row references. Folders not listed here are never touched: sec/filings
+# (archive documents that later stages read back; D-093 downloads a missing one again),
+# av/transcripts (cached without a date), sec/frames and sec/universe. The prune stage does
+# each company's folders; `uw-pipeline prune-raw` does those and the shared ones.
+raw_retention:
+  keep_days: 7
+  company_prefixes:            # {cik}: each registrant CIK (10 digits); {symbol}: AV symbols
+    - sec/companyfacts/CIK{cik}
+    - sec/submissions/CIK{cik}
+    - av/daily/{symbol}
+    - av/earnings/{symbol}
+    - av/news/{symbol}
+  shared_prefixes:
+    - sec/company_tickers
+    - sec/company_tickers_exchange

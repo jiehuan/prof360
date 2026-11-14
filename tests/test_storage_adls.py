@@ -47,6 +47,28 @@ class FakeFs:
     def get_file_client(self, path: str) -> FakeFile:
         return FakeFile(self, path)
 
+    def get_directory_client(self, path: str) -> "FakeDir":
+        return FakeDir(self, path)
+
+    def get_paths(self, path: str, recursive: bool = True) -> list["FakePath"]:
+        assert recursive
+        found = [p for p in self.files if p.startswith(path + "/")]
+        folders = {p.rpartition("/")[0] for p in found} - {path}
+        return [FakePath(p, False) for p in found] + [FakePath(d, True) for d in folders]
+
+
+class FakeDir:
+    def __init__(self, fs: FakeFs, path: str) -> None:
+        self.fs, self.path = fs, path
+
+    def exists(self) -> bool:
+        return any(p.startswith(self.path + "/") for p in self.fs.files)
+
+
+class FakePath:
+    def __init__(self, name: str, is_directory: bool) -> None:
+        self.name, self.is_directory = name, is_directory
+
 
 def test_round_trip_under_root_with_atomic_write() -> None:
     fs = FakeFs()
@@ -102,3 +124,26 @@ def test_backend_selection(tmp_path) -> None:
         Settings(**base, storage_backend="s3")
     with pytest.raises(ValidationError):
         Settings(**base, database_backend="azure-sql")
+
+
+def test_list_keys_under_root() -> None:
+    """D-098: keys of the files under a folder, relative to the root; temporary files skipped."""
+    fs = FakeFs()
+    st = AdlsStorage(fs, "professional360/raw")
+    for key in (
+        "sec/submissions/CIK1/2026-10-13.json",
+        "sec/submissions/CIK1/2026-10-14.json",
+        "sec/submissions/CIK2/2026-10-14.json",
+    ):
+        st.write_bytes(key, b"{}")
+    fs.files["professional360/raw/sec/submissions/CIK1/.tmp-x-2026-10-15.json"] = b""
+    assert st.list_keys("sec/submissions/CIK1") == [
+        "sec/submissions/CIK1/2026-10-13.json",
+        "sec/submissions/CIK1/2026-10-14.json",
+    ]
+    assert st.list_keys("sec/submissions") == [
+        "sec/submissions/CIK1/2026-10-13.json",
+        "sec/submissions/CIK1/2026-10-14.json",
+        "sec/submissions/CIK2/2026-10-14.json",
+    ]
+    assert st.list_keys("av/daily/MAR") == []

@@ -9,6 +9,7 @@ from tests.conftest import FIXTURES, FakeClock
 from uw_pipeline.clients.alphavantage import (
     AV_URL,
     AlphaVantageClient,
+    InvalidCallError,
     PremiumRequiredError,
     QuotaExhaustedError,
     classify,
@@ -57,6 +58,35 @@ def test_daily_limit_message_with_premium_mention_is_quota_and_key_is_masked() -
     with pytest.raises(QuotaExhaustedError) as exc:
         classify(body, KEY)
     assert KEY not in str(exc.value) and "***" in str(exc.value)
+
+
+INVALID = {
+    "Error Message": "Invalid API call. Please retry or visit the documentation "
+    "(https://www.alphavantage.co/documentation/) for EARNINGS."
+}
+
+
+def test_invalid_api_call_is_asked_again(av) -> None:
+    """D-097: prod run 5 got "Invalid API call" for 15 EARNINGS requests; 9 succeeded when the
+    task ran again. The client asks again itself, and lands only the good answer."""
+    client, tmp = av
+    good = {"symbol": "CAH", "quarterlyEarnings": [{"fiscalDateEnding": "2026-09-30"}]}
+    with respx.mock() as router:
+        route = router.get(AV_URL).mock(side_effect=[
+            httpx.Response(200, json=INVALID), httpx.Response(200, json=good)])  # fmt: skip
+        payload, key = client.earnings("CAH")
+    assert route.call_count == 2 and payload == good
+    assert (tmp / "raw" / key).exists()
+
+
+def test_invalid_api_call_fails_after_the_attempts(av) -> None:
+    client, tmp = av
+    with respx.mock() as router:
+        route = router.get(AV_URL).mock(return_value=httpx.Response(200, json=INVALID))
+        with pytest.raises(InvalidCallError, match="Invalid API call"):
+            client.earnings("CAH")
+    assert route.call_count == 3
+    assert not list((tmp / "raw").rglob("av/earnings/*"))
 
 
 def test_data_body_is_not_an_error() -> None:

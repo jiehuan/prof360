@@ -2115,3 +2115,69 @@ income" (2026-11-01).**
   52.4% (its own overhead ratio about 52%), BAC 61.7%, COF 57.1%; AXP 73.6% (card rewards and
   marketing are noninterest expense). GAAP figures as tagged: a bank's headline ratio on an FTE
   or managed basis may differ by a point or two. Formula metrics: no LLM cost.
+
+**D-097 SQL Server deadlocks, Alpha Vantage "Invalid API call" and idle connections (2026-11-13).**
+- Need (prod morning run 5, OpenShift + Azure SQL): news workers deadlocked (error 1205) on
+  `DELETE FROM activity WHERE activity_id IN (...)`; APO and MAN failed after both attempts.
+  Market: 15 EARNINGS calls returned "Invalid API call"; 9 succeeded when the task ran again,
+  6 failed (CAH, GPCR, SLB, RJF, ALDX, CVSA). YUMC textmetrics lost its connection (08S01,
+  TCP timeout) and succeeded on the retry.
+- Cause of the deadlocks: deleting an activity makes SQL Server check that no `news_item` row
+  still references it; `news_item.activity_id` had no index, so every check scanned the table
+  that the other workers were writing. The insights stage (8 workers) deletes through two more
+  unindexed foreign keys, `followup_question_insight.insight_id` and
+  `insight_link.linked_insight_id`.
+- Options: (a) index those foreign keys; (b) fewer workers; (c) retry a deadlock victim. (b)
+  only lowers the odds and costs time; (a) removes the cause found, and (c) covers deadlocks
+  still unknown (e.g. MERGE WITH HOLDLOCK key ranges).
+- Chosen: (a) and (c), plus the two smaller fixes:
+  - Indexes on the three columns (schema.py). Azure SQL: rerun
+    `deploy/sql/pipeline_schema_full.sql` (idempotent; it adds missing indexes). A local SQLite
+    database gets them from `ensure_schema`, which now adds indexes missing on existing tables.
+  - Orchestrator: a task failed by a deadlock (1205 / SQLSTATE 40001) waits 5, 10, 20 s (plus
+    jitter) and runs again, up to 3 times, without using one of its `max_attempts`.
+  - Alpha Vantage: "Invalid API call" is `InvalidCallError`, asked again with the transport
+    retries' backoff (3 attempts) before it fails; a symbol that is really invalid costs two
+    extra calls.
+  - SQL Server pool: `pool_recycle=1800`, so a pooled connection that a network idle timeout
+    may have cut is replaced before use (pre-ping was already on). A connection cut while a
+    task holds it still fails that task, which the retry then reruns.
+
+**D-098 Raw snapshots are kept for 7 days; the ticker map is fetched once per run (2026-11-14).**
+- Need: local raw storage had grown to 40 GB in a month (ADLS on prod grows the same way). The
+  same-day cache (D-004) writes one file per resource per fetch and never removes one; with
+  `refresh_sec` (D-034) every scheduled run adds a timestamped copy.
+- What is read back: archive documents (`sec/filings`: governance, legal, clinical and text
+  metrics read them; a missing one is downloaded again, D-093) and transcripts (cached
+  without a date; Alpha Vantage calls are scarce). Daily snapshots (companyfacts 14 GB,
+  submissions 4.3 GB, ticker map 1 GB, daily prices 5.3 GB, earnings, news) are only read on
+  the day they are fetched; older ones serve replay only.
+- The company stage fetched SEC's ticker map (800 KB) once per company task: 80-100 copies a
+  day, about 280 ADLS writes per prod run.
+- Options: (a) the pipeline deletes old snapshots itself; (b) an ADLS lifecycle policy; (c)
+  keep everything. (b) covers prod only and needs the platform team; (c) grows without bound.
+- Chosen: (a). `raw_retention` in config/jobs.yaml names the snapshot prefixes and
+  `keep_days` (7). A file is deleted when its name's date is older than that, except the
+  newest file of each folder and any key a `source_document` row references. Prefixes not
+  listed (filings, transcripts, frames, universe) are never touched. A `prune` stage at the end
+  of the scheduled jobs removes a company's old snapshots; `uw-pipeline prune-raw [--dry-run]`
+  does every company and the shared files (ticker maps). Replay is limited to the last 7 days.
+- The SEC client keeps the ticker map it fetched for the rest of the run (one fetch per run).
+
+**D-099 SecureGPT quotas raised; more workers for the gpt-6-luna stages (2026-11-14).**
+- Need: the gateway now allows gpt-6-luna 3M tokens per minute, of which this job may use
+  2.5M, and gpt-6-sol 2M (user, 2026-11-14; were 1.5M each, D-080). Prod run 5 (cold cache,
+  10 h 20 min) spent about 8 h in LLM stages, each at its full worker count
+  (task time / wall time = workers) and never at the 1.5M quota: the gpt-6-luna stages reserve at
+  most 4 workers x 3 calls (`company_calls`) x (input + 16K max_tokens), about 0.55M. Only
+  insights (8 workers, strategic risk about 54K input + 32K) could reach 1.5M on sol.
+- Options: (a) only the new `rate_limits`; (b) also more workers for the gpt-6-luna stages. (a)
+  barely changes the time, as the stages wait on the model, not the quota.
+- Chosen (user decision): (b). `rate_limits` gpt-6-luna 2,500,000 and gpt-6-sol 2,000,000;
+  `parallel` textmetrics, governance, legal, clinical and signals 6 (was 4), scores 6 (was
+  2), about 0.8M reserved at most; insights 8, metricdetail 6 and news 3 unchanged.
+  `sqlite_parallel` keeps a SQLite file at 4 for them (and their earlier counts locally).
+  Expected on a cold run: about 2 h less (scores 108 -> ~36 min, legal 113 -> ~75); little
+  on a warm one. More concurrent writers on Azure SQL: released together with D-097 (indexes,
+  deadlock retries). Requests per minute are still unknown; 429s are retried and pause the
+  model.

@@ -58,6 +58,11 @@ class TransientError(AlphaVantageError):
     pass
 
 
+class InvalidCallError(AlphaVantageError):
+    """ "Invalid API call": also returned now and then for a valid request (prod run 5: 9 of 15
+    EARNINGS calls succeeded when asked again), so it is retried before it fails (D-097)."""
+
+
 class DirectConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
     query_url: str = AV_URL
@@ -182,6 +187,8 @@ def classify(payload: Any, secret: str = "", *, secrets: tuple[str, ...] = ()) -
         raise QuotaExhaustedError(msg)
     if "premium endpoint" in low or "premium" in low:
         raise PremiumRequiredError(msg)
+    if "invalid api call" in low:
+        raise InvalidCallError(msg)
     raise AlphaVantageError(msg)
 
 
@@ -291,6 +298,37 @@ class AlphaVantageClient:
             retry=retry_if_exception_type((httpx.TransportError, TransientError)),
             reraise=True,
         )
+        again = Retrying(
+            stop=stop_after_attempt(self._max_attempts),
+            wait=self._wait,
+            retry=retry_if_exception_type(InvalidCallError),
+            reraise=True,
+        )
+        payload, data = again(self._payload, params, retrying)
+        # A misconfigured gateway can return a successful echo/debug response. Refuse to land
+        # it rather than altering raw evidence or persisting credentials in the raw cache.
+        serialized = json.dumps(payload, ensure_ascii=False)
+        private_key = self._key if self._key != "demo" else ""
+        # Short identifiers also occur in normal financial prose; match them only as entire
+        # JSON strings. For real long credentials, also detect echoes embedded in longer text.
+        if any(
+            value
+            and (
+                json.dumps(value, ensure_ascii=False) in serialized
+                or (len(value) >= 8 and json.dumps(value, ensure_ascii=False)[1:-1] in serialized)
+            )
+            for value in (private_key, *self._secrets())
+        ):
+            raise AlphaVantageError("Alpha Vantage response contains credentials")
+        if keep is None or keep(payload):
+            self._storage.write_bytes(key, data)
+        return payload
+
+    def _secrets(self) -> tuple[str, ...]:
+        return tuple(self._oauth.sensitive_values) if self._oauth is not None else ()
+
+    def _payload(self, params: dict[str, str], retrying: Retrying) -> tuple[Any, bytes]:
+        """One request (transport retries included), checked and parsed: (payload, body)."""
         response = retrying(self._get_once, params)
         if response.status_code == 401 and self._oauth is not None:
             # Only one renewal/replay per fetch, even if data requests have transient retries.
@@ -308,28 +346,10 @@ class AlphaVantageClient:
             payload = json.loads(data)
         except (ValueError, UnicodeError):
             raise AlphaVantageError("Alpha Vantage returned invalid JSON") from None
-        secrets = self._oauth.sensitive_values if self._oauth is not None else ()
-        classify(payload, self._key, secrets=secrets)
+        classify(payload, self._key, secrets=self._secrets())
         if isinstance(payload, dict) and "error" in payload:
             raise AlphaVantageError("Alpha Vantage returned an error response")
-        # A misconfigured gateway can return a successful echo/debug response. Refuse to land
-        # it rather than altering raw evidence or persisting credentials in the raw cache.
-        serialized = json.dumps(payload, ensure_ascii=False)
-        private_key = self._key if self._key != "demo" else ""
-        # Short identifiers also occur in normal financial prose; match them only as entire
-        # JSON strings. For real long credentials, also detect echoes embedded in longer text.
-        if any(
-            value
-            and (
-                json.dumps(value, ensure_ascii=False) in serialized
-                or (len(value) >= 8 and json.dumps(value, ensure_ascii=False)[1:-1] in serialized)
-            )
-            for value in (private_key, *secrets)
-        ):
-            raise AlphaVantageError("Alpha Vantage response contains credentials")
-        if keep is None or keep(payload):
-            self._storage.write_bytes(key, data)
-        return payload
+        return payload, data
 
     # -- endpoints -----------------------------------------------------------------------------
 

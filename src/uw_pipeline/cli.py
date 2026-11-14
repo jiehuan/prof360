@@ -16,6 +16,7 @@ from sqlalchemy import Connection, Engine, func, select
 
 from uw_pipeline.clients.alphavantage import load_alphavantage_config
 from uw_pipeline.clients.db import app_engine, ensure_schema, pipeline_engine
+from uw_pipeline.clients.storage import make_storage
 from uw_pipeline.compute.coverage import (
     company_coverage,
     history_start,
@@ -31,6 +32,7 @@ from uw_pipeline.config import (
 )
 from uw_pipeline.enrich.audit import audit
 from uw_pipeline.jobs.orchestrator import Orchestrator, RunInProgressError, load_jobs_config
+from uw_pipeline.jobs.run_prune import company_prefixes, cutoff_for, prune_prefixes
 from uw_pipeline.jobs.run_xbrl import company_row
 from uw_pipeline.jobs.stages import StageRunner
 from uw_pipeline.logos import check_logo, logo_files
@@ -72,6 +74,7 @@ class Stage(StrEnum):
     publish = "publish"
     scores = "scores"
     dq = "dq"
+    prune = "prune"  # old raw snapshots (D-098); scheduled jobs run it, not the default order
 
 
 # Default order for manual runs (scheduled jobs list their stages in config/jobs.yaml).
@@ -502,6 +505,26 @@ def review_reject(
 ) -> None:
     """Reject it: a rejected signal leaves the insight input and the review queue."""
     _decide(item_id, "REJECTED", reviewer, note)
+
+
+@app.command("prune-raw")
+def prune_raw(
+    dry_run: Annotated[
+        bool, typer.Option(help="Count what would be deleted; delete nothing")
+    ] = False,
+) -> None:
+    """Delete raw snapshots older than raw_retention.keep_days (config/jobs.yaml, D-098): every
+    company's folders and the shared ones. Archive documents and transcripts are kept."""
+    settings = Settings()
+    cfg = load_jobs_config(settings.config_dir).raw_retention
+    engine = pipeline_engine(settings)
+    storage = make_storage(settings)
+    cutoff = cutoff_for(cfg, datetime.now(UTC))
+    prefixes = [p for c in load_companies(settings.config_dir)
+                for p in company_prefixes(cfg, c)] + cfg.shared_prefixes  # fmt: skip
+    stats = prune_prefixes(prefixes, storage, engine, cutoff, dry_run=dry_run)
+    verb = "would delete" if dry_run else "deleted"
+    typer.echo(f"{verb} {stats.deleted} of {stats.files} snapshot files dated before {cutoff}")
 
 
 @app.command("init-db")
