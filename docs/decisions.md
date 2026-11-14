@@ -2222,3 +2222,21 @@ income" (2026-11-01).**
   of the scheduled jobs removes a company's old snapshots; `uw-pipeline prune-raw [--dry-run]`
   does every company and the shared files (ticker maps). Replay is limited to the last 7 days.
 - The SEC client keeps the ticker map it fetched for the rest of the run (one fetch per run).
+
+**D-099 SecureGPT quotas raised; more workers for the gpt-6-luna stages (2026-11-14).**
+- Need: the gateway now allows gpt-6-luna 3M tokens per minute, of which this job may use
+  2.5M, and gpt-6-sol 2M (user, 2026-11-14; were 1.5M each, D-080). Prod run 5 (cold cache,
+  10 h 20 min) spent about 8 h in LLM stages, each at its full worker count
+  (task time / wall time = workers) and never at the 1.5M quota: the luna stages reserve at
+  most 4 workers x 3 calls (`company_calls`) x (input + 16K max_tokens), about 0.55M. Only
+  insights (8 workers, strategic risk about 54K input + 32K) could reach 1.5M on sol.
+- Options: (a) only the new `rate_limits`; (b) also more workers for the luna stages. (a)
+  barely changes the time, as the stages wait on the model, not the quota.
+- Chosen (user decision): (b). `rate_limits` gpt-6-luna 2,500,000 and gpt-6-sol 2,000,000;
+  `parallel` textmetrics, governance, legal, clinical and signals 6 (was 4), scores 6 (was
+  2), about 0.8M reserved at most; insights 8, metricdetail 6 and news 3 unchanged.
+  `sqlite_parallel` keeps a SQLite file at 4 for them (and their earlier counts locally).
+  Expected on a cold run: about 2 h less (scores 108 -> ~36 min, legal 113 -> ~75); little
+  on a warm one. More concurrent writers on Azure SQL: released together with D-097 (indexes,
+  deadlock retries). Requests per minute are still unknown; 429s are retried and pause the
+  model.
