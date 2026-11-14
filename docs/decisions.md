@@ -2254,10 +2254,10 @@ income" (2026-11-01).**
 - Need: the gateway now allows gpt-6-luna 3M tokens per minute, of which this job may use
   2.5M, and gpt-6-sol 2M (user, 2026-11-14; were 1.5M each, D-080). Prod run 5 (cold cache,
   10 h 20 min) spent about 8 h in LLM stages, each at its full worker count
-  (task time / wall time = workers) and never at the 1.5M quota: the luna stages reserve at
+  (task time / wall time = workers) and never at the 1.5M quota: the gpt-6-luna stages reserve at
   most 4 workers x 3 calls (`company_calls`) x (input + 16K max_tokens), about 0.55M. Only
   insights (8 workers, strategic risk about 54K input + 32K) could reach 1.5M on sol.
-- Options: (a) only the new `rate_limits`; (b) also more workers for the luna stages. (a)
+- Options: (a) only the new `rate_limits`; (b) also more workers for the gpt-6-luna stages. (a)
   barely changes the time, as the stages wait on the model, not the quota.
 - Chosen (user decision): (b). `rate_limits` gpt-6-luna 2,500,000 and gpt-6-sol 2,000,000;
   `parallel` textmetrics, governance, legal, clinical and signals 6 (was 4), scores 6 (was
