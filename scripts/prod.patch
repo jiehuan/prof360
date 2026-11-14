@@ -548,7 +548,7 @@ index 898880d1a224b8c4d76d50d1285ab6b69cf0f868..376f93ddeb50fabc630313ccc924743a
  | `ALPHAVANTAGE_API_KEY` | – | Required for AV stages in both direct and APIM modes |
  | `ALPHAVANTAGE_MODE` | `direct` | `direct` or `apim`; never automatically falls back |
 diff --git a/docs/decisions.md b/docs/decisions.md
-index 708ec91d55329d599f6a9d41fc1b6136ec5bffff..a5f1aca98dda84cc617c785717f4c117b463fad0 100644
+index f00890582969eaef71b03866cd06d9b02e965fe3..27b5e36d83a230f6397ab9bd56ae1dadd9cba897 100644
 --- a/docs/decisions.md
 +++ b/docs/decisions.md
 @@ -220,7 +220,7 @@ has no exhibit; this is logged.
@@ -1982,7 +1982,7 @@ index db6a34289f4972f18ecb0d7551f3f93fc398e3da..3bf9d74db9ff69e52bb4767be4dd24ea
 -    assert len(made) == 2
 -    release.set()
 diff --git a/tests/test_phase3_stages.py b/tests/test_phase3_stages.py
-index a8564787ab92d1efd66ad1d4fca5c091c426c85d..942674f5aaa6f10b85c30ace585c85b0c13d82e4 100644
+index 00243c9f842f7a8e03e314d83925706a5535ad93..faa1b7f380c439ad61e2fdc4e2f9a33d98faa739 100644
 --- a/tests/test_phase3_stages.py
 +++ b/tests/test_phase3_stages.py
 @@ -184,14 +184,10 @@ def test_signals_with_llm_vote_and_no_calls_on_rerun(env) -> None:
