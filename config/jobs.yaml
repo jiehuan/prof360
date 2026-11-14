@@ -32,23 +32,31 @@ max_attempts: 2
 # development) only the LLM stages run in parallel (short transactions, D-052, D-061); the
 # other stages run one company at a time there. News runs in parallel too (D-079): its time
 # is the LLM relevance and event reads; Alpha Vantage calls share one 75-per-minute limiter.
+# D-099: the gpt-6-luna stages run 6 workers (was 4; scores 2) within the 2.5M tokens per
+# minute this job may use; at most about 0.8M is reserved at once.
 parallel:
-  textmetrics: 4
+  textmetrics: 6
   industry: 4
+  governance: 6
+  legal: 6
+  clinical: 6
+  signals: 6
+  insights: 8
+  metricdetail: 6
+  scores: 6
+  news: 3
+# Caps on a SQLite file (local development, D-081): one writer, so more threads only add
+# "database is locked" retries. The insights and metric-detail counts above are sized for
+# SecureGPT's gpt-6-sol quota (2M tokens per minute, D-099) on Azure SQL.
+sqlite_parallel:
+  insights: 4
+  metricdetail: 4
+  textmetrics: 4
   governance: 4
   legal: 4
   clinical: 4
   signals: 4
-  insights: 8
-  metricdetail: 6
   scores: 2
-  news: 3
-# Caps on a SQLite file (local development, D-081): one writer, so more threads only add
-# "database is locked" retries. The insights and metric-detail counts above are sized for
-# SecureGPT's 1.5M tokens per minute (D-080) on Azure SQL.
-sqlite_parallel:
-  insights: 4
-  metricdetail: 4
 
 # Raw snapshot retention (D-098). Snapshots are only read on the day they are fetched (the
 # same-day cache, D-004); older ones only allow a run to be replayed. Files whose name's date is
