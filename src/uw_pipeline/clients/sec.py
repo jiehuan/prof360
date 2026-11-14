@@ -52,6 +52,11 @@ def pad_cik(cik: int | str) -> str:
     return s.zfill(10)
 
 
+def document_key(cik: int | str, accession_no: str, name: str) -> str:
+    """Raw storage key of an archive document."""
+    return f"sec/filings/CIK{pad_cik(cik)}/{accession_no}/{name}"
+
+
 def _utc_today() -> date:
     return datetime.now(UTC).date()
 
@@ -221,9 +226,13 @@ class SecClient:
         self._fetch(url, raw_path, force=True)
         return True
 
+    def has_document(self, cik: int | str, accession_no: str, name: str) -> bool:
+        """Whether an archive document is in raw storage: checked, not read (D-100)."""
+        return self._storage.exists(document_key(cik, accession_no, name))
+
     def filing_document(self, cik: int | str, accession_no: str, name: str) -> RawDocument:
         url = f"{archive_folder_url(cik, accession_no)}/{name}"
-        key = f"sec/filings/CIK{pad_cik(cik)}/{accession_no}/{name}"
+        key = document_key(cik, accession_no, name)
         data, from_cache = self._fetch(url, key, force=False)
         return RawDocument(
             url=url,

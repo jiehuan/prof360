@@ -361,6 +361,28 @@ def test_industry_excluding_signals_turns_them_off(env, tmp_path) -> None:
     assert after == {r for r in before if not r.startswith("8k_5.02")}
 
 
+def test_rerun_does_not_read_processed_documents(env) -> None:
+    """D-100: archive documents never change; a rerun checks that a processed document's raw
+    file exists but does not read it (on ADLS each read was a full download)."""
+    engine, sec, _ = env
+    _run(engine, sec)
+    storage = sec._storage
+    reads: list[str] = []
+    real = storage.read_bytes
+
+    def counting(key: str) -> bytes:
+        reads.append(key)
+        return real(key)
+
+    storage.read_bytes = counting
+    with engine.connect() as conn:
+        processed = conn.execute(select(source_document.c.raw_path).where(
+            source_document.c.content_hash.is_not(None))).scalars().all()  # fmt: skip
+    assert processed
+    _run(engine, sec)
+    assert not set(reads) & set(processed), reads
+
+
 def test_missing_raw_files_of_older_documents_are_downloaded_again(env) -> None:
     """D-093: a database copied from another environment refers to raw files that environment
     downloaded. An earnings release older than the text window (textmetrics reads every one)

@@ -203,6 +203,10 @@ def _download(
 ) -> tuple[int, bytes | None]:
     """Fetch a document (cached by accession). Returns (doc_id, bytes or None if unchanged)."""
     doc_id, known_hash = docs.get(accn, name) if docs else _doc_id(conn, accn, name)
+    # An archive document never changes once filed (D-100): one already processed whose raw
+    # file is in storage is not read again (on ADLS every rerun read each one in full).
+    if not force and known_hash is not None and sec.has_document(cik, accn, name):
+        return doc_id, None
     raw = sec.filing_document(cik, accn, name)
     if not force and known_hash == raw.content_hash:
         return doc_id, None
